@@ -19,7 +19,7 @@ _____________________________________________________________________________
 2)	Copier l'exécutable LdMicro et flashMCU.bat dans un même dossier.
 	Copier au même endroit le dossier LIBRARIES_FOR et son contenu.
 
-3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section ARMGCC,
+3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section ARM,
 	modifier GCCPATH pour pointer sur le répertoire d'installation d'arm-gcc
 
 	Selon l'émulateur utilisé, vous devez ensuite modifier les instructions

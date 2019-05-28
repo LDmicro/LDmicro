@@ -219,6 +219,7 @@ static uint32_t REG_VRCON   = INVALID_ADDR; // 0x9f
 //USART
 static uint32_t REG_TXSTA   = INVALID_ADDR; // 0x98
 #define          TXEN      BIT5
+#define          BRGH      BIT2
 #define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
 static uint32_t REG_RCSTA   = INVALID_ADDR; // 0x18
 #define          SPEN      BIT7
@@ -852,8 +853,8 @@ static uint32_t BankCorrection_(ADDR_T addr, uint32_t bank/*, int is_call*/)
     int   corrected = 0;
     uint32_t i, j;
     int   nAdd;
-    uint32_t BB; // bank before
-    uint32_t arg1;
+    uint32_t BB = 0; // bank before
+    uint32_t arg1 = 0;
 doBankCorrection:
     corrected = 0;
     i = addr;
@@ -1772,7 +1773,7 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
 #undef CHECK
 #define CHECK(v, bits)                                                 \
   do { \
-	if((v) != ((v) & ((1 << (bits)) - 1)))                             \
+    if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           (v),                                                         \
           (v),                                                         \
@@ -6729,6 +6730,54 @@ static void WriteDivideRoutine24x16()
 }
 
 //-----------------------------------------------------------------------------
+void CalcPicUartBaudRate(int32_t mcuClock, int32_t baudRate, int *divisor, int *brgh)
+{
+        if(baudRate == 0) {
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
+        }
+        // So now we should set up the UART. First let us calculate the
+        // baud rate; there is so little point in the fast baud rates that
+        // I won't even bother, so
+        // bps = Fosc/(64*(X+1))
+        // bps*64*(X + 1) = Fosc
+        // X = Fosc/(bps*64)-1
+        // and round, don't truncate
+		/*
+        BRGH = 1 --> Baud Rate = FOSC/(16(X+1))
+        BRGH = 0 --> Baud Rate = FOSC/(64(X+1))
+        */
+        int div1 = (mcuClock + baudRate * 8) / (baudRate * 16) - 1;
+		int div0 = (mcuClock + baudRate * 32) / (baudRate * 64) - 1;
+
+		double actual1 = 1.0 * mcuClock / (16 * (div1 + 1));
+		double actual0 = 1.0 * mcuClock / (64 * (div0 + 1));
+
+		double percentErr1 = 100.0 * (actual1 - baudRate) / baudRate;
+        double percentErr0 = 100.0 * (actual0 - baudRate) / baudRate;
+        
+		double actual;
+		double percentErr;
+
+		if((fabs(percentErr1) < fabs(percentErr0)) && (div1 <= 255)) {
+			actual = actual1;
+		    percentErr = percentErr1;
+			*divisor = div1;
+			*brgh = 1;
+		} else {
+			actual = actual0;
+			percentErr = percentErr0;
+			*divisor = div0;
+			*brgh = 0;
+		}
+        if(*divisor > 255) {
+            *divisor = 255;
+            ComplainAboutBaudRateOverflow();
+        }
+
+		if(fabs(percentErr) > 2) 
+            ComplainAboutBaudRateError(*divisor, actual, percentErr);      
+}
+//-----------------------------------------------------------------------------
 // Compile the program to PIC16 code for the currently selected processor
 // and write it to the given file. Produce an error message if we cannot
 // write to the file, or if there is something inconsistent about the
@@ -7650,32 +7699,11 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
 
     if(UartFunctionUsed()) {
-        if(Prog.baudRate == 0) {
-            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
-            /////   return false;
-        }
-
         Comment("UART setup");
-        // So now we should set up the UART. First let us calculate the
-        // baud rate; there is so little point in the fast baud rates that
-        // I won't even bother, so
-        // bps = Fosc/(64*(X+1))
-        // bps*64*(X + 1) = Fosc
-        // X = Fosc/(bps*64)-1
-        // and round, don't truncate
-        int divisor = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
-        if(divisor > 255) {
-            ComplainAboutBaudRateOverflow();
-            divisor = 255;
-        }
-        double actual = Prog.mcuClock / (64.0 * (divisor + 1));
-        double percentErr = 100 * (actual - Prog.baudRate) / Prog.baudRate;
-
-        if(fabs(percentErr) > 2) {
-            ComplainAboutBaudRateError(divisor, actual, percentErr);
-        }
+		int32_t divisor, brgh;
+		CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
         WriteRegister(REG_SPBRG, divisor & 0xFF);
-        WriteRegister(REG_TXSTA, 1 << TXEN);                 // only TXEN set, SYNC=0
+        WriteRegister(REG_TXSTA, (1 << TXEN) | (brgh << BRGH)); // only TXEN set, SYNC=0
         WriteRegister(REG_RCSTA, (1 << SPEN) | (1 << CREN)); // only SPEN, CREN set
     }
 
@@ -7743,7 +7771,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
     } else
-        oops();
+        THROW_COMPILER_EXCEPTION(_("Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
 
     if(Prog.cycleTimer >= 0) {
         Comment("Watchdog reset");

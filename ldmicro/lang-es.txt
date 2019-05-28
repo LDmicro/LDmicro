@@ -2596,5 +2596,23 @@
 "Compile failure."
 "Fallo de compilación."
 
+"Number of bytes to receive:"
+"Número de bytes a recibir:"
+
+"Number of bytes to send:"
+"Número de bytes a enviar:"
+
+"Wait until all bytes are received:"
+"Espera hasta todos recibidos:"
+
+"Wait until all bytes are sent:"
+"Espera hasta todos enviados:"
+
 "Set Pull-up input resistors"
-"Activar Pull-up por las entradas"
+"Activar pull-up por las entradas"
+
+"*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details."
+"Atención: Todos los puertos no tienen pull-up resistencias."
+
+"*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable."
+"PICs solamente: Ver registros RBPU y GPPU."

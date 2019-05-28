@@ -591,6 +591,7 @@ void ShowConfDialog()
     }
 
     if(!DialogCancel) {
+        char buf[26];
         SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         double        dProgCycleTime = 1000.0 * atof(buf);
         long long int ProgCycleTime;
@@ -603,6 +604,13 @@ void ShowConfDialog()
             Prog.cycleTimer = 0;
         else
             Prog.cycleTimer = 1;
+
+        ///// Added by JG2
+        if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
+            {
+            Prog.cycleTimer = 3;        //  ARM uses Timer 3
+            }
+        /////
 
         if(SendMessage(YPlcCycleDutyCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             Prog.cycleDuty = 1;
@@ -625,13 +633,7 @@ void ShowConfDialog()
                 Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
-        /*
-        ///// Added by JG
-        if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_ARM))) {
-            Prog.configurationWord = hobatoi(buf);
-        }
-        /////
-        */
+
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 

@@ -12,7 +12,8 @@ for txt in f.readlines():
             vers = txt[i1+1:i2]
             vers = vers.replace('.','')
             print(vers)
-            os.rename('buildXXXX','build'+vers)
+            if os.path.exists('buildXXXX'):
+                os.rename('buildXXXX','build'+vers)
 
 os.system('\"C:\\Program Files\\7-Zip\\7z.exe\" a -r -tzip build'+vers+'\\build'+vers+'.zip build'+vers+'\\*.*');
 

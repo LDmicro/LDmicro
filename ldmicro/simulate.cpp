@@ -2066,7 +2066,7 @@ static void SimulateIntCode()
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal1 < index)) {
+                if((index < 0) || (a->literal1 <= index)) {
                     Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal1-1);
                     index = a->literal1;
                     StopSimulation();

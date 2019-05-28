@@ -3,7 +3,9 @@
 #include "UsrLib.h"
 
 #define BIT_LCD_RS   	0     // bit du port sur lequel est connectée la pin RS du LCD		// adapte pour IO-Expander facon Arduino
+#define BIT_LCD_WR   	1     // bit du port sur lequel est connectée la pin WR du LCD		// inutilise
 #define BIT_LCD_E   	2     // bit du port sur lequel est connectée la pin E du LCD		//
+#define BIT_LCD_BL   	3     // bit du port sur lequel est connectée la pin BL du LCD		// backlight (facultatif)
 #define BIT_LCD_D4   	4     // bit du port sur lequel est connectée la pin D4 du LCD		//
 #define BIT_LCD_D5   	5     // bit du port sur lequel est connectée la pin D5 du LCD		//
 #define BIT_LCD_D6   	6     // bit du port sur lequel est connectée la pin D6 du LCD		//
@@ -38,6 +40,9 @@ void LCD_I2C_Erase(void);
 
 // Renvoi du curseur en haut à gauche
 void LCD_I2C_Home(void);
+
+// Activation / desactivation du backlight (facultatif)
+void LCD_I2C_BackLight(char stat);
 
 // Sélection du mode d'insertion pour le LCD
 // direction_curseur : 1 = incrémentation - 0 = décrémentation

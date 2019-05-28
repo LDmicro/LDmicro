@@ -479,9 +479,10 @@ INSTRUCTIONS REFERENCE
     edge-triggered input.
 
 Note: The several coils with the same 'YName' or 'RName' can be mentally
-    represented as a one microchip with multiple inputs and one output.
+    represented as one microchip with multiple inputs and one output.
     Normal and inverted input are directly transfers the input state (normal or
-    inverted) to the output. R, S, T inputs lock up (latch) the state of output.
+    inverted) to the output every time in every PLC cycle.
+    R, S, T inputs lock up (latch) the state of output.
     The T input is positive edge triggered. R, S inputs are level sensitive.
     If before R, S insert the "OSR: ONE-SHOT RISING" or
     "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" element.
@@ -489,6 +490,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     If add T input you get "newest" RST-trigger. May be several R..R inputs,
     or several S..S inputs. You can use any combination of inputs for one 'YName'
     or 'RName' coil.
+    https://github.com/LDmicro/LDmicro/wiki/COIL
 
 
 > TURN-ON DELAY                 Tdon
