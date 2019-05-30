@@ -17,7 +17,7 @@
     * Fixed PIC UART baud rate calculation.
 
     * Fixed PICs PORTA outputs still stay in analog mode in generated C source code.
-      Added ADC_SetAsDigitalIO()
+      Added setPortDigitalIO()
 
     * Fixed When compiling Hex/Asm with PIC target and then calling FlashMcu, the window still closes
       immediately without a word...
