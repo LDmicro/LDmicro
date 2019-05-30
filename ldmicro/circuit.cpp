@@ -730,7 +730,7 @@ void AddQuadEncod()
     int n = 0;
     if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu()->ExtIntCount) {
+        if(n > static_cast<decltype(n)>(Prog.mcu()->ExtIntCount)) {
             //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
@@ -1177,7 +1177,7 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
                 if(Selected.data.any != anyToDelete) {
                     ElemLeaf *saveSelected = Selected.data.leaf;
                     Selected.data.leaf = (ElemLeaf *)anyToDelete; // HOOK
-                    if((res = DeleteSelectedFromSubckt(which, any))) {
+                    if((res = DeleteSelectedFromSubckt(which, any)) != false) {
                         while(CollapseUnnecessarySubckts(which, any))
                             ;
                         //dbp("DeleteAny %d", IsEnd);
@@ -1370,6 +1370,8 @@ void DeleteSelectedRung()
 static void NullDisplayMatrix(int from, int to)
 {
     return;
+    (void)from;
+    (void)to;
 	/*
     int i, j;
     for(j = from; j < to; j++) {
@@ -1613,7 +1615,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(int i = 0; i < p->count; i++) {
-                if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3))) {
+                if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3)) != nullptr) {
                     return l;
                 }
             }
@@ -1622,7 +1624,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(int i = 0; i < s->count; i++) {
-                if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3))) {
+                if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3)) != nullptr) {
                     return l;
                 }
             }
@@ -1857,7 +1859,7 @@ void CopyRungDown()
     rewind(f);
     fgets(line, sizeof(line), f);
     if(strstr(line, "RUNG"))
-        if((temp = LoadSeriesFromFile(f))) {
+        if((temp = LoadSeriesFromFile(f)) != nullptr) {
             InsertRung(true);
             Prog.rungs_[i + 1] = temp;
         }
@@ -1992,7 +1994,7 @@ void PasteRung(int PasteInTo)
         if(!fgets(line, sizeof(line), f))
             break;
         if(strstr(line, "RUNG"))
-            if((temp = LoadSeriesFromFile(f))) {
+            if((temp = LoadSeriesFromFile(f)) != nullptr) {
                 if(Selected.which == ELEM_PLACEHOLDER) {
                     Prog.rungs_[j] = temp;
                     rung = 1;

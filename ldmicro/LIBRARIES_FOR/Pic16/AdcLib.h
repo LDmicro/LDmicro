@@ -2,22 +2,22 @@
 
 /*
 PIC16F87X have a built in 10 bit Successive Approximation ADC which is multiplexed among 8 input pins.
-The A/D module has high and low-voltage reference input that is software selectable to some combination 
-of VDD, VSS, RA2 or RA3. With 5v as the Vref the resolution of Pic16f87X ADC can be determined as below: 
+The A/D module has high and low-voltage reference input that is software selectable to some combination
+of VDD, VSS, RA2 or RA3. With 5v as the Vref the resolution of Pic16f87X ADC can be determined as below:
 resolution of ADC = Vref/(2^{10}-1) = 5/1023 =0.004887 = 4.887mv
 
 ADC input pins are multiplexed with other GPIO pins on RA0-7.
 The ADC pins can be enabled by configuring the corresponding ADCON1 register.
 
-ADCON0 	Used to Turn ON the ADC, Select the Sampling Freq and also Start the conversion.
-ADCON1 	Used to configure the gpio pins for ADC
+ADCON0  Used to Turn ON the ADC, Select the Sampling Freq and also Start the conversion.
+ADCON1  Used to configure the gpio pins for ADC
 
-ADRESH 	Holds the higher byte of ADC result
-ADRESL 	Holds the lower byte of ADC result
+ADRESH  Holds the higher byte of ADC result
+ADRESL  Holds the lower byte of ADC result
 
 ADCON0
-7 		6 		5 		4 		3 		2 			1 	0
-ADCS1 	ADCS0 	CHS2 	CHS1 	CHS0 	GO/DONE 	— 	ADON
+7       6       5       4       3       2           1   0
+ADCS1   ADCS0   CHS2    CHS1    CHS0    GO/DONE     —   ADON
 
 ADCS2-ADCS0:A/D Conversion Clock Select bits
 
@@ -41,15 +41,15 @@ ADON: A/D On bit
 0 = A/D converter module is shut-off and consumes no operating current
 
 ADCON1
-7 		6 		5 	4 	3 		2 		1 		0
-ADFM 	ADCS2 	— 	— 	PCFG3 	PCFG2 	PCFG1 	PCFG0
+7       6       5   4   3       2       1       0
+ADFM    ADCS2   —   —   PCFG3   PCFG2   PCFG1   PCFG0
 
 ADFM: A/D Result Format Select bit
 1 = Right justified. Six (6) Most Significant bits of ADRESH are read as ‘0’.
 0 = Left justified. Six (6) Least Significant bits of ADRESL are read as ‘0’.
 
 ADCS2: A/D Conversion Clock Select bit
-Check ADCS1:ADCS0 of ADCON0 register. 
+Check ADCS1:ADCS0 of ADCON0 register.
 
 PCFG3:0: Analog pin configuration and voltage references (see datasheet)
 0000 = all pins of RA are analog pins
@@ -59,37 +59,5 @@ PCFG3:0: Analog pin configuration and voltage references (see datasheet)
 1110 = RA0 pin is analog pin
 */
 
-#if (defined LDTARGET_pic16f873) 
-	#define LDTARGET_pic16f87X
-#endif
-#if (defined LDTARGET_pic16f874) 
-	#define LDTARGET_pic16f87X
-#endif
-#if (defined LDTARGET_pic16f876) 
-	#define LDTARGET_pic16f87X
-#endif
-#if (defined LDTARGET_pic16f877) 
-	#define LDTARGET_pic16f87X
-#endif
-
-#if (defined LDTARGET_pic16f882) 
-	#define LDTARGET_pic16f88X
-#endif
-#if (defined LDTARGET_pic16f883) 
-	#define LDTARGET_pic16f88X
-#endif
-#if (defined LDTARGET_pic16f884) 
-	#define LDTARGET_pic16f88X
-#endif
-#if (defined LDTARGET_pic16f886) 
-	#define LDTARGET_pic16f88X
-#endif
-#if (defined LDTARGET_pic16f887) 
-	#define LDTARGET_pic16f88X
-#endif
-
-
 void ADC_Init();
 int ADC_Read(int canal, int refs);
-
-

@@ -43,7 +43,7 @@ typedef uint32_t ADDR_T;
 //// Also, the variable may contain the difference between the addresses. For example:
 ////   ADDR_T addr, addr1, addr2;
 ////   addr = addr1 - addr2;
-//#define INVALID_ADDR -1 
+//#define INVALID_ADDR -1
 #define INVALID_ADDR 0xFFFFFFFF
 // The value INVALID_ADDR is used to indicate an indeterminate, unacceptable, invalid address.
 
@@ -673,7 +673,7 @@ int Question(const char* str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 void StartIhex(FILE *f);
-void WriteIhex(FILE *f, BYTE b);
+void WriteIhex(FILE *f, uint8_t b);
 void FinishIhex(FILE *f);
 const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
@@ -685,11 +685,11 @@ const char *PinToName(int pin);
 const char *ArduinoPinName(McuIoPinInfo *iop);
 const char *ArduinoPinName(int pin);
 //void SetMcu_(McuIoInfo *mcu);
-int NameToPin(char *pinName);
+int NameToPin(const char* pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(const char *name);
-McuSpiInfo *GetMcuSpiInfo(char *name);
-McuI2cInfo *GetMcuI2cInfo(char *name);          ///// Added by JG
+McuSpiInfo *GetMcuSpiInfo(const char *name);
+McuI2cInfo *GetMcuI2cInfo(const char *name);          ///// Added by JG
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
@@ -745,7 +745,7 @@ void DestroySimulationWindow(HWND SimulationWindow);        ///// Prototype modi
 void ShowSimulationWindow(int sim);                         ///// Prototype modified by JG
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
-extern DWORD CyclesCount;
+extern uint32_t CyclesCount;
 void SetSimulationVariable(const char *name, int32_t val);
 int32_t GetSimulationVariable(const char *name, bool forIoList);
 int32_t GetSimulationVariable(const char *name);
@@ -1041,6 +1041,8 @@ extern int32_t PicProgLdLen;
 void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
 bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, int32_t PicProgLdLen);
+void CalcPicUartBaudRate(int32_t mcuClock, int32_t baudRate, int *divisor, int *brgh);
+
 // avr.cpp
 extern uint32_t AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);

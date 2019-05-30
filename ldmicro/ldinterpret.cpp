@@ -68,7 +68,7 @@ typedef struct {
     WORD  name1;
     WORD  name2;
     WORD  name3;
-    int32_t literal;
+    int32_t literal1;
 } BinOp;
 
 BinOp Program[MAX_OPS];
@@ -199,7 +199,7 @@ void Disassemble()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                printf("int16s[%03x] := %d (0x%04x)", p->name1, p->literal, p->literal);
+                printf("int16s[%03x] := %d (0x%04x)", p->name1, p->literal1, p->literal1);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -240,7 +240,7 @@ void Disassemble()
                 printf("unless (bits[%03x] clear)", p->name1);
                 goto cond;
             case INT_IF_VARIABLE_LES_LITERAL:
-                printf("unless (int16s[%03x] < %d)", p->name1, p->literal);
+                printf("unless (int16s[%03x] < %d)", p->name1, p->literal1);
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
                 printf("unless (int16s[%03x] == int16s[%03x])", p->name1, p->name2);
@@ -296,7 +296,7 @@ void InterpretOneCycle()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                Integers[p->name1] = p->literal;
+                Integers[p->name1] = p->literal1;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -344,7 +344,7 @@ void InterpretOneCycle()
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(!(Integers[p->name1] < p->literal))
+                if(!(Integers[p->name1] < p->literal1))
                     pc = p->name3;
                 break;
 

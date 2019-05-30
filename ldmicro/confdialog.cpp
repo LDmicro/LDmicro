@@ -538,13 +538,12 @@ void ShowConfDialog()
         if(Prog.mcu())
             Prog.configurationWord = Prog.mcu()->configurationWord;
     }
-    sprintf(buf, "");
     if(Prog.configurationWord) {
         sprintf(buf, "0x%llX", Prog.configurationWord);
     }
     ///// Added by JG
     else {
-        sprintf(buf, "0");
+        sprintf(buf, "%i", 0);
     }
     /////
     SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -559,8 +558,7 @@ void ShowConfDialog()
     sprintf(buf, "%d", Prog.i2cRate);
     SendMessage(SpeedTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
-    {
+    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
         Prog.cycleTimer = 3;        //  ARM uses Timer 3
         sprintf(buf, "%d", 3);
         SendMessage(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -572,10 +570,9 @@ void ShowConfDialog()
     SetFocus(CycleTextbox);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -608,6 +605,13 @@ void ShowConfDialog()
         else
             Prog.cycleTimer = 1;
 
+        ///// Added by JG2
+        if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
+            {
+            Prog.cycleTimer = 3;        //  ARM uses Timer 3
+            }
+        /////
+
         if(SendMessage(YPlcCycleDutyCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             Prog.cycleDuty = 1;
         } else {
@@ -629,13 +633,7 @@ void ShowConfDialog()
                 Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
-        /*
-        ///// Added by JG
-        if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_ARM))) {
-            Prog.configurationWord = hobatoi(buf);
-        }
-        /////
-        */
+
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 

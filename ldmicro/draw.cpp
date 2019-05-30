@@ -862,7 +862,6 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
     static char s1[BUF_LEN];
     static char s2[BUF_LEN];
     static char s3[BUF_LEN];
-    const char *s;
 
     switch(which) {
         case ELEM_COMMENT: {
@@ -1157,36 +1156,36 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_LOW:
         case ELEM_ONE_SHOT_FALLING: {
-            const char *s1, *s2;
+            const char *ss1, *ss2;
             if(which == ELEM_ONE_SHOT_RISING) {
-                s1 = "    _     _    ";
-                s2 = "[_/ \x01"
+                ss1 = "    _     _    ";
+                ss2 = "[_/ \x01"
                      "OSR\x02_/ \\_]";
             } else if(which == ELEM_ONE_SHOT_FALLING) {
-                s1 = "  _       _    ";
-                s2 = "[ \\_\x01"
+                ss1 = "  _       _    ";
+                ss2 = "[ \\_\x01"
                      "OSF\x02_/ \\_]";
             } else if(which == ELEM_ONE_SHOT_LOW) {
-                s1 = "  _     _   _ ";
-                s2 = "[ \\_\x01"
+                ss1 = "  _     _   _ ";
+                ss2 = "[ \\_\x01"
                      "OSL\x02 \\_/ ]";
             } else
                 oops();
 
-            CenterWithSpaces(*cx, *cy, s1, poweredAfter, false);
-            CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
+            CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
         }
         case ELEM_OSC: {
-            const char *s1, *s2;
-            s1 = "   _     _   _  ";
-            s2 = "[_/ \x01"
+            const char *ss1, *ss2;
+            ss1 = "   _     _   _  ";
+            ss2 = "[_/ \x01"
                  "OSC\x02_/ \\_/ \\]";
 
-            CenterWithSpaces(*cx, *cy, s1, poweredAfter, false);
-            CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
+            CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
@@ -1356,8 +1355,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_TLO:
         case ELEM_TON:
         case ELEM_TOF: {
-            const char *s0;
-            const char *s;
+            const char *s0 = "";
+            const char *s = "";
             // clang-format off
             if(which == ELEM_TON) {
                 s0 = "";
@@ -1480,6 +1479,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
+        {
+        const char* s;
         // clang-format off
         case ELEM_CPRINTF:      s = "CPRN"; goto cprintf;
         case ELEM_SPRINTF:      s = "SPRN"; goto cprintf;
@@ -1505,6 +1506,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                 *cx += 2 * POS_WIDTH;
                 break;
             }
+        }
 
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
@@ -1837,7 +1839,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
                 poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter/*, 0*/);
             }
             break;
-			/*
+            /*
             if(cols) {
                 // Draw wire to the right bus
                 if((s->contents[s->count - 1].which == ELEM_COMMENT) || //
@@ -1850,7 +1852,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
                     DrawWire(cx, cy, '-');
             }
             break;
-			*/
+            */
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;

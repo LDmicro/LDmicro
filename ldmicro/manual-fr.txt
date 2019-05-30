@@ -274,6 +274,25 @@ bits sont inclus dans le fichier HEX, et la majorité des logiciels de
 programmation les valident automatiquement, pour les processeurs AVR ,
 vous devez le faire manuellement.
 
+RESISTANCES DE PULL UP
+======================
+Résistances de Pull
+https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
+Par défaut, toutes les entrées sont associées à des résistances de pull-up,
+si elles existent sur le port concerné.
+All input pins try to set Pull-up registers by default.
+Depuis la version 5.3.0.4, un menu Paramètres->Résistances de pull-up
+permet de les activer ou désactiver inividuellement.
+
+
+Désactivation des résistances de Pull (Obsolète mais possible)
+https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+Resitances de Pull down
+https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+
+
 REFERENCE DES INSTRUCTIONS
 ==========================
 
@@ -1079,5 +1098,3 @@ Cambridge MA  -- Sep, Dec 2005
                  Feb, Mar 2006
 
 Email: user jwesthues, at host cq.cx
-
-

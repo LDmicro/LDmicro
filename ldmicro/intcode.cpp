@@ -133,9 +133,9 @@ void IntDumpListing(char *outFile)
                && (IntCode[i].op != INT_AllocFwdAddr))
                 fprintf(f, "%4u:", i);
         }
-        int j;
+
         if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
-            for(j = 0; j < indent; j++)
+            for(int j = 0; j < indent; j++)
                 fprintf(f, "    ");
 
         ElemLeaf *l = IntCode[i].leaf;
@@ -184,13 +184,13 @@ void IntDumpListing(char *outFile)
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 fprintf(f, "if ('%s' & (1<<%d)) {", IntCode[i].name2.c_str(), IntCode[i].literal2);
                 indent++;
-                fprintf(f, "  '%s' |= (1<<%d) } else {", IntCode[i].name1.c_str(), IntCode[i].literal);
-                fprintf(f, "  '%s' &= ~(1<<%d) }", IntCode[i].name1.c_str(), IntCode[i].literal);
+                fprintf(f, "  '%s' |= (1<<%d) } else {", IntCode[i].name1.c_str(), IntCode[i].literal1);
+                fprintf(f, "  '%s' &= ~(1<<%d) }", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 indent--;
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "let var '%s' := %d", IntCode[i].name1.c_str(), IntCode[i].literal);
+                fprintf(f, "let var '%s' := %d", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -346,7 +346,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_READ_ADC:
-                fprintf(f, "read adc '%s', refs is '%d'", IntCode[i].name1.c_str(), IntCode[i].literal);
+                fprintf(f, "read adc '%s', refs is '%d'", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_SET_SEED_RANDOM:
@@ -368,7 +368,7 @@ void IntDumpListing(char *outFile)
             case INT_QUAD_ENCOD:
                 fprintf(f,
                         "QUAD ENCOD %d %s %s %s %s %s",
-                        IntCode[i].literal,
+                        IntCode[i].literal1,
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name3.c_str(),
@@ -399,27 +399,27 @@ void IntDumpListing(char *outFile)
             case INT_EEPROM_READ: {
                 int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
-                    fprintf(f, "read EEPROM[%d] into '%s'", IntCode[i].literal, IntCode[i].name1.c_str());
+                    fprintf(f, "read EEPROM[%d] into '%s'", IntCode[i].literal1, IntCode[i].name1.c_str());
                 else if(sov == 2)
                     fprintf(f,
                             "read EEPROM[%d,%d+1] into '%s'",
-                            IntCode[i].literal,
-                            IntCode[i].literal,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
                             IntCode[i].name1.c_str());
                 else if(sov == 3)
                     fprintf(f,
                             "read EEPROM[%d,%d+1,%d+2] into '%s'",
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
                             IntCode[i].name1.c_str());
                 else if(sov == 4)
                     fprintf(f,
                             "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'",
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
                             IntCode[i].name1.c_str());
                 else
                     oops();
@@ -428,28 +428,28 @@ void IntDumpListing(char *outFile)
             case INT_EEPROM_WRITE: {
                 int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
-                    fprintf(f, "write '%s' into EEPROM[%d]", IntCode[i].name1.c_str(), IntCode[i].literal);
+                    fprintf(f, "write '%s' into EEPROM[%d]", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 else if(sov == 2)
                     fprintf(f,
                             "write '%s' into EEPROM[%d,%d+1]",
                             IntCode[i].name1.c_str(),
-                            IntCode[i].literal,
-                            IntCode[i].literal);
+                            IntCode[i].literal1,
+                            IntCode[i].literal1);
                 else if(sov == 3)
                     fprintf(f,
                             "write '%s' into EEPROM[%d,%d+1,%d+2]",
                             IntCode[i].name1.c_str(),
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal);
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1);
                 else if(sov == 4)
                     fprintf(f,
                             "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]",
                             IntCode[i].name1.c_str(),
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal,
-                            IntCode[i].literal);
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1,
+                            IntCode[i].literal1);
                 else
                     oops();
                 break;
@@ -497,7 +497,7 @@ void IntDumpListing(char *outFile)
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
+                fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_UART_SEND:
@@ -514,7 +514,7 @@ void IntDumpListing(char *outFile)
 
             case INT_UART_RECVn:
             case INT_UART_RECV1:
-                fprintf(f, "uart recv into '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
+                fprintf(f, "uart recv into '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_UART_RECV:
@@ -580,18 +580,18 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_IF_BITS_SET_IN_VAR:
-                fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal, IntCode[i].literal);
+                fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
                 indent++;
                 break;
 
             case INT_IF_BITS_CLEAR_IN_VAR:
-                fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1.c_str(), IntCode[i].literal);
+                fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 indent++;
                 break;
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if '%s' < %d {", IntCode[i].name1, IntCode[i].literal);
+                fprintf(f, "if '%s' < %d {", IntCode[i].name1, IntCode[i].literal1);
                 indent++;
                 break;
 
@@ -701,7 +701,7 @@ void IntDumpListing(char *outFile)
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name3.c_str(),
-                        IntCode[i].literal,
+                        IntCode[i].literal1,
                         IntCode[i].literal2);
                 switch(IntCode[i].op) {
                     case INT_TEST_SFR_LITERAL_L:
@@ -730,11 +730,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_GOTO:
-                fprintf(f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
+                fprintf(f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_GOSUB:
-                fprintf(f, "GOSUB Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
+                fprintf(f, "GOSUB Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_RETURN:
@@ -755,11 +755,11 @@ void IntDumpListing(char *outFile)
                         "INIT TABLE signed %d byte %s[%d] := {",
                         IntCode[i].literal2,
                         IntCode[i].name1.c_str(),
-                        IntCode[i].literal);
-                for(int j = 0; j < (IntCode[i].literal - 1); j++) {
+                        IntCode[i].literal1);
+                for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
-                fprintf(f, "%d}", IntCode[i].data[IntCode[i].literal - 1]);
+                fprintf(f, "%d}", IntCode[i].data[IntCode[i].literal1 - 1]);
                 break;
 
             case INT_RAM_READ:
@@ -833,32 +833,32 @@ int HexDigit(int c)
 //-----------------------------------------------------------------------------
 static void GenSym(char *dest, const char *name, const char *name1, const char *name2)
 {
-    sprintf(dest, "%s_%01lx_%s_%s", name, GenSymCount, name1, name2);
+    sprintf(dest, "%s_%01x_%s_%s", name, GenSymCount, name1, name2);
     GenSymCount++;
 }
 
 static void GenVar(char *dest, const char *name1, const char *name2)
 {
-    sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
+    sprintf(dest, "$var_%01x_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
 }
 
 static void GenSymParThis(char *dest)
 {
-    sprintf(dest, "$parThis_%01lx", GenSymCountParThis);
+    sprintf(dest, "$parThis_%01x", GenSymCountParThis);
     GenSymCountParThis++;
 }
 static void GenSymParOut(char *dest)
 {
-    sprintf(dest, "$parOut_%01lx", GenSymCountParOut);
+    sprintf(dest, "$parOut_%01x", GenSymCountParOut);
     GenSymCountParOut++;
 }
 void GenSymOneShot(char *dest, const char *name1, const char *name2)
 {
     if(int_comment_level == 1)
-        sprintf(dest, "$once_%01lx", GenSymCountOneShot);
+        sprintf(dest, "$once_%01x", GenSymCountOneShot);
     else
-        sprintf(dest, "$once_%01lx_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$once_%01x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -867,7 +867,7 @@ static void GenSymOneShot(char *dest)
 }
 static void GenSymFormattedString(char *dest, const char *name)
 {
-    sprintf(dest, "$fmtd_%01lx_%s", GenSymCountFormattedString, name);
+    sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
 }
 static void GenSymFormattedString(char *dest)
@@ -876,7 +876,7 @@ static void GenSymFormattedString(char *dest)
 }
 static void GenSymStepper(char *dest, const char *name)
 {
-    sprintf(dest, "$step_%01lx_%s", GenSymCountStepper, name);
+    sprintf(dest, "$step_%01x_%s", GenSymCountStepper, name);
     GenSymCountStepper++;
 }
 
@@ -900,7 +900,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
         intOp.name5 = name5;
     if(name6)
         intOp.name6 = name6;
-    intOp.literal = lit;
+    intOp.literal1 = lit;
 #ifdef NEW_CMP
     if((op == INT_IF_LES) || (op == INT_IF_VARIABLE_LES_LITERAL))
         if(!name2) {
@@ -3302,21 +3302,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_SEED_RANDOM:
             Comment(3, "ELEM_SEED_RANDOM");
-            char name[MAX_NAME_LEN];
-            sprintf(name, "$seed_%s", l->d.readAdc.name);
-            SetSizeOfVar(name, 4);
+            char nameBuf[MAX_NAME_LEN];
+            sprintf(nameBuf, "$seed_%s", l->d.readAdc.name);
+            SetSizeOfVar(nameBuf, 4);
 
             if(IsNumber(l->d.move.dest)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
-                CheckVarInRange(name, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, name, hobatoi(l->d.move.src));
+                CheckVarInRange(nameBuf, l->d.move.src, CheckMakeNumber(l->d.move.src));
+                Op(INT_SET_VARIABLE_TO_LITERAL, nameBuf, hobatoi(l->d.move.src));
             } else {
-                Op(INT_SET_VARIABLE_TO_VARIABLE, name, l->d.move.src);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, nameBuf, l->d.move.src);
             }
-            Op(INT_SET_SEED_RANDOM, name);
+            Op(INT_SET_SEED_RANDOM, nameBuf);
             Op(INT_END_IF);
             break;
 
@@ -4398,15 +4398,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         case '0': goto L1; break;
                         case 'X':
                         case 'x': {
-                            int h, l;
+                            int h, ll;
                             p++;
                             h = HexDigit(*p);
                             if(h >= 0) {
                                 p++;
-                                l = HexDigit(*p);
-                                if(l >= 0) {
+                                ll = HexDigit(*p);
+                                if(ll >= 0) {
                                     outputWhich[steps] = OUTPUT_UCHAR;
-                                    outputChars[steps++] = (h << 4) | l;
+                                    outputChars[steps++] = static_cast<char>((h << 4) | ll);
                                     break;
                                 }
                             }
@@ -5031,7 +5031,7 @@ bool DivideRoutineUsed()
 
 IntOp::IntOp() :
     op(0),
-    literal(0),
+    literal1(0),
     literal2(0),
     literal3(0),
     data(nullptr),

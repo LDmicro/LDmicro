@@ -1,4 +1,4 @@
-@echo OFF
+@echo off
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
 REM EXE_PATH from where the ldmicro.exe and *.bat are executes
@@ -6,15 +6,16 @@ SET EXE_PATH=%~dp0
 
 @echo %EXE_PATH% = EXE_PATH
 @echo %1 = ISA
-@echo %2 = full 'filename.ld' with the path
+@echo %2 = full filename '.ld' with the path
 @SET  COMPILER=%3
 @echo %COMPILER% = COMPILER
 @echo %4 = deviceName, target name
-@echo .
+@echo . . .
 :@echo %2 - full ld file name wit the path
 @echo %~nx2 - gives the file name without the path
 @echo %~d2 - gives the drive letter to LD
 @echo %~p2 - gives the path to LD
+@echo . . .
 
 :pause
 
@@ -71,17 +72,17 @@ goto NOT_SUPPORTED
 @rem *** Set up avrdude.exe path. ***
 @rem     It may be:
 @rem SET AVRDUDE_PATH=D:\WinAVR\bin\
-     SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
+@rem SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
 @rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
 @rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
 @rem SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
-@rem SET AVRDUDE_PATH="%ProgramFiles%\Arduino\hardware\tools\avr\bin\"
+     SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
 
 @rem *** Set up your avrdude config file. ***
 @rem SET AVRDUDE_CONF=
-@rem SET AVRDUDE_CONF=-C %AVRDUDE_PATH%avrdude.conf
-     SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
-@rem SET AVRDUDE_CONF=-C "%ProgramFiles%\Arduino\hardware\tools\avr\\etc\avrdude.conf"
+@rem SET AVRDUDE_CONF=%AVRDUDE_PATH%avrdude.conf
+     SET AVRDUDE_CONF=%AVRDUDE_PATH%..\etc\avrdude.conf
+@rem SET AVRDUDE_CONF=%ProgramFiles%\Arduino\hardware\tools\avr\\etc\avrdude.conf
 
 @rem *** Set up your hardware avrdude programmer. ***
 @rem     See avrdude.conf programmer id.
@@ -132,9 +133,9 @@ goto NOT_SUPPORTED
 rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U eeprom:r:eeprom_read1:r
 
 @rem *** Flashing the AVR. ***
-@rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
-@rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
-     %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+@rem "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+@rem "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+     "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
 
 @echo ERRORLEVEL=%ERRORLEVEL%
 if ERRORLEVEL==1 goto pauses
@@ -147,15 +148,17 @@ goto exit
 @rem =======================================================================
 :AVRGCC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with avr-gcc
 
-SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
+     SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
+@rem SET GCC_PATH=c:\WinAVR-20100110
 
-SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
+     SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE
+@rem SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\AVR
 SET COMPORT=COM3
@@ -187,11 +190,12 @@ avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~
 REM Transfer of the program with AvrDude
 avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
-PAUSE
+pause
 goto exit
 
 @rem =======================================================================
-:PIC16
+:PIC
+@echo on
 ::**************************************************************************
 ::Here is a part of 'Readme for PK3CMD.txt' file:
 ::Release Notes for PICkit 3 Command Line Interface
@@ -277,7 +281,7 @@ goto exit
 @rem =======================================================================
 :HTC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with HI-TECH C (picc.exe)
 
 @rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
@@ -299,14 +303,10 @@ mkdir HTC\obj
 mkdir HTC\bin
 mkdir HTC\lib
 
+REM copy source code for compiling
 if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
-:if not exist         UsrLib.c copy %LIB_PATH%\*.* .
-
-:copy *.h PROTEUS
-:copy *.c PROTEUS
 
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
-:for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2 --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
@@ -316,22 +316,36 @@ picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=defa
 REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
-PAUSE
+pause
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto exit
+REM Copy source code for debugging in Proteus
+copy HTC\lib\*.h PROTEUS > nul
+copy HTC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy HTC\BIN\*.hex PROTEUS > nul
+copy HTC\BIN\*.cof PROTEUS > nul
+
 goto exit
 
 
 @rem =======================================================================
 :ARMGCC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with arm-gcc
 
 SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
+SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
-SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM
+if "%4" == "stm32f40x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F4
+if "%4" == "stm32f10x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F1
 
-path %path%;%GCC_PATH%\bin;%JLN_PATH%
+path %path%;%GCC_PATH%\bin;%JLN_PATH%;%STL_PATH%
 
 %~d2
 chdir %~p2
@@ -344,6 +358,10 @@ mkdir ARMGCC\bin
 mkdir ARMGCC\lib
 
 if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
+
+if "%4" == "stm32f10x" goto STM32F1
+
+:STM32F4
 
 arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM4.S -o ARMGCC\obj\cortexM4.o
 
@@ -361,17 +379,41 @@ arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 
 REM Creation of the J-Link script
 
-@ECHO r > ARMGCC\bin\cmdfile.jlink
-@ECHO loadfile ARMGCC\bin\%~nx2.hex >> ARMGCC\bin\cmdfile.jlink
-@ECHO go >> ARMGCC\bin\cmdfile.jlink
-@ECHO exit >> ARMGCC\bin\cmdfile.jlink
+@echo r > ARMGCC\bin\cmdfile.jlink
+@echo loadfile ARMGCC\bin\%~nx2.hex >> ARMGCC\bin\cmdfile.jlink
+@echo go >> ARMGCC\bin\cmdfile.jlink
+@echo exit >> ARMGCC\bin\cmdfile.jlink
 
 REM Transfer of the program with J-Link Commander
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
 
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
-PAUSE
+pause
 goto exit
+
+:STM32F1
+
+arm-none-eabi-g++.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o
+
+CD ARMGCC\lib
+for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+CD ..\..
+
+arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
+
+REM Linkage of objects
+arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
+
+REM Convert Elf to Hex
+arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
+
+REM Transfer of the program with ST-Link CLI
+
+ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+
+pause
+goto exit
+
 
 @rem =======================================================================
 :NOT_SUPPORTED

@@ -209,7 +209,7 @@ void StartIhex(FILE *f)
 // Write an octet in hex format to the given stream, and update the checksum
 // for the IHEX file.
 //-----------------------------------------------------------------------------
-void WriteIhex(FILE *f, BYTE b)
+void WriteIhex(FILE *f, uint8_t b)
 {
     fprintf(f, "%02X", b);
     IhexChecksum += b;
@@ -492,7 +492,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 */
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu()) {
-                    if((iop->pinName) && strlen(iop->pinName))
+                    if(strlen(iop->pinName))
                         sprintf(pinName, "%s", iop->pinName);
                 } else
                     strcpy(pinName, _("<not an I/O!>"));
@@ -507,7 +507,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             if(iop) {
                 if(portName)
                     ShortPinName(iop, portName);
-                if(iop->pinName)
+                if(strlen(iop->pinName))
                     sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(pinName)
@@ -524,7 +524,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 if(portName)
                     ShortPinName(iop, portName);
                 if(pinName)
-                    if(iop->pinName)
+                    if(strlen(iop->pinName))
                         sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(pinName)
@@ -541,7 +541,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 if(portName)
                     ShortPinName(iop, portName);
                 if(pinName)
-                    if(iop->pinName)
+                    if(strlen(iop->pinName))
                         sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(pinName)
@@ -574,7 +574,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                             return;
                         }
                     }
-                if(iop->pinName)
+                if(strlen(iop->pinName))
                     sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(pinName)
@@ -645,9 +645,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 const char *ArduinoPinName(McuIoPinInfo *iop)
 {
     if(iop)
-        if(iop->ArduinoName)
-            if(strlen(iop->ArduinoName))
-                return iop->ArduinoName;
+        if(strlen(iop->ArduinoName))
+            return iop->ArduinoName;
     return "";
 }
 //-----------------------------------------------------------------------------
@@ -661,7 +660,7 @@ const char *ArduinoPinName(int pin)
 }
 
 //-----------------------------------------------------------------------------
-int NameToPin(char *pinName)
+int NameToPin(const char *pinName)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++)
@@ -716,6 +715,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
                 if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->pwmInfo[i].timer != Prog.cycleTimer))
                     return &(Prog.mcu()->pwmInfo[i]);
     return nullptr;
+    (void)timer;
 }
 
 McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
@@ -729,7 +729,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
 }
 
 //-----------------------------------------------------------------------------
-McuSpiInfo *GetMcuSpiInfo(char *name)
+McuSpiInfo *GetMcuSpiInfo(const char* name)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->spiCount; i++)
@@ -739,7 +739,7 @@ McuSpiInfo *GetMcuSpiInfo(char *name)
 }
 
 //-----------------------------------------------------------------------------
-McuI2cInfo *GetMcuI2cInfo(char *name)                       ///// Added by JG
+McuI2cInfo *GetMcuI2cInfo(const char *name)                       ///// Added by JG
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->i2cCount; i++)
@@ -943,7 +943,7 @@ char *toupperstr(char *dest)
     if(!dest)
         oops();
     while(*dest) {
-        dest[0] = toupper(dest[0]);
+        dest[0] = static_cast<char>(toupper(dest[0]));
         dest++;
     }
     return dest;
@@ -956,7 +956,7 @@ char *toupperstr(char *dest, const char *src)
     if(!src)
         oops();
     while(*src) {
-        dest[0] = toupper(src[0]);
+        dest[0] = static_cast<char>(toupper(src[0]));
         dest++;
         src++;
     }

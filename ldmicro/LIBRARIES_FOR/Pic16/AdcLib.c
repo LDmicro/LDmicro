@@ -11,11 +11,11 @@ static int  chsPos = 0, adcsPos = 0;
 // Initialize ADC
 void ADC_Init()
 {
-    adcs = 0; // 2*Tosc
-    if(_XTAL_FREQ > 1250000)
-        adcs = 1; // 8*Tosc
-    if(_XTAL_FREQ > 5000000)
-        adcs = 2; // 32*Tosc
+    adcs = 0;                // 2*Tosc
+    if(_XTAL_FREQ > 1250000) //
+        adcs = 1;            // 8*Tosc
+    if(_XTAL_FREQ > 5000000) //
+        adcs = 2;            // 32*Tosc
 
 #if defined(LDTARGET_pic16f88X)
     chsPos = 2;

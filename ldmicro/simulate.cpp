@@ -40,14 +40,14 @@ static struct {
     char   name[MAX_NAME_LEN];
     int32_t val;
     char   valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
-    DWORD  usedFlags;
+    uint32_t  usedFlags;
     int    initedRung;                 // Variable inited in rung.
-    DWORD  initedOp;                   // Variable inited in Op number.
+    uint32_t  initedOp;                   // Variable inited in Op number.
     char   usedRungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
 } Variables[MAX_IO];
 static int VariableCount;
 
-DWORD CyclesCount; // Simulated
+uint32_t CyclesCount = 0; // Simulated
 
 static struct {
     char  name[MAX_NAME_LEN];
@@ -536,16 +536,16 @@ int32_t MthRandom()
 int32_t GetRandom(const NameArray &name)
 {
     int    sov = SizeOfVar(name);
-    int32_t seed = MthRandom();
+    int32_t rnd_seed = MthRandom();
     char   seedName[MAX_NAME_LEN];
     sprintf(seedName, "$seed_%s", name.c_str());
-    SetSimulationVariable(seedName, seed);
+    SetSimulationVariable(seedName, rnd_seed);
     if(sov == 1)
-        return (signed char)(seed >> (8 * (4 - sov)));
+        return (signed char)(rnd_seed >> (8 * (4 - sov)));
     else if(sov == 2)
-        return (int32_t)(seed >> (8 * (4 - sov)));
+        return (int32_t)(rnd_seed >> (8 * (4 - sov)));
     else if(sov >= 3)
-        return (int32_t)(seed >> (8 * (4 - sov)));
+        return (int32_t)(rnd_seed >> (8 * (4 - sov)));
     else {
         oops();
         // return 0;
@@ -956,11 +956,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_SHIFT_REGISTER: {
-            int i;
-            for(i = 1; i < l->d.shiftRegister.stages; i++) {
-                char str[MAX_NAME_LEN + 10];
-                sprintf(str, "%s%d", l->d.shiftRegister.name, i);
-                MarkWithCheck(str, VAR_FLAG_ANY);
+            for(int i = 1; i < l->d.shiftRegister.stages; i++) {
+                char sstr[MAX_NAME_LEN + 10];
+                sprintf(sstr, "%s%d", l->d.shiftRegister.name, i);
+                MarkWithCheck(sstr, VAR_FLAG_ANY);
             }
             break;
         }
@@ -1161,8 +1160,8 @@ static void IfConditionTrue()
         if(IntCode[IntPc].op == INT_ELSE) {
             int nesting = 1;
             for(; IntPc < IntCode.size(); IntPc++) {
-                if(IntPc >= IntCode.size())
-                    oops();
+                //if(IntPc >= IntCode.size())
+                //    oops();
 
                 if(IntCode[IntPc].op == INT_END_IF) {
                     nesting--;
@@ -1190,8 +1189,8 @@ static void IfConditionFalse()
 {
     int nesting = 0;
     for(; IntPc < IntCode.size(); IntPc++) {
-        if(IntPc >= IntCode.size())
-            oops();
+        //if(IntPc >= IntCode.size())
+        //    oops();
 
         if(IntCode[IntPc].op == INT_END_IF) {
             nesting--;
@@ -1468,10 +1467,10 @@ int swap(int val, int sov)
 static uint32_t stack[STACK_LEN];
 static int      stackCount = 0;
 //-----------------------------------------------------------------------------
-void PushStack(uint32_t IntPc)
+void PushStack(uint32_t intPc)
 {
     if(stackCount < STACK_LEN) {
-        stack[stackCount] = IntPc;
+        stack[stackCount] = intPc;
         stackCount++;
     } else {
         Error(_("Stack size %d overflow"), STACK_LEN);
@@ -1608,16 +1607,16 @@ static void SimulateIntCode()
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 if(GetSimulationVariable(a->name2) & (1 << a->literal2))
-                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1 << a->literal));
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1 << a->literal1));
                 else
-                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) & ~(1 << a->literal));
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) & ~(1 << a->literal1));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                if(GetSimulationVariable(a->name1) != a->literal && a->name1[0] != '$') {
+                if(GetSimulationVariable(a->name1) != a->literal1 && a->name1[0] != '$') {
                     NeedRedraw = a->op;
                 }
-                SetSimulationVariable(a->name1, a->literal);
+                SetSimulationVariable(a->name1, a->literal1);
                 break;
 
 #ifdef USE_SFR
@@ -1893,7 +1892,7 @@ static void SimulateIntCode()
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(GetSimulationVariable(a->name1) < a->literal)
+                if(GetSimulationVariable(a->name1) < a->literal1)
                     IF_BODY
                 break;
 
@@ -2011,8 +2010,8 @@ static void SimulateIntCode()
             case INT_GOTO:
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
-                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
-                        if(a->literal)
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal1);
+                        if(a->literal1)
                             IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
                         else
                             IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
@@ -2024,8 +2023,8 @@ static void SimulateIntCode()
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
                         PushStack(IntPc + 1);
-                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
-                        if(a->literal)
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal1);
+                        if(a->literal1)
                             IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
                         else
                             IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
@@ -2067,9 +2066,9 @@ static void SimulateIntCode()
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal < index)) {
-                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal-1);
-                    index = a->literal;
+                if((index < 0) || (a->literal1 <= index)) {
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal1-1);
+                    index = a->literal1;
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
@@ -2083,9 +2082,9 @@ static void SimulateIntCode()
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal <= index)) {
-                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal);
-                    index = a->literal;
+                if((index < 0) || (a->literal1 <= index)) {
+                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal1);
+                    index = a->literal1;
                     StopSimulation();
                 }
                 //dbps(GetSimulationStr(a->name1.c_str()))
@@ -2147,8 +2146,7 @@ static void SimulateIntCode()
 static int updateWindow = -1;
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
-    int i;
-    for(i = 0; i < CyclesPerTimerTick; i++) {
+    for(int i = 0; i < CyclesPerTimerTick; i++) {
         SimulateOneCycle(false);
         if(CyclesPerTimerTick > 1) {
             if(updateWindow < 0) {
@@ -2157,6 +2155,10 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
                 updateWindow--;
         }
     }
+    (void)hwnd;
+    (void)msg;
+    (void)id;
+    (void)time;
 }
 
 //-----------------------------------------------------------------------------
@@ -2400,7 +2402,7 @@ void SimulationToggleContact(char *name)
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
-        if((addr != -1) && (bit != -1)) {
+        if((addr != INVALID_ADDR) && (bit != -1)) {
             char s[MAX_NAME_LEN];
             if(name[0] == 'X')
                 sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));

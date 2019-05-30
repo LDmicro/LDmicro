@@ -56,7 +56,7 @@
 
 #define MAX_PROGRAM_LEN 128 * 1024
 //static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
-static std::vector<PicAvrInstruction> PicProg;
+static std::vector<PicAvrInstruction> PicProg(MAX_PROGRAM_LEN);
 static ADDR_T             PicProgWriteP;
 static ADDR_T             BeginOfPLCCycle;
 
@@ -219,6 +219,7 @@ static uint32_t REG_VRCON   = INVALID_ADDR; // 0x9f
 //USART
 static uint32_t REG_TXSTA   = INVALID_ADDR; // 0x98
 #define          TXEN      BIT5
+#define          BRGH      BIT2
 #define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
 static uint32_t REG_RCSTA   = INVALID_ADDR; // 0x18
 #define          SPEN      BIT7
@@ -344,7 +345,7 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
             strcat(arg1comm, s);
         }
     if((asm_discover_names == 2) || (asm_discover_names == 4)) {
-        sprintf(s, " ; %u", PicProg[addrAt].arg1); 
+        sprintf(s, " ; %u", PicProg[addrAt].arg1);
         strcat(arg1comm, s);
     }
 }
@@ -852,8 +853,8 @@ static uint32_t BankCorrection_(ADDR_T addr, uint32_t bank/*, int is_call*/)
     int   corrected = 0;
     uint32_t i, j;
     int   nAdd;
-    uint32_t BB; // bank before
-    uint32_t arg1;
+    uint32_t BB = 0; // bank before
+    uint32_t arg1 = 0;
 doBankCorrection:
     corrected = 0;
     i = addr;
@@ -1438,7 +1439,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                 fprintf(fAsm, "    ; Bank Error.\n");
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%u l=%d file=%s\n",
                     i - 1,
                     PicProg[i - 1].opPic,
                     PicProg[i - 1].arg1,
@@ -1455,7 +1456,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                     PicProg[i - 1].f);
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%u l=%d file=%s\n",
                     i,
                     PicProg[i].opPic,
                     PicProg[i].arg1,
@@ -1493,6 +1494,7 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
 #define CHECK(v, bits)                                                 \
+  do { \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u=0x%X ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d:%s]", \
           intOp.rung,                                                    \
@@ -1504,8 +1506,10 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.fileLine,                                              \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
+  do { \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:%s] %s\n[%d:%s]",                  \
           intOp.rung,                                                    \
@@ -1516,7 +1520,8 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
           PicInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
           intOp.fileLine,                                                \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg1, 7);
@@ -1765,7 +1770,9 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
     strcpy(sAsm, "");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
+#undef CHECK
 #define CHECK(v, bits)                                                 \
+  do { \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           (v),                                                         \
@@ -1776,7 +1783,8 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.fileLine,                                              \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1);
@@ -3755,10 +3763,10 @@ static void InitTable(IntOp *a)
     MemOfVar(a->name1, &addrOfTableRoutine);
 
     if(addrOfTableRoutine == 0) {
-        Comment("TABLE %s[%d]", a->name1.c_str(), a->literal);
+        Comment("TABLE %s[%d]", a->name1.c_str(), a->literal1);
         addrOfTableRoutine = PicProgWriteP;
 
-        SetMemForVariable(a->name1, addrOfTableRoutine, a->literal);
+        SetMemForVariable(a->name1, addrOfTableRoutine, a->literal1);
 
 #define TABLE_CALC 8
         //This code is unrealocable.
@@ -3777,7 +3785,7 @@ static void InitTable(IntOp *a)
 
         int sovElement = a->literal2;
         Comment("DATA's size is %d", sovElement);
-        for(int i = 0; i < a->literal; i++) {
+        for(int i = 0; i < a->literal1; i++) {
             if(sovElement == 1) {
                 Instruction(OP_RETLW, a->data[i]);
             } else if(sovElement == 2) {
@@ -3813,7 +3821,7 @@ static void InitTables()
         rungNow = a->rung;
         switch(a->op) {
             case INT_FLASH_INIT:
-                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal);
+                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal1);
                 InitTable(a);
                 break;
             default:
@@ -3835,7 +3843,7 @@ static void CompileFromIntermediate(bool topLevel)
 
     // Keep track of which 2k section we are using. When it looks like we
     // are about to run out, fill with nops and move on to the next one.
-    uint32_t section = 0;
+    // uint32_t section = 0;
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
@@ -4088,13 +4096,13 @@ static void CompileFromIntermediate(bool topLevel)
 */
             //
             case INT_SET_VARIABLE_TO_LITERAL:
-                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal1, a->literal1);
                 CheckSovNames(a);
                 MemForVariable(a->name1, &addr1);
-                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
+                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal1, a->literal1);
                 sov1 = SizeOfVar(a->name1);
-                //sov2 = byteNeeded(a->literal);
-                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal, comment);
+                //sov2 = byteNeeded(a->literal1);
+                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal1, comment);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
@@ -4308,7 +4316,7 @@ otherwise the result was zero or greater.
             }
 #else
             case INT_IF_VARIABLE_LES_LITERAL: {
-                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal1, a->literal1);
                 uint32_t notTrue = AllocFwdAddr();
                 uint32_t isTrue = AllocFwdAddr();
                 uint32_t lsbDecides = AllocFwdAddr();
@@ -4316,8 +4324,8 @@ otherwise the result was zero or greater.
                 // V = Rd7*(Rr7')*(R7') + (Rd7')*Rr7*R7 ; but only one of the
                 // product terms can be true, and we know which at compile
                 // time
-                BYTE litH = (BYTE)((a->literal >> 8) & 0xff);
-                BYTE litL = (BYTE)(a->literal & 0xff);
+                BYTE litH = (BYTE)((a->literal1 >> 8) & 0xff);
+                BYTE litL = (BYTE)(a->literal1 & 0xff);
 
                 MemForVariable(a->name1, &addr1);
 
@@ -4611,9 +4619,7 @@ otherwise the result was zero or greater.
                 ADDR_T addrB = CopyArgToReg(false, Scratch4, sov, a->name3, false);
 
                 if((addr1 != addrB) && (addr1 == addrA)) {
-                    uint32_t a = addrA;
-                    addrA = addrB;
-                    addrB = a;
+                    std::swap(addrA, addrB);
                 }
 
                 for(int i = 0; i < sov; i++) {
@@ -4875,7 +4881,7 @@ otherwise the result was zero or greater.
                 // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 
                 uint32_t isBusy = PicProgWriteP;
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
@@ -4968,7 +4974,7 @@ otherwise the result was zero or greater.
                 //Skip if no char.
                 Comment("INT_UART_RECV1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 //              sov1 = SizeOfVar(a->name1);
 //              MemForSingleBit(a->name2, true, &addr2, &bit2);
 
@@ -5151,8 +5157,8 @@ otherwise the result was zero or greater.
                 }
                 /*
                 double targetFreq = 1.0 * Prog.mcuClock / (pr2plus1 * 4 * prescale);
-                
-				dbps(a->name1.c_str())
+
+                dbps(a->name1.c_str())
                 dbpd(timer)
                 dbpd(target)
                 dbpd(pr2plus1)
@@ -5402,7 +5408,7 @@ otherwise the result was zero or greater.
                         }
                     }
                 }
-                Instruction(OP_MOVLW, a->literal);
+                Instruction(OP_MOVLW, a->literal1);
                 Instruction(OP_MOVWF, REG_EEADR);
                 Instruction(OP_MOVF, addr1, DEST_W);
 
@@ -5422,7 +5428,7 @@ otherwise the result was zero or greater.
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 for(int i = 0; i < sov1; i++) {
-                    Instruction(OP_MOVLW, a->literal + i);
+                    Instruction(OP_MOVLW, a->literal1 + i);
                     Instruction(OP_MOVWF, REG_EEADR);
                     Instruction(OP_BCF, REG_EECON1, 7);
                     Instruction(OP_BSF, REG_EECON1, 0);
@@ -5493,7 +5499,7 @@ otherwise the result was zero or greater.
                 BYTE adcs;
 
                 MemForVariable(a->name1, &addr1);
-                BYTE refs = a->literal & 0xF;
+                BYTE refs = a->literal1 & 0xF;
                 //
                 int goPos, chsPos;
                 if(McuAs("Microchip PIC16F887 ") || //
@@ -5767,9 +5773,9 @@ otherwise the result was zero or greater.
                 Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     Instruction(OP_GOTO, l->KnownAddr);
                 } else {
                     Instruction(OP_GOTO, l->FwdAddr);
@@ -5780,9 +5786,9 @@ otherwise the result was zero or greater.
                 Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     Instruction(OP_CALL, l->KnownAddr);
                 } else {
                     Instruction(OP_CALL, l->FwdAddr);
@@ -6724,6 +6730,54 @@ static void WriteDivideRoutine24x16()
 }
 
 //-----------------------------------------------------------------------------
+void CalcPicUartBaudRate(int32_t mcuClock, int32_t baudRate, int *divisor, int *brgh)
+{
+        if(baudRate == 0) {
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
+        }
+        // So now we should set up the UART. First let us calculate the
+        // baud rate; there is so little point in the fast baud rates that
+        // I won't even bother, so
+        // bps = Fosc/(64*(X+1))
+        // bps*64*(X + 1) = Fosc
+        // X = Fosc/(bps*64)-1
+        // and round, don't truncate
+		/*
+        BRGH = 1 --> Baud Rate = FOSC/(16(X+1))
+        BRGH = 0 --> Baud Rate = FOSC/(64(X+1))
+        */
+        int div1 = (mcuClock + baudRate * 8) / (baudRate * 16) - 1;
+		int div0 = (mcuClock + baudRate * 32) / (baudRate * 64) - 1;
+
+		double actual1 = 1.0 * mcuClock / (16 * (div1 + 1));
+		double actual0 = 1.0 * mcuClock / (64 * (div0 + 1));
+
+		double percentErr1 = 100.0 * (actual1 - baudRate) / baudRate;
+        double percentErr0 = 100.0 * (actual0 - baudRate) / baudRate;
+        
+		double actual;
+		double percentErr;
+
+		if((fabs(percentErr1) < fabs(percentErr0)) && (div1 <= 255)) {
+			actual = actual1;
+		    percentErr = percentErr1;
+			*divisor = div1;
+			*brgh = 1;
+		} else {
+			actual = actual0;
+			percentErr = percentErr0;
+			*divisor = div0;
+			*brgh = 0;
+		}
+        if(*divisor > 255) {
+            *divisor = 255;
+            ComplainAboutBaudRateOverflow();
+        }
+
+		if(fabs(percentErr) > 2) 
+            ComplainAboutBaudRateError(*divisor, actual, percentErr);      
+}
+//-----------------------------------------------------------------------------
 // Compile the program to PIC16 code for the currently selected processor
 // and write it to the given file. Produce an error message if we cannot
 // write to the file, or if there is something inconsistent about the
@@ -7645,32 +7699,11 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
 
     if(UartFunctionUsed()) {
-        if(Prog.baudRate == 0) {
-            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
-            /////   return false;
-        }
-
         Comment("UART setup");
-        // So now we should set up the UART. First let us calculate the
-        // baud rate; there is so little point in the fast baud rates that
-        // I won't even bother, so
-        // bps = Fosc/(64*(X+1))
-        // bps*64*(X + 1) = Fosc
-        // X = Fosc/(bps*64)-1
-        // and round, don't truncate
-        int divisor = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
-        if(divisor > 255) {
-            ComplainAboutBaudRateOverflow();
-            divisor = 255;
-        }
-        double actual = Prog.mcuClock / (64.0 * (divisor + 1));
-        double percentErr = 100 * (actual - Prog.baudRate) / Prog.baudRate;
-
-        if(fabs(percentErr) > 2) {
-            ComplainAboutBaudRateError(divisor, actual, percentErr);
-        }
+		int32_t divisor, brgh;
+		CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
         WriteRegister(REG_SPBRG, divisor & 0xFF);
-        WriteRegister(REG_TXSTA, 1 << TXEN);                 // only TXEN set, SYNC=0
+        WriteRegister(REG_TXSTA, (1 << TXEN) | (brgh << BRGH)); // only TXEN set, SYNC=0
         WriteRegister(REG_RCSTA, (1 << SPEN) | (1 << CREN)); // only SPEN, CREN set
     }
 
@@ -7738,7 +7771,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
     } else
-        oops();
+        THROW_COMPILER_EXCEPTION(_("Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
 
     if(Prog.cycleTimer >= 0) {
         Comment("Watchdog reset");

@@ -460,9 +460,9 @@ bool LoadPcPorts(const char *filename)
     while(fgets(line, sizeof(line), f)) {
         if(line[strlen(line) - 1] == '\n')
             line[strlen(line) - 1] = '\0';
-        if((c = strstr(line, "//")))
+        if((c = strstr(line, "//")) != nullptr)
             c = 0;
-        if((c = strstr(line, ";")))
+        if((c = strstr(line, ";")) != nullptr)
             c = 0;
         _strupr(line);
         pline = line;
@@ -478,7 +478,7 @@ bool LoadPcPorts(const char *filename)
         strcpy(line3, "");
         strcpy(line4, "");
         pline4 = "";
-        if((n = sscanf(pline, "LPT%d %s %s %s", &portN, &line2, &line3, &line4))) {
+        if((n = sscanf(pline, "LPT%d %s %s %s", &portN, &line2, &line3, &line4)) != 0) {
             if(strlen(line4))
                 pline4 = strstr(pline, line4);
             if(n == 3) {
@@ -601,7 +601,7 @@ bool LoadPcPorts(const char *filename)
             if(Ctype)
                 fprintf(fu, "  SetALptDir($%X,%d,2,%-7s,' %s CONTROL');\n\n", addr+2, portN, IoTypeToPas(Ctype), pline4);
 
-        } else if((n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4))) {
+        } else if((n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4)) != 0) {
             if(strlen(line4))
                 pline4 = strstr(pline, line4);
             if(n == 3) {
