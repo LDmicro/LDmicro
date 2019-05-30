@@ -34,10 +34,10 @@ static char InternalRelays[MAX_IO][MAX_NAME_LEN];
 static int  InternalRelaysCount;
 
 typedef struct {
-    int32_t   op;
-    int32_t   name1;
-    int32_t   name2;
-    int32_t   name3;
+    int32_t op;
+    int32_t name1;
+    int32_t name2;
+    int32_t name3;
     int32_t literal1;
 } BinOp;
 
@@ -69,7 +69,7 @@ template <size_t N> static int32_t AddrForVariable(const StringArray<N> &name)
     return i;
 }
 
-static void Write(FileTracker& f, BinOp *op)
+static void Write(FileTracker &f, BinOp *op)
 {
     uint8_t *b = (uint8_t *)op;
     for(uint32_t i = 0; i < sizeof(BinOp); i++) {
@@ -221,9 +221,9 @@ void CompileInterpreted(const char *outFile)
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_SPI:
-            case INT_SPI_WRITE:         ///// Added by JG
-            case INT_I2C_READ:          /////
-            case INT_I2C_WRITE:         /////
+            case INT_SPI_WRITE: ///// Added by JG
+            case INT_I2C_READ:  /////
+            case INT_I2C_WRITE: /////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -233,8 +233,8 @@ void CompileInterpreted(const char *outFile)
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT("%s INT_%d",
-                    _("Unsupported op (Peripheral) for interpretable target."), IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT(
+                    "%s INT_%d", _("Unsupported op (Peripheral) for interpretable target."), IntCode[ipc].op);
                 return;
         }
 
@@ -266,8 +266,9 @@ void CompileInterpreted(const char *outFile)
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
     char str[MAX_PATH + 500];
-    sprintf(str,
-            _("Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."),
-            outFile);
+    sprintf(
+        str,
+        _("Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."),
+        outFile);
     CompileSuccessfulMessage(str);
 }

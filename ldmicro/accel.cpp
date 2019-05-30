@@ -142,7 +142,7 @@ double ksS(int nSize)
 }
 //===========================================================================
 
-void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, const char *name,
+void makeAccelTable(FileTracker &f, int max, int P, int nSize, ElemAccel **TT, const char *name,
                     int  nN,  // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
                     int  sFt, // (1-sFt, 0-tFs)
                     int *n, int *Psum,

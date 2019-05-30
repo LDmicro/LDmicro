@@ -92,8 +92,8 @@ void CompileXInterpreted(const char *outFile)
     for(int i = 0; i < Prog.io.count; i++) {
         PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
     }
-        // Convert the if/else structures in the intermediate code to absolute
-        // conditional jumps, to make life a bit easier for the interpreter.
+    // Convert the if/else structures in the intermediate code to absolute
+    // conditional jumps, to make life a bit easier for the interpreter.
 #define MAX_IF_NESTING 32
     int ifDepth = 0;
     // PC for the if(...) instruction, which we will complete with the
@@ -227,9 +227,9 @@ void CompileXInterpreted(const char *outFile)
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_SPI:
-            case INT_SPI_WRITE:         ///// Added by JG
-            case INT_I2C_READ:          /////
-            case INT_I2C_WRITE:         /////
+            case INT_SPI_WRITE: ///// Added by JG
+            case INT_I2C_READ:  /////
+            case INT_I2C_WRITE: /////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -239,8 +239,8 @@ void CompileXInterpreted(const char *outFile)
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT(
-                    _("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"),
+                                             IntCode[ipc].op);
                 return;
         }
     }

@@ -12,8 +12,8 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-typedef unsigned char  BYTE;  // 8-bit unsigned
-typedef unsigned short WORD;  // 16-bit unsigned
+typedef unsigned char  BYTE; // 8-bit unsigned
+typedef unsigned short WORD; // 16-bit unsigned
 
 #define INTCODE_H_CONSTANTS_ONLY
 
@@ -44,7 +44,7 @@ typedef unsigned short WORD;  // 16-bit unsigned
 uint32_t Program[MAX_OPS];
 
 int32_t Integers[MAX_VARIABLES];
-BYTE  Bits[MAX_VARIABLES];
+BYTE    Bits[MAX_VARIABLES];
 
 #define READ_BIT(addr) Bits[addr]
 #define WRITE_BIT(addr, value) Bits[addr] = (value)
@@ -107,7 +107,7 @@ int LoadProgram(char *fileName)
 
     while(fgets(line, sizeof(line), f)) {
         int  addr;
-        char name[40+1];
+        char name[40 + 1];
         int  type;
         int  pin;
         int  modbus_slave;

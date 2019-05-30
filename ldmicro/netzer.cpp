@@ -36,16 +36,16 @@
 #define TIME_EPOCH (86400ul * (365ul * 30ul + 7ul))
 
 typedef struct RegisterEntryTag {
-    char Name[MAX_NAME_LEN];
+    char     Name[MAX_NAME_LEN];
     uint16_t Address;
 } RegisterEntry;
 
 typedef struct {
-    uint16_t   op;
-    uint16_t   name1;
-    uint16_t   name2;
-    uint16_t   name3;
-    int32_t literal1;
+    uint16_t op;
+    uint16_t name1;
+    uint16_t name2;
+    uint16_t name3;
+    int32_t  literal1;
 } BinOp;
 
 static BinOp         OutProg[MAX_INT_OPS];
@@ -58,7 +58,7 @@ static int           RelaysCount;
 static char Strings[MAX_IO][MAX_NAME_LEN];
 static int  StringsCount;
 
-static void generateNetzerOpcodes(BinOp *Program, int MaxLabel, OpcodeMeta *pOpcodeMeta, FILE *f = nullptr);
+static void    generateNetzerOpcodes(BinOp *Program, int MaxLabel, OpcodeMeta *pOpcodeMeta, FILE *f = nullptr);
 static uint8_t getInternalIntegerAddress(uint16_t Address);
 
 static int GetLocalVariablesAsMetaTags(FILE *f = nullptr)
@@ -107,7 +107,7 @@ static int GetLocalRelaysAsMetaTags(FILE *f = nullptr)
 static uint16_t AddrForString(const NameArray &name)
 {
     uint16_t i;
-    for( i = 0; i < StringsCount; i++) {
+    for(i = 0; i < StringsCount; i++) {
         if((name == Strings[i])) {
             return i;
         }
@@ -469,13 +469,15 @@ int GenerateIntOpcodes()
                 op.name3 = AddrForString(IntCode[ipc].name3);   // source string
 
                 if(!(op.name1 & MAPPED_TO_IO)) {
-                    THROW_COMPILER_EXCEPTION(_("Dest variable of write string instruction must be located at IO register."));
+                    THROW_COMPILER_EXCEPTION(
+                        _("Dest variable of write string instruction must be located at IO register."));
                     //return -1;
                 }
 
                 // Check whether only one % sign is included!
                 if(GetPercentCharactersCount(IntCode[ipc].name3) > 1) {
-                    THROW_COMPILER_EXCEPTION(_("Maximal one format placeholder is allowed in write string instruction."));
+                    THROW_COMPILER_EXCEPTION(
+                        _("Maximal one format placeholder is allowed in write string instruction."));
                     //return -1;
                 }
 
@@ -932,8 +934,8 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
     uint16_t dst = Op->name1;
-    auto src1 = Op->name2;
-    auto src2 = Op->name3;
+    auto     src1 = Op->name2;
+    auto     src2 = Op->name3;
 
     if(src1 & MAPPED_TO_IO) {
         BinOp load;

@@ -283,7 +283,7 @@ void ShowContactsDialog(bool *negated, bool *set1, char *name)
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {

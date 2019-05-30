@@ -326,7 +326,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i]/*, ColsAvailable*/);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i] /*, ColsAvailable*/);
         }
 
         cy += thisHeight;
@@ -633,7 +633,7 @@ static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode)
 {
     FILETIME ftCreate, ftAccess;
-    char msg[MAX_NAME_LEN]= "";     ///// Added by JG for language translation
+    char     msg[MAX_NAME_LEN] = ""; ///// Added by JG for language translation
 
     HANDLE hFile =
         CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -641,7 +641,7 @@ BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode)
     if(hFile == INVALID_HANDLE_VALUE) {
         ///// modified by JG
         ///// beware because called by Paint() via BlinkCursor() => cannot display MsgBox ?
-        if (mode != 0)                                                                          ///// Param mode added by JG
+        if(mode != 0) ///// Param mode added by JG
         {
             sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError());
             Error(msg);
@@ -689,13 +689,13 @@ bool GetLastWriteTime(HANDLE hFile, char *lpszString)
 bool sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0] = 0;
-    char msg[MAX_NAME_LEN]= "";     ///// Added by JG for language translation
+    char msg[MAX_NAME_LEN] = ""; ///// Added by JG for language translation
 
     HANDLE hFile =
         CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
-        sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError());     // modified by JG
+        sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError()); // modified by JG
         Error(msg);
         //  Error("Could not open file %s (error %d)\n", FileName, GetLastError());
         return false;
@@ -742,7 +742,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i]/*, 0*/);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i] /*, 0*/);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);

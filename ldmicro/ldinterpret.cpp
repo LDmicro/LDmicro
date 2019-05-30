@@ -39,8 +39,8 @@
 #define INTCODE_H_CONSTANTS_ONLY
 #include "intcode.h"
 
-typedef unsigned char  BYTE;  // 8-bit unsigned
-typedef unsigned short WORD;  // 16-bit unsigned
+typedef unsigned char  BYTE; // 8-bit unsigned
+typedef unsigned short WORD; // 16-bit unsigned
 
 // Some arbitrary limits on the program and data size
 #define MAX_OPS 1024
@@ -64,16 +64,16 @@ typedef unsigned short WORD;  // 16-bit unsigned
 // that you're going to use for your interface out. I will therefore leave
 // that up to you.
 typedef struct {
-    WORD  op;
-    WORD  name1;
-    WORD  name2;
-    WORD  name3;
+    WORD    op;
+    WORD    name1;
+    WORD    name2;
+    WORD    name3;
     int32_t literal1;
 } BinOp;
 
-BinOp Program[MAX_OPS];
+BinOp   Program[MAX_OPS];
 int32_t Integers[MAX_VARIABLES];
-BYTE  Bits[MAX_INTERNAL_RELAYS];
+BYTE    Bits[MAX_INTERNAL_RELAYS];
 
 // This are addresses (indices into Integers[] or Bits[]) used so that your
 // C code can get at some of the ladder variables, by remembering the

@@ -26,7 +26,6 @@
 #include "mcutable.hpp"
 #include "mcutable.h"
 
-
 std::vector<McuIoInfo> &supportedMcus()
 {
     return SupportedMcus;

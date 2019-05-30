@@ -43,7 +43,7 @@ static DWORD                     rgbResult = 0;
 //-----------------------------------------------------------------------------
 //static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //{
-    /*
+/*
     if(msg == WM_CHAR) {
         if(hwnd == ConfigBitsTextbox) {
             if(!(ishobdigit(wParam) || wParam == '\b'))
@@ -65,7 +65,7 @@ static DWORD                     rgbResult = 0;
     else
         oops();
 */
-    //  return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
+//  return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 //}
 
 //-----------------------------------------------------------------------------
@@ -401,7 +401,7 @@ void ShowColorDialog()
     Index = InSimulationMode ? 10 : 0;
     SendMessage(ColorList, LB_SETCURSEL, (WPARAM)Index, 0);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {

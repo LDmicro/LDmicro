@@ -309,7 +309,7 @@ void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigge
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
