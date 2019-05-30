@@ -28,10 +28,9 @@ extern int32_t char7seg[129];
 #define LEN16SEG 129
 
 #define DEGREE_CHAR 0xB0
-#define DEGREE7 (LEN7SEG-1)
-#define DEGREE9 (LEN9SEG-1)
-#define DEGREE14 (LEN14SEG-1)
-#define DEGREE16 (LEN16SEG-1)
+#define DEGREE7 (LEN7SEG - 1)
+#define DEGREE9 (LEN9SEG - 1)
+#define DEGREE14 (LEN14SEG - 1)
+#define DEGREE16 (LEN16SEG - 1)
 
 #endif
-

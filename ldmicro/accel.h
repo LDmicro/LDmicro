@@ -24,12 +24,10 @@
 #include "circuit.h"
 
 #ifndef round
-#define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
-    (r):\
-    ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
+#define round(r) ((r) < (LONG_MIN - 0.5) || (r) > (LONG_MAX + 0.5) ? (r) : ((r) >= 0.0) ? ((r) + 0.5) : ((r)-0.5))
 #endif
 
-typedef     double  fxFunc(double k, double x);
+typedef double fxFunc(double k, double x);
 /*
     SDWORD  nSize,  // размер таблицы точек разгона/торможения
     SDWORD  n,      // количество точек разгона/торможения где dt отличных от 1
