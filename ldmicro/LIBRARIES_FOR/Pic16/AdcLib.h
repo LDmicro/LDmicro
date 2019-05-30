@@ -60,4 +60,4 @@ PCFG3:0: Analog pin configuration and voltage references (see datasheet)
 */
 
 void ADC_Init();
-int ADC_Read(int canal, int refs);
+int  ADC_Read(int canal, int refs);
