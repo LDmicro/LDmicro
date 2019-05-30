@@ -55,8 +55,8 @@ void setPortDigitalIO()
 #if defined(LDTARGET_pic16f87X) || defined(LDTARGET_pic16f819)
     // The GPIOs that can also be A/D inputs default to being A/D
     // inputs, so turn that around
-    ADCON1 = (1 << 7) |   // right-justify A/D result
-             (7 << 0);    // all digital inputs
+    ADCON1 = (1 << 7) | // right-justify A/D result
+             (7 << 0);  // all digital inputs
 #endif
 
 #if defined(LDTARGET_pic16f72)
@@ -65,7 +65,7 @@ void setPortDigitalIO()
 
 //  Comment("Set up the ANSELx registers. 1-analog input, 0-digital I/O.");
 #if defined(LDTARGET_pic16f88) || defined(LDTARGET_pic12f683) || defined(LDTARGET_pic12f675)
-    ANSEL = 0x00;       // all digital inputs
+    ANSEL = 0x00; // all digital inputs
 #endif
 
 #if defined(LDTARGET_pic16f887) || defined(LDTARGET_pic16f88)
