@@ -2741,7 +2741,7 @@ McuIoInfo SupportedMcus_[] = {
         ReducedCore,
         0,
         6,
-        NULL, //AvrPwmPinInfo6,
+        nullptr, //AvrPwmPinInfo6,
         0, //arraylen(AvrPwmPinInfo6),
         AvrExtIntPinInfo6,
         arraylen(AvrExtIntPinInfo6)
@@ -3185,7 +3185,7 @@ McuIoInfo SupportedMcus_[] = {
             (0 <<  3) |     // WDTE disabled
             (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
         */
-        NULL,
+        nullptr,
         0
     },
     {
@@ -3220,7 +3220,7 @@ McuIoInfo SupportedMcus_[] = {
             (0 <<  3) |     // WDTE disabled
             (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
         */
-        NULL,
+        nullptr,
         0,
         nullptr,
         0,
@@ -3460,7 +3460,7 @@ McuIoInfo SupportedMcus_[] = {
         { { 0x08, 24 } },
         Pic6Pin_SOT23,
         arraylen(Pic6Pin_SOT23),
-        NULL,
+        nullptr,
         0,
         0,
         { },
@@ -3473,7 +3473,7 @@ McuIoInfo SupportedMcus_[] = {
             (0 <<  2) |     // WDTE disabled
             (0 <<  1) |     //
             (0 <<  0),      //
-        NULL,
+        nullptr,
         0
     },
     {
@@ -3539,7 +3539,7 @@ McuIoInfo SupportedMcus_[] = {
         ESP8266Core,
         22,
         0,
-        NULL, //ESP8266PwmPinInfo,
+        nullptr, //ESP8266PwmPinInfo,
         0, //arraylen(ESP8266PwmPinInfo),
         nullptr,
         0,

@@ -63,14 +63,14 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
     }
 
-    WNDPROC w = NULL;
+    WNDPROC w = nullptr;
     for(int i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
         if(hwnd == ValuesTextbox[i]) {
             w = (WNDPROC)PrevValuesProc[i];
             break;
         }
     }
-    if(w == NULL)
+    if(w == nullptr)
         oops();
 
     return CallWindowProc(w, hwnd, msg, wParam, lParam);

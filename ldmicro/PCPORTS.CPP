@@ -375,7 +375,7 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
 //-----------------------------------------------------------------------------
 bool SavePcPorts(const char *filename)
 {
-    BOOL b = FALSE;
+    BOOL b = false;
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("DATA   "), TEXT("OUT"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("STATUS "), TEXT(" IN"), filename);
@@ -401,7 +401,7 @@ bool SavePcPorts(const char *filename)
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    return b != FALSE;
+    return b != false;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)
