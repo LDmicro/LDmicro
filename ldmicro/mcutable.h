@@ -447,6 +447,51 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo44[] = {
 
 //-----------------------------------------------------------------------------
 // ATmega16U4 or ATmega32U4 in 44-Pin packages
+McuIoPinInfo AvrAtmega16U4or32U4IoPinInfo44[] = {
+//   port bit pin  pinName                  ArduinoPin  ArduinoName
+//                                                   X  Leonardo
+    { 'B',  0,  8, "PB0 (PCINT0/SS)"              ,  8, "" },
+    { 'B',  1,  9, "PB1 (PCINT1/SCL)"             ,  9, "" },
+    { 'B',  2, 10, "PB2 (PCINT2/PDI/MOSI)"        , 10, "" },
+    { 'B',  3, 11, "PB3 (PCINT3/PDO/MISO)"        , 11, "" },
+    { 'B',  4, 28, "PB4 (PCINT4/ADC11)"           , 28, "8"  },
+    { 'B',  5, 29, "PB5 (PCINT5/OC1A/OC4B/ADC12)" , 29, "9"  },
+    { 'B',  6, 30, "PB6 (PCINT6/OC1B/_OC4B/ADC13)", 30, "10" },
+    { 'B',  7, 12, "PB7 (PCINT7/OC1C/OC0A/_RTS)"  , 12, "11" },
+    { 'D',  0, 18, "PD0 (INT0/OC0B/SCL)"          , 18, "3"  },
+    { 'D',  1, 19, "PD1 (INT1/SDA)"               , 19, "2"  },
+    { 'D',  2, 20, "PD2 (INT2/RXD1)"              , 20, "0"  },
+    { 'D',  3, 21, "PD3 (INT3/TXD1)"              , 21, "1"  },
+    { 'D',  4, 25, "PD4 (ICP1/ADC8)"              , 25, "4"  },
+    { 'D',  5, 22, "PD5 (XCK1/_CTS)"              , 22, "" },
+    { 'D',  6, 26, "PD6 (T1/_OC4D/ADC9)"          , 26, "12" },
+    { 'D',  7, 27, "PD7 (T0/OC4D/ADC10)"          , 27, "6"  },
+    { 'C',  6, 31, "PC6 (OC3A/_OC4A)"             , 31, "5"  },
+    { 'C',  7, 32, "PC7 (ICP3/CLK0/OC4A)"         , 32, "13" },
+    { 'F',  0, 41, "PF0 (ADC0)"                   , 41, "A0" },
+    { 'F',  1, 40, "PF1 (ADC1)"                   , 40, "A1" },
+    { 'F',  4, 39, "PF4 (ADC4/TCK)"               , 39, "A4" },
+    { 'F',  5, 38, "PF5 (ADC5/TMS)"               , 38, "A5" },
+    { 'F',  6, 37, "PF6 (ADC6/TDO)"               , 37, "A6" },
+    { 'F',  7, 36, "PF7 (ADC7/TDI)"               , 36, "A7" },
+    { 'E',  2, 33, "PE2 (_HWB)"                   , 33, "" },
+    { 'E',  6,  1, "PE6 (INT6/AIN0)"              ,  1, "7"  },
+};
+
+McuAdcPinInfo AvrAtmega16U4or32U4AdcPinInfo44[] = {
+    { 41, 0x00 },
+    { 40, 0x01 },
+    { 39, 0x04 },
+    { 38, 0x05 },
+    { 37, 0x06 },
+    { 36, 0x07 },
+    { 25, 0x20 },
+    { 26, 0x21 },
+    { 27, 0x22 },
+    { 28, 0x23 },
+    { 29, 0x24 },
+    { 30, 0x25 },
+};
 
 //-----------------------------------------------------------------------------
 // ATmega8 PDIP-28
@@ -505,9 +550,6 @@ McuIoPinInfo AvrAtmega8IoPinInfo[] = {
     { 'C',  5, 28, "PC5 (ADC5 / SCL)"   , 0, "", 0, 0, 0, 0},
 //  { 'C',  6,  1, "PC6 (_RESET)"       , 0, "", 0, 0, 0, 0},
 };
-
-//-----------------------------------------------------------------------------
-// ATmega328 32-Pin packages TQFP/QFN/MLF
 
 //-----------------------------------------------------------------------------
 // ATmega328 PDIP-28
@@ -580,6 +622,42 @@ McuExtIntPinInfo AvrExtIntPinInfo6[] = {
 
 //-----------------------------------------------------------------------------
 // ATtiny85 8-Pin packages
+McuIoPinInfo AvrATtiny85IoPinInfo8[] = {
+    { 'B',  0,  5, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)" },
+    { 'B',  1,  6, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"           },
+    { 'B',  2,  7, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"        },
+    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"            },
+    { 'B',  4,  3, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"             },
+    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                   },
+};
+
+McuIoPinInfo AvrATtiny85IoPinInfo20[] = {
+//   port bit pin  pinName                                  ArduinoPin  ArduinoName
+//                                                                   X  Gemma
+    { 'B',  0, 11, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)", 11, "0 // D0/PWM~/SDA" },
+    { 'B',  1, 12, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"          , 12, "1 // D1/PWM~/SCL/LED" },
+    { 'B',  2, 14, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"       , 14, "2 // D2/A1" },
+    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"           ,  2, "" },
+    { 'B',  4,  5, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"            ,  5, "" },
+    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                  ,  1, "RESET" },
+};
+
+McuAdcPinInfo AvrATtiny85AdcPinInfo[] = {
+    {  1, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    {  7, 0x01 },
+    {  3, 0x02 },
+    {  2, 0x03 }  // ADC3
+};
+
+McuExtIntPinInfo AvrExtIntPinInfo8[] = {
+    { 5 }, // PCINT0
+    { 6 },
+    { 7 },
+    { 2 },
+    { 3 },
+    { 1 }
+};
+
 //-----------------------------------------------------------------------------
 // ATmega8 32-Pin packages TQFP/QFN/MLF
 
@@ -689,6 +767,50 @@ McuI2cInfo McuI2cInfoATmega2560[] = {                                           
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 /////
+
+//-----------------------------------------------------------------------------
+// ATmega328 32-Pin packages TQFP/QFN/MLF
+
+McuIoPinInfo AvrAtmega328IoPinInfo32[] = {
+//   port bit pin  pinName             ArduinoPin  ArduinoName
+//                                              X  Nano
+    { 'D',  0, 30, "PD0 (PCINT16/RXD)"       , 30, "0" }, // {char port;  int bit;  int pin; char name[]}
+    { 'D',  1, 31, "PD1 (PCINT17/TXD)"       , 31, "1" },
+    { 'D',  2, 32, "PD2 (PCINT18/INT0)"      , 32, "2" },
+    { 'D',  3,  1, "PD3 (PCINT19/OC2B/INT1)" ,  1, "3" },
+    { 'D',  4,  2, "PD4 (PCINT20/XCK/T0)"    ,  2, "4" },
+    { 'D',  5,  9, "PD5 (PCINT21/OC0B/T1)"   ,  9, "5" },
+    { 'D',  6, 10, "PD6 (PCINT22/OC0A/AIN0)" , 10, "6" },
+    { 'D',  7, 11, "PD7 (PCINT23/AIN1)"      , 11, "7" },
+    { 'B',  0, 12, "PB0 (PCINT0/ICP1/CLKO)"  , 12, "8" },
+    { 'B',  1, 13, "PB1 (PCINT1/OC1A)"       , 13, "9" },
+    { 'B',  2, 14, "PB2 (PCINT2/OC1B/SS)"    , 14, "10" },
+    { 'B',  3, 15, "PB3 (PCINT3/OC2A/MOSI)"  , 15, "11" },
+    { 'B',  4, 16, "PB4 (PCINT4/MISO)"       , 16, "12" },
+    { 'B',  5, 17, "PB5 (PCINT5/SCK)"        , 17, "13" },
+    { 'B',  6,  7, "PB6 (PCINT6/XTAL1/TOSC1)",  7, "" },
+    { 'B',  7,  8, "PB7 (PCINT7/XTAL2/TOSC2)",  8, "" },
+    { 'C',  0, 23, "PC0 (PCINT8/ADC0)"       , 23, "A0" },
+    { 'C',  1, 24, "PC1 (PCINT9/ADC1)"       , 24, "A1" },
+    { 'C',  2, 25, "PC2 (PCINT10/ADC2)"      , 25, "A2" },
+    { 'C',  3, 26, "PC3 (PCINT11/ADC3)"      , 26, "A3" },
+    { 'C',  4, 27, "PC4 (PCINT12/ADC4/SDA)"  , 27, "A4" },
+    { 'C',  5, 28, "PC5 (PCINT13/ADC5/SCL)"  , 28, "A5" },
+    { 'C',  6, 29, "PC6 (PCINT14/RESET)"     , 29, "RST" },
+    { '\0', 6, 19, "(ADC6)"                  , 19, "A6" },
+    { '\0', 7, 22, "(ADC7)"                  , 22, "A7" }
+};
+
+McuAdcPinInfo AvrAtmega328AdcPinInfo32[] = {
+    { 23, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    { 24, 0x01 },
+    { 25, 0x02 },
+    { 26, 0x03 },
+    { 27, 0x04 },
+    { 28, 0x05 }, // ADC5
+    { 19, 0x06 },
+    { 22, 0x07 }  // ADC7
+};
 
 //-----------------------------------------------------------------------------
 // AVR's SPI Info Tables
@@ -901,6 +1023,23 @@ McuPwmPinInfo AvrPwmPinInfo32[] = {
     {  1, 2, 8,    7, 0xB4,  0,     0xB0,  5,     4,     3,    0xB1,  0    , ""}, // OC2B
 };
 
+McuPwmPinInfo ATmegaXXU4PwmPinInfo[] = {
+////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    { 12, 0, 8,    5, 0x47,  0,     0x44,  7,     6,     3,    0x45,  0    }, // OC0A // Fast PWM
+    { 18, 0, 8,    5, 0x48,  0,     0x44,  5,     4,     3,    0x45,  0    }, // OC0B
+
+    { 29, 1, 8,    5, 0x88,  0x89,  0x80,  7,     6,     1,    0x81,  0x08 }, // OC1A
+    { 30, 1, 8,    5, 0x8A,  0x8B,  0x80,  5,     4,     1,    0x81,  0x08 }, // OC1B
+    { 12, 1, 8,    5, 0x8C,  0x8D,  0x80,  3,     2,     1,    0x81,  0x08 }, // OC1C
+
+    { 31, 3, 8,    5, 0x98,  0x99,  0x90,  7,     6,     1,    0x91,  0x08 }, // OC3A
+
+//  { 32, 4, 8,   15, 0xCF,  0,     0xC0,  7,     6,     3,    0xC3,  0    }, // OC4A
+//  { 30, 4, 8,   15, 0xD0,  0,     0xC0,  5,     4,     3,    0xC3,  0    }, // OC4B
+//  { 27, 4, 8,   15, 0xD2,  0,     0xC0,  5,     4,     3,    0xC3,  0    }, // OC4D
+};
+
 //-----------------------------------------------------------------------------
 // PIC's PWM Info Tables
 ////     ti
@@ -1035,6 +1174,32 @@ McuAdcPinInfo AvrAtmega164AdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // A variety of 14-Pin PICs that share the same digital IO assignment.
 
+McuIoPinInfo Pic14PinIoInfo[] = {
+//  { ' ', -1, 14, "Vss" },
+    { 'A',  0, 13, "RA0/AN0" },
+    { 'A',  1, 12, "RA1/AN1" },
+    { 'A',  2, 11, "RA2/AN2/CCP3/INT" },
+    { 'A',  3,  4, "RA3/_MCLR/Vpp" }, // input only
+    { 'A',  4,  3, "RA4/AN3/OSC2/CLKOUT" },
+    { 'A',  5,  2, "RA5/CCP2/OSC1/CLKIN" },
+//  { ' ', -1,  1, "Vdd" },
+    { 'C',  0, 10, "RC0/AN4" },
+    { 'C',  1,  9, "RC1/AN5/CCP4" },
+    { 'C',  2,  8, "RC2/AN6/P2B" },
+    { 'C',  3,  7, "RC3/AN7/P2A" },
+    { 'C',  4,  6, "RC4/P1B/TX/CK" },
+    { 'C',  5,  5, "RC5/P1A/RX/DT/CCP1" },
+};
+
+////     ti
+//// pin mer
+McuPwmPinInfo Pic16F1824PwmPinInfo[] = {
+    {  5, 1 },
+    {  6, 1 },
+    {  7, 2 },
+    {  8, 2 },
+};
+
 //-----------------------------------------------------------------------------
 // A variety of 18-Pin PICs that share the same digital IO assignment.
 
@@ -1067,6 +1232,31 @@ McuAdcPinInfo Pic16F819AdcPinInfo[] = {
     { 18, 0x01 },
 };
 
+McuAdcPinInfo Pic16F1827AdcPinInfo[] = {
+    { 17,   0x00 },
+    { 18,   0x01 },
+    {  1,   0x02 },
+    {  2,   0x03 },
+    {  3,   0x04 },
+    { 12,   0x05 },
+    { 13,   0x06 },
+    { 11,   0x07 },
+    { 10,   0x08 },
+    {  9,   0x09 },
+    {  8,   0x0a },
+    {  7,   0x0b },
+};
+
+McuAdcPinInfo Pic16F1824AdcPinInfo[] = {
+    { 13,   0x00 },
+    { 12,   0x01 },
+    { 11,   0x02 },
+    {  3,   0x03 },
+    { 10,   0x04 },
+    {  9,   0x05 },
+    {  8,   0x06 },
+    {  7,   0x07 },
+};
 
 //-----------------------------------------------------------------------------
 // PIC16F88
@@ -1104,6 +1294,37 @@ McuAdcPinInfo Pic16F88AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PIC16F1826, PIC16F1827
+
+McuIoPinInfo Pic16f1827IoPinInfo[] = {
+    { 'A',  2,  1, "RA2/AN2" },
+    { 'A',  3,  2, "RA3/AN3" },
+    { 'A',  4,  3, "RA4/AN4/T0CKI" },
+    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only
+//  { ' ', -1,  5, "Vss" },
+    { 'B',  0,  6, "RB0/INT" },
+    { 'B',  1,  7, "RB1/AN11/RX/DT" },
+    { 'B',  2,  8, "RB2/AN10/TX/CK" },
+    { 'B',  3,  9, "RB3/AN9/P1A/CCP1" },
+    { 'B',  4, 10, "RB4/AN8" },
+    { 'B',  5, 11, "RB5/AN7/P1B" },
+    { 'B',  6, 12, "RB6/AN5/P2A/T1CKI/CCP2" },
+    { 'B',  7, 13, "RB7/AN6/P2B" },
+//  { ' ', -1, 14, "Vdd" },
+    { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
+    { 'A',  7, 16, "RA7/OSC1/CLKIN" },
+    { 'A',  0, 17, "RA0/AN0" },
+    { 'A',  1, 18, "RA1/AN1" },
+};
+
+////     ti
+//// pin mer
+McuPwmPinInfo Pic16F1827PwmPinInfo[] = {
+    {  9, 1 },
+    { 11, 1 },
+    { 12, 2 },
+    { 13, 2 },
+};
+
 //-----------------------------------------------------------------------------
 // PIC16F877, PIC16F874
 
@@ -1344,8 +1565,121 @@ McuAdcPinInfo Pic16F886AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PIC16F1512, PIC16F1513, PIC16F1516, PIC16F1518
+
+McuAdcPinInfo Pic16F1512AdcPinInfo[] = {
+//  PINx  ANx
+    {  2,   0 },
+    {  3,   1 },
+    {  4,   2 },
+    {  5,   3 },
+    {  7,   4 },
+    { 23,   8 },
+    { 24,   9 },
+    { 22,  10 },
+    { 25,  11 },
+    { 21,  12 },
+    { 26,  13 },
+    { 13,  14 },
+    { 14,  15 },
+    { 15,  16 },
+    { 16,  17 },
+    { 17,  18 },
+    { 18,  19 },
+};
+
 //-----------------------------------------------------------------------------
 // PIC16F1526, PIC16F1527
+
+McuIoPinInfo Pic16F1527IoPinInfo[] = {
+    { 'A', 0, 24 },
+    { 'A', 1, 23 },
+    { 'A', 2, 22 },
+    { 'A', 3, 21 },
+    { 'A', 4, 28 },
+    { 'A', 5, 27 },
+    { 'A', 6, 40 },
+    { 'A', 7, 39 },
+    { 'B', 0, 48 },
+    { 'B', 1, 47 },
+    { 'B', 2, 46 },
+    { 'B', 3, 45 },
+    { 'B', 4, 44 },
+    { 'B', 5, 43 },
+    { 'B', 6, 42 },
+    { 'B', 7, 37 },
+    { 'C', 0, 30 },
+    { 'C', 1, 29 },
+    { 'C', 2, 33 },
+    { 'C', 3, 34 },
+    { 'C', 4, 35 },
+    { 'C', 5, 36 },
+    { 'C', 6, 31 },
+    { 'C', 7, 32 },
+    { 'D', 0, 58 },
+    { 'D', 1, 55 },
+    { 'D', 2, 54 },
+    { 'D', 3, 53 },
+    { 'D', 4, 52 },
+    { 'D', 5, 51 },
+    { 'D', 6, 50 },
+    { 'D', 7, 49 },
+    { 'E', 0,  2 },
+    { 'E', 1,  1 },
+    { 'E', 2, 64 },
+    { 'E', 3, 63 },
+    { 'E', 4, 62 },
+    { 'E', 5, 61 },
+    { 'E', 6, 60 },
+    { 'E', 7, 59 },
+    { 'F', 0, 18 },
+    { 'F', 1, 17 },
+    { 'F', 2, 16 },
+    { 'F', 3, 15 },
+    { 'F', 4, 14 },
+    { 'F', 5, 13 },
+    { 'F', 6, 12 },
+    { 'F', 7, 11 },
+    { 'G', 0,  3 },
+    { 'G', 1,  4 },
+    { 'G', 2,  5 },
+    { 'G', 3,  6 },
+    { 'G', 4,  8 },
+//  { 'G', 5,  7 }, //_MCLR
+};
+
+McuAdcPinInfo Pic16F1527AdcPinInfo[] = {
+//  PINx  ANx
+    { 24,   0 },
+    { 23,   1 },
+    { 22,   2 },
+    { 21,   3 },
+    { 27,   4 },
+    { 11,   5 },
+    { 17,   6 },
+    { 16,   7 },
+    { 15,   8 },
+    { 14,   9 },
+    { 13,  10 },
+    { 12,  11 },
+    {  8,  12 },
+    {  6,  13 },
+    {  5,  14 },
+    {  4,  15 },
+    { 18,  16 },
+    { 48,  17 },
+    { 47,  18 },
+    { 46,  19 },
+    { 45,  20 },
+    { 44,  21 },
+    { 43,  22 },
+    { 58,  23 },
+    { 55,  24 },
+    { 54,  25 },
+    { 53,  26 },
+    {  2,  27 },
+    {  1,  28 },
+    { 64,  29 },
+};
 
 //-----------------------------------------------------------------------------
 // 6-Pin SOT-23
@@ -1918,6 +2252,59 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
     {
+        "Atmel AVR ATmega32U4 44-Pin packages",
+        "ATmega32U4",
+        "",
+        "",
+        "",
+        'P',
+//        A     B     C     D     E     F     G     H      I   J      K      L
+        { 0, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
+        { 0, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
+        { 0, 0x24, 0x27, 0x2A, 0x2D, 0x30 }, // DDRx
+        16*1024,
+        { { 0x100, 2560 } },
+        AvrAtmega16U4or32U4IoPinInfo44,
+        arraylen(AvrAtmega16U4or32U4IoPinInfo44),
+        AvrAtmega16U4or32U4AdcPinInfo44,
+        arraylen(AvrAtmega16U4or32U4AdcPinInfo44),
+        1023,
+        { 20, 21 },
+        0, // OC2
+        ISA_AVR,
+        EnhancedCore128K,
+        44,
+        0,
+        ATmegaXXU4PwmPinInfo,
+        arraylen(ATmegaXXU4PwmPinInfo)
+    },
+    {
+        "Atmel AVR ATmega32 44-Pin packages",
+        "ATmega32",
+        "m32def",
+        "mega32",
+        "",
+        'P',
+        { 0x39, 0x36, 0x33, 0x30 }, // PINx
+        { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
+        { 0x3a, 0x37, 0x34, 0x31 }, // DDRx
+        16*1024,
+        { { 0x60, 2048 } },
+        AvrAtmega16or32IoPinInfo44,
+        arraylen(AvrAtmega16or32IoPinInfo44),
+        AvrAtmega16or32AdcPinInfo44,
+        arraylen(AvrAtmega16or32AdcPinInfo44),
+        1023,
+        { 9, 10 },
+        16, // OC2
+        ISA_AVR,
+        EnhancedCore128K,
+        44,
+        0,
+        AvrPwmPinInfo44_,
+        arraylen(AvrPwmPinInfo44_)
+    },
+    {
         "Atmel AVR ATmega32 40-PDIP",
         "ATmega32",
         "m32def",
@@ -2116,6 +2503,34 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
     {
+        "Atmel AVR ATmega328 32-Pin packages",//char            *mcuName;
+        "ATmega328",
+        "m328def", // avrasm2.exe
+        "mega328",
+        "",
+        'P',                                  //char             portPrefix;
+        { 0, 0x23, 0x26, 0x29 }, // PINx   //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
+        { 0, 0x25, 0x28, 0x2B }, // PORTx  //DWORD            outputRegs[MAX_IO_PORTS];
+        { 0, 0x24, 0x27, 0x2A }, // DDRx   //DWORD            dirRegs[MAX_IO_PORTS];
+        16*1024,                              //DWORD            flashWords;
+        { { 0x100, 2048 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
+        AvrAtmega328IoPinInfo32,              //McuIoPinInfo    *pinInfo;
+        arraylen(AvrAtmega328IoPinInfo32),    //int              pinCount;
+        AvrAtmega328AdcPinInfo32,             //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrAtmega328AdcPinInfo32),   //int              adcCount;
+        1023,                                 //int              adcMax;
+        { 30, 31 },                           //{int rxPin; int txPin;} uartNeeds;
+        15,                                   //int              pwmNeedsPin;
+        ISA_AVR,                             //int              whichIsa;
+        EnhancedCore128K,                     //AvrFamily        Family;
+        32,
+        0,                                    //DWORD            configurationWord;
+        AvrPwmPinInfo32,                //McuPwmPinInfo   *pwmInfo;
+        arraylen(AvrPwmPinInfo32),      //int              pwmCount;
+        AvrExtIntPinInfo32,
+        arraylen(AvrExtIntPinInfo32),
+    },                                        //int int0PinA; int int1PinA;} QuadEncodNeeds;
+    {
         "Atmel AVR ATmega164 40-PDIP",
         "ATmega164",
         "",
@@ -2246,6 +2661,62 @@ McuIoInfo SupportedMcus_[] = {
         McuI2cInfoATmega16,
         arraylen(McuI2cInfoATmega16),
         {{0,0}}
+    },
+    {
+        "Atmel AVR ATtiny85 8-Pin packages",
+        "ATtiny85",
+        "tn85def",
+        "tiny85",
+        "",
+        'P',
+        { 0, 0x16 },
+        { 0, 0x18 },
+        { 0, 0x17 },
+        4*1024,
+        { { 0x60, 512 } },
+        AvrATtiny85IoPinInfo8,              //McuIoPinInfo    *pinInfo;
+        arraylen(AvrATtiny85IoPinInfo8),    //int              pinCount;
+        AvrATtiny85AdcPinInfo,              //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
+        1023,
+        { 0, 0 },
+        0, // OC2
+        ISA_AVR,
+        EnhancedCore128K,
+        0,
+        8,
+        AvrPwmPinInfo8,
+        arraylen(AvrPwmPinInfo8),
+        AvrExtIntPinInfo8,
+        arraylen(AvrExtIntPinInfo8)
+    },
+    {
+        "Atmel AVR ATtiny85 20-Pin packages",
+        "ATtiny85",
+        "tn85def",
+        "tiny85",
+        "",
+        'P',
+        { 0, 0x16 },
+        { 0, 0x18 },
+        { 0, 0x17 },
+        4*1024,
+        { { 0x60, 512 } },
+        AvrATtiny85IoPinInfo20,             //McuIoPinInfo    *pinInfo;
+        arraylen(AvrATtiny85IoPinInfo20),   //int              pinCount;
+        AvrATtiny85AdcPinInfo,              //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
+        1023,
+        { 0, 0 },
+        0, // OC2
+        ISA_AVR,
+        EnhancedCore128K,
+        0,
+        8,
+        AvrPwmPinInfo8,
+        arraylen(AvrPwmPinInfo8),
+        AvrExtIntPinInfo8,
+        arraylen(AvrExtIntPinInfo8)
     },
     {
         "Atmel AVR ATtiny10 6-Pin packages",
@@ -2758,6 +3229,252 @@ McuIoInfo SupportedMcus_[] = {
         nullptr,
         0,
         {{0,0}}
+    },
+    {
+        "Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP",
+        "PIC16F1512",
+        "P16F1512",
+        "P16F1512",
+        "PIC16F1512",
+        'R',
+        { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx = A B C E
+        { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx
+        { 0x8C, 0x8D, 0x8E, 0, 0x90 }, // TRISx
+        2048,
+        { { 0x20, 96 } },
+        Pic28Pin_SPDIP_SOIC_SSOP,
+        arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
+        Pic16F1512AdcPinInfo,
+        arraylen(Pic16F1512AdcPinInfo),
+        1023,
+        { 18, 17 },
+        12,
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        28,
+            (0 << (13+16)) | // High-voltage on MCLR must be used for programming
+            (1 << (12+16)) | // In-Circuit Debugger disabled, ICSPCLK and ICSPDAT are general purpose I/O pins
+            (0 << (11+16)) | // Low-Power BOR is enabled
+            (1 << (10+16)) | // Brown-out Reset voltage (VBOR), low trip point selected
+            (0 << ( 9+16)) | // Stack Overflow or Underflow will not cause a Reset
+            (3 << ( 0+16)) | // flash write protection off
+            (0 << 13) |      // fail-safe clock monitor disabled
+            (0 << 12) |      // internal/external switchover disabled
+            (3 <<  9) |      // brown-out detect enabled
+            (1 <<  7) |      // code protection disabled
+            (1 <<  6) |      // nMCLR enabled
+            (0 <<  5) |      // PWRT enabled
+            (0 <<  4) |      // WDT disabled
+            (0 <<  3) |      // WDT disabled
+            (2 <<  0),       // HS oscillator
+        PicPwmPinInfo28_2,
+        arraylen(PicPwmPinInfo28_2),
+        PicExtIntPinInfo28,
+        arraylen(PicExtIntPinInfo28)
+    },
+    {
+        "Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP",
+        "PIC16F1516",
+        "P16F1516",
+        "P16F1516",
+        "PIC16F1516",
+        'R',
+        { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx = A B C E
+        { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx
+        { 0x8C, 0x8D, 0x8E, 0, 0x90 }, // TRISx
+        2048,
+        { { 0x20, 96 } },
+        Pic28Pin_SPDIP_SOIC_SSOP,
+        arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
+        Pic16F1512AdcPinInfo,
+        arraylen(Pic16F1512AdcPinInfo),
+        1023,
+        { 18, 17 },
+        12,
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        28,
+            (0 << (13+16)) | // High-voltage on MCLR must be used for programming
+            (1 << (12+16)) | // In-Circuit Debugger disabled, ICSPCLK and ICSPDAT are general purpose I/O pins
+            (0 << (11+16)) | // Low-Power BOR is enabled
+            (1 << (10+16)) | // Brown-out Reset voltage (VBOR), low trip point selected
+            (0 << ( 9+16)) | // Stack Overflow or Underflow will not cause a Reset
+            (3 << ( 0+16)) | // flash write protection off
+            (0 << 13) |      // fail-safe clock monitor disabled
+            (0 << 12) |      // internal/external switchover disabled
+            (3 <<  9) |      // brown-out detect enabled
+            (1 <<  7) |      // code protection disabled
+            (1 <<  6) |      // nMCLR enabled
+            (0 <<  5) |      // PWRT enabled
+            (0 <<  4) |      // WDT disabled
+            (0 <<  3) |      // WDT disabled
+            (2 <<  0),       // HS oscillator
+        PicPwmPinInfo28_2,
+        arraylen(PicPwmPinInfo28_2),
+        PicExtIntPinInfo28,
+        arraylen(PicExtIntPinInfo28)
+    },
+    {
+        "Microchip PIC16F1527 64-Pin packages",
+        "PIC16F1527",
+        "P16F1527",
+        "P16F1527",
+        "PIC16F1527",
+        'R',
+        { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x28C, 0x28D }, // PORTx = A B C D E F G
+        { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x28C, 0x28D }, // PORTx
+        { 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x30C, 0x30D }, // TRISx
+        2048*8,
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1A0, 80 }, { 0x220, 80 }, { 0x2A0, 80 }, { 0x320, 80 }, { 0x3A0, 80 } },
+        Pic16F1527IoPinInfo,
+        arraylen(Pic16F1527IoPinInfo),
+        Pic16F1527AdcPinInfo,
+        arraylen(Pic16F1527AdcPinInfo),
+        1023,
+        { 32, 31 }, //, 5, 4 },
+        29,
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        64,
+            (0 << (13+16)) | // High-voltage on MCLR must be used for programming
+            (1 << (12+16)) | // In-Circuit Debugger disabled, ICSPCLK and ICSPDAT are general purpose I/O pins
+            (0 << (11+16)) | // Low-Power BOR is enabled
+            (1 << (10+16)) | // Brown-out Reset voltage (VBOR), low trip point selected
+            (0 << ( 9+16)) | // Stack Overflow or Underflow will not cause a Reset
+            (3 << ( 0+16)) | // flash write protection off
+            (0 << 13) |      // fail-safe clock monitor disabled
+            (0 << 12) |      // internal/external switchover disabled
+            (3 <<  9) |      // brown-out detect enabled
+            (1 <<  7) |      // code protection disabled
+            (1 <<  6) |      // nMCLR enabled
+            (0 <<  5) |      // PWRT enabled
+            (0 <<  4) |      // WDT disabled
+            (0 <<  3) |      // WDT disabled
+            (2 <<  0),       // HS oscillator
+        PicPwmPinInfo64,
+        arraylen(PicPwmPinInfo64),
+        PicExtIntPinInfo64,
+        arraylen(PicExtIntPinInfo64)
+    },
+    {
+        "Microchip PIC16F1824 14-Pin PDIP, SOIC, TSSOP",
+        "PIC16F1824",
+        "P16F1824",
+        "P16F1824",
+        "PIC16F1824",
+        'R',
+        { 0x0C, 0, 0x0E }, // PORTx
+        { 0x0C, 0, 0x0E }, // PORTx
+        { 0x8C, 0, 0x8E }, // TRISx
+        4*1024,
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 } },
+        Pic14PinIoInfo,
+        arraylen(Pic14PinIoInfo),
+        Pic16F1824AdcPinInfo,
+        arraylen(Pic16F1824AdcPinInfo),
+        1023,
+        {  5, 6 },
+        0, // pwm TODO
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        14,
+       (0 << (13+16)) | // LVP disabled
+       (1 << (12+16)) | // DEBUG disable
+       (1 << (10+16)) | // BORV: Brown-out Reset voltage (Vbor), low trip point selected
+       (1 << ( 9+16)) | // STVREN: Stack Overflow/Underflow Reset Enable bit
+       (0 << ( 8+16)) | // PLLEN: 4xPLL disabled
+     (0xff << (0+16)) | // WRT: Write protection off
+            (1 << 13) | // FCMEN enabled
+            (1 << 12) | // IESO enabled
+            (1 << 11) | // _CLKOUTEN disabled
+            (3 <<  9) | // BOR enabled
+            (1 <<  8) | // data protect off
+            (1 <<  7) | // code protection off
+            (0 <<  6) | // nMCLR as digital input
+            (0 <<  5) | // PWRTE enabled
+           (00 <<  3) | // WDT disabled
+            (4 <<  0),  // 100 = INTRC oscillator 16MHz; port I/O function on both RA6/OSC2/CLKO pin and RA7/OSC1/CLKI pin
+          //(2 <<  0),  // 010 = HS oscillator
+        Pic16F1824PwmPinInfo,
+        arraylen(Pic16F1824PwmPinInfo),
+        PicExtIntPinInfo14,
+        arraylen(PicExtIntPinInfo14)
+    },
+    {
+        "Microchip PIC16F1827 18-Pin PDIP, SOIC",
+        "PIC16F1827",
+        "P16F1827",
+        "P16F1827",
+        "PIC16F1827",
+        'R',
+        { 0x0C, 0x0D }, // PORTx
+        { 0x0C, 0x0D }, // PORTx
+        { 0x8C, 0x8D }, // TRISx
+        4*1024,
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1A0, 80 }, { 0x220, 48 } },
+        Pic16f1827IoPinInfo,
+        arraylen(Pic16f1827IoPinInfo),
+        Pic16F1827AdcPinInfo,
+        arraylen(Pic16F1827AdcPinInfo),
+        1023,
+        { 7, 8 },
+        0, // pwm TODO
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        18,
+       (0 << (13+16)) | // LVP disabled
+       (1 << (12+16)) | // DEBUG disable
+       (1 << (10+16)) | // BORV: Brown-out Reset voltage (Vbor), low trip point selected
+       (1 << ( 9+16)) | // STVREN: Stack Overflow/Underflow Reset Enable bit
+       (0 << ( 8+16)) | // PLLEN: 4xPLL disabled
+     (0xff << (0+16)) | // WRT: Write protection off
+            (1 << 13) | // FCMEN enabled
+            (1 << 12) | // IESO enabled
+            (1 << 11) | // _CLKOUTEN disabled
+            (3 <<  9) | // BOR enabled
+            (1 <<  8) | // data protect off
+            (1 <<  7) | // code protection off
+            (0 <<  6) | // nMCLR as digital input
+            (0 <<  5) | // PWRTE enabled
+           (00 <<  3) | // WDT disabled
+            (4 <<  0),  // 100 = INTRC oscillator 16MHz; port I/O function on both RA6/OSC2/CLKO pin and RA7/OSC1/CLKI pin
+          //(2 <<  0),  // 010 = HS oscillator
+        Pic16F1827PwmPinInfo,
+        arraylen(Pic16F1827PwmPinInfo),
+        PicExtIntPinInfo18,
+        arraylen(PicExtIntPinInfo18)
+    },
+    {
+        "Microchip PIC10F202 6-SOT",
+        "PIC10F202",
+        "P10F202",
+        "P10F202",
+        "PIC10F202",
+        'G',
+//        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // PORTx = GPIO
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // PORTx
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // TRISx
+        512-1, //Location 001FFh contains the internal clock oscillator
+               //calibration value. This value should never be overwritten.
+        { { 0x08, 24 } },
+        Pic6Pin_SOT23,
+        arraylen(Pic6Pin_SOT23),
+        NULL,
+        0,
+        0,
+        { },
+        0,
+        ISA_PIC16,
+        BaselineCore12bit,
+        6,
+            (0 <<  4) |     // nMCLR disabled
+            (1 <<  3) |     // Code protection disabled
+            (0 <<  2) |     // WDTE disabled
+            (0 <<  1) |     //
+            (0 <<  0),      //
+        NULL,
+        0
     },
     {
         "Microchip PIC10F200 6-SOT",
