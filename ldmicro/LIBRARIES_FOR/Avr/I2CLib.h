@@ -1,17 +1,17 @@
 
 #include <avr/io.h>
 
-/******************************** FONCTIONS I²C *******************************/
+/******************************** FONCTIONS I2C *******************************/
 
-// Initialisation avec calcul des predivision I²C
+// Initialisation avec calcul des predivision I2C
 // fcpu : frequence du microcontroleur
 // ftwi : frequence souhaitee pour le bus I2C
 void I2C_Init(long fcpu, long ftwi);
 
-// Initialisation I²C master
+// Initialisation I2C master
 // rate : valeur du registre TWBR pour sélection du débit
 // prescaler : valeur des bits du registre TWSR pour sélection du prescaler
-// ces paramètres déterminent la fréquence de l'horloge I²C
+// ces paramètres déterminent la fréquence de l'horloge I2C
 void I2C_MasterInit(char rate, char prescaler);
 
 // Envoi de la séquence de start + adresse de l'esclave
@@ -31,7 +31,7 @@ void I2C_MasterStop(void);
 // donnee : l'octet à écrire
 int I2C_MasterWrite(char c);
 
-// Lecture d'un octet sur le bus avec acknowledge à la fin 
+// Lecture d'un octet sur le bus avec acknowledge à la fin
 // pour indiquer à l'esclave que la lecture n'est pas terminée
 // Renvoie la donnée lue
 char I2C_MasterReadNext(void);
@@ -50,4 +50,3 @@ char I2C_MasterGetReg(char addr, char reg);
 
 // Ecriture d'une valeur dans registre (reg) sur peripherique (addr)
 void I2C_MasterSetReg(char addr, char reg, char val);
-

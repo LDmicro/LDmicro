@@ -95,8 +95,8 @@ int LdMsg(UINT uType, const char *str, va_list f)
         strcpy(msg, "\n");
         WriteFile(h, msg, strlen(str), &written, nullptr);
     } else {
-        HWND h = GetForegroundWindow();
-        char buf2[1024];
+        HWND        h = GetForegroundWindow();
+        char        buf2[1024];
         const char *s = "";
         if((uType & MB_ICONINFORMATION) == MB_ICONINFORMATION) {
             s = _("LDmicro Information");
@@ -116,7 +116,7 @@ int LdMsg(UINT uType, const char *str, va_list f)
 
 int LdMsg(UINT uType, const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(uType, str, f);
@@ -124,9 +124,9 @@ int LdMsg(UINT uType, const char *str, ...)
     return ret;
 }
 
-int Error(const char* str, ...)
+int Error(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONERROR, str, f);
@@ -134,9 +134,9 @@ int Error(const char* str, ...)
     return ret;
 }
 
-int Warning(const char* str, ...)
+int Warning(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONWARNING, str, f);
@@ -144,9 +144,9 @@ int Warning(const char* str, ...)
     return ret;
 }
 
-int Info(const char* str, ...)
+int Info(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONINFORMATION, str, f);
@@ -154,9 +154,9 @@ int Info(const char* str, ...)
     return ret;
 }
 
-int Question(const char* str, ...)
+int Question(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONQUESTION, str, f);
@@ -729,7 +729,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
 }
 
 //-----------------------------------------------------------------------------
-McuSpiInfo *GetMcuSpiInfo(const char* name)
+McuSpiInfo *GetMcuSpiInfo(const char *name)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->spiCount; i++)
@@ -739,7 +739,7 @@ McuSpiInfo *GetMcuSpiInfo(const char* name)
 }
 
 //-----------------------------------------------------------------------------
-McuI2cInfo *GetMcuI2cInfo(const char *name)                       ///// Added by JG
+McuI2cInfo *GetMcuI2cInfo(const char *name) ///// Added by JG
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->i2cCount; i++)
@@ -783,12 +783,12 @@ McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution) //
 ///// Added by JG : to get max Pwm resolution
 McuPwmPinInfo *PwmMaxInfoForName(const char *name, int timer) // !=timer !!!
 {
-    McuPwmPinInfo *mppi= nullptr;
+    McuPwmPinInfo *mppi = nullptr;
 
-    for(int r = 32; r >= 8; r--)
-    {
-        mppi= PwmPinInfoForName(name, timer, r);
-        if (mppi) return mppi;
+    for(int r = 32; r >= 8; r--) {
+        mppi = PwmPinInfoForName(name, timer, r);
+        if(mppi)
+            return mppi;
     }
 
     return nullptr;

@@ -29,10 +29,10 @@
 // Assignment of the internal relays to memory, efficient, one bit per
 // relay.
 static struct {
-    char  name[MAX_NAME_LEN];
+    char   name[MAX_NAME_LEN];
     ADDR_T addr;
-    int   bit;
-    bool  assignedTo;
+    int    bit;
+    bool   assignedTo;
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
 
@@ -42,12 +42,12 @@ static int InternalRelayCount;
 // Allocate 3 octets for  24-bits variables.
 struct VariablesList {
     // vvv from compilercommon.cpp
-    char    name[MAX_NAME_LEN];
-    uint32_t   addr;
-    int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
-    int     SizeOfVar;  // SizeOfVar can be less than Allocated
+    char     name[MAX_NAME_LEN];
+    uint32_t addr;
+    int      Allocated; // the number of bytes allocated in the MCU SRAM for variable
+    int      SizeOfVar; // SizeOfVar can be less than Allocated
     // ^^^ from compilercommon.cpp
-    int     type;       // see PlcProgramSingleIo
+    int type; // see PlcProgramSingleIo
     // vvv from simulate.cpp
     //  SDWORD  val;        // value in simulation mode.
     //  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
@@ -59,20 +59,20 @@ struct VariablesList {
 };
 
 static std::array<VariablesList, MAX_IO> Variables;
-static int    VariableCount = 0;
+static int                               VariableCount = 0;
 
 #define NO_MEMORY 0xffffffff
 static uint32_t NextBitwiseAllocAddr;
-static int   NextBitwiseAllocBit;
-static int   MemOffset;
+static int      NextBitwiseAllocBit;
+static int      MemOffset;
 uint32_t        RamSection;
 uint32_t        RomSection;
 
 //-----------------------------------------------------------------------------
 static LabelAddr LabelAddrArr[MAX_RUNGS];
-static int LabelAddrCount = 0;
+static int       LabelAddrCount = 0;
 
-LabelAddr * GetLabelAddr(const NameArray& name)
+LabelAddr *GetLabelAddr(const NameArray &name)
 {
     if(name.length() == 0)
         oops();
@@ -119,7 +119,7 @@ int UsedRAM()
 }
 
 //-----------------------------------------------------------------------------
-void PrintVariables(FileTracker& f)
+void PrintVariables(FileTracker &f)
 {
     fprintf(f, "\n");
     fprintf(f,
@@ -212,9 +212,8 @@ ADDR_T AllocOctetRam(int bytes) // The desired number of bytes.
     }
 
     if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu()->ram[RamSection].len)) {
-        THROW_COMPILER_EXCEPTION_FMT("%s %s",
-                                     _("RAM:"),
-                                     _("Out of memory; simplify program or choose microcontroller with more memory."));
+        THROW_COMPILER_EXCEPTION_FMT(
+            "%s %s", _("RAM:"), _("Out of memory; simplify program or choose microcontroller with more memory."));
     }
 
     MemOffset += bytes;
@@ -279,7 +278,7 @@ void AllocBitRam(ADDR_T *addr, int *bit)
 // assigned to that I/O name. Will allocate if it no memory allocated for it
 // yet, else will return the previously allocated bit.
 //-----------------------------------------------------------------------------
-static void MemForPin(const NameArray& name, ADDR_T *addr, int *bit, bool asInput)
+static void MemForPin(const NameArray &name, ADDR_T *addr, int *bit, bool asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -337,7 +336,7 @@ void AddrBitForPin(int pin, ADDR_T *addr, int *bit, bool asInput)
 }
 
 //-----------------------------------------------------------------------------
-int SingleBitAssigned(const NameArray& name)
+int SingleBitAssigned(const NameArray &name)
 {
     int pin = 0;
     int i;
@@ -360,7 +359,7 @@ int SingleBitAssigned(const NameArray& name)
 }
 
 //-----------------------------------------------------------------------------
-int GetAssignedType(const NameArray& name, const NameArray& fullName)
+int GetAssignedType(const NameArray &name, const NameArray &fullName)
 {
     int type = NO_PIN_ASSIGNED;
     if(fullName.length())
@@ -384,13 +383,12 @@ int GetAssignedType(const NameArray& name, const NameArray& fullName)
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
-uint8_t MuxForAdcVariable(const NameArray& name)
+uint8_t MuxForAdcVariable(const NameArray &name)
 {
     uint8_t res = 0;
-    int i;
+    int     i;
     for(i = 0; i < Prog.io.count; i++) {
-        if((strcmp(Prog.io.assignment[i].name, name.str()) == 0) &&
-            (Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
+        if((strcmp(Prog.io.assignment[i].name, name.str()) == 0) && (Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
             break;
     }
     if(i >= Prog.io.count)
@@ -417,122 +415,112 @@ uint8_t MuxForAdcVariable(const NameArray& name)
 //-----------------------------------------------------------------------------
 // Added by JG to force SPI pins assignment
 //-----------------------------------------------------------------------------
-int PinsForSpiVariable(const NameArray& name, int n, int* spipins)
+int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
 {
-    int res = 0, port= 0;
+    int res = 0, port = 0;
     int i;
 
-    if(!Prog.mcu()) return 0;
-    if(!spipins) return 0;
+    if(!Prog.mcu())
+        return 0;
+    if(!spipins)
+        return 0;
 
-    for(i = 0; i < Prog.io.count; i++)
-    {
-        if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0)
-        {
-            if (Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI)
-            {
+    for(i = 0; i < Prog.io.count; i++) {
+        if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
+            if(Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name) &&
-                        (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->spiInfo[j].name)
+                       && (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        port= iop->port;                        // all SPI pins supposed on same port
-                        spipins[0]= iop->bit;
-                        res++; break;
+                        port = iop->port; // all SPI pins supposed on same port
+                        spipins[0] = iop->bit;
+                        res++;
+                        break;
                     }
             }
-            if (Prog.io.assignment[i].type == IO_TYPE_SPI_MISO)
-            {
+            if(Prog.io.assignment[i].type == IO_TYPE_SPI_MISO) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name) &&
-                        (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->spiInfo[j].name)
+                       && (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        spipins[1]= iop->bit;
-                        res++; break;
+                        spipins[1] = iop->bit;
+                        res++;
+                        break;
                     }
             }
-            if (Prog.io.assignment[i].type == IO_TYPE_SPI_SCK)
-            {
+            if(Prog.io.assignment[i].type == IO_TYPE_SPI_SCK) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name) &&
-                        (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->spiInfo[j].name)
+                       && (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        spipins[2]= iop->bit;
-                        res++; break;
+                        spipins[2] = iop->bit;
+                        res++;
+                        break;
                     }
             }
-            if (Prog.io.assignment[i].type == IO_TYPE_SPI__SS)
-            {
+            if(Prog.io.assignment[i].type == IO_TYPE_SPI__SS) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name) &&
-                        (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->spiInfo[j].name)
+                       && (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        spipins[3]= iop->bit;
-                        res++; break;
+                        spipins[3] = iop->bit;
+                        res++;
+                        break;
                     }
             }
         }
     }
 
-    if(res != 4)
-    {
+    if(res != 4) {
         THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name.c_str());
     }
-    return port;        // spi port
+    return port; // spi port
 }
-
 
 //-----------------------------------------------------------------------------
 // Added by JG to force I2C pins assignment
 //-----------------------------------------------------------------------------
-int PinsForI2cVariable(const NameArray& name, int n, int* i2cpins)
+int PinsForI2cVariable(const NameArray &name, int n, int *i2cpins)
 {
-    int res = 0, port= 0;
+    int res = 0, port = 0;
     int i;
 
-    if(!Prog.mcu()) return 0;
-    if(!i2cpins) return 0;
+    if(!Prog.mcu())
+        return 0;
+    if(!i2cpins)
+        return 0;
 
-    for(i = 0; i < Prog.io.count; i++)
-    {
-        if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0)
-        {
-            if (Prog.io.assignment[i].type == IO_TYPE_I2C_SCL)
-            {
+    for(i = 0; i < Prog.io.count; i++) {
+        if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
+            if(Prog.io.assignment[i].type == IO_TYPE_I2C_SCL) {
                 for(uint32_t j = 0; j < Prog.mcu()->i2cCount; j++)
-                    if((name == Prog.mcu()->i2cInfo[j].name) &&
-                        (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->i2cInfo[j].name)
+                       && (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        port= iop->port;                        // all I2C pins supposed on same port
-                        i2cpins[0]= iop->bit;
-                        res++; break;
+                        port = iop->port; // all I2C pins supposed on same port
+                        i2cpins[0] = iop->bit;
+                        res++;
+                        break;
                     }
             }
-            if (Prog.io.assignment[i].type == IO_TYPE_I2C_SDA)
-            {
+            if(Prog.io.assignment[i].type == IO_TYPE_I2C_SDA) {
                 for(uint32_t j = 0; j < Prog.mcu()->i2cCount; j++)
-                    if((name == Prog.mcu()->i2cInfo[j].name) &&
-                        (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin))
-                    {
+                    if((name == Prog.mcu()->i2cInfo[j].name)
+                       && (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-                        i2cpins[1]= iop->bit;
-                        res++; break;
+                        i2cpins[1] = iop->bit;
+                        res++;
+                        break;
                     }
             }
         }
     }
 
-    if(res != 2)
-    {
+    if(res != 2) {
         THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name.c_str());
     }
-    return port;        // i2c port
+    return port; // i2c port
 }
-
 
 //-----------------------------------------------------------------------------
 int byteNeeded(long long int i)
@@ -550,7 +538,7 @@ int byteNeeded(long long int i)
 }
 
 //-----------------------------------------------------------------------------
-int TestByteNeeded(int count, int32_t* vals)
+int TestByteNeeded(int count, int32_t *vals)
 {
     int res = -1;
     int r;
@@ -565,7 +553,7 @@ int TestByteNeeded(int count, int32_t* vals)
 //-----------------------------------------------------------------------------
 // Allocate 1,2,3 or 4 byte for a variable, used for a variety of purposes.
 //-----------------------------------------------------------------------------
-int MemForVariable(const NameArray& name, ADDR_T *addr, int sizeOfVar)
+int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
 {
     if(strlenalnum(name.c_str()) == 0) {
         THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
@@ -712,7 +700,7 @@ int MemForVariable(const NameArray& name, ADDR_T *addr, int sizeOfVar)
     return Variables[i].SizeOfVar;
 }
 
-int MemForVariable(const NameArray& name, ADDR_T *addr)
+int MemForVariable(const NameArray &name, ADDR_T *addr)
 {
     return MemForVariable(name, addr, 0);
 }
@@ -740,7 +728,7 @@ int SetMemForVariable(const NameArray &name, ADDR_T addr, int sizeOfVar)
 int SetSizeOfVar(const NameArray &name, int sizeOfVar, bool showError)
 {
     if(showError)
-        if((sizeOfVar < 1)/* || (4 < sizeOfVar)*/) {
+        if((sizeOfVar < 1) /* || (4 < sizeOfVar)*/) {
             Warning(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name.c_str());
             sizeOfVar = 2;
         }
@@ -846,10 +834,11 @@ int AllocOfVar(const NameArray &name)
 }
 
 //-----------------------------------------------------------------------------
-void SaveVarListToFile(FileTracker& f)
+void SaveVarListToFile(FileTracker &f)
 {
-    std::sort(std::begin(Variables), std::begin(Variables) + VariableCount,
-              [](const VariablesList& a, const VariablesList& b) {return (strcmp(a.name, b.name) < 0);});
+    std::sort(std::begin(Variables),
+              std::begin(Variables) + VariableCount,
+              [](const VariablesList &a, const VariablesList &b) { return (strcmp(a.name, b.name) < 0); });
 
     for(int i = 0; i < VariableCount; i++) {
         if(!IsIoType(Variables[i].type) && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
@@ -864,7 +853,7 @@ void SaveVarListToFile(FileTracker& f)
 }
 
 //-----------------------------------------------------------------------------
-bool LoadVarListFromFile(FileTracker& f)
+bool LoadVarListFromFile(FileTracker &f)
 {
     //ClrInternalData(); // VariableCount = 0;
     //ClrSimulationData();
@@ -895,7 +884,8 @@ bool LoadVarListFromFile(FileTracker& f)
             }
         }
         if(!Ok) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."),
+                                         strspacer(line));
             //return false;
         }
     }
@@ -905,7 +895,7 @@ bool LoadVarListFromFile(FileTracker& f)
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
 //-----------------------------------------------------------------------------
-static void MemForBitInternal(const NameArray& name, ADDR_T *addr, int *bit, bool writeTo)
+static void MemForBitInternal(const NameArray &name, ADDR_T *addr, int *bit, bool writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -934,7 +924,7 @@ static void MemForBitInternal(const NameArray& name, ADDR_T *addr, int *bit, boo
 // or closed. Contacts could be internal relay, output pin, or input pin,
 // or one of the internal state variables ($xxx) from the int code generator.
 //-----------------------------------------------------------------------------
-void MemForSingleBit(const NameArray& name, bool forRead, ADDR_T *addr, int *bit)
+void MemForSingleBit(const NameArray &name, bool forRead, ADDR_T *addr, int *bit)
 {
     *addr = INVALID_ADDR;
     *bit = -1;
@@ -965,7 +955,7 @@ void MemForSingleBit(const NameArray& name, bool forRead, ADDR_T *addr, int *bit
     }
 }
 
-void MemForSingleBit(const NameArray& name, ADDR_T *addr, int *bit)
+void MemForSingleBit(const NameArray &name, ADDR_T *addr, int *bit)
 {
     MemForSingleBit(name, false, addr, bit);
 }
@@ -1043,7 +1033,8 @@ void MemCheckForErrorsPostCompile()
 {
     for(int i = 0; i < InternalRelayCount; i++) {
         if(!InternalRelays[i].assignedTo) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
+            THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."),
+                                         InternalRelays[i].name);
         }
     }
 }
@@ -1061,9 +1052,9 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
         THROW_COMPILER_EXCEPTION(_("Invalid MCU"));
 
     ///// memset() modified by JG
-    memset(isOutput, 0x0000, 2*MAX_IO_PORTS);
-    memset(isAnsel, 0x0000, 2*MAX_IO_PORTS);
-    memset(isInput, 0x0000, 2*MAX_IO_PORTS);
+    memset(isOutput, 0x0000, 2 * MAX_IO_PORTS);
+    memset(isAnsel, 0x0000, 2 * MAX_IO_PORTS);
+    memset(isInput, 0x0000, 2 * MAX_IO_PORTS);
 
     bool usedUart = UartFunctionUsed();
 
@@ -1130,21 +1121,20 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
 }
 
 ///// Modified by JG to have 8 & 16 bit ports
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)      ///// 8-bit ports
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput) ///// 8-bit ports
 {
     WORD isInp[MAX_IO_PORTS], isAns[MAX_IO_PORTS], isOut[MAX_IO_PORTS];
 
     BuildDirectionRegisters(isInp, isAns, isOut, true);
 
-    for (int i = 0 ; i < MAX_IO_PORTS ; i++)
-    {
-        isInput[i]= (BYTE) isInp[i];
-        isAnsel[i]= (BYTE) isAns[i];
-        isOutput[i]= (BYTE) isOut[i];
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        isInput[i] = (BYTE)isInp[i];
+        isAnsel[i] = (BYTE)isAns[i];
+        isOutput[i] = (BYTE)isOut[i];
     }
 }
 
-void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput)      ///// 16-bit ports
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput) ///// 16-bit ports
 {
     BuildDirectionRegisters(isInput, isAnsel, isOutput, true);
 }

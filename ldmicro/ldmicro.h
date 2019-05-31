@@ -51,8 +51,8 @@ typedef uint32_t ADDR_T;
 #define BYTES_OF_LD_VAR 2
 #define BITS_OF_LD_VAR (BYTES_OF_LD_VAR * 8)
 #define PLC_CLOCK_MIN 250 //500 //
-//-----------------------------------------------
-// `Configuration options.'
+                          //-----------------------------------------------
+                          // `Configuration options.'
 
 // clang-format off
 

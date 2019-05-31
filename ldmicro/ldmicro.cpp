@@ -324,7 +324,7 @@ char *GetIsaName(int ISA)
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
         default               : oops(); // return nullptr;
-        // clang-format on
+            // clang-format on
     }
 }
 
@@ -372,22 +372,29 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-    char deviceName[MAX_PATH];  ///// Added by JG
+    char deviceName[MAX_PATH]; ///// Added by JG
 
     if(strlen(name) == 0) {
         Warning(_("Save ld before flash."));
         return;
     }
-    if (!Prog.mcu()) return;                  ///// Added by JG
-    strcpy(deviceName, Prog.mcu()->deviceName);    /////
+    if(!Prog.mcu())
+        return;                                 ///// Added by JG
+    strcpy(deviceName, Prog.mcu()->deviceName); /////
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
-        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+    if(compile_MNU == MNU_COMPILE_HI_TECH_C) { ///// Added by JG
+        strcpy(deviceName, deviceName + 3);    // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %s %s", ExePath, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName));       ///// 3rd & 4th param added by JG
+    sprintf(r,
+            "\"%sflashMcu.bat\" %s \"%s\" %s %s",
+            ExePath,
+            GetIsaName(ISA),
+            s,
+            GetMnuCompilerName(compile_MNU),
+            _strlwr(deviceName)); ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }
@@ -510,7 +517,14 @@ static void postCompile(const char *MNU)
     if(Prog.mcu())
         ISA = GetIsaName(Prog.mcu()->whichIsa);
 
-    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
+    sprintf(r,
+            "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s",
+            ExePath,
+            MNU,
+            ISA,
+            CurrentCompilePath,
+            LdName,
+            GetMnuCompilerName(compile_MNU));
     isErr(Execute(r), r);
 }
 
@@ -524,82 +538,76 @@ static void CompileProgram(bool compileAs, int MNU)
         MNU = compile_MNU;
     compile_MNU = MNU;
 
-    if(MNU == MNU_COMPILE_GNUC ){
+    if(MNU == MNU_COMPILE_GNUC) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
     }
 
     ///// Added by JG
-    if(MNU == MNU_COMPILE_AVRGCC ){
+    if(MNU == MNU_COMPILE_AVRGCC) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to AVR GCC, but MCU core isn't AVR.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to AVR GCC, but MCU core isn't AVR.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
     }
     /////
 
-    if(MNU == MNU_COMPILE_CODEVISIONAVR){
+    if(MNU == MNU_COMPILE_CODEVISIONAVR) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
     }
 
-    if(MNU == MNU_COMPILE_HI_TECH_C){
+    if(MNU == MNU_COMPILE_HI_TECH_C) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
     }
 
-    if(MNU == MNU_COMPILE_CCS_PIC_C){
+    if(MNU == MNU_COMPILE_CCS_PIC_C) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
     }
 
     ///// Added by JG
-    if(MNU == MNU_COMPILE_ARMGCC ){
+    if(MNU == MNU_COMPILE_ARMGCC) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_ARM)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to Arm GCC, but MCU core isn't ARM.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to Arm GCC, but MCU core isn't ARM.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
@@ -608,12 +616,11 @@ static void CompileProgram(bool compileAs, int MNU)
 
     if(MNU == MNU_COMPILE_ARDUINO) {
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ESP8266)) {
-            int msgboxID = MessageBox(
-                    NULL,
-                    _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
-                    _("MCU type warning"),
-                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
-                );
+            int msgboxID =
+                MessageBox(NULL,
+                           _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
+                           _("MCU type warning"),
+                           MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;
         }
@@ -762,30 +769,28 @@ IsOpenAnable:
 
     ///// Added by JG
     if(SpiFunctionUsed()) {
-        if((MNU != MNU_COMPILE_ARMGCC ) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C))
-        {
+        if((MNU != MNU_COMPILE_ARMGCC) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C)) {
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
         }
 
-        char deviceName[MAX_PATH]= "";
+        char deviceName[MAX_PATH] = "";
         if(Prog.mcu())
             strcpy(deviceName, Prog.mcu()->deviceName);
 
-        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) {     // no SPI on this PIC
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
         }
     }
 
     if(I2cFunctionUsed()) {
-        if((MNU != MNU_COMPILE_ARMGCC ) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C))
-        {
+        if((MNU != MNU_COMPILE_ARMGCC) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C)) {
             Error(_("I2C functions used but not supported for this micro or compile mode."));
             return;
         }
 
-        char deviceName[MAX_PATH]= "";
+        char deviceName[MAX_PATH] = "";
         if(Prog.mcu())
             strcpy(deviceName, Prog.mcu()->deviceName);
 
@@ -1331,7 +1336,7 @@ static void ProcessMenu(int code)
         case MNU_INSERT_I2C_WRITE:
             CHANGING_PROGRAM(AddI2c(ELEM_I2C_WR));
             break;
-        /////
+            /////
 
         case MNU_INSERT_7SEG:
             CHANGING_PROGRAM(AddSegments(ELEM_7SEG));
@@ -1617,7 +1622,7 @@ static void ProcessMenu(int code)
 
         case MNU_SELECT_RUNG: {
             int i = RungContainingSelected();
-            if(i >= 0){
+            if(i >= 0) {
                 if(Prog.rungSelected[i] == ' ')
                     Prog.rungSelected[i] = '*';
                 else
@@ -1683,11 +1688,11 @@ static void ProcessMenu(int code)
         case MNU_COMPILE_HI_TECH_C:
         case MNU_COMPILE_CCS_PIC_C:
         case MNU_COMPILE_GNUC:
-        case MNU_COMPILE_AVRGCC:            ///// added by JG
+        case MNU_COMPILE_AVRGCC: ///// added by JG
         case MNU_COMPILE_CODEVISIONAVR:
         case MNU_COMPILE_IMAGECRAFT:
         case MNU_COMPILE_IAR:
-        case MNU_COMPILE_ARMGCC:            ///// added by JG
+        case MNU_COMPILE_ARMGCC: ///// added by JG
         case MNU_COMPILE_IHEX:
         case MNU_COMPILE_PASCAL:
         case MNU_COMPILE_ARDUINO:
@@ -1704,25 +1709,23 @@ static void ProcessMenu(int code)
                 nullptr,
                 nullptr,
                 SW_SHOWNORMAL);
-            ShellExecute(
-                0,
-                "open",
-                "https://github.com/LDmicro/LDmicro/wiki/NEW:-PIC-8-pins-micros",
-                nullptr,
-                nullptr,
-                SW_SHOWNORMAL);
+            ShellExecute(0,
+                         "open",
+                         "https://github.com/LDmicro/LDmicro/wiki/NEW:-PIC-8-pins-micros",
+                         nullptr,
+                         nullptr,
+                         SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
             ShellExecute(
                 0, "open", "https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE", nullptr, nullptr, SW_SHOWNORMAL);
-            ShellExecute(
-                0,
-                "open",
-                "https://github.com/LDmicro/LDmicro/wiki/NEW:--PIC-Enhanced-Mid-Range-Products",
-                nullptr,
-                nullptr,
-                SW_SHOWNORMAL);
+            ShellExecute(0,
+                         "open",
+                         "https://github.com/LDmicro/LDmicro/wiki/NEW:--PIC-Enhanced-Mid-Range-Products",
+                         nullptr,
+                         nullptr,
+                         SW_SHOWNORMAL);
             break;
 
         case MNU_OPEN_SFR:
@@ -3097,7 +3100,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
 
-        MSG   msg;
+        MSG msg;
         while(GetMessage(&msg, nullptr, 0, 0) > 0) {
             if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
                 if(msg.wParam == VK_TAB) {
@@ -3122,7 +3125,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Prog.reset();
 
         return 0;
-    } catch (std::runtime_error& e) {
+    } catch(std::runtime_error &e) {
         LOG_ERROR(logg, "Runtime error: \"{}\"", e.what());
         Prog.setMcu(nullptr);
         srand((unsigned int)time(nullptr));
@@ -3132,7 +3135,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return EXIT_FAILURE;
     } catch(...) {
 
-        LOG_ERROR(logg, "{}" , "Receive unknown exception");
+        LOG_ERROR(logg, "{}", "Receive unknown exception");
         ///// Added by JG to save work in case of big bug
         Prog.setMcu(nullptr);
         srand((unsigned int)time(nullptr));

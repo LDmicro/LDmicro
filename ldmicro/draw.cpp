@@ -125,9 +125,9 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
         case ELEM_SPI:
-        case ELEM_SPI_WR:       ///// Added by JG
-        case ELEM_I2C_RD:       ///// Added by JG
-        case ELEM_I2C_WR:       ///// Added by JG
+        case ELEM_SPI_WR: ///// Added by JG
+        case ELEM_I2C_RD: ///// Added by JG
+        case ELEM_I2C_WR: ///// Added by JG
         case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:
@@ -1159,16 +1159,19 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             const char *ss1, *ss2;
             if(which == ELEM_ONE_SHOT_RISING) {
                 ss1 = "    _     _    ";
-                ss2 = "[_/ \x01"
-                     "OSR\x02_/ \\_]";
+                ss2 =
+                    "[_/ \x01"
+                    "OSR\x02_/ \\_]";
             } else if(which == ELEM_ONE_SHOT_FALLING) {
                 ss1 = "  _       _    ";
-                ss2 = "[ \\_\x01"
-                     "OSF\x02_/ \\_]";
+                ss2 =
+                    "[ \\_\x01"
+                    "OSF\x02_/ \\_]";
             } else if(which == ELEM_ONE_SHOT_LOW) {
                 ss1 = "  _     _   _ ";
-                ss2 = "[ \\_\x01"
-                     "OSL\x02 \\_/ ]";
+                ss2 =
+                    "[ \\_\x01"
+                    "OSL\x02 \\_/ ]";
             } else
                 oops();
 
@@ -1181,8 +1184,9 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_OSC: {
             const char *ss1, *ss2;
             ss1 = "   _     _   _  ";
-            ss2 = "[_/ \x01"
-                 "OSC\x02_/ \\_/ \\]";
+            ss2 =
+                "[_/ \x01"
+                "OSC\x02_/ \\_/ \\]";
 
             CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
             CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);
@@ -1194,10 +1198,10 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             ElemQuadEncod *m = &leaf->d.QuadEncod;
 
             sprintf(s2, "~~[%s %s", m->inputA, m->inputB);
-            sprintf(s3, "%s]%s", m->dir, strlen(m->dir)?"-":" ");
+            sprintf(s3, "%s]%s", m->dir, strlen(m->dir) ? "-" : " ");
             formatWidth(top, 2 * POS_WIDTH, s2, "", "", "", s3);
 
-            sprintf(s1, "-%c[%s", strlen(m->inputZ)?m->inputZKind:'-', m->inputZ);
+            sprintf(s1, "-%c[%s", strlen(m->inputZ) ? m->inputZKind : '-', m->inputZ);
             sprintf(s2, " \x01QUAD ENCOD\x02 ");
             formatWidth(bot, 2 * POS_WIDTH, s1, "", s2, m->counter, "]^");
 
@@ -1393,10 +1397,10 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
             //s0 = ""; // restore to original
             if(IsNumber(t->delay)) {
-              double d = SIprefix(hobatoi(t->delay) / 1000000.0, s2);
-              sprintf(bot, "%s[%s %.6g %ss]", s0, s, d, s2);
+                double d = SIprefix(hobatoi(t->delay) / 1000000.0, s2);
+                sprintf(bot, "%s[%s %.6g %ss]", s0, s, d, s2);
             } else {
-              sprintf(bot, "%s[%s %s]", s0, s, t->delay);
+                sprintf(bot, "%s[%s %s]", s0, s, t->delay);
             }
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
@@ -1479,9 +1483,9 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
-        {
-        const char* s;
-        // clang-format off
+            {
+                const char *s;
+                // clang-format off
         case ELEM_CPRINTF:      s = "CPRN"; goto cprintf;
         case ELEM_SPRINTF:      s = "SPRN"; goto cprintf;
         case ELEM_FPRINTF:      s = "FPRN"; goto cprintf;
@@ -1489,24 +1493,24 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_I2C_CPRINTF:  s = "I2C";  goto cprintf;
         case ELEM_ISP_CPRINTF:  s = "ISP";  goto cprintf;
         case ELEM_UART_CPRINTF: s = "UART"; goto cprintf; {
-            // clang-format on
-            cprintf:
-                sprintf(s1, "->%s{", leaf->d.fmtdStr.enable);
-                sprintf(s2, "%s %s:=", s, leaf->d.fmtdStr.dest);
-                sprintf(s3, "}%s->", leaf->d.fmtdStr.error);
+                    // clang-format on
+                    cprintf:
+                        sprintf(s1, "->%s{", leaf->d.fmtdStr.enable);
+                        sprintf(s2, "%s %s:=", s, leaf->d.fmtdStr.dest);
+                        sprintf(s3, "}%s->", leaf->d.fmtdStr.error);
 
-                formatWidth(top, 2 * POS_WIDTH, s1, "", s2, "", s3);
+                        formatWidth(top, 2 * POS_WIDTH, s1, "", s2, "", s3);
 
-                sprintf(s1, "\"%s\",", leaf->d.fmtdStr.string);
-                sprintf(s2, "%s", leaf->d.fmtdStr.var);
-                formatWidth(bot, 2 * POS_WIDTH, "{", s1, "", s2, "}");
+                        sprintf(s1, "\"%s\",", leaf->d.fmtdStr.string);
+                        sprintf(s2, "%s", leaf->d.fmtdStr.var);
+                        formatWidth(bot, 2 * POS_WIDTH, "{", s1, "", s2, "}");
 
-                CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, true, 2 * POS_WIDTH);
-                CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);
-                *cx += 2 * POS_WIDTH;
-                break;
+                        CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, true, 2 * POS_WIDTH);
+                        CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);
+                        *cx += 2 * POS_WIDTH;
+                        break;
+                    }
             }
-        }
 
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
@@ -1631,7 +1635,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             *cx += POS_WIDTH;
             break;
         }
-        /////
+            /////
 
         case ELEM_BUS: {
             ElemBus *m = &leaf->d.bus;
@@ -1814,7 +1818,7 @@ static bool HasEndOfRungElem(int which, void *elem)
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/)
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore /*, int cols*/)
 {
     bool poweredAfter;
 
@@ -1836,7 +1840,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
             for(int i = 0; i < s->count; i++) {
-                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter/*, 0*/);
+                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter /*, 0*/);
             }
             break;
             /*
@@ -1866,7 +1870,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
             for(int i = 0; i < p->count; i++) {
                 bool poweredThis;
 
-                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore/*, 0*/);
+                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore /*, 0*/);
 
                 if(InSimulationMode) {
                     if(poweredThis)

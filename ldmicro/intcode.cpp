@@ -76,7 +76,7 @@ int    bitRUartSendErrorFlag;
 
 std::vector<IntOp> IntCode;
 int                ProgWriteP = 0;
-static int32_t *    Tdata;
+static int32_t *   Tdata;
 int                rungNow = -INT_MAX;
 static int         whichNow = -INT_MAX;
 static ElemLeaf *  leafNow = nullptr;
@@ -493,11 +493,15 @@ void IntDumpListing(char *outFile)
                         l->d.i2c.send,
                         IntCode[i].name1.c_str());
                 break;
-            /////
+                /////
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
+                fprintf(f,
+                        "uart send from '%s[%s+%d]'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].literal1);
                 break;
 
             case INT_UART_SEND:
@@ -514,7 +518,11 @@ void IntDumpListing(char *outFile)
 
             case INT_UART_RECVn:
             case INT_UART_RECV1:
-                fprintf(f, "uart recv into '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
+                fprintf(f,
+                        "uart recv into '%s[%s+%d]'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].literal1);
                 break;
 
             case INT_UART_RECV:
@@ -580,7 +588,8 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_IF_BITS_SET_IN_VAR:
-                fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
+                fprintf(
+                    f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
                 indent++;
                 break;
 
@@ -730,11 +739,16 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_GOTO:
-                fprintf(f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
+                fprintf(
+                    f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_GOSUB:
-                fprintf(f, "GOSUB Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
+                fprintf(f,
+                        "GOSUB Label%s # %s %d",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].literal1);
                 break;
 
             case INT_RETURN:
@@ -1088,8 +1102,8 @@ int32_t TestTimerPeriod(char *name, int32_t delay, int adjust) // delay in us
     }
 
     if(((period > maxPeriod) || (adjPeriod > maxPeriod)) //
-       && (Prog.mcu())                                     //
-       && (Prog.mcu()->whichIsa != ISA_PC)                 //
+       && (Prog.mcu())                                   //
+       && (Prog.mcu()->whichIsa != ISA_PC)               //
     ) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
@@ -1263,7 +1277,8 @@ long hobatoi(const char *str)
         char dest[MAX_NAME_LEN];
         FrmStrToStr(dest, start_ptr);
         if((strlen(dest) > 3) || (dest[0] != '\'') || (dest[2] != '\'')) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), str);
+            THROW_COMPILER_EXCEPTION_FMT(
+                _("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), str);
         }
         val = dest[1];
     } else {
@@ -1413,28 +1428,28 @@ static bool CheckCanChangeOutputElem(int which, void *elem)
 //-----------------------------------------------------------------------------
 char *GetLabelName(int which, char *name, char *label)
 {
-   int r;
-   if(IsNumber(label)) {
-       r = hobatoi(label);
-       r = std::max(r, 1);
-       r = std::min(r, Prog.numRungs + 1);
-   } else {
-       r = FindRung(which, label);
-       if(r < 0)
-           oops();
-       r++;
-       if(which == ELEM_SUBPROG) {
-           r++; // Call the next rung.
-       }
-   }
-   sprintf(name, "Rung%d", r);
-   return name;
+    int r;
+    if(IsNumber(label)) {
+        r = hobatoi(label);
+        r = std::max(r, 1);
+        r = std::min(r, Prog.numRungs + 1);
+    } else {
+        r = FindRung(which, label);
+        if(r < 0)
+            oops();
+        r++;
+        if(which == ELEM_SUBPROG) {
+            r++; // Call the next rung.
+        }
+    }
+    sprintf(name, "Rung%d", r);
+    return name;
 }
 
 char *GetLabelName(char *name, int r)
 {
-   sprintf(name, "Rung%d", r);
-   return name;
+    sprintf(name, "Rung%d", r);
+    return name;
 }
 //-----------------------------------------------------------------------------
 void OpSetVar(char *op1, char *op2)
@@ -1529,7 +1544,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
 #if QUAD_ALGO == 222
         case ELEM_QUAD_ENCOD: {
             if(n) {
-                (*n)+=2; // counting the number of variables
+                (*n) += 2; // counting the number of variables
                 return;
             }
             char prevA[MAX_NAME_LEN];
@@ -1592,11 +1607,11 @@ static void InitTablesCircuit(int which, void *elem)
             strcpy(nameTable, "ELEM_QUAD_ENCOD");
             int32_t count = 16;
 #if QUAD_ALGO == 1
-            static int32_t vals[16] = {0, 0,1,0,0,0,0, 0,-1,0,0,0,0,0, 0,0}; // x1
+            static int32_t vals[16] = {0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0}; // x1
 #elif QUAD_ALGO == 2
-            static int32_t vals[16] = {0, 0,1,0,0,0,0,-1,-1,0,0,0,0,1, 0,0}; // x2
+            static int32_t vals[16] = {0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0}; // x2
 #elif QUAD_ALGO == 4
-            static int32_t vals[16] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0}; // x4
+            static int32_t vals[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0}; // x4
 #endif
             int32_t sovElement = 1;
             //SetSizeOfVar(nameTable, count);
@@ -1624,29 +1639,30 @@ static void InitTablesCircuit(int which, void *elem)
             }
             break;
         }
-        {
-        // clang-format off
+            {
+                // clang-format off
         const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
         case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
         case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
         case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
         xseg:
-        // clang-format on
-            if(!IsNumber(l->d.segments.src)) {
-                if((isVarInited(nameTable) < 0)) {
-                    if(which == ELEM_7SEG) {
-                        sovElement = 1;
-                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
-                    } else
-                        oops();
-                    MarkInitedVariable(nameTable);
-                } else {
-                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
-                }
+                    // clang-format on
+                    if(!IsNumber(l->d.segments.src)) {
+                        if((isVarInited(nameTable) < 0)) {
+                            if(which == ELEM_7SEG) {
+                                sovElement = 1;
+                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                            } else
+                                oops();
+                            MarkInitedVariable(nameTable);
+                        } else {
+                            Comment(
+                                _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
+                        }
+                    }
+                    break;
             }
-            break;
-        }
         default:
             break;
     }
@@ -2839,69 +2855,70 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); deg=DEGREE14; len=LEN14SEG; goto xseg;
         case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); deg=DEGREE16; len=LEN16SEG; goto xseg;
         xseg :
-        // clang-format on
+                    // clang-format on
 #ifdef TABLE_IN_FLASH
-            if(IsNumber(l->d.segments.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
-            }
-            Op(INT_IF_BIT_SET, stateInOut);
-            if(IsNumber(l->d.segments.src)) {
-                int Xseg = CheckMakeNumber(l->d.segments.src);
-                if(Xseg == DEGREE_CHAR)
-                    Xseg = deg;
-                else if((Xseg < 0x00) || (len <= Xseg))
-                    Xseg = ' ';
-                switch(which) {
-                    case ELEM_7SEG:
-                        Xseg = char7seg[Xseg];
-                        break;
-                    default:
-                        oops();
-                }
-                char s[MAX_NAME_LEN];
-                sprintf(s, "0x%X", Xseg);
-                CheckVarInRange(l->d.segments.dest, s, Xseg);
-                if(l->d.segments.common == 'A')
-                    Op(INT_SET_VARIABLE_NOT, l->d.segments.dest, Xseg);
-                else
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.segments.dest, Xseg);
-            } else {
-                char *Xseg = l->d.segments.src;
+                    if(IsNumber(l->d.segments.dest)) {
+                        THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."),
+                                                     l->d.segments.dest);
+                    }
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    if(IsNumber(l->d.segments.src)) {
+                        int Xseg = CheckMakeNumber(l->d.segments.src);
+                        if(Xseg == DEGREE_CHAR)
+                            Xseg = deg;
+                        else if((Xseg < 0x00) || (len <= Xseg))
+                            Xseg = ' ';
+                        switch(which) {
+                            case ELEM_7SEG:
+                                Xseg = char7seg[Xseg];
+                                break;
+                            default:
+                                oops();
+                        }
+                        char s[MAX_NAME_LEN];
+                        sprintf(s, "0x%X", Xseg);
+                        CheckVarInRange(l->d.segments.dest, s, Xseg);
+                        if(l->d.segments.common == 'A')
+                            Op(INT_SET_VARIABLE_NOT, l->d.segments.dest, Xseg);
+                        else
+                            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.segments.dest, Xseg);
+                    } else {
+                        char *Xseg = l->d.segments.src;
 
-                char nameTable[MAX_NAME_LEN];
-                int  sovElement = 0;
-                /**/
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
-                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
-                  Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)deg);
-                  Op(INT_ELSE);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (int32_t)0x00);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)0x20); // ' '
-                    Op(INT_ELSE);
-                      Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
-                      Op(INT_ELSE);
+                        char nameTable[MAX_NAME_LEN];
+                        int  sovElement = 0;
+                        /**/
+                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
+                        Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
+                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)deg);
+                        Op(INT_ELSE);
+                        Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (int32_t)0x00);
                         Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)0x20); // ' '
-                      Op(INT_END_IF);
+                        Op(INT_ELSE);
+                        Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
+                        Op(INT_ELSE);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)0x20); // ' '
+                        Op(INT_END_IF);
+                        Op(INT_END_IF);
+                        Op(INT_END_IF);
+                        /**/
+                        switch(which) {
+                            case ELEM_7SEG:
+                                strcpy(nameTable, "char7seg");
+                                sovElement = 1;
+                                Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
+                                break;
+                            default:
+                                oops();
+                        }
+                        if(l->d.segments.common != 'C')
+                            Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
+                    }
                     Op(INT_END_IF);
-                Op(INT_END_IF);
-                /**/
-                switch(which) {
-                    case ELEM_7SEG:
-                        strcpy(nameTable, "char7seg");
-                        sovElement = 1;
-                        Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
-                        break;
-                    default:
-                        oops();
-                }
-                if(l->d.segments.common != 'C')
-                    Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
-                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
-            }
-            Op(INT_END_IF);
 #endif
-            break;
-        }
+                    break;
+            }
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
             // Pulse generator for STEPPER motor with acceleration and deceleration.
@@ -2949,7 +2966,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 // CheckFree(Tdata) in WipeIntMemory();
 
                 for(int i = 0; i < l->d.stepper.n; i++) {
-                    Tdata[i] = r.T[i+1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
+                    Tdata[i] = r.T[i + 1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
                 }
             }
             //
@@ -2963,93 +2980,93 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_BIT_CLEAR, storeName);
-                Op(INT_SET_BIT, storeName);
-                // Этот фрагмент кода выполняется 1 раз при переключении 0->1.
-                // This code fragment is executed 1 time when switching 0->1.
-                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1); // запрет повторной загрузки - повторного рестарта
-                  OpSetVar(decCounter, l->d.stepper.max);
+            Op(INT_IF_BIT_CLEAR, storeName);
+            Op(INT_SET_BIT, storeName);
+            // Этот фрагмент кода выполняется 1 раз при переключении 0->1.
+            // This code fragment is executed 1 time when switching 0->1.
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1); // запрет повторной загрузки - повторного рестарта
+            OpSetVar(decCounter, l->d.stepper.max);
 
-                  if(speed == 2) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
+            if(speed == 2) {
+                Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
 
-                  } else if(speed >= 3) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (int32_t)(0));
-                    //vvv
-                    //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, l->d.stepper.n);
-                    char strn[20];
-                    sprintf(strn, "%d", l->d.stepper.n - 1);
-                    Op(INT_FLASH_READ, Tmul, nameTable, strn, l->d.stepper.n - 1, r.sovElement, Tdata);
-                  }
-                Op(INT_END_IF);
-              Op(INT_END_IF);
+            } else if(speed >= 3) {
+                Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
+                Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (int32_t)(0));
+                //vvv
+                //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, l->d.stepper.n);
+                char strn[20];
+                sprintf(strn, "%d", l->d.stepper.n - 1);
+                Op(INT_FLASH_READ, Tmul, nameTable, strn, l->d.stepper.n - 1, r.sovElement, Tdata);
+            }
+            Op(INT_END_IF);
+            Op(INT_END_IF);
             Op(INT_ELSE);
-              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
             //
             Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
-              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_ELSE);
-              Op(INT_SET_BIT, stateInOut);
-                if(speed == 1) {
-                  //PULSE
-                  Op(INT_SET_BIT, l->d.stepper.coil);
-                  Op(INT_DECREMENT_VARIABLE, decCounter);
-                  Op(INT_CLEAR_BIT, l->d.stepper.coil);
+            Op(INT_SET_BIT, stateInOut);
+            if(speed == 1) {
+                //PULSE
+                Op(INT_SET_BIT, l->d.stepper.coil);
+                Op(INT_DECREMENT_VARIABLE, decCounter);
+                Op(INT_CLEAR_BIT, l->d.stepper.coil);
 
-                } else if(speed == 2) {
-                  Op(INT_DECREMENT_VARIABLE, workP);
-                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
-                    //PULSE
-                    Op(INT_SET_BIT, l->d.stepper.coil);
-                    Op(INT_DECREMENT_VARIABLE, decCounter);
-                    Op(INT_CLEAR_BIT, l->d.stepper.coil);
-                    OpSetVar(workP, l->d.stepper.P);
-                    //Op(INT_ELSE);
-                    //Op(INT_DECREMENT_VARIABLE, workP);
-                  Op(INT_END_IF);
+            } else if(speed == 2) {
+                Op(INT_DECREMENT_VARIABLE, workP);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
+                //PULSE
+                Op(INT_SET_BIT, l->d.stepper.coil);
+                Op(INT_DECREMENT_VARIABLE, decCounter);
+                Op(INT_CLEAR_BIT, l->d.stepper.coil);
+                OpSetVar(workP, l->d.stepper.P);
+                //Op(INT_ELSE);
+                //Op(INT_DECREMENT_VARIABLE, workP);
+                Op(INT_END_IF);
 
-                } else if(speed >= 3) {
-                  Op(INT_DECREMENT_VARIABLE, workP);
-                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
-                    //PULSE
-                    Op(INT_SET_BIT, l->d.stepper.coil);
-                    //Op(INT_DECREMENT_VARIABLE, decCounter); //n downto 1
-                    //Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
-                  Op(INT_END_IF);
+            } else if(speed >= 3) {
+                Op(INT_DECREMENT_VARIABLE, workP);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
+                //PULSE
+                Op(INT_SET_BIT, l->d.stepper.coil);
+                //Op(INT_DECREMENT_VARIABLE, decCounter); //n downto 1
+                //Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
+                Op(INT_END_IF);
+            } else {
+                oops();
+            }
+            Op(INT_END_IF);
+
+            if(speed >= 3) {
+                Op(INT_IF_BIT_SET, l->d.stepper.coil);
+                Op(INT_CLEAR_BIT, l->d.stepper.coil);
+                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)l->d.stepper.n); // DEC is more then INC
+                Op(INT_FLASH_READ, workP, nameTable, decCounter, l->d.stepper.n, r.sovElement, Tdata);
+                Op(INT_ELSE);
+                Op(INT_IF_VARIABLE_LES_LITERAL, incCounter, (int32_t)l->d.stepper.n);
+                Op(INT_FLASH_READ, workP, nameTable, incCounter, l->d.stepper.n, r.sovElement, Tdata);
+                Op(INT_ELSE);
+                OpSetVar(workP, Tmul);
+                Op(INT_END_IF);
+                Op(INT_END_IF);
+                Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
+                Op(INT_DECREMENT_VARIABLE, decCounter); //n-1 downto 0
+                if(speed == 3) {
+                    //OpSetVar(workP,Tmul);
                 } else {
-                  oops();
-                }
-              Op(INT_END_IF);
-
-              if(speed >= 3) {
-                  Op(INT_IF_BIT_SET, l->d.stepper.coil);
-                    Op(INT_CLEAR_BIT, l->d.stepper.coil);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)l->d.stepper.n); // DEC is more then INC
-                      Op(INT_FLASH_READ, workP, nameTable, decCounter, l->d.stepper.n, r.sovElement, Tdata);
-                    Op(INT_ELSE);
-                      Op(INT_IF_VARIABLE_LES_LITERAL, incCounter, (int32_t)l->d.stepper.n);
-                        Op(INT_FLASH_READ, workP, nameTable, incCounter, l->d.stepper.n, r.sovElement, Tdata);
-                      Op(INT_ELSE);
-                        OpSetVar(workP, Tmul);
-                      Op(INT_END_IF);
-                    Op(INT_END_IF);
-                    Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
-                    Op(INT_DECREMENT_VARIABLE, decCounter); //n-1 downto 0
-                    if(speed == 3) {
-                      //OpSetVar(workP,Tmul);
-                    } else {
-                      //Op(INT_SET_VARIABLE_MULTIPLY, workP, Tmul, l->d.stepper.P); //may bee overload
-                      Op(INT_SET_VARIABLE_MULTIPLY, workP, workP, l->d.stepper.P); //may bee overload
-                      if(r.shrt) {
+                    //Op(INT_SET_VARIABLE_MULTIPLY, workP, Tmul, l->d.stepper.P); //may bee overload
+                    Op(INT_SET_VARIABLE_MULTIPLY, workP, workP, l->d.stepper.P); //may bee overload
+                    if(r.shrt) {
                         char rshrt[MAX_NAME_LEN];
                         sprintf(rshrt, "%d", r.shrt);
                         Op(INT_SET_VARIABLE_SHR, workP, workP, rshrt);
-                      }
                     }
-                  Op(INT_END_IF);
-              }
+                }
+                Op(INT_END_IF);
+            }
             CheckFree(r.T);
             break;
         }
@@ -3236,7 +3253,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
 
         case ELEM_BUS: {
-              Comment(3, "ELEM_BUS");
+            Comment(3, "ELEM_BUS");
 
             break;
         }
@@ -3247,7 +3264,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 THROW_COMPILER_EXCEPTION_FMT(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
+            Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3258,7 +3275,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 THROW_COMPILER_EXCEPTION_FMT(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
+            Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3269,7 +3286,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 THROW_COMPILER_EXCEPTION_FMT(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
+            Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3280,7 +3297,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 THROW_COMPILER_EXCEPTION_FMT(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
+            Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3288,7 +3305,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.string, l->d.fmtdStr.var);
+            Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.string, l->d.fmtdStr.var);
             Op(INT_END_IF);
             break;
         }
@@ -3296,7 +3313,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_RANDOM:
             Comment(3, "ELEM_RANDOM");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_SET_VARIABLE_RANDOM, l->d.readAdc.name);
+            Op(INT_SET_VARIABLE_RANDOM, l->d.readAdc.name);
             Op(INT_END_IF);
             break;
 
@@ -3320,344 +3337,356 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
             break;
 
-        // These ELEM's are highly processor-dependent; the int code op does
-        // most of the highly specific work
-        {
-        case ELEM_READ_ADC:
-            Comment(3, "ELEM_READ_ADC");
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_READ_ADC, l->d.readAdc.name, l->d.readAdc.refs);
-            Op(INT_END_IF);
-            break;
+            // These ELEM's are highly processor-dependent; the int code op does
+            // most of the highly specific work
+            {
+                case ELEM_READ_ADC:
+                    Comment(3, "ELEM_READ_ADC");
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_READ_ADC, l->d.readAdc.name, l->d.readAdc.refs);
+                    Op(INT_END_IF);
+                    break;
 
-        case ELEM_SET_PWM: {
-            McuIoPinInfo *iop = PinInfoForName(l->d.setPwm.name);
-            if(iop) {
-                McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
-                if(ioPWM && (ioPWM->timer == Prog.cycleTimer)) {
-                    Error(_("PWM '%s' and  PLC cycle timer can not use the same timer %d!\nChange the PLC cycle timer to 0.\nMenu Settings->MCU parameters..."), l->d.setPwm.name, Prog.cycleTimer);
+                case ELEM_SET_PWM: {
+                    McuIoPinInfo *iop = PinInfoForName(l->d.setPwm.name);
+                    if(iop) {
+                        McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
+                        if(ioPWM && (ioPWM->timer == Prog.cycleTimer)) {
+                            Error(
+                                _("PWM '%s' and  PLC cycle timer can not use the same timer %d!\nChange the PLC cycle timer to 0.\nMenu Settings->MCU parameters..."),
+                                l->d.setPwm.name,
+                                Prog.cycleTimer);
+                        }
+                    }
+                    Comment(3, "ELEM_SET_PWM");
+                    char s[MAX_NAME_LEN];
+                    sprintf(s, "$%s", l->d.setPwm.name);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    // ugh; need a >16 bit literal though, could be >64 kHz
+                    Op(INT_SET_PWM,
+                       l->d.setPwm.duty_cycle,
+                       l->d.setPwm.targetFreq,
+                       l->d.setPwm.name,
+                       l->d.setPwm.resolution);
+                    Op(INT_SET_BIT, s);
+                    Op(INT_END_IF);
+                    SimState(&(l->poweredAfter), s, &(l->workingNow), s);
+                    break;
                 }
-            }
-            Comment(3, "ELEM_SET_PWM");
-            char s[MAX_NAME_LEN];
-            sprintf(s, "$%s", l->d.setPwm.name);
-            Op(INT_IF_BIT_SET, stateInOut);
-              // ugh; need a >16 bit literal though, could be >64 kHz
-              Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-              Op(INT_SET_BIT, s);
-            Op(INT_END_IF);
-            SimState(&(l->poweredAfter), s, &(l->workingNow), s);
-            break;
-        }
-        case ELEM_NPULSE: {
-            Comment(3, "ELEM_NPULSE");
-            const char *counter = VarFromExpr(l->d.Npulse.counter, "$scratch");
-            Op(INT_SET_NPULSE, counter, l->d.Npulse.targetFreq, l->d.Npulse.coil, stateInOut);
-            break;
-        }
+                case ELEM_NPULSE: {
+                    Comment(3, "ELEM_NPULSE");
+                    const char *counter = VarFromExpr(l->d.Npulse.counter, "$scratch");
+                    Op(INT_SET_NPULSE, counter, l->d.Npulse.targetFreq, l->d.Npulse.coil, stateInOut);
+                    break;
+                }
 
-        case ELEM_NPULSE_OFF: {
-            Comment(3, "ELEM_NPULSE_OFF");
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_OFF_NPULSE);
-            Op(INT_END_IF);
-            break;
-        }
-        case ELEM_QUAD_ENCOD: {
-            Comment(3, "ELEM_QUAD_ENCOD");
-            /**/
-            char nowA[MAX_NAME_LEN];
-            char nowB[MAX_NAME_LEN];
-            char prevA[MAX_NAME_LEN];
-            char prevB[MAX_NAME_LEN];
-            sprintf(nowA, "$now_%s", l->d.QuadEncod.inputA);
-            sprintf(nowB, "$now_%s", l->d.QuadEncod.inputB);
-            sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
-            sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
-            /**/
-            char nowZ[MAX_NAME_LEN];
-            char prevZ[MAX_NAME_LEN];
-            sprintf(nowZ, "$now_%s", l->d.QuadEncod.inputZ);
-            sprintf(prevZ, "$prev_%s", l->d.QuadEncod.inputZ);
+                case ELEM_NPULSE_OFF: {
+                    Comment(3, "ELEM_NPULSE_OFF");
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_OFF_NPULSE);
+                    Op(INT_END_IF);
+                    break;
+                }
+                case ELEM_QUAD_ENCOD: {
+                    Comment(3, "ELEM_QUAD_ENCOD");
+                    /**/
+                    char nowA[MAX_NAME_LEN];
+                    char nowB[MAX_NAME_LEN];
+                    char prevA[MAX_NAME_LEN];
+                    char prevB[MAX_NAME_LEN];
+                    sprintf(nowA, "$now_%s", l->d.QuadEncod.inputA);
+                    sprintf(nowB, "$now_%s", l->d.QuadEncod.inputB);
+                    sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
+                    sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
+                    /**/
+                    char nowZ[MAX_NAME_LEN];
+                    char prevZ[MAX_NAME_LEN];
+                    sprintf(nowZ, "$now_%s", l->d.QuadEncod.inputZ);
+                    sprintf(prevZ, "$prev_%s", l->d.QuadEncod.inputZ);
 
-            char pins[MAX_NAME_LEN];
-            sprintf(pins, "$pins_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(pins, 1);
+                    char pins[MAX_NAME_LEN];
+                    sprintf(pins, "$pins_%s", l->d.QuadEncod.counter);
+                    SetSizeOfVar(pins, 1);
 
-            char state[MAX_NAME_LEN];
-            sprintf(state, "$state_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(state, 1);
+                    char state[MAX_NAME_LEN];
+                    sprintf(state, "$state_%s", l->d.QuadEncod.counter);
+                    SetSizeOfVar(state, 1);
 
-            char dir[MAX_NAME_LEN];
-            sprintf(dir, "$dir_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(dir, 1);
+                    char dir[MAX_NAME_LEN];
+                    sprintf(dir, "$dir_%s", l->d.QuadEncod.counter);
+                    SetSizeOfVar(dir, 1);
 
-            char revol[MAX_NAME_LEN];
-            sprintf(revol, "$revol_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(revol, SizeOfVar(l->d.QuadEncod.counter));
+                    char revol[MAX_NAME_LEN];
+                    sprintf(revol, "$revol_%s", l->d.QuadEncod.counter);
+                    SetSizeOfVar(revol, SizeOfVar(l->d.QuadEncod.counter));
 
-            char ticks[MAX_NAME_LEN];
-            sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
+                    char ticks[MAX_NAME_LEN];
+                    sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
+                    SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
 
-            ADDR_T addr1 = INVALID_ADDR, addr2 = INVALID_ADDR;
-            int   bit1 = -1, bit2 = -1;
-            MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
-            MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
+                    ADDR_T addr1 = INVALID_ADDR, addr2 = INVALID_ADDR;
+                    int    bit1 = -1, bit2 = -1;
+                    MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
+                    MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
 
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_CLEAR_BIT, stateInOut);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_CLEAR_BIT, stateInOut);
 #if QUAD_ALGO <= 4
-              // table algorithm
-              // https://hifiduino.wordpress.com/2010/10/20/rotaryencoder-hw-sw-no-debounce/
-              Op(INT_SET_VARIABLE_SHL, state, state, "2");
-              Op(INT_SET_VARIABLE_AND, state, state, "0x0F");
+                    // table algorithm
+                    // https://hifiduino.wordpress.com/2010/10/20/rotaryencoder-hw-sw-no-debounce/
+                    Op(INT_SET_VARIABLE_SHL, state, state, "2");
+                    Op(INT_SET_VARIABLE_AND, state, state, "0x0F");
 
-              if(addr1 == addr2) {
-                char s[MAX_NAME_LEN];
-                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
-                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
-                sprintf(s, "%d", bit1);
-                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
-                  Op(INT_VARIABLE_SET_BIT, state, "0");
-                Op(INT_END_IF);
-                sprintf(s, "%d", bit2);
-                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
-                  Op(INT_VARIABLE_SET_BIT, state, "1");
-                Op(INT_END_IF);
-              } else {
-                #if 1
-                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
-                #else
-                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
-                  Op(INT_VARIABLE_SET_BIT, state, "0");
-                Op(INT_END_IF);
-                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-                  Op(INT_VARIABLE_SET_BIT, state, "1");
-                Op(INT_END_IF);
-                #endif
-              }
+                    if(addr1 == addr2) {
+                        char s[MAX_NAME_LEN];
+                        sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                        sprintf(s, "%d", bit1);
+                        Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                        Op(INT_VARIABLE_SET_BIT, state, "0");
+                        Op(INT_END_IF);
+                        sprintf(s, "%d", bit2);
+                        Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                        Op(INT_VARIABLE_SET_BIT, state, "1");
+                        Op(INT_END_IF);
+                    } else {
+#if 1
+                        Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"),
+                              l->d.QuadEncod.inputA,
+                              l->d.QuadEncod.inputB);
+#else
+                        Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
+                        Op(INT_VARIABLE_SET_BIT, state, "0");
+                        Op(INT_END_IF);
+                        Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
+                        Op(INT_VARIABLE_SET_BIT, state, "1");
+                        Op(INT_END_IF);
+#endif
+                    }
 
-              int count = 16;
-              int sovElement = 1;
-              Op(INT_FLASH_READ, dir, "ELEM_QUAD_ENCOD", state, count, sovElement);
-              Op(INT_IF_GRT, dir, "0");
-                Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                if(l->d.QuadEncod.countPerRevol > 0)
-                  Op(INT_INCREMENT_VARIABLE, ticks);
-                if(strlen(l->d.QuadEncod.dir))
-                  Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_IF_LES, dir, "0");
-                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                  if(l->d.QuadEncod.countPerRevol > 0)
-                    Op(INT_DECREMENT_VARIABLE, ticks);
-                  if(strlen(l->d.QuadEncod.dir))
-                    Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                  Op(INT_SET_BIT, stateInOut);
-                Op(INT_END_IF);
-              Op(INT_END_IF);
-#elif QUAD_ALGO == 22
-              // http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
-              Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
-              Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
-                Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
-                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                  if(l->d.QuadEncod.countPerRevol > 0)
-                    Op(INT_INCREMENT_VARIABLE, ticks);
-                  if(strlen(l->d.QuadEncod.dir))
-                    Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                Op(INT_ELSE);
-                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                  if(l->d.QuadEncod.countPerRevol > 0)
-                    Op(INT_DECREMENT_VARIABLE, ticks);
-                  if(strlen(l->d.QuadEncod.dir))
-                    Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                Op(INT_END_IF);
-                Op(INT_SET_BIT, stateInOut);
-                Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
-              Op(INT_END_IF);
-#elif QUAD_ALGO == 222
-              // http://www.technoblogy.com/show?1YHJ
-              #if 1
-              if(addr1 == addr2) {
-                char s[MAX_NAME_LEN];
-                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
-                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
-                Op(INT_CLEAR_BIT, nowA);
-                sprintf(s, "%d", bit1);
-                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
-                  Op(INT_SET_BIT, nowA);
-                Op(INT_END_IF);
-                Op(INT_CLEAR_BIT, nowB);
-                sprintf(s, "%d", bit2);
-                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
-                  Op(INT_SET_BIT, nowB);
-                Op(INT_END_IF);
-              } else {
-                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
-              }
-              #else
-              Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
-              Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
-              #endif
-
-              Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
-                Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
-                  Op(INT_IF_BIT_EQU_BIT, nowA, nowB);
+                    int count = 16;
+                    int sovElement = 1;
+                    Op(INT_FLASH_READ, dir, "ELEM_QUAD_ENCOD", state, count, sovElement);
+                    Op(INT_IF_GRT, dir, "0");
                     Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
                     if(l->d.QuadEncod.countPerRevol > 0)
-                      Op(INT_INCREMENT_VARIABLE, ticks);
+                        Op(INT_INCREMENT_VARIABLE, ticks);
                     if(strlen(l->d.QuadEncod.dir))
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                  Op(INT_ELSE);
+                        Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                    Op(INT_SET_BIT, stateInOut);
+                    Op(INT_ELSE);
+                    Op(INT_IF_LES, dir, "0");
                     Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
                     if(l->d.QuadEncod.countPerRevol > 0)
-                      Op(INT_DECREMENT_VARIABLE, ticks);
+                        Op(INT_DECREMENT_VARIABLE, ticks);
                     if(strlen(l->d.QuadEncod.dir))
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                  Op(INT_END_IF);
-                  Op(INT_COPY_BIT_TO_BIT, prevB, nowB);
-                  Op(INT_SET_BIT, stateInOut);
-                Op(INT_END_IF);
-                Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
-              Op(INT_END_IF);
-#elif QUAD_ALGO == 40
-              char A_xorB[MAX_NAME_LEN];
-              sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
+                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                    Op(INT_SET_BIT, stateInOut);
+                    Op(INT_END_IF);
+                    Op(INT_END_IF);
+#elif QUAD_ALGO == 22
+                    // http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
+                    Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
+                    Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
+                    Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
+                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                        Op(INT_INCREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                        Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                    Op(INT_ELSE);
+                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                        Op(INT_DECREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                    Op(INT_END_IF);
+                    Op(INT_SET_BIT, stateInOut);
+                    Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
+                    Op(INT_END_IF);
+#elif QUAD_ALGO == 222
+// http://www.technoblogy.com/show?1YHJ
+#if 1
+                    if(addr1 == addr2) {
+                        char s[MAX_NAME_LEN];
+                        sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                        Op(INT_CLEAR_BIT, nowA);
+                        sprintf(s, "%d", bit1);
+                        Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                        Op(INT_SET_BIT, nowA);
+                        Op(INT_END_IF);
+                        Op(INT_CLEAR_BIT, nowB);
+                        sprintf(s, "%d", bit2);
+                        Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                        Op(INT_SET_BIT, nowB);
+                        Op(INT_END_IF);
+                    } else {
+                        Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"),
+                              l->d.QuadEncod.inputA,
+                              l->d.QuadEncod.inputB);
+                    }
+#else
+                    Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
+                    Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
 #endif
-              if(strlen(l->d.QuadEncod.inputZ)) {
-                char storeName[MAX_NAME_LEN];
-                GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
-                Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);
-                if(l->d.QuadEncod.inputZKind == '/') {
-                  Op(INT_IF_BIT_SET, nowZ);
-                    Op(INT_IF_BIT_CLEAR, prevZ);
-                      Op(INT_SET_BIT, storeName);
-                    Op(INT_ELSE);
-                      Op(INT_CLEAR_BIT, storeName);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE);
-                    Op(INT_CLEAR_BIT, storeName);
-                  Op(INT_END_IF);
-                } else if(l->d.QuadEncod.inputZKind == '\\') {
-                  Op(INT_IF_BIT_CLEAR, nowZ);
-                    Op(INT_IF_BIT_SET, prevZ);
-                      Op(INT_SET_BIT, storeName);
-                    Op(INT_ELSE);
-                      Op(INT_CLEAR_BIT, storeName);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE);
-                    Op(INT_CLEAR_BIT, storeName);
-                  Op(INT_END_IF);
-                } else if(l->d.QuadEncod.inputZKind == '-') {
-                  Op(INT_COPY_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
-                } else if(l->d.QuadEncod.inputZKind == 'o') {
-                  Op(INT_COPY_NOT_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
-                } else oops();
-                Op(INT_COPY_BIT_TO_BIT, prevZ, nowZ);
 
-                Op(INT_IF_BIT_SET, storeName);
-                  Op(INT_SET_BIT, stateInOut); //
-                  if(l->d.QuadEncod.countPerRevol == 0) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.QuadEncod.counter, (int32_t)0x00);
-                  } else if(l->d.QuadEncod.countPerRevol > 0) {
-                    char s[MAX_NAME_LEN];
-                    sprintf(s, "%d", l->d.QuadEncod.countPerRevol / 2);
-                    Op(INT_IF_GRT, ticks, s);
-                      Op(INT_INCREMENT_VARIABLE, revol);
-                      sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
-                      Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
+                    Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
+                    Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
+                    Op(INT_IF_BIT_EQU_BIT, nowA, nowB);
+                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                        Op(INT_INCREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                        Op(INT_SET_BIT, l->d.QuadEncod.dir);
                     Op(INT_ELSE);
-                      sprintf(s, "%d", -l->d.QuadEncod.countPerRevol / 2);
-                      Op(INT_IF_LES, ticks, s);
-                        Op(INT_DECREMENT_VARIABLE, revol);
-                        sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
-                        Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
-                      Op(INT_END_IF);
+                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                        Op(INT_DECREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
                     Op(INT_END_IF);
-                  }
-                Op(INT_END_IF);
-              }
-            Op(INT_END_IF);
-            break;
-        }
+                    Op(INT_COPY_BIT_TO_BIT, prevB, nowB);
+                    Op(INT_SET_BIT, stateInOut);
+                    Op(INT_END_IF);
+                    Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
+                    Op(INT_END_IF);
+#elif QUAD_ALGO == 40
+                    char A_xorB[MAX_NAME_LEN];
+                    sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
+#endif
+                    if(strlen(l->d.QuadEncod.inputZ)) {
+                        char storeName[MAX_NAME_LEN];
+                        GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
+                        Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);
+                        if(l->d.QuadEncod.inputZKind == '/') {
+                            Op(INT_IF_BIT_SET, nowZ);
+                            Op(INT_IF_BIT_CLEAR, prevZ);
+                            Op(INT_SET_BIT, storeName);
+                            Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, storeName);
+                            Op(INT_END_IF);
+                            Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, storeName);
+                            Op(INT_END_IF);
+                        } else if(l->d.QuadEncod.inputZKind == '\\') {
+                            Op(INT_IF_BIT_CLEAR, nowZ);
+                            Op(INT_IF_BIT_SET, prevZ);
+                            Op(INT_SET_BIT, storeName);
+                            Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, storeName);
+                            Op(INT_END_IF);
+                            Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, storeName);
+                            Op(INT_END_IF);
+                        } else if(l->d.QuadEncod.inputZKind == '-') {
+                            Op(INT_COPY_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
+                        } else if(l->d.QuadEncod.inputZKind == 'o') {
+                            Op(INT_COPY_NOT_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
+                        } else
+                            oops();
+                        Op(INT_COPY_BIT_TO_BIT, prevZ, nowZ);
 
-        case ELEM_PERSIST: {
-          Comment(3, "ELEM_PERSIST");
-          Op(INT_IF_BIT_SET, stateInOut);
+                        Op(INT_IF_BIT_SET, storeName);
+                        Op(INT_SET_BIT, stateInOut); //
+                        if(l->d.QuadEncod.countPerRevol == 0) {
+                            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.QuadEncod.counter, (int32_t)0x00);
+                        } else if(l->d.QuadEncod.countPerRevol > 0) {
+                            char s[MAX_NAME_LEN];
+                            sprintf(s, "%d", l->d.QuadEncod.countPerRevol / 2);
+                            Op(INT_IF_GRT, ticks, s);
+                            Op(INT_INCREMENT_VARIABLE, revol);
+                            sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
+                            Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
+                            Op(INT_ELSE);
+                            sprintf(s, "%d", -l->d.QuadEncod.countPerRevol / 2);
+                            Op(INT_IF_LES, ticks, s);
+                            Op(INT_DECREMENT_VARIABLE, revol);
+                            sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
+                            Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
+                            Op(INT_END_IF);
+                            Op(INT_END_IF);
+                        }
+                        Op(INT_END_IF);
+                    }
+                    Op(INT_END_IF);
+                    break;
+                }
 
-            // At startup, get the persistent variable from flash.
-            char isInit[MAX_NAME_LEN];
-            GenSymOneShot(isInit, "PERSIST", l->d.persist.var);
-            Op(INT_IF_BIT_CLEAR, isInit);
-                Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                Op(INT_IF_BIT_CLEAR, "$scratch");
+                case ELEM_PERSIST: {
+                    Comment(3, "ELEM_PERSIST");
+                    Op(INT_IF_BIT_SET, stateInOut);
+
+                    // At startup, get the persistent variable from flash.
+                    char isInit[MAX_NAME_LEN];
+                    GenSymOneShot(isInit, "PERSIST", l->d.persist.var);
+                    Op(INT_IF_BIT_CLEAR, isInit);
+                    Op(INT_CLEAR_BIT, "$scratch");
+                    Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+                    Op(INT_IF_BIT_CLEAR, "$scratch");
                     Op(INT_SET_BIT, isInit);
                     Op(INT_EEPROM_READ, l->d.persist.var, EepromAddrFree);
-                Op(INT_END_IF);
-            Op(INT_ELSE);
-                // While running, continuously compare the EEPROM copy of
-                // the variable against the RAM one; if they are different,
-                // write the RAM one to EEPROM.
-                Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                Op(INT_IF_BIT_CLEAR, "$scratch");
+                    Op(INT_END_IF);
+                    Op(INT_ELSE);
+                    // While running, continuously compare the EEPROM copy of
+                    // the variable against the RAM one; if they are different,
+                    // write the RAM one to EEPROM.
+                    Op(INT_CLEAR_BIT, "$scratch");
+                    Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+                    Op(INT_IF_BIT_CLEAR, "$scratch");
                     Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit", l->d.persist.var);
                     Op(INT_ELSE);
-                        Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
+                    Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
                     Op(INT_END_IF);
-                Op(INT_END_IF);
-            Op(INT_END_IF);
+                    Op(INT_END_IF);
+                    Op(INT_END_IF);
 
-          Op(INT_END_IF);
+                    Op(INT_END_IF);
 
-          EepromAddrFree += SizeOfVar(l->d.persist.var);
-          break;
-        }
-        case ELEM_UART_SENDn: {                     ///// JG: this function is a huge mystery !
-            Comment(3, "ELEM_UART_SENDn");
-            char store[MAX_NAME_LEN];
-            GenSymOneShot(store, "SENDn", l->d.uart.name);
-            char value[MAX_NAME_LEN];
-            GenSymOneShot(value, "SENDv", l->d.uart.name);
-            int sov = SizeOfVar(l->d.uart.name);
-            SetSizeOfVar(value, sov);
-          //SetSizeOfVar(store, 1);
+                    EepromAddrFree += SizeOfVar(l->d.persist.var);
+                    break;
+                }
+                case ELEM_UART_SENDn: { ///// JG: this function is a huge mystery !
+                    Comment(3, "ELEM_UART_SENDn");
+                    char store[MAX_NAME_LEN];
+                    GenSymOneShot(store, "SENDn", l->d.uart.name);
+                    char value[MAX_NAME_LEN];
+                    GenSymOneShot(value, "SENDv", l->d.uart.name);
+                    int sov = SizeOfVar(l->d.uart.name);
+                    SetSizeOfVar(value, sov);
+                    //SetSizeOfVar(store, 1);
 
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-                  Op(INT_SET_VARIABLE_TO_LITERAL, store, sov);
-                  Op(INT_SET_VARIABLE_TO_VARIABLE, value, l->d.uart.name);
-                Op(INT_END_IF);
-              Op(INT_END_IF);
-            Op(INT_END_IF);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                    Op(INT_SET_VARIABLE_TO_LITERAL, store, sov);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, value, l->d.uart.name);
+                    Op(INT_END_IF);
+                    Op(INT_END_IF);
+                    Op(INT_END_IF);
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-            Op(INT_ELSE);
-              Op(INT_UART_SEND_READY, stateInOut);
-              Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_DECREMENT_VARIABLE, store);
-               //value = X[value[addr1] + sov - 1 - store[addr3]]
-                Op(INT_UART_SEND1, value, store);
-              Op(INT_END_IF);
-            Op(INT_END_IF);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                    Op(INT_ELSE);
+                    Op(INT_UART_SEND_READY, stateInOut);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_DECREMENT_VARIABLE, store);
+                    //value = X[value[addr1] + sov - 1 - store[addr3]]
+                    Op(INT_UART_SEND1, value, store);
+                    Op(INT_END_IF);
+                    Op(INT_END_IF);
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-              Op(INT_CLEAR_BIT, stateInOut);
-            Op(INT_ELSE);
-              Op(INT_SET_BIT, stateInOut);
-            Op(INT_END_IF);
-            break;
-        }
-        case ELEM_UART_SEND: {
-            Comment(3, "ELEM_UART_SEND");
+                    Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                    Op(INT_CLEAR_BIT, stateInOut);
+                    Op(INT_ELSE);
+                    Op(INT_SET_BIT, stateInOut);
+                    Op(INT_END_IF);
+                    break;
+                }
+                case ELEM_UART_SEND: {
+                    Comment(3, "ELEM_UART_SEND");
 #if 0
             // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
             // 1. It's need in Simulation Mode.
@@ -3666,181 +3695,184 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut returns BUSY flag
         ////Op(INT_END_IF); // ???
 #else
-            if(l->d.uart.bytes == 1) {
-              // This is modified algorithm !!!
-              Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_UART_SEND1, l->d.uart.name);
-              Op(INT_END_IF);
+                    if(l->d.uart.bytes == 1) {
+                        // This is modified algorithm !!!
+                        Op(INT_IF_BIT_SET, stateInOut);
+                        Op(INT_UART_SEND1, l->d.uart.name);
+                        Op(INT_END_IF);
 
-              if(!l->d.uart.wait) {
-                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-              } else {
-                char label[MAX_NAME_LEN];
-                GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
+                        if(!l->d.uart.wait) {
+                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                        } else {
+                            char label[MAX_NAME_LEN];
+                            GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
 
-                Op(INT_AllocKnownAddr, label);
-                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_GOTO, label, 1);
-                Op(INT_END_IF);
-              }
-            } else {
-                if(l->d.uart.wait) { // all bytes in one PLC cycle
-                  Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_UART_SEND1, l->d.uart.name);
+                            Op(INT_AllocKnownAddr, label);
+                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_GOTO, label, 1);
+                            Op(INT_END_IF);
+                        }
+                    } else {
+                        if(l->d.uart.wait) { // all bytes in one PLC cycle
+                            Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_UART_SEND1, l->d.uart.name);
 
-                    char label[MAX_NAME_LEN];
-                    for(int i = 1; i < l->d.uart.bytes; i++) {
-                      GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
+                            char label[MAX_NAME_LEN];
+                            for(int i = 1; i < l->d.uart.bytes; i++) {
+                                GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
 
-                      Op(INT_AllocKnownAddr, label);
-                      Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                      Op(INT_IF_BIT_SET, stateInOut);
-                        Op(INT_GOTO, label, 1);
-                      Op(INT_END_IF);
+                                Op(INT_AllocKnownAddr, label);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_SET, stateInOut);
+                                Op(INT_GOTO, label, 1);
+                                Op(INT_END_IF);
 
-                      Op(INT_UART_SEND1, l->d.uart.name, i);
+                                Op(INT_UART_SEND1, l->d.uart.name, i);
+                            }
+                            Op(INT_END_IF);
+                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                        } else {                                // don't wait, one byte per one cycle
+                            char storeName[MAX_NAME_LEN];
+                            GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
+
+                            Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_IF_BIT_CLEAR, storeName);
+                            Op(INT_SET_BIT, storeName);
+
+                            char saved[MAX_NAME_LEN];
+                            GenVar(saved, "saved_UART_SEND", l->d.uart.name);
+                            SetSizeOfVar(saved, l->d.uart.bytes);
+                            Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
+
+                            char bytes[MAX_NAME_LEN];
+                            sprintf(bytes, "%d", l->d.uart.bytes);
+
+                            char numb[MAX_NAME_LEN];
+                            GenVar(numb, "numb_UART_SEND", l->d.uart.name);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
+                            Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                            Op(INT_IF_LES, numb, l->d.uart.bytes);
+                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_IF_BIT_CLEAR, stateInOut);
+                            Op(INT_UART_SEND1, saved, numb);
+                            Op(INT_INCREMENT_VARIABLE, numb);
+                            Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_GEQ, numb, bytes);
+                            Op(INT_CLEAR_BIT, storeName);
+                            Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                            Op(INT_SET_BIT, stateInOut); // busy
+                            Op(INT_ELSE);
+                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_END_IF);
+                        }
                     }
-                  Op(INT_END_IF);
-                  Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                } else { // don't wait, one byte per one cycle
-                  char storeName[MAX_NAME_LEN];
-                  GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
-
-                  Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_IF_BIT_CLEAR, storeName);
-                      Op(INT_SET_BIT, storeName);
-
-                      char saved[MAX_NAME_LEN];
-                      GenVar(saved, "saved_UART_SEND", l->d.uart.name);
-                      SetSizeOfVar(saved, l->d.uart.bytes);
-                      Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
-
-                      char bytes[MAX_NAME_LEN];
-                      sprintf(bytes, "%d", l->d.uart.bytes);
-
-                      char numb[MAX_NAME_LEN];
-                      GenVar(numb, "numb_UART_SEND", l->d.uart.name);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
-
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                  Op(INT_IF_BIT_SET, storeName);
-                    Op(INT_IF_LES, numb,  l->d.uart.bytes);
-                      Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                      Op(INT_IF_BIT_CLEAR, stateInOut);
-                        Op(INT_UART_SEND1, saved, numb);
-                        Op(INT_INCREMENT_VARIABLE, numb);
-                      Op(INT_END_IF);
-                    Op(INT_END_IF);
-
-                    Op(INT_IF_GEQ, numb, bytes);
-                      Op(INT_CLEAR_BIT, storeName);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                  Op(INT_IF_BIT_SET, storeName);
-                    Op(INT_SET_BIT, stateInOut); // busy
-                  Op(INT_ELSE);
-                    Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                  Op(INT_END_IF);
-                }
-              }
 #endif
-            break;
-        }
-        case ELEM_UART_RECV: {
-            Comment(3, "ELEM_UART_RECV");
-            int sov = SizeOfVar(l->d.uart.name);
-            if(l->d.uart.bytes > sov) {
-                Error("ELEM_UART_RECV '%s' bytes > sov", l->d.uart.name);
-                oops();
-            }
+                    break;
+                }
+                case ELEM_UART_RECV: {
+                    Comment(3, "ELEM_UART_RECV");
+                    int sov = SizeOfVar(l->d.uart.name);
+                    if(l->d.uart.bytes > sov) {
+                        Error("ELEM_UART_RECV '%s' bytes > sov", l->d.uart.name);
+                        oops();
+                    }
 #if 0
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_UART_RECV, l->d.uart.name, stateInOut);
             Op(INT_END_IF);
 #else
-            Op(INT_IF_BIT_SET, stateInOut);
-              if(l->d.uart.bytes == 1) {
-                Op(INT_UART_RECV_AVAIL, stateInOut);
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                  Op(INT_UART_RECV1, l->d.uart.name);
-                Op(INT_END_IF);
-              } else {
-                if(l->d.uart.wait) {
-                  Op(INT_UART_RECV_AVAIL, stateInOut);
-                  Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                    Op(INT_UART_RECV1, l->d.uart.name);
-
-                    char label[MAX_NAME_LEN];
-                    for(int i = 1; i < l->d.uart.bytes; i++) {
-                      GenSym(label, "_wait", "UART_RECV", l->d.uart.name);
-                      Op(INT_AllocKnownAddr, label);
-                      Op(INT_UART_RECV_AVAIL, stateInOut);
-                      Op(INT_IF_BIT_CLEAR, stateInOut);
-                        Op(INT_GOTO, label, 1);
-                      Op(INT_END_IF);
-                      Op(INT_UART_RECV1, l->d.uart.name, i);
-                    }
-                  Op(INT_END_IF);
-                } else {
-                  char saved[MAX_NAME_LEN];
-                  GenVar(saved, "saved_UART_RECV", l->d.uart.name);
-                  SetSizeOfVar(saved, l->d.uart.bytes);
-
-                  char bytes[MAX_NAME_LEN];
-                  sprintf(bytes, "%d", l->d.uart.bytes);
-
-                  char numb[MAX_NAME_LEN];
-                  GenVar(numb, "numb_UART_RECV", l->d.uart.name);
-
-                  Op(INT_IF_LES, numb,  l->d.uart.bytes);
-                    Op(INT_UART_RECV_AVAIL, stateInOut);
                     Op(INT_IF_BIT_SET, stateInOut);
-                      Op(INT_UART_RECV1, saved, numb);
-                      Op(INT_INCREMENT_VARIABLE, numb);
+                    if(l->d.uart.bytes == 1) {
+                        Op(INT_UART_RECV_AVAIL, stateInOut);
+                        Op(INT_IF_BIT_SET, stateInOut);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
+                        Op(INT_UART_RECV1, l->d.uart.name);
+                        Op(INT_END_IF);
+                    } else {
+                        if(l->d.uart.wait) {
+                            Op(INT_UART_RECV_AVAIL, stateInOut);
+                            Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
+                            Op(INT_UART_RECV1, l->d.uart.name);
+
+                            char label[MAX_NAME_LEN];
+                            for(int i = 1; i < l->d.uart.bytes; i++) {
+                                GenSym(label, "_wait", "UART_RECV", l->d.uart.name);
+                                Op(INT_AllocKnownAddr, label);
+                                Op(INT_UART_RECV_AVAIL, stateInOut);
+                                Op(INT_IF_BIT_CLEAR, stateInOut);
+                                Op(INT_GOTO, label, 1);
+                                Op(INT_END_IF);
+                                Op(INT_UART_RECV1, l->d.uart.name, i);
+                            }
+                            Op(INT_END_IF);
+                        } else {
+                            char saved[MAX_NAME_LEN];
+                            GenVar(saved, "saved_UART_RECV", l->d.uart.name);
+                            SetSizeOfVar(saved, l->d.uart.bytes);
+
+                            char bytes[MAX_NAME_LEN];
+                            sprintf(bytes, "%d", l->d.uart.bytes);
+
+                            char numb[MAX_NAME_LEN];
+                            GenVar(numb, "numb_UART_RECV", l->d.uart.name);
+
+                            Op(INT_IF_LES, numb, l->d.uart.bytes);
+                            Op(INT_UART_RECV_AVAIL, stateInOut);
+                            Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_UART_RECV1, saved, numb);
+                            Op(INT_INCREMENT_VARIABLE, numb);
+                            Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_GEQ, numb, bytes);
+                            Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.uart.name, saved);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+                            Op(INT_SET_BIT, stateInOut);
+                            Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, stateInOut);
+                            Op(INT_END_IF);
+                        }
+                    }
                     Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                  Op(INT_IF_GEQ, numb, bytes);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.uart.name, saved);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
-                    Op(INT_SET_BIT, stateInOut);
-                  Op(INT_ELSE);
-                    Op(INT_CLEAR_BIT, stateInOut);
-                  Op(INT_END_IF);
-                }
-              }
-            Op(INT_END_IF);
 #endif
-            break;
-        }
-        case ELEM_UART_RECV_AVAIL:
-            Comment(3, "ELEM_UART_RECV_AVAIL");
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_UART_RECV_AVAIL, stateInOut);
-            Op(INT_END_IF);
-            break;
+                    break;
+                }
+                case ELEM_UART_RECV_AVAIL:
+                    Comment(3, "ELEM_UART_RECV_AVAIL");
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_UART_RECV_AVAIL, stateInOut);
+                    Op(INT_END_IF);
+                    break;
 
-        case ELEM_UART_SEND_READY:
-            Comment(3, "ELEM_UART_SEND_READY");
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_UART_SEND_READY, stateInOut);
-            Op(INT_END_IF);
-            break;
-        }
+                case ELEM_UART_SEND_READY:
+                    Comment(3, "ELEM_UART_SEND_READY");
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_UART_SEND_READY, stateInOut);
+                    Op(INT_END_IF);
+                    break;
+            }
 
         case ELEM_SPI: {
             Comment(3, "ELEM_SPI");
             ///// Added by JG
-            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
-              Op(INT_SPI, l->d.spi.name, l->d.spi.send, l->d.spi.recv);     //   SpiSendRecv[name1=name, name2=send, name3=recv]
-              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
-            Op(INT_END_IF);                                                 // }
+            Op(INT_IF_BIT_SET, stateInOut); // if(Read_Ib_rung_top()) {
+            Op(INT_SPI,
+               l->d.spi.name,
+               l->d.spi.send,
+               l->d.spi.recv);           //   SpiSendRecv[name1=name, name2=send, name3=recv]
+            Op(INT_SET_BIT, stateInOut); //   activate output line
+            Op(INT_END_IF);              // }
             /////
             break;
         }
@@ -3848,160 +3880,204 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         ///// Added by JG
         case ELEM_SPI_WR: {
             Comment(3, "ELEM_SPI_WR");
-            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
-              Op(INT_SPI_WRITE, l->d.spi.name, l->d.spi.send);              //   SpiWrite[name1=name, name2=send]
-              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
-            Op(INT_END_IF);                                                 // }
+            Op(INT_IF_BIT_SET, stateInOut);                  // if(Read_Ib_rung_top()) {
+            Op(INT_SPI_WRITE, l->d.spi.name, l->d.spi.send); //   SpiWrite[name1=name, name2=send]
+            Op(INT_SET_BIT, stateInOut);                     //   activate output line
+            Op(INT_END_IF);                                  // }
             break;
         }
 
         case ELEM_I2C_RD: {
             Comment(3, "ELEM_I2C_RD");
-            Op(INT_IF_BIT_SET, stateInOut);                                                     // if(Read_Ib_rung_top()) {
-            Op(INT_I2C_READ, l->d.i2c.name, l->d.i2c.recv, l->d.i2c.address, l->d.i2c.registr); //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
-              Op(INT_SET_BIT, stateInOut);                                                      //   activate output line
-            Op(INT_END_IF);                                                                     // }
+            Op(INT_IF_BIT_SET, stateInOut); // if(Read_Ib_rung_top()) {
+            Op(INT_I2C_READ,
+               l->d.i2c.name,
+               l->d.i2c.recv,
+               l->d.i2c.address,
+               l->d.i2c.registr);        //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
+            Op(INT_SET_BIT, stateInOut); //   activate output line
+            Op(INT_END_IF);              // }
             break;
         }
 
         case ELEM_I2C_WR: {
             Comment(3, "ELEM_I2C_WR");
-            Op(INT_IF_BIT_SET, stateInOut);                                                         // if(Read_Ib_rung_top()) {
-              Op(INT_I2C_WRITE, l->d.i2c.name, l->d.i2c.send, l->d.i2c.address, l->d.i2c.registr);  //   I2cWrite[name1=name, name2=send, name3=addr, name4= reg]);
-              Op(INT_SET_BIT, stateInOut);                                                          //   activate output line
-            Op(INT_END_IF);                                                                         // }
+            Op(INT_IF_BIT_SET, stateInOut); // if(Read_Ib_rung_top()) {
+            Op(INT_I2C_WRITE,
+               l->d.i2c.name,
+               l->d.i2c.send,
+               l->d.i2c.address,
+               l->d.i2c.registr);        //   I2cWrite[name1=name, name2=send, name3=addr, name4= reg]);
+            Op(INT_SET_BIT, stateInOut); //   activate output line
+            Op(INT_END_IF);              // }
             break;
         }
-        /////
+            /////
 
         case ELEM_SET_BIT:
             Comment(3, "ELEM_SET_BIT");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_VARIABLE_SET_BIT, l->d.math.dest, l->d.math.op1);
+            Op(INT_VARIABLE_SET_BIT, l->d.math.dest, l->d.math.op1);
             Op(INT_END_IF);
             break;
 
         case ELEM_CLEAR_BIT:
             Comment(3, "ELEM_CLEAR_BIT");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, l->d.math.op1);
+            Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, l->d.math.op1);
             Op(INT_END_IF);
             break;
-        {
-        int intOp;
-        case ELEM_NEG: intOp = INT_SET_VARIABLE_NEG;      Comment(3, "ELEM_NEG"); goto mathBit;
-        case ELEM_SR0: intOp = INT_SET_VARIABLE_SR0;      Comment(3, "ELEM_SR0"); goto mathBit;
-        case ELEM_SHL: intOp = INT_SET_VARIABLE_SHL;      Comment(3, "ELEM_SHL"); goto mathBit;
-        case ELEM_SHR: intOp = INT_SET_VARIABLE_SHR;      Comment(3, "ELEM_SHR"); goto mathBit;
-        case ELEM_ROL: intOp = INT_SET_VARIABLE_ROL;      Comment(3, "ELEM_ROL"); goto mathBit;
-        case ELEM_ROR: intOp = INT_SET_VARIABLE_ROR;      Comment(3, "ELEM_ROR"); goto mathBit;
-        case ELEM_AND: intOp = INT_SET_VARIABLE_AND;      Comment(3, "ELEM_AND"); goto mathBit;
-        case ELEM_OR:  intOp = INT_SET_VARIABLE_OR;       Comment(3, "ELEM_OR" ); goto mathBit;
-        case ELEM_XOR: intOp = INT_SET_VARIABLE_XOR;      Comment(3, "ELEM_XOR"); goto mathBit;
-        case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
-          mathBit : {
-            if(IsNumber(l->d.math.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
-            }
-            Op(INT_IF_BIT_SET, stateInOut);
-            if((intOp == INT_SET_VARIABLE_NEG)
-            || (intOp == INT_SET_VARIABLE_NOT)
-            ) {
-                Op(intOp, l->d.math.dest, l->d.math.op1);
-            } else {
-                if((which == ELEM_SR0)
-                || (which == ELEM_SHL) || (which == ELEM_SHR)
-                || (which == ELEM_ROL) || (which == ELEM_ROR)
-                ) {
-                    if((hobatoi(l->d.math.op2) < 0)
-                    || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
-                        THROW_COMPILER_EXCEPTION_FMT(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
+            {
+                int intOp;
+                case ELEM_NEG:
+                    intOp = INT_SET_VARIABLE_NEG;
+                    Comment(3, "ELEM_NEG");
+                    goto mathBit;
+                case ELEM_SR0:
+                    intOp = INT_SET_VARIABLE_SR0;
+                    Comment(3, "ELEM_SR0");
+                    goto mathBit;
+                case ELEM_SHL:
+                    intOp = INT_SET_VARIABLE_SHL;
+                    Comment(3, "ELEM_SHL");
+                    goto mathBit;
+                case ELEM_SHR:
+                    intOp = INT_SET_VARIABLE_SHR;
+                    Comment(3, "ELEM_SHR");
+                    goto mathBit;
+                case ELEM_ROL:
+                    intOp = INT_SET_VARIABLE_ROL;
+                    Comment(3, "ELEM_ROL");
+                    goto mathBit;
+                case ELEM_ROR:
+                    intOp = INT_SET_VARIABLE_ROR;
+                    Comment(3, "ELEM_ROR");
+                    goto mathBit;
+                case ELEM_AND:
+                    intOp = INT_SET_VARIABLE_AND;
+                    Comment(3, "ELEM_AND");
+                    goto mathBit;
+                case ELEM_OR:
+                    intOp = INT_SET_VARIABLE_OR;
+                    Comment(3, "ELEM_OR");
+                    goto mathBit;
+                case ELEM_XOR:
+                    intOp = INT_SET_VARIABLE_XOR;
+                    Comment(3, "ELEM_XOR");
+                    goto mathBit;
+                case ELEM_NOT:
+                    intOp = INT_SET_VARIABLE_NOT;
+                    Comment(3, "ELEM_NOT");
+                    goto mathBit;
+                mathBit : {
+                    if(IsNumber(l->d.math.dest)) {
+                        THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                                     l->d.math.dest);
                     }
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    if((intOp == INT_SET_VARIABLE_NEG) || (intOp == INT_SET_VARIABLE_NOT)) {
+                        Op(intOp, l->d.math.dest, l->d.math.op1);
+                    } else {
+                        if((which == ELEM_SR0) || (which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_ROL)
+                           || (which == ELEM_ROR)) {
+                            if((hobatoi(l->d.math.op2) < 0)
+                               || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
+                                THROW_COMPILER_EXCEPTION_FMT(
+                                    _("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."),
+                                    l->d.math.op2,
+                                    hobatoi(l->d.math.op2),
+                                    l->d.math.op1,
+                                    SizeOfVar(l->d.math.op1) * 8);
+                            }
+                        }
+                        Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2 /*, stateInOut2*/);
+                    }
+                    Op(INT_END_IF);
+                    break;
                 }
-                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2/*, stateInOut2*/);
             }
-            Op(INT_END_IF);
-            break;
-          }
-        }
-        //
-        {
-        int intOp;
-        case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
-        case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
-        case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
-        case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
-        case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
-        math : {
-            if(IsNumber(l->d.math.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
-            }
-            Op(INT_IF_BIT_SET, stateInOut);
-            const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
-            if((intOp == INT_SET_VARIABLE_SUBTRACT)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
-            && (strcmp(l->d.math.op2, "1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_SUBTRACT)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
-            && (strcmp(l->d.math.op2, "-1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+            //
+            {
+                int intOp;
+                case ELEM_ADD:
+                    intOp = INT_SET_VARIABLE_ADD;
+                    Comment(3, "ELEM_ADD");
+                    goto math;
+                case ELEM_SUB:
+                    intOp = INT_SET_VARIABLE_SUBTRACT;
+                    Comment(3, "ELEM_SUB");
+                    goto math;
+                case ELEM_MUL:
+                    intOp = INT_SET_VARIABLE_MULTIPLY;
+                    Comment(3, "ELEM_MUL");
+                    goto math;
+                case ELEM_DIV:
+                    intOp = INT_SET_VARIABLE_DIVIDE;
+                    Comment(3, "ELEM_DIV");
+                    goto math;
+                case ELEM_MOD:
+                    intOp = INT_SET_VARIABLE_MOD;
+                    Comment(3, "ELEM_MOD");
+                    goto math;
+                math : {
+                    if(IsNumber(l->d.math.dest)) {
+                        THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                                     l->d.math.dest);
+                    }
+                    Op(INT_IF_BIT_SET, stateInOut);
+                    const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
+                    if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
+                       && (strcmp(l->d.math.dest, l->d.math.op1) == 0) && (strcmp(l->d.math.op2, "1") == 0)) {
+                        Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+                    } else if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
+                              && (strcmp(l->d.math.dest, l->d.math.op1) == 0) && (strcmp(l->d.math.op2, "-1") == 0)) {
+                        Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
-            } else if((intOp == INT_SET_VARIABLE_ADD)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
-            && (strcmp(l->d.math.op2, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op2) == 0)
-            && (strcmp(l->d.math.op1, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
-            && (strcmp(l->d.math.op2, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD)
-            && (int_comment_level != 1)
-            && (strcmp(l->d.math.dest, l->d.math.op2) == 0)
-            && (strcmp(l->d.math.op1, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else {
-                const char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
-                Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
+                    } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
+                              && (strcmp(l->d.math.dest, l->d.math.op1) == 0) && (strcmp(l->d.math.op2, "1") == 0)) {
+                        Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+                    } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
+                              && (strcmp(l->d.math.dest, l->d.math.op2) == 0) && (strcmp(l->d.math.op1, "1") == 0)) {
+                        Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+                    } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
+                              && (strcmp(l->d.math.dest, l->d.math.op1) == 0) && (strcmp(l->d.math.op2, "-1") == 0)) {
+                        Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+                    } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
+                              && (strcmp(l->d.math.dest, l->d.math.op2) == 0) && (strcmp(l->d.math.op1, "-1") == 0)) {
+                        Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
+                    } else {
+                        const char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
+                        Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
+                    }
+                    Op(INT_END_IF);
+                    break;
+                }
             }
-            Op(INT_END_IF);
-            break;
-          }
-        }
         case ELEM_SLEEP:
             Comment(3, "ELEM_SLEEP");
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SLEEP);
+            Op(INT_SLEEP);
             Op(INT_END_IF);
             break;
 
         case ELEM_CLRWDT:
             Comment(3, "ELEM_CLRWDT");
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_CLRWDT);
+            Op(INT_CLRWDT);
             Op(INT_END_IF);
             break;
 
         case ELEM_LOCK:
             Comment(3, "ELEM_LOCK");
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_LOCK);
+            Op(INT_LOCK);
             Op(INT_END_IF);
             break;
 
         case ELEM_DELAY:
             Comment(3, "ELEM_DELAY");
             Op(INT_IF_BIT_SET, stateInOut); // fat overhead
-                Op(INT_DELAY, l->d.timer.name);
+            Op(INT_DELAY, l->d.timer.name);
             Op(INT_END_IF);
             break;
 
@@ -4023,7 +4099,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(clocks <= 0)
                 clocks = 1;
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, clocks);
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, clocks);
             Op(INT_END_IF);
             break;
         }
@@ -4042,8 +4118,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOTO, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
-                //Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_GOTO, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
+            //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
@@ -4063,7 +4139,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOSUB, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
+            Op(INT_GOSUB, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
             Op(INT_END_IF);
             break;
         }
@@ -4080,7 +4156,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_SUBPROG: {
             Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.label);
-            int  n;
+            int n;
             n = CountWhich(ELEM_SUBPROG, l->d.doGoto.label);
             if(n != 1) {
                 Error(_("SUBPROG: Only one SUBPROG '%s' is allowed!"), l->d.doGoto.label);
@@ -4089,11 +4165,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(n < 1) {
                 Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.label);
             }
-            if((Prog.rungs(rungNow)->contents[0].which == ELEM_SUBPROG)
-            && (Prog.rungs(rungNow)->count == 1)) {
+            if((Prog.rungs(rungNow)->contents[0].which == ELEM_SUBPROG) && (Prog.rungs(rungNow)->count == 1)) {
                 ; //
             } else {
-                Error(_("SUBPROG: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
+                Error(
+                    _("SUBPROG: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
             }
             int r = -1;
             if(!IsNumber(l->d.doGoto.label)) {
@@ -4120,11 +4196,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(n < 1) {
                 Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
             }
-            if((Prog.rungs(rungNow)->contents[0].which == ELEM_ENDSUB)
-            && (Prog.rungs(rungNow)->count == 1)) {
+            if((Prog.rungs(rungNow)->contents[0].which == ELEM_ENDSUB) && (Prog.rungs(rungNow)->count == 1)) {
                 ; //
             } else {
-                Error(_("ENDSUB: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
+                Error(
+                    _("ENDSUB: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
             }
             int r = -1;
             if(!IsNumber(l->d.doGoto.label)) {
@@ -4136,8 +4212,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_RETURN:
             Comment(3, "ELEM_RETURN");
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_RETURN);
-              //Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_RETURN);
+            //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
 
@@ -4148,9 +4224,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // otherwise there is no good way for it to ever become set
             // again.
             Op(INT_IF_BIT_CLEAR, "$mcr");
-              Op(INT_SET_BIT, "$mcr");
+            Op(INT_SET_BIT, "$mcr");
             Op(INT_ELSE);
-              Op(INT_COPY_BIT_TO_BIT, "$mcr", stateInOut);
+            Op(INT_COPY_BIT_TO_BIT, "$mcr", stateInOut);
             Op(INT_END_IF);
             SimState(&(l->poweredAfter), stateInOut, &(l->workingNow), "$mcr");
             break;
@@ -4160,21 +4236,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "SHIFT_REGISTER", l->d.shiftRegister.name);
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_IF_BIT_CLEAR, storeName);
-                for(int i = (l->d.shiftRegister.stages - 2); i >= 0; i--) {
-                    char dest[MAX_NAME_LEN], src[MAX_NAME_LEN];
-                    sprintf(src, "%s%d", l->d.shiftRegister.name, i);
-                    sprintf(dest, "%s%d", l->d.shiftRegister.name, i + 1);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);
-                }
-                Op(INT_END_IF);
+            Op(INT_IF_BIT_CLEAR, storeName);
+            for(int i = (l->d.shiftRegister.stages - 2); i >= 0; i--) {
+                char dest[MAX_NAME_LEN], src[MAX_NAME_LEN];
+                sprintf(src, "%s%d", l->d.shiftRegister.name, i);
+                sprintf(dest, "%s%d", l->d.shiftRegister.name, i + 1);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);
+            }
+            Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
             break;
         }
 
         case ELEM_LOOK_UP_TABLE: {
-            #ifdef TABLE_IN_FLASH
+#ifdef TABLE_IN_FLASH
             ElemLookUpTable *t = &(l->d.lookUpTable);
             Comment(3, "ELEM_LOOK_UP_TABLE %s", t->name);
 
@@ -4182,9 +4258,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             sovElement = TestByteNeeded(t->count, t->vals);
 
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_FLASH_READ, t->dest, t->name, t->index, t->count, sovElement, t->vals);
+            Op(INT_FLASH_READ, t->dest, t->name, t->index, t->count, sovElement, t->vals);
             Op(INT_END_IF);
-            #else
+#else
             Comment(3, "ELEM_LOOK_UP_TABLE");
             // God this is stupid; but it will have to do, at least until I
             // add new int code instructions for this.
@@ -4194,11 +4270,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             for(i = 0; i < t->count; i++) {
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                 Op(INT_IF_VARIABLE_EQUALS_VARIABLE, t->index, "$scratch");
-                    Op(INT_SET_VARIABLE_TO_LITERAL, t->dest, t->vals[i]);
+                Op(INT_SET_VARIABLE_TO_LITERAL, t->dest, t->vals[i]);
                 Op(INT_END_IF);
             }
             Op(INT_END_IF);
-            #endif
+#endif
             break;
         }
 
@@ -4218,31 +4294,31 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
                 xThis = t->vals[i * 2];
             }
-            #ifdef TABLE_IN_FLASH_LINEAR
+#ifdef TABLE_IN_FLASH_LINEAR
             int sovElement;
             sovElement = TestByteNeeded(t->count, t->vals);
-            #endif
+#endif
             Op(INT_IF_BIT_SET, stateInOut);
             for(int i = t->count - 1; i >= 1; i--) {
                 Comment("PWL %d", i);
-                int xThis = t->vals[i * 2];
-                int xPrev = t->vals[(i - 1) * 2];
-                int yThis = t->vals[i * 2 + 1];
-                int yPrev = t->vals[(i - 1) * 2 + 1];
-                int thisDx = xThis - xPrev;
-                int thisDy = yThis - yPrev;
+                int  xThis = t->vals[i * 2];
+                int  xPrev = t->vals[(i - 1) * 2];
+                int  yThis = t->vals[i * 2 + 1];
+                int  yPrev = t->vals[(i - 1) * 2 + 1];
+                int  thisDx = xThis - xPrev;
+                int  thisDy = yThis - yPrev;
                 char sxThis[21]; // -9223372036854775808
                 char sxPrev[21];
                 char syThis[21];
                 char syPrev[21];
                 char sthisDx[21];
                 char sthisDy[21];
-                sprintf(sxThis,"%d", xThis);
-                sprintf(sxPrev,"%d", xPrev);
-                sprintf(syThis,"%d", yThis);
-                sprintf(syPrev,"%d", yPrev);
-                sprintf(sthisDx,"%d", thisDx);
-                sprintf(sthisDy,"%d", thisDy);
+                sprintf(sxThis, "%d", xThis);
+                sprintf(sxPrev, "%d", xPrev);
+                sprintf(syThis, "%d", yThis);
+                sprintf(syPrev, "%d", yPrev);
+                sprintf(sthisDx, "%d", thisDx);
+                sprintf(sthisDy, "%d", thisDy);
                 // The output point is given by
                 //    yout = y[i-1] + (xin - x[i-1])*dy/dx
                 //    yout = yPrev + (xin - xPrev)*dy/dx
@@ -4255,17 +4331,18 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 // Check for numerical problems, and fail if we have them.
                 if((thisDx * thisDy) >= 32767 || (thisDx * thisDy) <= -32768) {
-                    THROW_COMPILER_EXCEPTION(_("Numerical problem with piecewise linear lookup "
-                        "table. Either make the table entries smaller, "
-                        "or space the points together more closely.\r\n\r\n"
-                        "See the help file for details."));
+                    THROW_COMPILER_EXCEPTION(
+                        _("Numerical problem with piecewise linear lookup "
+                          "table. Either make the table entries smaller, "
+                          "or space the points together more closely.\r\n\r\n"
+                          "See the help file for details."));
                 }
 
-                #ifndef TABLE_IN_FLASH_LINEAR
+#ifndef TABLE_IN_FLASH_LINEAR
                 // Hack to avoid AVR brge issue again, since long jumps break
                 Op(INT_CLEAR_BIT, "$scratch");
                 Op(INT_IF_VARIABLE_LES_LITERAL, t->index, xThis + 1);
-                    Op(INT_SET_BIT, "$scratch");
+                Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
 
                 Op(INT_IF_BIT_SET, "$scratch");
@@ -4280,23 +4357,22 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", yPrev);
                   Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
 #else
-                  Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
-                  Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
-                  Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
-                  Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
-#endif
-                Op(INT_END_IF);
-                #endif
-            }
-            #ifdef TABLE_IN_FLASH_LINEAR // WIP
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->count);
-                Op(INT_FLASH_READ, t->dest, t->name, "$scratch", t->count, sovElement, t->vals);
-                Op(INT_LES, t->dest, t->index)
                 Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
                 Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
                 Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
                 Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
-            #endif
+#endif
+                Op(INT_END_IF);
+#endif
+            }
+#ifdef TABLE_IN_FLASH_LINEAR // WIP
+            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->count);
+            Op(INT_FLASH_READ, t->dest, t->name, "$scratch", t->count, sovElement, t->vals);
+            Op(INT_LES, t->dest, t->index) Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
+            Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
+            Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
+            Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
+#endif
             Op(INT_END_IF);
             break;
         }
@@ -4380,22 +4456,60 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         outputChars[steps++] = OUTPUT_DIGIT;
                     }
                 } else if(*p == '\\') {
-                    L1:
+                L1:
                     p++;
                     switch(*p) {
-                        case 'a': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x07; break;
-                        case 'b': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
-                        case 'e': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x1B; break;
-                        case 'f': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
-                        case 'n': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
-                        case 'r': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
-                        case 't': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
-                        case 'v': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
-                        case '\'':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\''; break;
-                        case '"': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\"'; break;
-                        case '?': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\?'; break;
-                        case '\\':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
-                        case '0': goto L1; break;
+                        case 'a':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = 0x07;
+                            break;
+                        case 'b':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\b';
+                            break;
+                        case 'e':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = 0x1B;
+                            break;
+                        case 'f':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\f';
+                            break;
+                        case 'n':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\n';
+                            break;
+                        case 'r':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\r';
+                            break;
+                        case 't':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\t';
+                            break;
+                        case 'v':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\v';
+                            break;
+                        case '\'':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\'';
+                            break;
+                        case '"':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\"';
+                            break;
+                        case '?':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\?';
+                            break;
+                        case '\\':
+                            outputWhich[steps] = OUTPUT_UCHAR;
+                            outputChars[steps++] = '\\';
+                            break;
+                        case '0':
+                            goto L1;
+                            break;
                         case 'X':
                         case 'x': {
                             int h, ll;
@@ -4432,7 +4546,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(digits >= 0 && (strlen(var) == 0)) {
                 Error(_("Variable is interpolated into formatted string, but none is specified."));
             } else if(digits < 0 && (strlen(var) > 0)) {
-                Error(_("No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."));
+                Error(_(
+                    "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."));
             }
 
             // We want to respond to rising edges, so yes we need a one shot.
@@ -4444,13 +4559,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             GenSymFormattedString(doSend, "doSend");
 
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_IF_BIT_CLEAR, oneShot);
-                    Op(INT_SET_BIT, oneShot); //v2
-                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (int32_t)0);
-                    Op(INT_SET_BIT, doSend);
-                Op(INT_END_IF);
-            Op(INT_ELSE);                   //v2
-                Op(INT_CLEAR_BIT, oneShot); //v2
+            Op(INT_IF_BIT_CLEAR, oneShot);
+            Op(INT_SET_BIT, oneShot); //v2
+            Op(INT_SET_VARIABLE_TO_LITERAL, seq, (int32_t)0);
+            Op(INT_SET_BIT, doSend);
+            Op(INT_END_IF);
+            Op(INT_ELSE);               //v2
+            Op(INT_CLEAR_BIT, oneShot); //v2
             Op(INT_END_IF);
             //Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut); //v1
 
@@ -4467,12 +4582,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
             Op(INT_ELSE);
-                Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+            Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
             Op(INT_END_IF);
 
             Op(INT_IF_BIT_SET, doSend);
-                // Now check UART busy.
-                /*
+            // Now check UART busy.
+            /*
                 // this is original code
                 Op(INT_CLEAR_BIT, "$scratch");
                 Op(INT_UART_SEND, "$scratch", "$scratch");
@@ -4480,11 +4595,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
                 */
-                Op(INT_CLEAR_BIT, "$scratch"); // optional, needs only to prevent "Internal relay '%s' never assigned" message
-                Op(INT_UART_SEND_READY, "$scratch");
-                Op(INT_IF_BIT_CLEAR, "$scratch");
-                    Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
-                Op(INT_END_IF);
+            Op(INT_CLEAR_BIT,
+               "$scratch"); // optional, needs only to prevent "Internal relay '%s' never assigned" message
+            Op(INT_UART_SEND_READY, "$scratch");
+            Op(INT_IF_BIT_CLEAR, "$scratch");
+            Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+            Op(INT_END_IF);
             Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
@@ -4496,7 +4612,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_CLEAR_BIT, "$scratch");
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
-                        Op(INT_SET_BIT, "$scratch");
+                    Op(INT_SET_BIT, "$scratch");
                     Op(INT_END_IF);
 
                     Op(INT_IF_BIT_SET, "$scratch");
@@ -4522,11 +4638,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     // Suppress all but the last leading zero.
                     if(digit != (digits - 1)) {
                         Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", "$charToUart");
-                          Op(INT_IF_BIT_SET, isLeadingZero);
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' '); // '0' %04d
-                          Op(INT_END_IF);
+                        Op(INT_IF_BIT_SET, isLeadingZero);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' '); // '0' %04d
+                        Op(INT_END_IF);
                         Op(INT_ELSE);
-                          Op(INT_CLEAR_BIT, isLeadingZero);
+                        Op(INT_CLEAR_BIT, isLeadingZero);
                         Op(INT_END_IF);
                     }
 
@@ -4539,27 +4655,27 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_CLEAR_BIT, "$scratch");
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
-                        Op(INT_SET_BIT, "$scratch");
+                    Op(INT_SET_BIT, "$scratch");
                     Op(INT_END_IF);
                     Op(INT_IF_BIT_SET, "$scratch");
 
-                        // Also do the `absolute value' calculation while
-                        // we're at it.
-                        Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
-                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (int32_t)0);
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (int32_t)0);
-                            Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, var);
-                        Op(INT_ELSE);
-                            Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
-                        Op(INT_END_IF);
+                    // Also do the `absolute value' calculation while
+                    // we're at it.
+                    Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
+                    Op(INT_IF_VARIABLE_LES_LITERAL, var, (int32_t)0);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
+                    Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (int32_t)0);
+                    Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, var);
+                    Op(INT_ELSE);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
+                    Op(INT_END_IF);
 
                     Op(INT_END_IF);
                 } else if(outputWhich[i] == OUTPUT_UCHAR) {
                     // just another character
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
                     Op(INT_END_IF);
                 } else
                     Error(_("Internal error."));
@@ -4567,25 +4683,25 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (int32_t)0);
             Op(INT_ELSE);
-              Op(INT_IF_BIT_SET, doSend);
-                /*
+            Op(INT_IF_BIT_SET, doSend);
+            /*
                 Op(INT_SET_BIT, "$scratch");
                 Op(INT_UART_SEND, "$charToUart", "$scratch");
                 */
-                Op(INT_UART_SEND1, "$charToUart");
-                /**/
-                Op(INT_INCREMENT_VARIABLE, seq);
-              Op(INT_END_IF);
+            Op(INT_UART_SEND1, "$charToUart");
+            /**/
+            Op(INT_INCREMENT_VARIABLE, seq);
+            Op(INT_END_IF);
             Op(INT_END_IF);
 
             // Rung-out state: true if we're still running, else false
             Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
-              Op(INT_IF_BIT_SET, doSend);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_END_IF);
+            Op(INT_IF_BIT_SET, doSend);
+            Op(INT_SET_BIT, stateInOut);
+            Op(INT_END_IF);
             Op(INT_ELSE);
-                Op(INT_CLEAR_BIT, doSend);
+            Op(INT_CLEAR_BIT, doSend);
             Op(INT_END_IF);
             break;
         }
@@ -4630,7 +4746,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", which);
             break;
     }
-    #ifndef DEFAULT_COIL_ALGORITHM
+#ifndef DEFAULT_COIL_ALGORITHM
     if((which == ELEM_COIL) || (which == ELEM_SET_PWM)) {
         // ELEM_COIL is a special case, see above
         return;
@@ -4639,7 +4755,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         SimState(&(l->poweredAfter), stateInOut, &(l->workingNow), l->d.contacts.name); // variant 5
         return;
     }
-    #endif
+#endif
     if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
@@ -4751,131 +4867,131 @@ void WipeIntMemory()
 //-----------------------------------------------------------------------------
 bool GenerateIntermediateCode()
 {
-  try {
-    Comment("GenerateIntermediateCode");
-    GenSymCount = 0;
-    GenSymCountParThis = 0;
-    GenSymCountParOut = 0;
-    GenSymCountOneShot = 0;
-    GenSymCountFormattedString = 0;
-    GenSymCountStepper = 0;
+    try {
+        Comment("GenerateIntermediateCode");
+        GenSymCount = 0;
+        GenSymCountParThis = 0;
+        GenSymCountParOut = 0;
+        GenSymCountOneShot = 0;
+        GenSymCountFormattedString = 0;
+        GenSymCountStepper = 0;
 
-    // The EEPROM addresses for the `Make Persistent' op are assigned at
-    // int code generation time.
-    EepromAddrFree = 0;
+        // The EEPROM addresses for the `Make Persistent' op are assigned at
+        // int code generation time.
+        EepromAddrFree = 0;
 
-    rungNow = -100; //INT_MAX;
-    whichNow = -INT_MAX;
-    leafNow = nullptr;
+        rungNow = -100; //INT_MAX;
+        whichNow = -INT_MAX;
+        leafNow = nullptr;
 
-    WipeIntMemory();
+        WipeIntMemory();
 
-    AllocStart();
+        AllocStart();
 
-    CheckVariableNames();
+        CheckVariableNames();
 
 #ifdef TABLE_IN_FLASH
-    InitTables();
+        InitTables();
 #endif
-    InitVars();
+        InitVars();
 
-    rungNow++;
-    bool ExistMasterRelay = CheckMasterRelay();
-    if(int_comment_level == 1) {
-        // ExistMasterRelay = true; // Comment this for optimisation
-    }
-    if(ExistMasterRelay)
-        Op(INT_SET_BIT, "$mcr");
-
-    rungNow++;
-    char      s1[MAX_COMMENT_LEN];
-    char *    s2 = nullptr;
-    ElemLeaf *leaf = nullptr;
-    int       rung;
-    for(rung = 0; rung <= Prog.numRungs; rung++) {
-        rungNow = rung;
-        whichNow = -INT_MAX;
-        leafNow = nullptr;
-        Prog.OpsInRung[rung] = 0;
-        Prog.HexInRung[rung] = 0;
-        sprintf(s1,"Rung%d", rung + 1);
-        Op(INT_AllocFwdAddr, s1, (int32_t)rung);
-    }
-
-    for(rung = 0; rung < Prog.numRungs; rung++) {
-        rungNow = rung;
-        whichNow = -INT_MAX;
-        leafNow = nullptr;
-        if(int_comment_level != 1) {
-            Comment("");
-            Comment("======= START RUNG %d =======", rung + 1);
-        }
-        sprintf(s1,"Rung%d", rung + 1);
-        Op(INT_AllocKnownAddr, s1, (int32_t)rung);
-        Op(INT_FwdAddrIsNow, s1, (int32_t)rung);
-
-        if(Prog.rungs(rung)->count > 0 && Prog.rungs(rung)->contents[0].which == ELEM_COMMENT) {
-            // nothing to do for this one
-            // Yes, I do! Push comment into interpretable OP code for C and PASCAL.
-            leaf = (ElemLeaf *)Prog.rungs(rung)->contents[0].data.any;
-            AnsiToOem(leaf->d.comment.str, s1);
-            s2 = s1;
-            for(; *s2; s2++) {
-                if(*s2 == '\r') {
-                    *s2 = '\0';
-                    s2++;
-                    if(*s2 == '\n')
-                        s2++;
-                    break;
-                }
-            }
-            if(int_comment_level >= 2) {
-                if(strlen(s1))
-                    Comment1(s1); // bypass % in comments
-                if(strlen(s2))
-                    Comment1(s2); // bypass % in comments
-            }
-            continue;
-        }
+        rungNow++;
+        bool ExistMasterRelay = CheckMasterRelay();
         if(int_comment_level == 1) {
-            Comment("");
-            Comment("start rung %d", rung + 1);
+            // ExistMasterRelay = true; // Comment this for optimisation
         }
         if(ExistMasterRelay)
-            Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
-        else
-            Op(INT_SET_BIT, "$rung_top");
-        SimState(&(Prog.rungPowered[rung]), "$rung_top");
-        IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
-    }
-    // END of rung's
-    rungNow++;
-    sprintf(s1,"Rung%d", rung + 1);
-    Op(INT_AllocKnownAddr, s1, (int32_t)rung);
-    Op(INT_FwdAddrIsNow, s1, (int32_t)Prog.numRungs);
-    rungNow++;
-    Comment("Latest INT_OP here");
+            Op(INT_SET_BIT, "$mcr");
 
-    //Calculate amount of intermediate codes in rungs
-    for(int i = 0; i < MAX_RUNGS; i++)
-        Prog.OpsInRung[i] = 0;
-    for(uint32_t i = 0; i < IntCode.size(); i++) {
-        //dbp("IntPc=%d rung=%d ELEM_%x", i, IntCode[i].rung, IntCode[i].which);
-        if((IntCode[i].rung >= 0) && (IntCode[i].rung < MAX_RUNGS) && (IntCode[i].op != INT_SIMULATE_NODE_STATE))
-            Prog.OpsInRung[IntCode[i].rung]++;
-    }
+        rungNow++;
+        char      s1[MAX_COMMENT_LEN];
+        char *    s2 = nullptr;
+        ElemLeaf *leaf = nullptr;
+        int       rung;
+        for(rung = 0; rung <= Prog.numRungs; rung++) {
+            rungNow = rung;
+            whichNow = -INT_MAX;
+            leafNow = nullptr;
+            Prog.OpsInRung[rung] = 0;
+            Prog.HexInRung[rung] = 0;
+            sprintf(s1, "Rung%d", rung + 1);
+            Op(INT_AllocFwdAddr, s1, (int32_t)rung);
+        }
 
-    //Listing of intermediate codes
-    char CurrentPlFile[MAX_PATH] = "temp.pl";
-    if(strlen(CurrentSaveFile))
-        SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
-    IntDumpListing(CurrentPlFile);
-  } catch (const std::exception &e) {
-      char    buf[1024];
-      sprintf(buf, "%s%s", _("Error when generate intermediate code:\n"), e.what());
-      Error(buf);
-      return false;
-  }
+        for(rung = 0; rung < Prog.numRungs; rung++) {
+            rungNow = rung;
+            whichNow = -INT_MAX;
+            leafNow = nullptr;
+            if(int_comment_level != 1) {
+                Comment("");
+                Comment("======= START RUNG %d =======", rung + 1);
+            }
+            sprintf(s1, "Rung%d", rung + 1);
+            Op(INT_AllocKnownAddr, s1, (int32_t)rung);
+            Op(INT_FwdAddrIsNow, s1, (int32_t)rung);
+
+            if(Prog.rungs(rung)->count > 0 && Prog.rungs(rung)->contents[0].which == ELEM_COMMENT) {
+                // nothing to do for this one
+                // Yes, I do! Push comment into interpretable OP code for C and PASCAL.
+                leaf = (ElemLeaf *)Prog.rungs(rung)->contents[0].data.any;
+                AnsiToOem(leaf->d.comment.str, s1);
+                s2 = s1;
+                for(; *s2; s2++) {
+                    if(*s2 == '\r') {
+                        *s2 = '\0';
+                        s2++;
+                        if(*s2 == '\n')
+                            s2++;
+                        break;
+                    }
+                }
+                if(int_comment_level >= 2) {
+                    if(strlen(s1))
+                        Comment1(s1); // bypass % in comments
+                    if(strlen(s2))
+                        Comment1(s2); // bypass % in comments
+                }
+                continue;
+            }
+            if(int_comment_level == 1) {
+                Comment("");
+                Comment("start rung %d", rung + 1);
+            }
+            if(ExistMasterRelay)
+                Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
+            else
+                Op(INT_SET_BIT, "$rung_top");
+            SimState(&(Prog.rungPowered[rung]), "$rung_top");
+            IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
+        }
+        // END of rung's
+        rungNow++;
+        sprintf(s1, "Rung%d", rung + 1);
+        Op(INT_AllocKnownAddr, s1, (int32_t)rung);
+        Op(INT_FwdAddrIsNow, s1, (int32_t)Prog.numRungs);
+        rungNow++;
+        Comment("Latest INT_OP here");
+
+        //Calculate amount of intermediate codes in rungs
+        for(int i = 0; i < MAX_RUNGS; i++)
+            Prog.OpsInRung[i] = 0;
+        for(uint32_t i = 0; i < IntCode.size(); i++) {
+            //dbp("IntPc=%d rung=%d ELEM_%x", i, IntCode[i].rung, IntCode[i].which);
+            if((IntCode[i].rung >= 0) && (IntCode[i].rung < MAX_RUNGS) && (IntCode[i].op != INT_SIMULATE_NODE_STATE))
+                Prog.OpsInRung[IntCode[i].rung]++;
+        }
+
+        //Listing of intermediate codes
+        char CurrentPlFile[MAX_PATH] = "temp.pl";
+        if(strlen(CurrentSaveFile))
+            SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
+        IntDumpListing(CurrentPlFile);
+    } catch(const std::exception &e) {
+        char buf[1024];
+        sprintf(buf, "%s%s", _("Error when generate intermediate code:\n"), e.what());
+        Error(buf);
+        return false;
+    }
     return true;
 }
 
@@ -4974,7 +5090,6 @@ bool I2cFunctionUsed()
             return true;
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_I2C_WR))
             return true;
-
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {

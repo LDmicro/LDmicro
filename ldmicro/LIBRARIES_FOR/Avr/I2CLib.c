@@ -22,13 +22,13 @@ void LCD_I2C_SendChar(char x){};
 void LCD_I2C_BackLight(char x){};
 
 #ifndef LCD_I2C_ADR
-#define LCD_I2C_ADR		0		// a adapter selon afficheur
+#define LCD_I2C_ADR 0 // a adapter selon afficheur
 #endif
-#define LCD_I2C_REG		255		// a adapter selon preferences
+#define LCD_I2C_REG 255 // a adapter selon preferences
 
-/******************************** FONCTIONS I²C *******************************/
+/******************************** FONCTIONS I2C *******************************/
 
-// Initialisation avec calcul des predivisions I²C
+// Initialisation avec calcul des predivisions I2C
 void I2C_Init(long fcpu, long ftwi)
 {
     char rating = 0;  // valeur 8 bits entre 0 et 255
@@ -62,7 +62,7 @@ void I2C_Init(long fcpu, long ftwi)
     LCD_I2C_Init(LCD_I2C_ADR);
 }
 
-// Initialisation I²C master
+// Initialisation I2C master
 void I2C_MasterInit(char rate, char prescaler)
 {
     // Sélection du débit
@@ -162,7 +162,7 @@ void I2C_MasterStop()
         ;
 }
 
-// Ecriture d'un octet sur le bus I²C
+// Ecriture d'un octet sur le bus I2C
 int I2C_MasterWrite(char c)
 {
     // Placement de la donnée
@@ -226,22 +226,22 @@ void I2C_MasterSetReg(char addr, char reg, char val)
         if(val <= 0x10) // commandes diverses
         {
             if(val == 0x00)
-                LCD_I2C_Erase();		// effacement ecran
+                LCD_I2C_Erase(); // effacement ecran
             if(val == 0x01)
-                LCD_I2C_Home();			// retour en haut a gauche
+                LCD_I2C_Home(); // retour en haut a gauche
             if(val == 0x02)
                 LCD_I2C_Config(1, 0, 1); // clignotement active
             if(val == 0x03)
                 LCD_I2C_Config(1, 0, 0); // clignotement desactive
-			// ...
-			if(val == 0x0F)
-				LCD_I2C_BackLight(0);	// backlight off (si disponible)
-			if(val == 0x10)
-				LCD_I2C_BackLight(1);	// backlight on (si dispobible)
-        } else if(val >= 0x80) {         // commandes move(y,x)
-            x = (val & 0x1F) + 1;        // x sur 5 bits => 0 < x < 33 colonnes
-            y = ((val & 60) >> 5) + 1;   // y sur 2 bits => 0 < y < 5 lignes
-            LCD_I2C_MoveCursor(y, x);    // val= 1yyxxxxx en binaire
+            // ...
+            if(val == 0x0F)
+                LCD_I2C_BackLight(0); // backlight off (si disponible)
+            if(val == 0x10)
+                LCD_I2C_BackLight(1);  // backlight on (si dispobible)
+        } else if(val >= 0x80) {       // commandes move(y,x)
+            x = (val & 0x1F) + 1;      // x sur 5 bits => 0 < x < 33 colonnes
+            y = ((val & 60) >> 5) + 1; // y sur 2 bits => 0 < y < 5 lignes
+            LCD_I2C_MoveCursor(y, x);  // val= 1yyxxxxx en binaire
         } else {
             LCD_I2C_SendChar(val);
         }

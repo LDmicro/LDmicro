@@ -34,15 +34,15 @@ static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
 static HWND BaudTextbox;
-static HWND RateTextbox;            ///// Added by JG
-static HWND SpeedTextbox;           ///// Added by JG
+static HWND RateTextbox;  ///// Added by JG
+static HWND SpeedTextbox; ///// Added by JG
 
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
-static LONG_PTR PrevRateProc;       ///// Added by JG
-static LONG_PTR PrevSpeedProc;      ///// Added by JG
+static LONG_PTR PrevRateProc;  ///// Added by JG
+static LONG_PTR PrevSpeedProc; ///// Added by JG
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -66,10 +66,10 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
         t = PrevBaudProc;
-    else if(hwnd == RateTextbox)    ///// Added by JG
-        t = PrevRateProc;           /////
-    else if(hwnd == SpeedTextbox)   ///// Added by JG
-        t = PrevSpeedProc;          /////
+    else if(hwnd == RateTextbox)  ///// Added by JG
+        t = PrevRateProc;         /////
+    else if(hwnd == SpeedTextbox) ///// Added by JG
+        t = PrevSpeedProc;        /////
 
     else
         oops();
@@ -209,17 +209,17 @@ static void MakeControls()
     NiceFont(textLabel6);
 
     SpeedTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 400,
-                                 102,
-                                 100,
-                                 21,
-                                 ConfDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+                                  WC_EDIT,
+                                  "",
+                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+                                  400,
+                                  102,
+                                  100,
+                                  21,
+                                  ConfDialog,
+                                  nullptr,
+                                  Instance,
+                                  nullptr);
     NiceFont(SpeedTextbox);
     /////
 
@@ -294,7 +294,9 @@ static void MakeControls()
     NiceFont(ConfigBitsTextbox);
 
     ///// Modified by JG to extend to AVRs & ARMs
-    if(!Prog.mcu() || ((Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ARM))) {
+    if(!Prog.mcu()
+       || ((Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR)
+           && (Prog.mcu()->whichIsa != ISA_ARM))) {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
     }
@@ -324,7 +326,8 @@ static void MakeControls()
     // clang-format on
 
     ///// Modified by JG to extend to AVRs & ARMs
-    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ARM)) {
+    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR)
+       && (Prog.mcu()->whichIsa != ISA_ARM)) {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
         //      EnableWindow(WDTECheckbox, false);
@@ -448,8 +451,9 @@ static void MakeControls()
             strcat(explanation, _("Please select a micro with a UART.\r\n\r\n"));
         }
     } else {
-        strcat(explanation,
-               _("No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"));
+        strcat(
+            explanation,
+            _("No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"));
     }
 
     strcat(explanation,
@@ -469,7 +473,7 @@ static void MakeControls()
                                      explanation,
                                      WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
                                      10,
-                                     100+30,                ///// 30 added by JG
+                                     100 + 30, ///// 30 added by JG
                                      340 + 200,
                                      800,
                                      ConfDialog,
@@ -486,7 +490,7 @@ static void MakeControls()
     SetRect(&tr, 0, 0, w, 800);
     DrawText(hdc, explanation, -1, &tr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_WORDBREAK);
     DeleteDC(hdc);
-    int h = 104 + tr.bottom + 10 + 20 + 30;                         ///// 30 added by JG
+    int h = 104 + tr.bottom + 10 + 20 + 30; ///// 30 added by JG
     SetWindowPos(ConfDialog, nullptr, 0, 0, w, h, SWP_NOMOVE);
     // h is the desired client height, but SetWindowPos includes title bar;
     // so fix it up by hand
@@ -498,8 +502,8 @@ static void MakeControls()
     PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevConfigBitsProc = SetWindowLongPtr(ConfigBitsTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
-    PrevRateProc = SetWindowLongPtr(RateTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);         ///// Added by JG
-    PrevSpeedProc = SetWindowLongPtr(SpeedTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);       ///// Added by JG
+    PrevRateProc = SetWindowLongPtr(RateTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);   ///// Added by JG
+    PrevSpeedProc = SetWindowLongPtr(SpeedTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc); ///// Added by JG
 }
 
 void ShowConfDialog()
@@ -558,8 +562,8 @@ void ShowConfDialog()
     sprintf(buf, "%d", Prog.i2cRate);
     SendMessage(SpeedTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
-        Prog.cycleTimer = 3;        //  ARM uses Timer 3
+    if((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
+        Prog.cycleTimer = 3; //  ARM uses Timer 3
         sprintf(buf, "%d", 3);
         SendMessage(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
     }
@@ -569,7 +573,7 @@ void ShowConfDialog()
     ShowWindow(ConfDialog, true);
     SetFocus(CycleTextbox);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
@@ -606,10 +610,9 @@ void ShowConfDialog()
             Prog.cycleTimer = 1;
 
         ///// Added by JG2
-        if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
-            {
-            Prog.cycleTimer = 3;        //  ARM uses Timer 3
-            }
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
+            Prog.cycleTimer = 3; //  ARM uses Timer 3
+        }
         /////
 
         if(SendMessage(YPlcCycleDutyCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
@@ -619,8 +622,9 @@ void ShowConfDialog()
         }
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         ///// Added by JG:  convert '.' to ',' for atof()
-        for (size_t i= 0 ; i < strlen(buf) ; i++)
-            if (buf[i] == '.') buf[i] = ',';
+        for(size_t i = 0; i < strlen(buf); i++)
+            if(buf[i] == '.')
+                buf[i] = ',';
         /////
         Prog.mcuClock = (int)(1e6 * atof(buf) + 0.5);
 

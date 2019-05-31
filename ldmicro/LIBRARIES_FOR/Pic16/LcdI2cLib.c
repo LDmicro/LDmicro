@@ -1,181 +1,184 @@
 #include <htc.h>
 
-// Librairie pour afficheur LCD 16x2 + IO-Expander sur bus I2C 
+// Librairie pour afficheur LCD 16x2 + IO-Expander sur bus I2C
 
 #include "ladder.h"
 #include "UsrLib.h"
 #include "I2cLib.h"
-#include "LcdI2clib.h"			 // Fichier header librairie LCD
+#include "LcdI2clib.h" // Fichier header librairie LCD
 
-unsigned char port= 0;		// adaptation pour IO-Expander I2C
+unsigned char port = 0; // adaptation pour IO-Expander I2C
 
 // Gère l'écriture d'un octet vers le LCD
-void LCD_I2C_Send(char donnee,int type)
-	{
-   	// Activation de RS si type = 1 (donnee)
-   	PORT_LCD (|= (type << BIT_LCD_RS))
-   	// Ecriture des 4 MSB
-   	LCD_I2C_Send4msb(donnee);   
-   	// Ecriture des 4 LSB
-   	LCD_I2C_Send4msb(donnee << 4);   
-   	// Desactivation RS
-   	PORT_LCD  (&= ~(1<<BIT_LCD_RS))
-   	// Attente execution
-   	delay_ms(6);
-	}
+void LCD_I2C_Send(char donnee, int type)
+{
+    // Activation de RS si type = 1 (donnee)
+    PORT_LCD(|= (type << BIT_LCD_RS))
+    // Ecriture des 4 MSB
+    LCD_I2C_Send4msb(donnee);
+    // Ecriture des 4 LSB
+    LCD_I2C_Send4msb(donnee << 4);
+    // Desactivation RS
+    PORT_LCD(&= ~(1 << BIT_LCD_RS))
+    // Attente execution
+    delay_ms(6);
+}
 
 // Gère l'enable du LCD
 void LCD_I2C_Enable(void)
-	{
-   	PORT_LCD (|= (1 << BIT_LCD_E))      // E à 1
-//   	asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
-	delay_us(10);
-   	PORT_LCD (&= ~(1 << BIT_LCD_E))     // E à 0
-	}
+{
+    PORT_LCD(|= (1 << BIT_LCD_E)) // E à 1
+                                  //   	asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
+    delay_us(10);
+    PORT_LCD(&= ~(1 << BIT_LCD_E)) // E à 0
+}
 
 // Gère l'écriture des 4 MSB vesr le LCD
 void LCD_I2C_Send4msb(char donnee)
-	{
-   	// Reset bit de données
-   	PORT_LCD (&= ~((1 << BIT_LCD_D4) | (1 << BIT_LCD_D5) | (1 << BIT_LCD_D6) | (1 << BIT_LCD_D7)))
-   
-   	// Ecriture des 4 MSB
-	if (donnee & (1 << 4)) {PORT_LCD (|= (1 << BIT_LCD_D4))} // Bit D4 à 1
-   
-	if (donnee & (1 << 5)) {PORT_LCD (|= (1 << BIT_LCD_D5))} // Bit D5 à 1
-   
-	if (donnee & (1 << 6)) {PORT_LCD (|= (1 << BIT_LCD_D6))} // Bit D6 à 1
-   
-	if (donnee & (1 << 7)) {PORT_LCD (|= (1 << BIT_LCD_D7))} // Bit D7 à 1
-    
-   	// Validation donnee par basculement de l'enable
-   	LCD_I2C_Enable();
-	}
+{
+    // Reset bit de données
+    PORT_LCD(&= ~((1 << BIT_LCD_D4) | (1 << BIT_LCD_D5) | (1 << BIT_LCD_D6) | (1 << BIT_LCD_D7)))
+
+    // Ecriture des 4 MSB
+    if(donnee & (1 << 4)) {
+        PORT_LCD(|= (1 << BIT_LCD_D4)) // Bit D4 à 1
+    }
+
+    if(donnee & (1 << 5)) {
+        PORT_LCD(|= (1 << BIT_LCD_D5)) // Bit D5 à 1
+    }
+
+    if(donnee & (1 << 6)) {
+        PORT_LCD(|= (1 << BIT_LCD_D6)) // Bit D6 à 1
+    }
+
+    if(donnee & (1 << 7)) {
+        PORT_LCD(|= (1 << BIT_LCD_D7)) // Bit D7 à 1
+    }
+
+    // Validation donnee par basculement de l'enable
+    LCD_I2C_Enable();
+}
 
 // Efface le contenu de l'ecran LCD
 void LCD_I2C_Erase(void)
-	{   
-   	LCD_I2C_SendCommand(LCD_CMD_EFF);
-	}
+{
+    LCD_I2C_SendCommand(LCD_CMD_EFF);
+}
 
 // Renvoie le curseur à la position initiale
 void LCD_I2C_Home(void)
-	{   
-   	LCD_I2C_SendCommand(LCD_CMD_HOME);
-	}
+{
+    LCD_I2C_SendCommand(LCD_CMD_HOME);
+}
 
 // Activation / desactivation du backlight (facultatif)
 void LCD_I2C_BackLight(char stat)
-    {
-    if (stat)
-        {
-        PORT_LCD (|= (1 << BIT_LCD_BL))
-        }
-    else
-        {
-        PORT_LCD (&= ~(1 << BIT_LCD_BL))
-        }
+{
+    if(stat) {
+        PORT_LCD(|= (1 << BIT_LCD_BL))
+    } else {
+        PORT_LCD(&= ~(1 << BIT_LCD_BL))
     }
+}
 
 // Sélection du mode d'insertion des caractères sur le LCD
-void LCD_I2C_InsertMode(int direction_curseur,int inversion_affichage)
-	{   
-   	LCD_I2C_SendCommand(LCD_CMD_ENTRY_MODE | (inversion_affichage << LCD_BIT_ENTRY_SHIFT) | (direction_curseur << LCD_BIT_ENTRY_INC));
-	}
+void LCD_I2C_InsertMode(int direction_curseur, int inversion_affichage)
+{
+    LCD_I2C_SendCommand(LCD_CMD_ENTRY_MODE                             //
+                        | (inversion_affichage << LCD_BIT_ENTRY_SHIFT) //
+                        | (direction_curseur << LCD_BIT_ENTRY_INC)     //
+    );
+}
 
 // Configuration affichage LCD
-void LCD_I2C_Config(int affichage_actif,int curseur_actif,int clignotement_actif)
-	{
-   	LCD_I2C_SendCommand(
-      		LCD_CMD_DISPLAY
-      		| (affichage_actif << LCD_BIT_DISP_DISP)
-      		| (curseur_actif << LCD_BIT_DISP_CURS)
-      		| (clignotement_actif << LCD_BIT_DISP_BLINK)
-   		);
-	}
+void LCD_I2C_Config(int affichage_actif, int curseur_actif, int clignotement_actif)
+{
+    LCD_I2C_SendCommand(LCD_CMD_DISPLAY                              //
+                        | (affichage_actif << LCD_BIT_DISP_DISP)     //
+                        | (curseur_actif << LCD_BIT_DISP_CURS)       //
+                        | (clignotement_actif << LCD_BIT_DISP_BLINK) //
+    );
+}
 
 // Déplacement affichage ou curseur
-void LCD_I2C_Move(int type,int sens)
-	{
-   	LCD_I2C_SendCommand(
-      		LCD_CMD_SHIFT
-      		| (type << LCD_BIT_SHIFT_TYPE)
-      		| (sens << LCD_BIT_SHIFT_SENS)
-   		);
-	}
+void LCD_I2C_Move(int type, int sens)
+{
+    LCD_I2C_SendCommand(LCD_CMD_SHIFT                  //
+                        | (type << LCD_BIT_SHIFT_TYPE) //
+                        | (sens << LCD_BIT_SHIFT_SENS) //
+    );
+}
 
 // Déplacement du curseur de n caractères vers la droite
 void LCD_I2C_MoveRight(int nombre_caracteres)
-	{
-	int i;
+{
+    int i;
 
-	for(i=0;i<nombre_caracteres;i++)
-  		LCD_I2C_Move(0,1);
-	}
+    for(i = 0; i < nombre_caracteres; i++)
+        LCD_I2C_Move(0, 1);
+}
 
 // Déplacement du curseur de n caractères vers la gauche
 void LCD_I2C_MoveLeft(int nombre_caracteres)
-	{
-   	int i;
+{
+    int i;
 
-   	for(i=0;i<nombre_caracteres;i++)
-  		LCD_I2C_Move(0,0);
-	}
+    for(i = 0; i < nombre_caracteres; i++)
+        LCD_I2C_Move(0, 0);
+}
 
 // Déplacement de n caractères vers la droite des données à partir du curseur
 void LCD_I2C_ShiftRight(int nombre_caracteres)
-	{
-   	int i;
+{
+    int i;
 
-   	for(i=0;i<nombre_caracteres;i++)
-      	LCD_I2C_Move(1,1);
-	}
+    for(i = 0; i < nombre_caracteres; i++)
+        LCD_I2C_Move(1, 1);
+}
 
 // Déplacement de n caractères vers la gauche des données à partir du curseur
 void LCD_I2C_ShiftLeft(int nombre_caracteres)
-	{
-   	int i;
-	
-   	for(i=0;i<nombre_caracteres;i++)
-      	LCD_I2C_Move(1,0);
-	}
+{
+    int i;
+
+    for(i = 0; i < nombre_caracteres; i++)
+        LCD_I2C_Move(1, 0);
+}
 
 // Ecriture d'une chaîne de caractère sur le LCD
 void LCD_I2C_Write(char *chaine)
-	{
-   	int i;
-   
-   	if (chaine == 0)		// Si le pointeur passé en paramètre n'est pas valide
-      	return;      		// => sortie de la fonction 
-					    
-   	for (i=0;i< strlen(chaine);i++)
-      	LCD_I2C_SendChar(chaine[i]); 
-	}
+{
+    int i;
+
+    if(chaine == 0) // Si le pointeur passé en paramètre n'est pas valide
+        return;     // => sortie de la fonction
+
+    for(i = 0; i < strlen(chaine); i++)
+        LCD_I2C_SendChar(chaine[i]);
+}
 
 // Déplacement du curseur
-void LCD_I2C_MoveCursor(int y,int x)
-	{
-   	int adresse;
-   
-   	if ((y < 1) || (y > 2) || (x < 1) || (x > 16))
-   		{
-      	return;      
-		// Si le numéro de caractère/ligne n'est pas bon => sortie de la fonction
-   		}   
+void LCD_I2C_MoveCursor(int y, int x)
+{
+    int adresse;
 
-   	// Ligne 1
-   	if (y == 1)
-   		{
-      	adresse = LCD_LIGNE_1 + (x - 1);
-   		}
-   	// Ligne 2
-   	else
-   		{
-      	adresse = LCD_LIGNE_2 + (x - 1);
-   		}
-   
-   	LCD_I2C_SendCommand(LCD_CMD_SET_DDRAM | adresse);
-	}
+    if((y < 1) || (y > 2) || (x < 1) || (x > 16)) {
+        return;
+        // Si le numéro de caractère/ligne n'est pas bon => sortie de la fonction
+    }
+
+    // Ligne 1
+    if(y == 1) {
+        adresse = LCD_LIGNE_1 + (x - 1);
+    }
+    // Ligne 2
+    else {
+        adresse = LCD_LIGNE_2 + (x - 1);
+    }
+
+    LCD_I2C_SendCommand(LCD_CMD_SET_DDRAM | adresse);
+}
 
 /*
 // Affiche une variale de type entier sur l'écran LCD

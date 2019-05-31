@@ -28,8 +28,8 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
-static int   SeenVariablesCount;
+static char     SeenVariables[MAX_IO][MAX_NAME_LEN];
+static int      SeenVariablesCount;
 static uint32_t InCount, OutCount, TimerCount, RelayCount, VarCount;
 
 //-----------------------------------------------------------------------------
@@ -588,8 +588,11 @@ static void Generate_flash_eeprom(FILE *f)
                     ooops("sovElement=%d", sovElement);
                 }
 
-                fprintf(
-                    f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1-1, sovs);
+                fprintf(f,
+                        "const %s: array [0..%d] of %s = (",
+                        MapSym(IntCode[i].name1, ASINT),
+                        IntCode[i].literal1 - 1,
+                        sovs);
                 int j;
                 for(j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
@@ -597,7 +600,7 @@ static void Generate_flash_eeprom(FILE *f)
                 fprintf(f, "%d);\n", IntCode[i].data[IntCode[i].literal1 - 1]);
                 break;
             }
-                //const Ui_stepZ:array [1..6] of byte = (0, 6, 3, 2, 2, 1);
+            //const Ui_stepZ:array [1..6] of byte = (0, 6, 3, 2, 2, 1);
 #ifdef NEW_FEATURE
             case INT_EEPROM_INIT: {
                 fprintf(f, "epprom datas;\n");
@@ -615,8 +618,8 @@ static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
     if((IntCode[i].op != INT_SIMULATE_NODE_STATE) //
-       && (IntCode[i].op != INT_AllocKnownAddr) //
-       && (IntCode[i].op != INT_FwdAddrIsNow) //
+       && (IntCode[i].op != INT_AllocKnownAddr)   //
+       && (IntCode[i].op != INT_FwdAddrIsNow)     //
        && (IntCode[i].op != INT_AllocFwdAddr))
         for(int j = 0; j < indent; j++)
 #if 1

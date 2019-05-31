@@ -19,19 +19,20 @@ void UndoFlush();
 bool CanUndo();
 
 struct UndoStruct {
-    int gx;
-    int gy;
-    PlcProgram* prog;
+    int         gx;
+    int         gy;
+    PlcProgram *prog;
 
-    UndoStruct() {reset();}
+    UndoStruct()
+    {
+        reset();
+    }
     void reset();
 };
 
 class ProgramStack {
-public:
-    ProgramStack():
-        write(0),
-        count(0)
+  public:
+    ProgramStack() : write(0), count(0)
     {
     }
 
@@ -39,11 +40,15 @@ public:
     void pop();
     void empty();
 
-    int size() {return count;}
-private:
+    int size()
+    {
+        return count;
+    }
+
+  private:
     std::array<UndoStruct, MAX_LEVELS_UNDO> undo;
-    int write;
-    int count;
+    int                                     write;
+    int                                     count;
 };
 
 // Store a `deep copy' of the entire program before every change, in a
@@ -51,11 +56,18 @@ private:
 // is full and we try to push another one.
 class Undo {
     Undo();
-    Undo(const Undo& ) {}
-    Undo& operator=(const Undo&) {return *this;}
+    Undo(const Undo &)
+    {
+    }
+    Undo &operator=(const Undo &)
+    {
+        return *this;
+    }
     static Undo instance_;
+
   public:
     ~Undo();
+
   public:
     static void pushUndo();
     static void popUndo();
@@ -63,8 +75,8 @@ class Undo {
     static void pushRedo();
     static void popRedo();
     static void emptyRedo();
-    static int undoSize();
-    static int redoSize();
+    static int  undoSize();
+    static int  redoSize();
 
   private:
     ProgramStack undo;

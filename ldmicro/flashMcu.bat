@@ -1,4 +1,4 @@
-@echo OFF
+@echo off
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
 REM EXE_PATH from where the ldmicro.exe and *.bat are executes
@@ -148,7 +148,7 @@ goto exit
 @rem =======================================================================
 :AVRGCC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with avr-gcc
 
      SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
@@ -195,7 +195,7 @@ goto exit
 
 @rem =======================================================================
 :PIC
-@ECHO ON
+@echo on
 ::**************************************************************************
 ::Here is a part of 'Readme for PK3CMD.txt' file:
 ::Release Notes for PICkit 3 Command Line Interface
@@ -281,7 +281,7 @@ goto exit
 @rem =======================================================================
 :HTC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with HI-TECH C (picc.exe)
 
 @rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
@@ -306,12 +306,6 @@ mkdir HTC\lib
 REM copy source code for compiling
 if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 
-REM copy source code for debugging
-copy %LIB_PATH%\*.h HTC\bin
-copy %LIB_PATH%\*.c HTC\bin
-copy *.h HTC\bin
-copy *.c HTC\bin
-
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
@@ -323,13 +317,25 @@ REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 pause
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto exit
+REM Copy source code for debugging in Proteus
+copy HTC\lib\*.h PROTEUS > nul
+copy HTC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy HTC\BIN\*.hex PROTEUS > nul
+copy HTC\BIN\*.cof PROTEUS > nul
+
 goto exit
 
 
 @rem =======================================================================
 :ARMGCC
 ::**************************************************************************
-@ECHO ON
+@echo on
 REM Compilation with arm-gcc
 
 SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
@@ -373,10 +379,10 @@ arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 
 REM Creation of the J-Link script
 
-@ECHO r > ARMGCC\bin\cmdfile.jlink
-@ECHO loadfile ARMGCC\bin\%~nx2.hex >> ARMGCC\bin\cmdfile.jlink
-@ECHO go >> ARMGCC\bin\cmdfile.jlink
-@ECHO exit >> ARMGCC\bin\cmdfile.jlink
+@echo r > ARMGCC\bin\cmdfile.jlink
+@echo loadfile ARMGCC\bin\%~nx2.hex >> ARMGCC\bin\cmdfile.jlink
+@echo go >> ARMGCC\bin\cmdfile.jlink
+@echo exit >> ARMGCC\bin\cmdfile.jlink
 
 REM Transfer of the program with J-Link Commander
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink

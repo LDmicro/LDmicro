@@ -108,7 +108,8 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         w = (WNDPROC)PrevNameProc;
     } else if(hwnd == IndexTextbox) {
         w = (WNDPROC)PrevIndexProc;
-    } else oops();
+    } else
+        oops();
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
 }
 
@@ -212,9 +213,9 @@ static void MakeFixedControls(bool forPwl)
                                txt,
                                WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
                                0,
-                               70 + 22,             /////
+                               70 + 22, /////
                                78 + 20,
-                               42,                  ///// Modified by JG
+                               42, ///// Modified by JG
                                LutDialog,
                                nullptr,
                                Instance,
@@ -241,7 +242,7 @@ static void MakeFixedControls(bool forPwl)
                                           _("Edit table of ASCII values like a string"),
                                           WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
                                           10,
-                                          100+30,       ///// Modified by JG
+                                          100 + 30, ///// Modified by JG
                                           300,
                                           21,
                                           LutDialog,
@@ -377,9 +378,9 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         int i;
         int base;
         if(forPwl) {
-            base = 100 + 40;        ///// Modified by JG
+            base = 100 + 40; ///// Modified by JG
         } else {
-            base = 140 + 25;        /////
+            base = 140 + 25; /////
         }
         for(i = 0; i < count; i++) {
             int x, y;
@@ -436,8 +437,12 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
             count = MAX_LOOK_UP_TABLE_LEN;
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) false, 0);
 
-        MoveWindow(
-            LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 60 + std::min(count, 16) * 30, true);      ///// Modified by JG
+        MoveWindow(LutDialog,
+                   100,
+                   30,
+                   320 + 20 + std::min(count / 16, 2) * 150,
+                   base + 60 + std::min(count, 16) * 30,
+                   true); ///// Modified by JG
     }
 }
 
@@ -510,7 +515,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
                                    100,
                                    100,
                                    320,
-                                   405,             //// Modified by JG
+                                   405, //// Modified by JG
                                    nullptr,
                                    nullptr,
                                    Instance,
@@ -539,7 +544,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     char PrevTableAsString[1024] = "";
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
@@ -669,7 +674,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {

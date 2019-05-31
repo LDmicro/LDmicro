@@ -54,8 +54,8 @@ static HMENU TmpMenu;
 static HMENU CntMenu;
 static HMENU EdgMenu;
 static HMENU UrtMenu;
-static HMENU SpiMenu;                   ///// JG
-static HMENU I2cMenu;                   ///// JG
+static HMENU SpiMenu; ///// JG
+static HMENU I2cMenu; ///// JG
 static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
@@ -74,9 +74,9 @@ int         IoListTop;
 // whether the simulation is running in real time
 static bool RealTimeSimulationRunning;
 
-extern HWND     UartSimulationWindow;       ///// Added by JG
-extern HWND     SpiSimulationWindow;        ///// Added by JG
-extern HWND     I2cSimulationWindow;        ///// Added by JG
+extern HWND UartSimulationWindow; ///// Added by JG
+extern HWND SpiSimulationWindow;  ///// Added by JG
+extern HWND I2cSimulationWindow;  ///// Added by JG
 
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
@@ -322,10 +322,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);       ///// Added by JG
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t); ///// Added by JG
 
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);        ///// Added by JG
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);       /////
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);  ///// Added by JG
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t); /////
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -586,15 +586,15 @@ HMENU MakeMainWindowMenus()
 
     FormatStrMenu = CreatePopupMenu();
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string"));
 
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
-//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
-//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
+    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
+    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
@@ -693,7 +693,8 @@ HMENU MakeMainWindowMenus()
     // simulate popup menu
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE, _("Si&mulation Mode\tCtrl+M or F7"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
+    AppendMenu(
+        SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F9"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE, _("Single &Cycle\tSpace"));
 
@@ -714,7 +715,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("Compile Sketch for ARDUINO"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM"));            // Added by JG
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM")); // Added by JG
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -728,7 +729,7 @@ HMENU MakeMainWindowMenus()
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
-    SetSyntaxHighlightingColours();                     ///// Added by JG for translation
+    SetSyntaxHighlightingColours(); ///// Added by JG for translation
     for(int i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
         AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK + i, Schemes[i].sName);
     }
@@ -1085,7 +1086,7 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
-/*
+    /*
     ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
     if (!Prog.mcu())
     {

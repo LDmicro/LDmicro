@@ -41,7 +41,7 @@ static bool NoCheckingOnBox[MAX_BOXES];
 
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
-    int   n;                            // 0 <= n < MAX_COMBO_STRINGS
+    int         n;                      // 0 <= n < MAX_COMBO_STRINGS
     const char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
@@ -218,118 +218,119 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 
 ///// prototype modified by JG with extra default parameter rdonly
 static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdOnly= 0)
+                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos,
+                             long rdOnly = 0)
 {
     bool didCancel = false;
 
-    try {       //// try... catch added by JG
+    try { //// try... catch added by JG
 
-    if(labs > MAX_BOXES)
-        oops();
-    if(boxes > MAX_BOXES)
-        oops();
-    if(boxes > labs)
-        oops();
-    if(combo > MAX_BOXES)
-        oops();
-    if(combo > boxes)
-        oops();
+        if(labs > MAX_BOXES)
+            oops();
+        if(boxes > MAX_BOXES)
+            oops();
+        if(boxes > labs)
+            oops();
+        if(combo > MAX_BOXES)
+            oops();
+        if(combo > boxes)
+            oops();
 
-    SimpleDialog = CreateWindowClient(0,
-                                      "LDmicroDialog",
-                                      title,
-                                      WS_OVERLAPPED | WS_SYSMENU,
-                                      100,
-                                      100,
-                                      304 + 550,
-                                      15 + 30 * (std::max(boxes, labs) < 2 ? 2 : std::max(boxes, labs)),
-                                      nullptr,
-                                      nullptr,
-                                      Instance,
-                                      nullptr);
+        SimpleDialog = CreateWindowClient(0,
+                                          "LDmicroDialog",
+                                          title,
+                                          WS_OVERLAPPED | WS_SYSMENU,
+                                          100,
+                                          100,
+                                          304 + 550,
+                                          15 + 30 * (std::max(boxes, labs) < 2 ? 2 : std::max(boxes, labs)),
+                                          nullptr,
+                                          nullptr,
+                                          Instance,
+                                          nullptr);
 
-    MakeControls(labs, labels, boxes, dests, fixedFontMask, combo, combos);
+        MakeControls(labs, labels, boxes, dests, fixedFontMask, combo, combos);
 
-    int i;
-    for(i = 0; i < boxes; i++) {
-        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);     ///// fill boxes with current settings
-        ///// added by JG to make some fields read-only (max= 32 boxes)
-        if(rdOnly & (1 << i))
-            SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
-        /////
-
-        if(numOnlyMask & (1 << i)) {
-            PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyNumOnlyProc);
-        } else // numOnlyMask overpower alnumOnlyMask
-            if(alnumOnlyMask & (1 << i)) {
-            PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyAlnumOnlyProc);
-        }
-    }
-
-    EnableWindow(MainWindow, false);
-    ShowWindow(SimpleDialog, true);
-    SetFocus(Textboxes[0]);
-    SendMessage(Textboxes[0], EM_SETSEL, 0, -1);
-
-    MSG   msg;
-    DWORD ret;
-    DialogDone = false;
-    DialogCancel = false;
-    while(((ret = GetMessage(&msg, nullptr, 0, 0)) != 0) && !DialogDone) {
-        if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN) {
-                DialogDone = true;
-                break;
-            } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = true;
-                DialogCancel = true;
-                break;
-            }
-        }
-
-        if(IsDialogMessage(SimpleDialog, &msg))
-            continue;
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    didCancel = DialogCancel;
-    if(!didCancel) {
-        for(i = 0; i < combo; i++) {
-            if(combos[i].n) {
-                if(combos[i].n > MAX_COMBO_STRINGS)
-                    oops();
-                int ItemIndex = SendMessage(ComboBox[i], CB_GETCURSEL, 0, 0);
-                SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)combos[i].str[ItemIndex]);
-            }
-        }
+        int i;
         for(i = 0; i < boxes; i++) {
-            if(NoCheckingOnBox[i]) {
-                char get[MAX_NAME_LEN];
-                SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN - 1), (LPARAM)get);
-                strcpy(dests[i], get);
-            } else {
-                char get[MAX_NAME_LEN];
-                SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN - 1), (LPARAM)get);
+            SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]); ///// fill boxes with current settings
+            ///// added by JG to make some fields read-only (max= 32 boxes)
+            if(rdOnly & (1 << i))
+                SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
+            /////
 
-                if((!strchr(get, '\'')) || (get[0] == '\'' && get[3] == '\'' && strlen(get) == 4 && get[1] == '\\')
-                   || (get[0] == '\'' && get[2] == '\'' && strlen(get) == 3)) {
-                    if(strlen(get) == 0) {
-                        Error(_("Empty textbox; not permitted."));
-                    } else {
-                        strcpy(dests[i], get);
-                    }
+            if(numOnlyMask & (1 << i)) {
+                PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyNumOnlyProc);
+            } else // numOnlyMask overpower alnumOnlyMask
+                if(alnumOnlyMask & (1 << i)) {
+                PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyAlnumOnlyProc);
+            }
+        }
+
+        EnableWindow(MainWindow, false);
+        ShowWindow(SimpleDialog, true);
+        SetFocus(Textboxes[0]);
+        SendMessage(Textboxes[0], EM_SETSEL, 0, -1);
+
+        MSG   msg;
+        DWORD ret;
+        DialogDone = false;
+        DialogCancel = false;
+        while(((ret = GetMessage(&msg, nullptr, 0, 0)) != 0) && !DialogDone) {
+            if(msg.message == WM_KEYDOWN) {
+                if(msg.wParam == VK_RETURN) {
+                    DialogDone = true;
+                    break;
+                } else if(msg.wParam == VK_ESCAPE) {
+                    DialogDone = true;
+                    DialogCancel = true;
+                    break;
+                }
+            }
+
+            if(IsDialogMessage(SimpleDialog, &msg))
+                continue;
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        didCancel = DialogCancel;
+        if(!didCancel) {
+            for(i = 0; i < combo; i++) {
+                if(combos[i].n) {
+                    if(combos[i].n > MAX_COMBO_STRINGS)
+                        oops();
+                    int ItemIndex = SendMessage(ComboBox[i], CB_GETCURSEL, 0, 0);
+                    SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)combos[i].str[ItemIndex]);
+                }
+            }
+            for(i = 0; i < boxes; i++) {
+                if(NoCheckingOnBox[i]) {
+                    char get[MAX_NAME_LEN];
+                    SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN - 1), (LPARAM)get);
+                    strcpy(dests[i], get);
                 } else {
-                    Error(_("Bad use of quotes: <%s>"), get);
+                    char get[MAX_NAME_LEN];
+                    SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN - 1), (LPARAM)get);
+
+                    if((!strchr(get, '\'')) || (get[0] == '\'' && get[3] == '\'' && strlen(get) == 4 && get[1] == '\\')
+                       || (get[0] == '\'' && get[2] == '\'' && strlen(get) == 3)) {
+                        if(strlen(get) == 0) {
+                            Error(_("Empty textbox; not permitted."));
+                        } else {
+                            strcpy(dests[i], get);
+                        }
+                    } else {
+                        Error(_("Bad use of quotes: <%s>"), get);
+                    }
                 }
             }
         }
-    }
-    EnableWindow(MainWindow, true);
-    SetFocus(MainWindow);
-    DestroyWindow(SimpleDialog);
+        EnableWindow(MainWindow, true);
+        SetFocus(MainWindow);
+        DestroyWindow(SimpleDialog);
 
-    } catch(...) {      ///// Try... catch added by JG
+    } catch(...) { ///// Try... catch added by JG
 
         ///// Added by JG to save work in case of big bug
         srand((unsigned int)time(nullptr));
@@ -361,9 +362,9 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 void ShowTimerDialog(int which, ElemLeaf *l)
 {
     ElemTimer *e = &(l->d.timer);
-    char *name = e->name;
-    char *delay = e->delay;
-    int *adjust = &(e->adjust);
+    char *     name = e->name;
+    char *     delay = e->delay;
+    int *      adjust = &(e->adjust);
 
     char buf1[1024];
     if(which == ELEM_TIME2DELAY) {
@@ -443,7 +444,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
     // clang-format on
     if(ShowSimpleDialog(s, labs, labels, (1 << 2), (3 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
-        double delay_ms;
+        double  delay_ms;
         int32_t delay_us;
         if(which == ELEM_TIME2DELAY) {
             delay_us = (int32_t)round(atof(delBuf));
@@ -451,7 +452,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
 
             if(delay_us > 0)
                 strcpy(delay, delBuf);
-                //*delay = (SDWORD)delay_us;
+            //*delay = (SDWORD)delay_us;
         } else {
             name[0] = 'T';
             strcpy(name + 1, nameBuf);
@@ -460,7 +461,8 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 delay_us = (int32_t)round(delay_ms * 1000.0);
 
                 if(delay_us > LONG_MAX) {
-                    Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+                    Error(_(
+                        "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
                     delay_us = LONG_MAX;
                 }
 
@@ -483,8 +485,8 @@ void ShowTimerDialog(int which, ElemLeaf *l)
 void ShowSleepDialog(ElemLeaf *l)
 {
     ElemTimer *e = &(l->d.timer);
-    char *name = e->name;
-    char *delay = e->delay;
+    char *     name = e->name;
+    char *     delay = e->delay;
 
     const char *s;
     s = _("Sleep Delay");
@@ -512,10 +514,10 @@ void ShowSleepDialog(ElemLeaf *l)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu()->whichIsa != ISA_PC)) {
-            const char *s1 =
-                _("Timer period too long (max 32767 times cycle time); use a slower cycle time.");
-            char s2[1024];
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1))))
+                  && (Prog.mcu()->whichIsa != ISA_PC)) {
+            const char *s1 = _("Timer period too long (max 32767 times cycle time); use a slower cycle time.");
+            char        s2[1024];
             sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del / 1000, period);
             double maxDelay = 1.0 * ((1 << (SizeOfVar(name) * 8 - 1)) - 1) * Prog.cycleTime / 1000000; //s
             char   s3[1024];
@@ -533,9 +535,9 @@ void ShowSleepDialog(ElemLeaf *l)
 void ShowDelayDialog(ElemLeaf *l)
 {
     ElemTimer *e = &(l->d.timer);
-    char *name = e->name;
-    char s[100] = "";
-    char buf1[1024];
+    char *     name = e->name;
+    char       s[100] = "";
+    char       buf1[1024];
     strcpy(buf1, _("Achievable DELAY values (us): "));
     long long T = 0, T0 = 0;
     int       i, n = 0;
@@ -669,10 +671,10 @@ void CheckVarInRange(char *name, char *str, int32_t v)
 void ShowCounterDialog(int which, ElemLeaf *l)
 {
     ElemCounter *e = &(l->d.counter);
-    char *minV = e->init;
-    char *maxV = e->max;
-    char *name = e->name;
-    char inputKind[MAX_NAME_LEN];
+    char *       minV = e->init;
+    char *       maxV = e->max;
+    char *       name = e->name;
+    char         inputKind[MAX_NAME_LEN];
     sprintf(inputKind, "%c", e->inputKind);
 
     const char *title;
@@ -699,10 +701,8 @@ void ShowCounterDialog(int which, ElemLeaf *l)
         _("Start value:"),
         (((which == ELEM_CTC)
               ? _("Max value:")
-              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ?
-                    _("True if >= :") :
-                    _("True if > :")))),
-                _("Input kind:")};
+              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
+        _("Input kind:")};
     char *dests[] = {name + 1, minV, maxV, inputKind};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
         if(IsNumber(minV)) {
@@ -945,7 +945,7 @@ void ShowSpiDialog(ElemLeaf *l)
                             _("Data Order:")};
 
     ///// Added by JG
-    if (l->d.spi.which == ELEM_SPI_WR) {
+    if(l->d.spi.which == ELEM_SPI_WR) {
         labels[2] = _("Send string:");
         NoCheckingOnBox[2] = true;
     }
@@ -971,8 +971,7 @@ void ShowSpiDialog(ElemLeaf *l)
         }
 
         ///// Added by JG
-        if(Prog.mcu()->whichIsa == ISA_ARM)
-        {
+        if(Prog.mcu()->whichIsa == ISA_ARM) {
 
         }
 
@@ -996,7 +995,7 @@ void ShowSpiDialog(ElemLeaf *l)
                 //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
                 sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
                 comboRec[4].str[i] = (const char *)CheckMalloc(strlen(buf) + 1);
-                strcpy(const_cast<char*>(comboRec[4].str[i]), buf);
+                strcpy(const_cast<char *>(comboRec[4].str[i]), buf);
             }
         }
     }
@@ -1004,11 +1003,11 @@ void ShowSpiDialog(ElemLeaf *l)
 
     ///// Added by JG
     if(Prog.mcu()) {
-        if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
-            if (l->d.spi.which == ELEM_SPI)
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR)
+           || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+            if(l->d.spi.which == ELEM_SPI)
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
-            if (l->d.spi.which == ELEM_SPI_WR)
-            {
+            if(l->d.spi.which == ELEM_SPI_WR) {
                 strcpy(dests[3], "-");
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00FA);
             }
@@ -1019,7 +1018,7 @@ void ShowSpiDialog(ElemLeaf *l)
             }
             //  NoCheckingOnBox[3] = false;
             for(int i = 0; i < comboRec[4].n; i++) {
-                CheckFree(const_cast<char*>(comboRec[4].str[i]));
+                CheckFree(const_cast<char *>(comboRec[4].str[i]));
             }
         }
     }
@@ -1040,21 +1039,20 @@ void ShowI2cDialog(ElemLeaf *l)
                             _("I2C Register:"),
                             _("Data Order:")};
 
-    if (l->d.i2c.which == ELEM_I2C_RD)
-    {
-        NoCheckingOnBox[2] = true;              ///////////////////////// A VOIR
+    if(l->d.i2c.which == ELEM_I2C_RD) {
+        NoCheckingOnBox[2] = true; ///////////////////////// A VOIR
     }
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->address, s->registr, s->first};
 
     comboRecord comboRec[] = {{0, {nullptr}},
-                             {2, {"Master", "Slave"}},
-                             {0, {nullptr}},
-                             {0, {nullptr}},
-                             {0, {nullptr}},
-                             {1, {"0"}},
-                             {1, {"0"}},
-                             {2, {"MSB_FIRST", "LSB_FIRST"}}};
+                              {2, {"Master", "Slave"}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {1, {"0"}},
+                              {1, {"0"}},
+                              {2, {"MSB_FIRST", "LSB_FIRST"}}};
 
     if(Prog.mcu()) {
         if(Prog.mcu()->i2cCount) {
@@ -1066,12 +1064,13 @@ void ShowI2cDialog(ElemLeaf *l)
     }
 
     if(Prog.mcu()) {
-        if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
-            if (l->d.i2c.which == ELEM_I2C_RD) { // no send
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR)
+           || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+            if(l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);
             }
-            if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
+            if(l->d.i2c.which == ELEM_I2C_WR) { // no recv
                 strcpy(dests[3], "-");
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x009A);
             }
@@ -1126,9 +1125,9 @@ void ShowSegmentsDialog(ElemLeaf *l)
 void ShowReadAdcDialog(char *name, int *refs)
 {
     const char *labels[] = {_("Destination:"), _("REFS:")};
-    char srefs[100];
+    char        srefs[100];
     sprintf(srefs, "%d", *refs);
-    char *dests[] = { name, srefs };
+    char *dests[] = {name, srefs};
     if(ShowSimpleDialog(_("Read A/D Converter"), 2, labels, 0, 0x1, 0x1, dests)) {
         // TODO check the ranges
         *refs = hobatoi(srefs);
@@ -1216,19 +1215,21 @@ void ShowSetPwmDialog(void *e)
 
 void ShowUartDialog(int which, ElemLeaf *l)
 {
-    ElemUart *   e = &(l->d.uart);
-    char bytes[MAX_NAME_LEN];
+    ElemUart *e = &(l->d.uart);
+    char      bytes[MAX_NAME_LEN];
     sprintf(bytes, "%d", e->bytes);
     char wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
 
-    const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
-                              (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
-                              (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sent:")};
-    char *      dests[] = {e->name, bytes, wait};
+    const char *labels[] = {
+        (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
+        (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
+        (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sent:")};
+    char *dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
-    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
+    if(ShowSimpleDialog(
+           (which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
         e->bytes = std::max(1, std::min(SizeOfVar(e->name), static_cast<int>(hobatoi(bytes))));
         e->wait = hobatoi(wait) ? 1 : 0;
     };
@@ -1330,11 +1331,7 @@ void ShowStepperDialog(void *e)
 
     const char *title;
     title = _("Stepper");
-    const char *labels[] = {_("Name:"),
-        _("Counter:"), "P:",
-        _("Table size:"),
-        _("Graph:"),
-        _("Pulse to:")};
+    const char *labels[] = {_("Name:"), _("Counter:"), "P:", _("Table size:"), _("Graph:"), _("Pulse to:")};
     char        sgraph[128];
     sprintf(sgraph, "%d", s->graph);
     char snSize[128];
@@ -1509,34 +1506,34 @@ void ShowNPulseDialog(char *counter, char *targetFreq, char *coil)
 
 void ShowQuadEncodDialog(ElemLeaf *l)
 {
-    ElemQuadEncod   *q = &(l->d.QuadEncod);
-    char *counter      = q->counter;
-    int  *int01        = &(q->int01);
-    char *inputA       = q->inputA;
-    char *inputB       = q->inputB;
-    char *inputZ       = q->inputZ;
-    char *dir          = q->dir;
-    char inputKind[MAX_NAME_LEN];
+    ElemQuadEncod *q = &(l->d.QuadEncod);
+    char *         counter = q->counter;
+    int *          int01 = &(q->int01);
+    char *         inputA = q->inputA;
+    char *         inputB = q->inputB;
+    char *         inputZ = q->inputZ;
+    char *         dir = q->dir;
+    char           inputKind[MAX_NAME_LEN];
     sprintf(inputKind, "%c", q->inputZKind);
 
     char countPerRevol[MAX_NAME_LEN];
     sprintf(countPerRevol, "%d", q->countPerRevol);
 
     char title[100];
-    sprintf(title, "%s", _("Quad Encoder")/*, *int01*/);
+    sprintf(title, "%s", _("Quad Encoder") /*, *int01*/);
 
     char _int01[100];
     sprintf(_int01, "%d", *int01);
 
     const char *labels[] = {_("Counter var:"),
-                          //_("Input A INTs:"),
+                            //_("Input A INTs:"),
                             _("Input A:"),
                             _("Input B:"),
                             _("Input Z:"),
                             _("Input Z kind:"),
                             _("Count per revol:"),
                             _("Output Dir:")};
-    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, dir};
+    char *      dests[] = {counter, /*_int01, */ &inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, dir};
     NoCheckingOnBox[3] = true;
     NoCheckingOnBox[6] = true;
     if(strlen(inputZ) <= 1)
@@ -1551,7 +1548,7 @@ void ShowQuadEncodDialog(ElemLeaf *l)
         else
             inputZ[0] = '\0';
         if(strlen(dir)) {
-            if((dir[0] != 'Y') && (dir[0] != 'R') )
+            if((dir[0] != 'Y') && (dir[0] != 'R'))
                 dir[0] = 'Y';
         } else {
             dir[0] = '\0';
@@ -1583,7 +1580,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     sprintf(sovStr, "%d", sov);
 
     int32_t val;
-    char   valStr[MAX_STRING_LEN];
+    char    valStr[MAX_STRING_LEN];
     if(io->type == IO_TYPE_STRING) {
         strcpy(valStr, GetSimulationStr(io->name));
     } else {
@@ -1718,9 +1715,9 @@ void ShowPersistDialog(char *var)
 
 void ShowPullUpDialog()
 {
-    char *labels[MAX_IO_PORTS+2];
-    char *dests[MAX_IO_PORTS];
-    int n = 0;
+    char *   labels[MAX_IO_PORTS + 2];
+    char *   dests[MAX_IO_PORTS];
+    int      n = 0;
     uint32_t mask = 0xFF;
     if(Prog.mcu()->whichIsa == ISA_ARM)
         mask = 0xFFFF;
@@ -1733,10 +1730,12 @@ void ShowPullUpDialog()
             n++;
         }
     }
-    labels[n] = (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
-    labels[n+1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
+    labels[n] =
+        (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
+    labels[n + 1] = (char *)_(
+        "*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
 
-    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n+2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
+    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n + 2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
         int port = 0;
         for(int i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {

@@ -85,7 +85,7 @@
 #define ZH 31
 static uint32_t REG_EIND = 0; // EIND:ZH:ZL indirect address for EICALL, EIJMP
 
-#define MAX_PROGRAM_LEN 128*1024
+#define MAX_PROGRAM_LEN 128 * 1024
 std::vector<PicAvrInstruction> AvrProg(MAX_PROGRAM_LEN);
 
 uint32_t AvrProgLdLen = 0;
@@ -353,11 +353,11 @@ static int INTF0 = -1;
 //===========================================================================
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
 static ADDR_T NPulseTimerOverflowVector;
-static int   tcntNPulse = 0;
+static int    tcntNPulse = 0;
 static ADDR_T NPulseTimerOverflowRegAddr;
-static int   NPulseTimerOverflowBit;
+static int    NPulseTimerOverflowBit;
 static ADDR_T NPulseTimerOverflowCounter;
-static int   sovNPulseTimerOverflowCounter;
+static int    sovNPulseTimerOverflowCounter;
 
 static uint32_t IntPc;
 static uint32_t IntPcNow = UINT_MAX; //must be static
@@ -378,10 +378,11 @@ static void WipeMemory()
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2, const char *comment)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2,
+                         const char *comment)
 {
     static PicAvrInstruction instruction;
-    static AvrOp prevOp = OP_VACANT;
+    static AvrOp             prevOp = OP_VACANT;
     if(prevOp != OP_COMMENT_INT)
         memset(&instruction, 0, sizeof(PicAvrInstruction));
 
@@ -513,7 +514,7 @@ static void FwdAddrIsNow(ADDR_T addr)
     if(!(addr & FWD(0)))
         ooops("addr=0x%X", addr);
 
-    WORD  seen = 0;
+    WORD     seen = 0;
     uint32_t AvrProgWriteP = AvrProg.size();
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(AvrProg[i].arg1 == FWD(addr)) { // Its a FWD addr
@@ -572,12 +573,13 @@ static void AddrCheckForErrorsPostCompile()
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
             if(AvrProg[i].arg1 & FWD(0)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"),
-                      i,
-                      AvrProg[i].opAvr,
-                      AvrProg[i].arg1,
-                      AvrProg[i].arg2,
-                      AvrProg[i].rung + 1);
+                THROW_COMPILER_EXCEPTION_FMT(
+                    _("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"),
+                    i,
+                    AvrProg[i].opAvr,
+                    AvrProg[i].arg1,
+                    AvrProg[i].arg2,
+                    AvrProg[i].rung + 1);
             }
         }
     }
@@ -593,7 +595,7 @@ static void AddrCheckForErrorsPostCompile()
 static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp             *intOp;
+    IntOp *            intOp;
     if((AvrInstr->IntPc >= 0) && (static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size()))
         intOp = &IntCode[AvrInstr->IntPc];
     else
@@ -602,34 +604,34 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
-#define CHECK(v, bits)                                            \
-  do { \
-    if((v) != ((v) & ((1 << (bits)) - 1)))                        \
-    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
-          intOp->rung+1,                                          \
-          v,                                                      \
-          bits,                                                   \
-          ((1 << (bits)) - 1),                                    \
-          AvrInstr->l,                                            \
-          AvrInstr->f,                                            \
-          intOp->name1.c_str(),                                   \
-          intOp->fileLine,                                        \
-          intOp->fileName.c_str()); \
-  } while(0)
-#define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
-  do { \
-    if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
-    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:::%s] %s\n[%d::::%s]", \
-          intOp->rung+1,                                                 \
-          v,                                                             \
-          LowerRangeInclusive,                                           \
-          UpperRangeInclusive,                                           \
-          AvrInstr->l,                                                   \
-          AvrInstr->f,                                                   \
-          intOp->name1.c_str(),                                          \
-          intOp->fileLine,                                               \
-          intOp->fileName.c_str()); \
-  } while(0)
+#define CHECK(v, bits)                                                                            \
+    do {                                                                                          \
+        if((v) != ((v) & ((1 << (bits)) - 1)))                                                    \
+            THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
+                                         intOp->rung + 1,                                         \
+                                         v,                                                       \
+                                         bits,                                                    \
+                                         ((1 << (bits)) - 1),                                     \
+                                         AvrInstr->l,                                             \
+                                         AvrInstr->f,                                             \
+                                         intOp->name1.c_str(),                                    \
+                                         intOp->fileLine,                                         \
+                                         intOp->fileName.c_str());                                \
+    } while(0)
+#define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)                                 \
+    do {                                                                                    \
+        if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive))                \
+            THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:::%s] %s\n[%d::::%s]", \
+                                         intOp->rung + 1,                                   \
+                                         v,                                                 \
+                                         LowerRangeInclusive,                               \
+                                         UpperRangeInclusive,                               \
+                                         AvrInstr->l,                                       \
+                                         AvrInstr->f,                                       \
+                                         intOp->name1.c_str(),                              \
+                                         intOp->fileLine,                                   \
+                                         intOp->fileName.c_str());                          \
+    } while(0)
 
     switch(op) {
         case OP_COMMENT:
@@ -1280,7 +1282,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     const int  n = 1; // 1 - VMLAB and (avrasm2.exe or avrasm32.exe)
         // 2 - increases the length of the data string to be compatible with "avrdude.exe -U flash:r:saved_Intel_Hex.hex:i"
     uint8_t  soFar[16 * n];
-    int   soFarCount = 0;
+    int      soFarCount = 0;
     uint32_t soFarStart = 0;
 
     // always start from address 0
@@ -1348,7 +1350,10 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].which);
                     }
                     if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].fileLine)) {
-                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].fileLine, IntCode[AvrProg[i].IntPc].fileName.c_str());
+                        fprintf(fAsm,
+                                " ; line %d in %s",
+                                IntCode[AvrProg[i].IntPc].fileLine,
+                                IntCode[AvrProg[i].IntPc].fileName.c_str());
                         prevIntPcL = IntCode[AvrProg[i].IntPc].fileLine;
                     }
                 }
@@ -1401,9 +1406,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu()->flashWords) && (AvrProg.size() >= Prog.mcu()->flashWords)) {
         Warning(_("Flash program memory size %d is exceed limit %d words\nfor %s."),
-              AvrProg.size(),
-              Prog.mcu()->flashWords,
-              Prog.mcu()->mcuName);
+                AvrProg.size(),
+                Prog.mcu()->flashWords,
+                Prog.mcu()->mcuName);
     }
 }
 
@@ -1729,11 +1734,13 @@ static void LOAD(int reg, ADDR_T addr)
 //-----------------------------------------------------------------------------
 #define WriteMemory(...) _WriteMemory(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
-static void _WriteMemory(int l, const char *f, const char *args, ADDR_T addr, BYTE val, const char *name, int32_t literal)
+static void _WriteMemory(int l, const char *f, const char *args, ADDR_T addr, BYTE val, const char *name,
+                         int32_t literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(
+            _("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -1779,7 +1786,8 @@ static void WriteMemoryStillAddr(ADDR_T addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"),
+                                     val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2468,7 +2476,7 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
     CalcAvrPlcCycle(cycleTimeMicroseconds, AvrProgLdLen);
 
     if(Prog.cycleTimer == 0) {
-        if(WGM01 == -1) {                       // ATmega8
+        if(WGM01 == -1) {                         // ATmega8
             tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
             if(tcnt0PlcCycle < 0)
                 tcnt0PlcCycle = 0;
@@ -2823,7 +2831,7 @@ static void CopyLitToReg(int reg, int sov, int32_t literal)
 static void CopyVarToReg(int reg, int sovReg, const char *var)
 {
     ADDR_T addr;
-    int   sov = SizeOfVar(var);
+    int    sov = SizeOfVar(var);
     if(sov != sovReg)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
 
@@ -2891,7 +2899,7 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
     ADDR_T addr;
-    int   sov;
+    int    sov;
 
     if(IsAddrInVar(var)) {
         MemForVariable(&var[1], &addr);
@@ -3072,11 +3080,11 @@ int testAvrUsart(int divisor, double actual, double percentErr)
 // timer loop (i.e. the PLC logic cycle).
 //-----------------------------------------------------------------------------
 static ADDR_T addrDuty;
-static int   bitDuty;
-static void  WriteRuntime()
+static int    bitDuty;
+static void   WriteRuntime()
 {
     uint32_t resetVector = AllocFwdAddr();
-    int i;
+    int      i;
     Comment("WriteRuntime");
 #ifdef TABLE_IN_FLASH
     InstructionJMP(resetVector); // $0000, RESET
@@ -3109,7 +3117,7 @@ static void  WriteRuntime()
     Comment("- Got only four cycles to set the new values from here! -");
     //WriteMemoryCurrAddr((1 << WDE)); // 16 ms
     //WriteMemoryCurrAddr((1 << WDE) | (1 << WDP2) | (1 << WDP1) | (1 << WDP0)); // 2s
-    WriteMemoryCurrAddr((1<<WDE) | (1<<WDP3) | (1<<WDP0)); // 8s
+    WriteMemoryCurrAddr((1 << WDE) | (1 << WDP3) | (1 << WDP0)); // 8s
     ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more than four cycles
     ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more than four cycles
     Instruction(OP_SEI);
@@ -3223,7 +3231,8 @@ static void  WriteRuntime()
     } else if(Prog.cycleTimer < 0) {
         ;
     } else
-        THROW_COMPILER_EXCEPTION(_("Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
+        THROW_COMPILER_EXCEPTION(_(
+            "Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
 
     Comment("Watchdog reset");
     Instruction(OP_WDR);
@@ -3327,9 +3336,9 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    ADDR_T addr = 0, addr1 = 0, addr2 = 0, /*addr3 = 0, */addr4 = 0;
-    int   bit = -1, bit1 = -1, bit2 = -1, /*bit3 = -1, */bit4 = -1;
-    int   sov = -1, sov1 = -1, sov2 = -1;//, sov12 = -1, sov23 = -1;
+    ADDR_T addr = 0, addr1 = 0, addr2 = 0, /*addr3 = 0, */ addr4 = 0;
+    int    bit = -1, bit1 = -1, bit2 = -1, /*bit3 = -1, */ bit4 = -1;
+    int    sov = -1, sov1 = -1, sov2 = -1; //, sov12 = -1, sov23 = -1;
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
@@ -3738,7 +3747,7 @@ static void CompileFromIntermediate()
                 } else
                     THROW_COMPILER_EXCEPTION(_("Invalid var size in swap."));
 
-                        CopyRegToVar(a->name1, r16, sov1);
+                CopyRegToVar(a->name1, r16, sov1);
                 break;
 
 #ifndef NEW_CMP
@@ -3830,13 +3839,25 @@ static void CompileFromIntermediate()
 #endif
 
 #ifdef NEW_CMP
-            case INT_IF_GRT: Comment("INT_IF_GRT"); goto cmp;
-            case INT_IF_GEQ: Comment("INT_IF_GEQ"); goto cmp;
-            case INT_IF_LES: Comment("INT_IF_LES"); goto cmp;
-            case INT_IF_LEQ: Comment("INT_IF_LEQ"); goto cmp;
-            case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp;
-            case INT_IF_EQU: Comment("INT_IF_EQU"); goto cmp;
-            cmp: {
+            case INT_IF_GRT:
+                Comment("INT_IF_GRT");
+                goto cmp;
+            case INT_IF_GEQ:
+                Comment("INT_IF_GEQ");
+                goto cmp;
+            case INT_IF_LES:
+                Comment("INT_IF_LES");
+                goto cmp;
+            case INT_IF_LEQ:
+                Comment("INT_IF_LEQ");
+                goto cmp;
+            case INT_IF_NEQ:
+                Comment("INT_IF_NEQ");
+                goto cmp;
+            case INT_IF_EQU:
+                Comment("INT_IF_EQU");
+                goto cmp;
+            cmp : {
                 uint32_t notTrue = AllocFwdAddr();
                 sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 CopyArgToReg(r20, sov, a->name1);
@@ -3926,14 +3947,14 @@ static void CompileFromIntermediate()
                 Comment("INT_WRITE_SFR_LITERAL_L");
                 //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
-                Instruction(OP_LDI, 26, (a->literal1 & 0xff));  //sfr
-                Instruction(OP_LDI, 27, (a->literal1 >> 8));    //sfr
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff)); //sfr
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));   //sfr
                 Instruction(OP_ST_X, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
                 Comment("INT_WRITE_SFR_VARIABLE_L");
-                CopyArgToReg(ZL, 2, a->name1);                //sfr
+                CopyArgToReg(ZL, 2, a->name1);                 //sfr
                 Instruction(OP_LDI, 28, (a->literal1 & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
@@ -4423,12 +4444,12 @@ static void CompileFromIntermediate()
                     //its warning
                     //       v
                     Warning(_("Target N PULSE frequency %d Hz,"
-                            " closest achievable with prescaler=%d and divider=%d"
-                            " is %d Hz (Warning, >5%% error)."),
-                          target,
-                          prescaler,
-                          tcntNPulse,
-                          bestTarget);
+                              " closest achievable with prescaler=%d and divider=%d"
+                              " is %d Hz (Warning, >5%% error)."),
+                            target,
+                            prescaler,
+                            tcntNPulse,
+                            bestTarget);
 
                 uint32_t noPulse = AllocFwdAddr();
                 IfBitClear(addr4, bit4);
@@ -4544,7 +4565,8 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment(
+                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4767,7 +4789,7 @@ static void CompileFromIntermediate()
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 ADDR_T addr;
-                int   bit;
+                int    bit;
                 MemForSingleBit(storeName, false, &addr, &bit);
 
                 uint32_t endInit = AllocFwdAddr();
@@ -5005,10 +5027,10 @@ static void CompileFromIntermediate()
                     THROW_COMPILER_EXCEPTION_FMT("mux=0x%x", mux);
                 WriteMemory(
                     REG_ADMUX,
-                        // (0 << 7) | //
-                        // (0 << 6) | // AREF, Internal Vref turned off.
-                        // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
-                        (refs << 6) | //
+                    // (0 << 7) | //
+                    // (0 << 6) | // AREF, Internal Vref turned off.
+                    // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                    (refs << 6) |  //
                         (0 << 5) | // result is right adjusted.
                         mux & 0x07);
 
@@ -5098,7 +5120,7 @@ static void CompileFromIntermediate()
                 addr1 += a->literal1;
 
                 uint32_t isBusy = AvrProg.size();
-                IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                IfBitClear(REG_UCSRA, UDRE);  // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 Instruction(OP_RJMP, isBusy); // reinsurance
 
                 LoadXAddr(addr1);
@@ -5184,17 +5206,17 @@ static void CompileFromIntermediate()
 
             case INT_AllocKnownAddr: {
                 Comment("INT_AllocKnownAddr %s", a->name1.c_str());
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                LabelAddr *l = GetLabelAddr(a->name1.c_str());
                 l->KnownAddr = AvrProg.size();
                 break;
             }
             case INT_AllocFwdAddr: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                LabelAddr *l = GetLabelAddr(a->name1.c_str());
                 l->FwdAddr = AllocFwdAddr();
                 break;
             }
             case INT_FwdAddrIsNow: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                LabelAddr *l = GetLabelAddr(a->name1.c_str());
                 FwdAddrIsNow(l->FwdAddr);
                 break;
             }
@@ -5203,11 +5225,8 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_GOTO: {
-                Comment("INT_GOTO %s // %s %d",
-                        a->name1.c_str(),
-                        a->name2.c_str(),
-                        a->literal1);
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                Comment("INT_GOTO %s // %s %d", a->name1.c_str(), a->name2.c_str(), a->literal1);
+                LabelAddr *l = GetLabelAddr(a->name1.c_str());
                 if(a->literal1) {
                     InstructionJMP(l->KnownAddr);
                 } else {
@@ -5216,11 +5235,8 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_GOSUB: {
-                Comment("INT_GOSUB %s // %s %d",
-                        a->name1.c_str(),
-                        a->name2.c_str(),
-                        a->literal1);
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                Comment("INT_GOSUB %s // %s %d", a->name1.c_str(), a->name2.c_str(), a->literal1);
+                LabelAddr *l = GetLabelAddr(a->name1.c_str());
                 if(a->literal1) {
                     CallSubroutine(l->KnownAddr);
                 } else {
@@ -5383,14 +5399,14 @@ static void CompileFromIntermediate()
                         clocks = 0x10000;
                         clocksSave = clocks * 4;
                         Warning(_("The delay is too long!\n"
-                                "The maximum possible delay is %lld us."),
-                              (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
+                                  "The maximum possible delay is %lld us."),
+                                (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
                     }
                     if(clocks < 0)
                         clocks = 0;
                     if(clocks > 0) {
-                        CopyLitToReg(ZL, 2, clocks);             // 4 clocks
-                        Instruction(OP_SBIW, ZL, 1);             // 2 clocks
+                        CopyLitToReg(ZL, 2, clocks);              // 4 clocks
+                        Instruction(OP_SBIW, ZL, 1);              // 2 clocks
                         Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                         clocksSave -= clocks * 4 + 1;
                     }
@@ -5399,8 +5415,8 @@ static void CompileFromIntermediate()
                         Instruction(OP_NOP); // 1 clocks
                 } else {
                     Comment("INT_DELAY %s us", a->name1.c_str());
-                    CopyVarToReg(ZL, 2, a->name1);           // 4 clocks
-                    Instruction(OP_SBIW, ZL, 1);             // 2 clocks
+                    CopyVarToReg(ZL, 2, a->name1);            // 4 clocks
+                    Instruction(OP_SBIW, ZL, 1);              // 2 clocks
                     Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                 }
 #ifdef DELAY_TEST
@@ -6965,7 +6981,8 @@ void CompileAvr(const char *outFile)
 //      REG_UCSRC   = 0x9d;
     */
     } else
-        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
+        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."),
+                                     Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 
     rungNow = -90;
@@ -7080,7 +7097,11 @@ void CompileAvr(const char *outFile)
             (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), Prog.mcuRAM(), (100 * UsedRAM()) / Prog.mcuRAM());
+    sprintf(str3,
+            _("Used %d/%d byte of RAM (chip %d%% full)."),
+            UsedRAM(),
+            Prog.mcuRAM(),
+            (100 * UsedRAM()) / Prog.mcuRAM());
 
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);

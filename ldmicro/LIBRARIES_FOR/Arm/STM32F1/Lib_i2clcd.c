@@ -121,16 +121,13 @@ void LCD_I2C_Erase(void)
 
 // Activation / desactivation du backlight (facultatif)
 void LCD_I2C_BackLight(char stat)
-    {
-    if (stat)
-        {
-        PORT_LCD (|= (1 << BIT_LCD_BL))
-        }
-    else
-        {
-        PORT_LCD (&= ~(1 << BIT_LCD_BL))
-        }
+{
+    if(stat) {
+        PORT_LCD(|= (1 << BIT_LCD_BL))
+    } else {
+        PORT_LCD(&= ~(1 << BIT_LCD_BL))
     }
+}
 
 // Renvoie le curseur à la position initiale
 void LCD_I2C_Home(void)

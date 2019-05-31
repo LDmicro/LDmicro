@@ -50,7 +50,7 @@ typedef enum CoreTag {
     PICcores,
     BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
     ELANclones13bit,
-    MidrangeCore14bit,         // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
+    MidrangeCore14bit, // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
     EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
@@ -59,10 +59,10 @@ typedef enum CoreTag {
     ESP8266Core,
 
     ARMcores,
-	CortexF1,
-	CortexF2,
-	CortexF3,
-	CortexF4,
+    CortexF1,
+    CortexF2,
+    CortexF3,
+    CortexF4,
 
     PCcores,
     PC_LPT_COM,
@@ -75,16 +75,16 @@ typedef enum CoreTag {
 // supported microcontroller.
 
 typedef struct McuIoPinInfoTag {
-    char    port;
-    int     bit;
-    int     pin;
-    char    pinName[MAX_NAME_LEN];
-    int     ArduinoPin;
-    char    ArduinoName[MAX_NAME_LEN];
-    int     portN;   // 1=LPT1, 2=LPT2,... 1=COM1,...
-    int     dbPin;   // in DB1..25 of PC ports
-    int     ioType;  // IN=IO_TYPE_DIG_INPUT, OUT=IO_TYPE_DIG_OUTPUT of PC ports
-    int     addr;    // addr of PC ports
+    char port;
+    int  bit;
+    int  pin;
+    char pinName[MAX_NAME_LEN];
+    int  ArduinoPin;
+    char ArduinoName[MAX_NAME_LEN];
+    int  portN;  // 1=LPT1, 2=LPT2,... 1=COM1,...
+    int  dbPin;  // in DB1..25 of PC ports
+    int  ioType; // IN=IO_TYPE_DIG_INPUT, OUT=IO_TYPE_DIG_OUTPUT of PC ports
+    int  addr;   // addr of PC ports
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -101,7 +101,7 @@ typedef struct McuSpiInfoTag {
     int      MOSI;
     int      SCK;
     int      _SS;
-//  bool    isUsed;
+    //  bool    isUsed;
 } McuSpiInfo;
 
 ///// Added by JG
@@ -113,13 +113,13 @@ typedef struct McuI2cInfoTag {
     uint32_t REG_RATE;
     int      SCL;
     int      SDA;
-//  bool    isUsed;
+    //  bool    isUsed;
 } McuI2cInfo;
 /////
 
 typedef struct McuPwmPinInfoTag {
-    int     pin;
-    int     timer;
+    int pin;
+    int timer;
     //for AVR's
     int     resolution; // bits
     uint8_t maxCS;      // can be only 5 or 7 for AVR
@@ -128,11 +128,11 @@ typedef struct McuPwmPinInfoTag {
     uint32_t REG_OCRnxL; // or REG_OCRn          // Output Compare Register Low byte
     uint32_t REG_OCRnxH; // or 0, if not exist   // Output Compare Register High byte
     uint32_t REG_TCCRnA; // or REG_TCCRn         // Timer/Counter Control Register/s
-    uint8_t      COMnx1;                         // bit COMnx1 or COMn1 for REG_TCCRnA
-    uint8_t      COMnx0;                         // bit COMnx0 or COMn0 for REG_TCCRnA
-    uint8_t      WGMa;   //                      // mask WGM3:0 for REG_TCCRnA if need
+    uint8_t  COMnx1;     // bit COMnx1 or COMn1 for REG_TCCRnA
+    uint8_t  COMnx0;     // bit COMnx0 or COMn0 for REG_TCCRnA
+    uint8_t  WGMa;       //                      // mask WGM3:0 for REG_TCCRnA if need
     uint32_t REG_TCCRnB; // or 0, if not exist   // Timer/Counter Control Registers
-    uint8_t      WGMb;   //                      // mask WGM3:0 for REG_TCCRnB if need
+    uint8_t  WGMb;       //                      // mask WGM3:0 for REG_TCCRnB if need
     char     name[MAX_NAME_LEN];
 } McuPwmPinInfo, *PMcuPwmPinInfo;
 
@@ -143,9 +143,9 @@ typedef struct McuExtIntPinInfoTag {
 typedef struct McuIoInfoTag {
     const char *mcuName;
     const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
-    const char *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
-    const char *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    const char *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    const char *mcuInc;     // ASM*.INC // D:\WinAVR\avr\include\avr
+    const char *mcuH;       // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
+    const char *mcuH2;      // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char        portPrefix;
     uint32_t    inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
     uint32_t    outputRegs[MAX_IO_PORTS];
@@ -155,7 +155,7 @@ typedef struct McuIoInfoTag {
         uint32_t start;
         int      len;
     } ram[MAX_RAM_SECTIONS];
-    McuIoPinInfo  *pinInfo;
+    McuIoPinInfo * pinInfo;
     uint32_t       pinCount;
     McuAdcPinInfo *adcInfo;
     uint32_t       adcCount;
@@ -170,17 +170,17 @@ typedef struct McuIoInfoTag {
     int      pins;
     uint32_t configurationWord; // only PIC
 
-    McuPwmPinInfo    *pwmInfo;
-    uint32_t          pwmCount;
+    McuPwmPinInfo *pwmInfo;
+    uint32_t       pwmCount;
 
     McuExtIntPinInfo *ExtIntInfo;
     uint32_t          ExtIntCount;
 
-    McuSpiInfo       *spiInfo;
-    uint32_t          spiCount;
+    McuSpiInfo *spiInfo;
+    uint32_t    spiCount;
 
-    McuI2cInfo       *i2cInfo;                  ///// Added by JG
-    uint32_t          i2cCount;                 /////
+    McuI2cInfo *i2cInfo;  ///// Added by JG
+    uint32_t    i2cCount; /////
 
     struct {
         uint32_t start;
@@ -192,7 +192,10 @@ typedef struct McuIoInfoTag {
 
 #if LD_WITH_CONSTEXPR
 namespace {
-    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N]) {return N;}
+    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N])
+    {
+        return N;
+    }
 } // namespace
 #else
 #define arraylen(x) (sizeof(x) / sizeof((x)[0]))
@@ -200,8 +203,7 @@ namespace {
 
 #endif
 
-
-std::vector<McuIoInfo>& supportedMcus();
-bool fillPcPinInfos();
+std::vector<McuIoInfo> &supportedMcus();
+bool                    fillPcPinInfos();
 
 #endif //__MCUTABLE_HPP__

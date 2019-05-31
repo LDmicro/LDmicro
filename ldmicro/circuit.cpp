@@ -207,7 +207,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
     return false;
 }
 
-static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newElem)
+static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newElem)
 {
     int i;
     switch(any.which) {
@@ -232,7 +232,8 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
                 memcpy(series->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
-                series->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
+                series->contents[i].leaf()->selectedState =
+                    EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem.leaf());
                 series->contents[i].which = newElem.which;
                 selected.which = newElem.which;
@@ -244,13 +245,17 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_LEFT:
-                    memmove(&series->contents[i + 1], &series->contents[i], (series->count - i) * sizeof(series->contents[0]));
+                    memmove(&series->contents[i + 1],
+                            &series->contents[i],
+                            (series->count - i) * sizeof(series->contents[0]));
                     series->contents[i] = newElem;
                     (series->count)++;
                     break;
 
                 case SELECTED_RIGHT:
-                    memmove(&series->contents[i + 2], &series->contents[i + 1], (series->count - i - 1) * sizeof(series->contents[0]));
+                    memmove(&series->contents[i + 2],
+                            &series->contents[i + 1],
+                            (series->count - i - 1) * sizeof(series->contents[0]));
                     series->contents[i + 1] = newElem;
                     (series->count)++;
                     break;
@@ -296,13 +301,17 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_ABOVE:
-                    memmove(&parallel->contents[i + 1], &parallel->contents[i], (parallel->count - i) * sizeof(parallel->contents[0]));
+                    memmove(&parallel->contents[i + 1],
+                            &parallel->contents[i],
+                            (parallel->count - i) * sizeof(parallel->contents[0]));
                     parallel->contents[i] = newElem;
                     (parallel->count)++;
                     break;
 
                 case SELECTED_BELOW:
-                    memmove(&parallel->contents[i + 2], &parallel->contents[i + 1], (parallel->count - i - 1) * sizeof(parallel->contents[0]));
+                    memmove(&parallel->contents[i + 2],
+                            &parallel->contents[i + 1],
+                            (parallel->count - i - 1) * sizeof(parallel->contents[0]));
                     parallel->contents[i + 1] = newElem;
                     (parallel->count)++;
                     break;
@@ -333,34 +342,27 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
     return false;
 }
 
-
 bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
 {
-    if(selected.parent()->which == ELEM_SERIES_SUBCKT)
-        {
-            auto sn = std::find_if(selected.parent()->series()->contents,
-                                   selected.parent()->series()->contents + selected.parent()->series()->count,
-                                   [selected](SeriesNode a)->bool{return (a.any() == selected.any());});
-            auto pos = std::distance(selected.parent()->series()->contents, sn);
-            if(selected.leaf()->selectedState == SELECTED_LEFT){
-                    ElemSubcktSeries *s = const_cast<ElemSubcktSeries *>(selected.parent()->series());
-                    auto i = pos;
-                    memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
-                    s->contents[i] = newLeaf;
-                    s->contents[i].parent_ = const_cast<SeriesNode*>(selected.parent());
-                    (s->count)++;
-                }
-            else if(selected.leaf()->selectedState == SELECTED_RIGHT){
+    if(selected.parent()->which == ELEM_SERIES_SUBCKT) {
+        auto sn = std::find_if(selected.parent()->series()->contents,
+                               selected.parent()->series()->contents + selected.parent()->series()->count,
+                               [selected](SeriesNode a) -> bool { return (a.any() == selected.any()); });
+        auto pos = std::distance(selected.parent()->series()->contents, sn);
+        if(selected.leaf()->selectedState == SELECTED_LEFT) {
+            ElemSubcktSeries *s = const_cast<ElemSubcktSeries *>(selected.parent()->series());
+            auto              i = pos;
+            memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
+            s->contents[i] = newLeaf;
+            s->contents[i].parent_ = const_cast<SeriesNode *>(selected.parent());
+            (s->count)++;
+        } else if(selected.leaf()->selectedState == SELECTED_RIGHT) {
 
-                }
-            else if(selected.leaf()->selectedState == SELECTED_BELOW || selected.leaf()->selectedState == SELECTED_ABOVE){
-
-                }
+        } else if(selected.leaf()->selectedState == SELECTED_BELOW
+                  || selected.leaf()->selectedState == SELECTED_ABOVE) {
         }
-    else if(selected.parent()->which == ELEM_PARALLEL_SUBCKT)
-        {
-
-        }
+    } else if(selected.parent()->which == ELEM_PARALLEL_SUBCKT) {
+    }
     return false;
 }
 
@@ -457,7 +459,7 @@ void AddCoil(int what)
 void AddDelay()
 {
     oops();
-/*
+    /*
 	if(!CanInsertOther)
         return;
     ElemLeaf *t = AllocLeaf();
@@ -930,7 +932,7 @@ void AddSpi(int which)
     }
     ElemLeaf *t = AllocLeaf();
     /////   strcpy(t->d.spi.name, "SPIn");
-    strcpy(t->d.spi.name, "SPI1");              ///// Modified by JG
+    strcpy(t->d.spi.name, "SPI1"); ///// Modified by JG
     /////
     strcpy(t->d.spi.mode, "Master");
     strcpy(t->d.spi.send, "send");
@@ -939,7 +941,7 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
-    t->d.spi.which= which;                      ///// Added by JG
+    t->d.spi.which = which; ///// Added by JG
     AddLeaf(which, t);
 }
 
@@ -965,7 +967,7 @@ void AddI2c(int which)
     strcpy(t->d.i2c.address, "0");
     strcpy(t->d.i2c.registr, "0");
     strcpy(t->d.i2c.first, "MSB");
-    t->d.i2c.which= which;
+    t->d.i2c.which = which;
     AddLeaf(which, t);
 }
 /////
@@ -1249,7 +1251,7 @@ void FreeCircuit(int which, void *any)
             CheckFree(p);
             break;
         }
-        CASE_LEAF
+            CASE_LEAF
             ForgetFromGrid(any);
             CheckFree(any);
             break;
@@ -1372,7 +1374,7 @@ static void NullDisplayMatrix(int from, int to)
     return;
     (void)from;
     (void)to;
-	/*
+    /*
     int i, j;
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
@@ -1839,7 +1841,7 @@ bool SleepFunctionUsed()
 // save in the new rung temp
 //-----------------------------------------------------------------------------
 
-const char * const CLP = "ldmicro.tmp";
+const char *const CLP = "ldmicro.tmp";
 
 void CopyRungDown()
 {
@@ -1974,8 +1976,9 @@ void PasteRung(int PasteInTo)
         j = 0;
 
     if(PasteInTo == 0)
-        if(Selected.data.leaf && ((Selected.data.leaf->selectedState == SELECTED_BELOW) || //
-                                  (Selected.data.leaf->selectedState == SELECTED_RIGHT))) {
+        if(Selected.data.leaf
+           && ((Selected.data.leaf->selectedState == SELECTED_BELOW) || //
+               (Selected.data.leaf->selectedState == SELECTED_RIGHT))) {
             j++;
         }
 
@@ -2010,7 +2013,8 @@ void PasteRung(int PasteInTo)
                     bool doCollapse = false;
                     if(Selected.data.leaf && (Selected.data.leaf->selectedState != SELECTED_NONE)) {
                         if(!EndOfRungElem(Selected.which) || (Selected.data.leaf->selectedState == SELECTED_LEFT))
-                            if(!ItemIsLastInCircuit(Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
+                            if(!ItemIsLastInCircuit(Selected.data.leaf)
+                               || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
                                 for(int i = temp->count - 1; i >= 0; i--) {
                                     if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
@@ -2138,7 +2142,7 @@ static void *FindElem_(int which, void *any, int which_elem, char *name)
         case ELEM_CTU:
         case ELEM_CTC:
         case ELEM_CTR: {
-            ElemLeaf *leaf = (ElemLeaf *)any;
+            ElemLeaf *   leaf = (ElemLeaf *)any;
             ElemCounter *c = &leaf->d.counter;
             if(strcmp(c->name, name) == 0) {
                 return c;
@@ -2147,7 +2151,7 @@ static void *FindElem_(int which, void *any, int which_elem, char *name)
         }
         default: {
             if(which == which_elem)
-                 oops();
+                oops();
             return nullptr;
             break;
         }
@@ -2172,10 +2176,8 @@ void *FindElem(int which, char *name)
 //-----------------------------------------------------------------------------
 Circuit::Circuit()
 {
-
 }
 
 Circuit::~Circuit()
 {
-
 }

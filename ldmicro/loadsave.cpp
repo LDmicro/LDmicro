@@ -34,7 +34,7 @@ typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
 char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
 char *StrToFrmStr(char *dest, const char *src);
 
-ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker &f);
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -191,13 +191,37 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_TLO;
         l->d.timer.adjust = 0;
 
-    } else if((sscanf(line, "CTR %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+    } else if((sscanf(line,
+                      "CTR %s %s %s %c",
+                      l->d.counter.name,
+                      l->d.counter.max,
+                      l->d.counter.init,
+                      &l->d.counter.inputKind)
+               == 4)) {
         *which = ELEM_CTR;
-    } else if((sscanf(line, "CTC %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+    } else if((sscanf(line,
+                      "CTC %s %s %s %c",
+                      l->d.counter.name,
+                      l->d.counter.max,
+                      l->d.counter.init,
+                      &l->d.counter.inputKind)
+               == 4)) {
         *which = ELEM_CTC;
-    } else if((sscanf(line, "CTU %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+    } else if((sscanf(line,
+                      "CTU %s %s %s %c",
+                      l->d.counter.name,
+                      l->d.counter.max,
+                      l->d.counter.init,
+                      &l->d.counter.inputKind)
+               == 4)) {
         *which = ELEM_CTU;
-    } else if((sscanf(line, "CTD %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+    } else if((sscanf(line,
+                      "CTD %s %s %s %c",
+                      l->d.counter.name,
+                      l->d.counter.max,
+                      l->d.counter.init,
+                      &l->d.counter.inputKind)
+               == 4)) {
         *which = ELEM_CTD;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
@@ -289,21 +313,20 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 
     }
     ///// Added by JG
-      else if(sscanf(line,
-                     "I2C_RD %s %s %s %s %s %s %s %s",
-                     l->d.i2c.name,
-                     l->d.i2c.send,
-                     l->d.i2c.recv,
-                     l->d.i2c.mode,
-                     l->d.i2c.address,
-                     l->d.i2c.registr,
-                     l->d.i2c.first,
-                     l->d.i2c.bitrate)
-              == 8) {
+    else if(sscanf(line,
+                   "I2C_RD %s %s %s %s %s %s %s %s",
+                   l->d.i2c.name,
+                   l->d.i2c.send,
+                   l->d.i2c.recv,
+                   l->d.i2c.mode,
+                   l->d.i2c.address,
+                   l->d.i2c.registr,
+                   l->d.i2c.first,
+                   l->d.i2c.bitrate)
+            == 8) {
         l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
-    }
-      else if(sscanf(line,
+    } else if(sscanf(line,
                      "I2C_WR %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -319,7 +342,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     }
     /////
 
-     else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
+    else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
@@ -402,7 +425,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_DIV;
     } else
         scanned = false;
-    if (scanned) {
+    if(scanned) {
         ; //
     } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SET_BIT;
@@ -470,7 +493,12 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
-    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
+    } else if([&]() -> int {
+                  int  tmp_bool;
+                  auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
+                  l->d.uart.wait = tmp_bool != 0;
+                  return res;
+              }() == 3) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -479,7 +507,12 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
-    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
+    } else if([&]() -> int {
+                  int  tmp_bool;
+                  auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
+                  l->d.uart.wait = tmp_bool != 0;
+                  return res;
+              }() == 3) {
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -670,7 +703,7 @@ char *strspacer(char *str)
 // LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
-static ElemSubcktParallel *LoadParallelFromFile(FileTracker& f)
+static ElemSubcktParallel *LoadParallelFromFile(FileTracker &f)
 {
     char  line[512];
     void *any;
@@ -717,7 +750,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FileTracker& f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f)
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker &f)
 {
     char  line[512];
     void *any;
@@ -785,7 +818,7 @@ void LoadWritePcPorts()
 }
 
 //-----------------------------------------------------------------------------
-void SavePullUpListToFile(FileTracker& f)
+void SavePullUpListToFile(FileTracker &f)
 {
     for(int i = 0; i < MAX_IO_PORTS; i++) {
         if(IS_MCU_REG(i)) {
@@ -795,14 +828,14 @@ void SavePullUpListToFile(FileTracker& f)
 }
 
 //-----------------------------------------------------------------------------
-bool LoadPullUpListFromFile(FileTracker& f)
+bool LoadPullUpListFromFile(FileTracker &f)
 {
-    char line[MAX_NAME_LEN];
-    char portPrefix;
-    char port;
-    int i;
+    char     line[MAX_NAME_LEN];
+    char     portPrefix;
+    char     port;
+    int      i;
     uint32_t pullUpRegs;
-    bool Ok;
+    bool     Ok;
 
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line)))
@@ -813,7 +846,7 @@ bool LoadPullUpListFromFile(FileTracker& f)
         Ok = true;
         // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
-            i = port-'A';
+            i = port - 'A';
             if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
                 Prog.pullUpRegs[i] = pullUpRegs;
             } else {
@@ -821,14 +854,15 @@ bool LoadPullUpListFromFile(FileTracker& f)
             }
         }
         if(!Ok) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            THROW_COMPILER_EXCEPTION_FMT(
+                _("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
         }
     }
     return false;
 }
 //-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
-// program, the target processor, plus certain configuration settings (cycle 
+// program, the target processor, plus certain configuration settings (cycle
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
@@ -844,12 +878,12 @@ bool LoadProjectFromFile(const char *filename)
     strcpy(CurrentLdPath, filename);
     ExtractFileDir(CurrentLdPath);
 
-    char          line[512];
-    char          version[512];
-    long long int cycle;
-    int           crystal, baud;
-    long          rate, speed;                          ///// Added by JG
-    int           cycleTimer, cycleDuty, wdte;
+    char                   line[512];
+    char                   version[512];
+    long long int          cycle;
+    int                    crystal, baud;
+    long                   rate, speed; ///// Added by JG
+    int                    cycleTimer, cycleDuty, wdte;
     unsigned long long int configWord = 0;
     Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
@@ -869,7 +903,7 @@ bool LoadProjectFromFile(const char *filename)
             }
         } else if(sscanf(line, "LDmicro%s", &version[0])) {
             Prog.LDversion = version;
-            if((Prog.LDversion != "0.1") )
+            if((Prog.LDversion != "0.1"))
                 Prog.LDversion = "0.2";
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
@@ -916,11 +950,12 @@ bool LoadProjectFromFile(const char *filename)
             Prog.cycleDuty = 0;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) {       ///// RATE + SPEED created by JG for SPI & I2C
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed)
+                  == 3) { ///// RATE + SPEED created by JG for SPI & I2C
             Prog.baudRate = baud;
             Prog.spiRate = rate;
             Prog.i2cRate = speed;
-        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) {     ///// RATE created by JG for SPI
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) { ///// RATE created by JG for SPI
             Prog.baudRate = baud;
             Prog.spiRate = rate;
             Prog.i2cRate = 0;
@@ -939,9 +974,10 @@ bool LoadProjectFromFile(const char *filename)
                 compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
-                auto& mcus = supportedMcus();
-                auto mcu = std::find_if(std::begin(mcus), std::end(mcus),
-                                         [&line](const McuIoInfo& info){ return (strcmp(info.mcuName, line + 6) == 0);});
+                auto &mcus = supportedMcus();
+                auto  mcu = std::find_if(std::begin(mcus), std::end(mcus), [&line](const McuIoInfo &info) {
+                    return (strcmp(info.mcuName, line + 6) == 0);
+                });
                 if(mcu != std::end(mcus)) {
                     Prog.setMcu(&(*mcu));
                     LoadWritePcPorts();
@@ -1005,7 +1041,7 @@ failed:
 // Helper routine for outputting hierarchical representation of the ladder
 // logic: indent on file f, by depth*4 spaces.
 //-----------------------------------------------------------------------------
-static void Indent(FileTracker& f, int depth)
+static void Indent(FileTracker &f, int depth)
 {
     for(int i = 0; i < depth; i++) {
         fprintf(f, "  ");
@@ -1020,7 +1056,7 @@ static void Indent(FileTracker& f, int depth)
 // output the SERIES/END delimiters. This is because the root is delimited
 // by RUNG/END markers output elsewhere.
 //-----------------------------------------------------------------------------
-void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
+void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *  l = (ElemLeaf *)any;
     const char *s;
@@ -1135,7 +1171,13 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
         case ELEM_CTR: s = "CTR"; goto counter;
         // clang-format on
         counter:
-            fprintf(f, "%s %s %s %s %c\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init, l->d.counter.inputKind);
+            fprintf(f,
+                    "%s %s %s %s %c\n",
+                    s,
+                    l->d.counter.name,
+                    l->d.counter.max,
+                    l->d.counter.init,
+                    l->d.counter.inputKind);
             break;
 
         case ELEM_STEPPER:
@@ -1170,8 +1212,8 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
                     l->d.QuadEncod.int01,
                     l->d.QuadEncod.inputA,
                     l->d.QuadEncod.inputB,
-                    StrToFrmStr(str1,l->d.QuadEncod.inputZ),
-                    StrToFrmStr(str2,l->d.QuadEncod.dir),
+                    StrToFrmStr(str1, l->d.QuadEncod.inputZ),
+                    StrToFrmStr(str2, l->d.QuadEncod.dir),
                     l->d.QuadEncod.inputZKind,
                     l->d.QuadEncod.countPerRevol);
             break;
@@ -1596,7 +1638,7 @@ bool SaveProjectToFile(char *filename, int code)
         SavePullUpListToFile(f);
         fprintf(f, "END\n");
 
-		fprintf(f, "\n");
+        fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
         SaveVarListToFile(f);
         fprintf(f, "END\n");
@@ -1623,7 +1665,7 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
-char *StrToFrmStr(char *dest, const char* src, FRMT frmt)
+char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, "(none)");
@@ -1658,8 +1700,7 @@ char *StrToFrmStr(char *dest, const char* src, FRMT frmt)
             } else if(src[i]
                       == '\b') { //(backspace) Moves the active position to the previous position on the current line.
                 strcat(dest, "\\b");
-            } else if(src[i]
-                      == 0x1B) { //Escape character
+            } else if(src[i] == 0x1B) { //Escape character
                 strcat(dest, "\\e");
             } else if(
                 src[i]
