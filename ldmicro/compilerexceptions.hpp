@@ -4,7 +4,7 @@
 #include <cstdio>
 
 #define RM_SLASH(str) \
-    (strstr(str, "/") != NULL ? strrchr(str, '/') + 1 : strstr(str, "\\") != NULL ? strrchr(str, '\\') + 1 : str)
+    (strstr(str, "/") != nullptr ? strrchr(str, '/') + 1 : strstr(str, "\\") != nullptr ? strrchr(str, '\\') + 1 : str)
 
 #define __LLFILE__ RM_SLASH(__FILE__)
 
