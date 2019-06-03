@@ -2316,6 +2316,91 @@ bool CompileAnsiC(const char *dest, int MNU)
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
+    fprintf(flh,
+            "/*\n"
+            "  Type                  Size(bits)\n"
+            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
+            "  SBYTE     signed integer      8\n"
+            "  SWORD     signed integer     16\n"
+            "  SDWORD    signed integer     32\n"
+            "*/\n");
+    if(compiler_variant == MNU_COMPILE_ARDUINO) {
+        fprintf(flh,
+                "typedef boolean       ldBOOL;\n"
+                "typedef char           SBYTE;\n"
+                "typedef int            SWORD;\n"
+                "typedef long int      SDWORD;\n"
+                "\n");
+    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+        fprintf(flh,
+                "  typedef uint8_t    ldBOOL;\n"
+                "  typedef int8_t     SBYTE;\n"
+                "  typedef int16_t    SWORD;\n"
+                "  typedef int32_t    SDWORD;\n"
+                "\n");
+    } else if(mcu_ISA == ISA_PIC16) {
+        fprintf(flh,
+                "#ifdef CCS_PIC_C\n"
+                "    typedef int1             ldBOOL;\n"
+                "    typedef signed  int8      SBYTE;\n"
+                "    typedef signed int16      SWORD;\n"
+                "    typedef signed int32     SDWORD;\n"
+                "#elif defined(HI_TECH_C)\n"
+                "    typedef unsigned char    ldBOOL;\n"
+                "    typedef signed char       SBYTE;\n"
+                "    typedef signed short int  SWORD;\n"
+                "    typedef signed long int  SDWORD;\n"
+                "#endif\n"
+                "\n");
+    } else if(mcu_ISA == ISA_ARM) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+
+    } else if(mcu_ISA == ISA_AVR) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    } else {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    }
+    if(mcu_ISA == ISA_AVR) {
+        fprintf(flh,
+                "#ifndef UCSRA\n"
+                "  #define UCSRA UCSR0A\n"
+                "#endif\n"
+                "#ifndef UDRE\n"
+                "  #define UDRE UDRE0\n"
+                "#endif\n"
+                "#ifndef UDR\n"
+                "  #define UDR UDR0\n"
+                "#endif\n"
+                "#ifndef RXC\n"
+                "  #define RXC RXC0\n"
+                "#endif\n"
+                "#ifndef UBRRH\n"
+                "  #define UBRRH UBRR0H\n"
+                "#endif\n"
+                "#ifndef UBRRL\n"
+                "  #define UBRRL UBRR0L\n"
+                "#endif\n"
+                "#ifndef UCSRB\n"
+                "  #define UCSRB UCSR0B\n"
+                "#endif\n"
+                "\n");
+    }
+
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         fprintf(flh,
@@ -2334,20 +2419,19 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
         }
         if(UartFunctionUsed()) {
-            //  UART is native for PICs
+            fprintf(flh,
+                    "#include \"UartLib.h\"\n"
+                    "\n");
+        }
+        if(SpiFunctionUsed() && I2cFunctionUsed()) {
+            THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
         }
         if(SpiFunctionUsed()) {
-            if(I2cFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
-
             fprintf(flh,
                     "#include \"SpiLib.h\"\n"
                     "\n");
         }
         if(I2cFunctionUsed()) {
-            if(SpiFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
-
             fprintf(flh,
                     "#include \"I2cLib.h\"\n"
                     "\n");
@@ -2473,108 +2557,6 @@ bool CompileAnsiC(const char *dest, int MNU)
     }
     /////
 
-    fprintf(flh,
-            "/*\n"
-            "  Type                  Size(bits)\n"
-            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
-            "  SBYTE     signed integer      8\n"
-            "  SWORD     signed integer     16\n"
-            "  SDWORD    signed integer     32\n"
-            "*/\n");
-    if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(flh,
-                "typedef boolean       ldBOOL;\n"
-                "typedef char           SBYTE;\n"
-                "typedef int            SWORD;\n"
-                "typedef long int      SDWORD;\n"
-                "\n");
-    }
-    ///// Added by JG
-    else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        fprintf(flh,
-                "  typedef uint8_t    ldBOOL;\n"
-                "  typedef int8_t     SBYTE;\n"
-                "  typedef int16_t    SWORD;\n"
-                "  typedef int32_t    SDWORD;\n"
-                "\n");
-        /////
-    } else if(mcu_ISA == ISA_PIC16) {
-        fprintf(flh,
-                "#ifdef CCS_PIC_C\n"
-                "    typedef int1             ldBOOL;\n"
-                "    typedef signed  int8      SBYTE;\n"
-                "    typedef signed int16      SWORD;\n"
-                "    typedef signed int32     SDWORD;\n"
-                "#elif defined(HI_TECH_C)\n"
-                "  #ifdef _USE_MACRO_\n"
-                "    typedef bit              ldBOOL;\n"
-                "  #else\n"
-                "    typedef unsigned char    ldBOOL;\n"
-                "  #endif\n"
-                "    typedef signed char       SBYTE;\n"
-                "    typedef signed short int  SWORD;\n"
-                "    typedef signed long int  SDWORD;\n"
-                "#endif\n"
-                "\n");
-    }
-    ///// Added by JG
-    else if(mcu_ISA == ISA_ARM) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-
-    }
-    /////
-    else if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                /*
-"#ifdef __CODEVISIONAVR__\n"
-"//#define ldBOOL              bit\n"
-"//typedef bool             ldBOOL;\n"
-"#endif\n"
-*/
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    } else {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    }
-    if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                "#ifndef UCSRA\n"
-                "  #define UCSRA UCSR0A\n"
-                "#endif\n"
-                "#ifndef UDRE\n"
-                "  #define UDRE UDRE0\n"
-                "#endif\n"
-                "#ifndef UDR\n"
-                "  #define UDR UDR0\n"
-                "#endif\n"
-                "#ifndef RXC\n"
-                "  #define RXC RXC0\n"
-                "#endif\n"
-                "#ifndef UBRRH\n"
-                "  #define UBRRH UBRR0H\n"
-                "#endif\n"
-                "#ifndef UBRRL\n"
-                "  #define UBRRL UBRR0L\n"
-                "#endif\n"
-                "#ifndef UCSRB\n"
-                "  #define UCSRB UCSR0B\n"
-                "#endif\n"
-                "\n");
-    }
-
     FileTracker fh(desth, "w");
     if(!fh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desth);
@@ -2685,14 +2667,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "extern void PlcCycle(void); //  and call PlcCycle() function once per PLC cycle timer.\n"
                 "\n");
     }
-    if(UartFunctionUsed()) {
-        fprintf(fh,
+    if(UartFunctionUsed()) {       
+       if(compiler_variant != MNU_COMPILE_HI_TECH_C) {
+          fprintf(fh,
                 "void UART_Init(void);\n"
                 "void UART_Transmit(unsigned char data);\n"
                 "unsigned char UART_Receive(void);\n"
                 "ldBOOL UART_Receive_Avail(void);\n"
                 "ldBOOL UART_Transmit_Ready(void);\n"
                 "\n");
+       }
     }
     ///// Added by JG
     if(SpiFunctionUsed()) {
@@ -3081,23 +3065,12 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n"
                         "\n",
                         Prog.baudRate);
-            } else {
+            } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+				// used UartLib.h
+			} else {
                 fprintf(f,
                         "void UART_Init(void) {\n"
-                        "  // UART baud rate setup\n");
-                if(compiler_variant != MNU_COMPILE_ANSIC) {
-                    int32_t divisor, brgh;
-                    CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
-                    if(brgh)
-                        fprintf(f, "  BRGH = 1;\n");
-                    else
-                        fprintf(f, "  BRGH = 0;\n");
-                    fprintf(f,
-                            "  SPBRG = %d;\n"
-                            "  TXEN = 1; CREN = 1; SPEN = 1;\n",
-                            divisor);
-                }
-                fprintf(f,
+                        "  // UART baud rate setup\n"
                         "}\n"
                         "\n");
             }
@@ -3130,6 +3103,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "  return kbhit();\n"
                         "}\n"
                         "\n");
+            } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+				// used UartLib.h
             } else {
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
@@ -3646,9 +3621,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                             "    LibUart_Init(USART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);",
                             UART_Used,
                             Prog.baudRate);
-            } else
-                /////
+            } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+                int32_t divisor, brgh;
+                CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
+                fprintf(f, "    UART_Init(%d, %d);\n", divisor, brgh);
+            } else {
                 fprintf(f, "    UART_Init();\n");
+            }
         }
         if(AdcFunctionUsed()) {
             ///// added by JG

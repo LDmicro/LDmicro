@@ -310,6 +310,8 @@ for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
+:pause
+
 REM Linkage of objects
 picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
