@@ -538,7 +538,7 @@ int byteNeeded(long long int i)
 }
 
 //-----------------------------------------------------------------------------
-int TestByteNeeded(int count, int32_t *vals)
+int TestByteNeeded(int count, const int32_t *vals)
 {
     int res = -1;
     int r;
