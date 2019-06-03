@@ -577,6 +577,18 @@ struct SeriesNode {
     {
         data.any = any;
     }
+    explicit SeriesNode(ElemSubcktSeries *series)
+    {
+        parent_ = nullptr;
+        this->which = ELEM_SERIES_SUBCKT;
+        this->data.series = series;
+    }
+    explicit SeriesNode(ElemSubcktParallel *parallel)
+    {
+        parent_ = nullptr;
+        this->which = ELEM_PARALLEL_SUBCKT;
+        this->data.parallel = parallel;
+    }
     int which;
     union {
         void *              any;
@@ -683,7 +695,7 @@ void                DeleteSelectedRung();
 bool                CollapseUnnecessarySubckts(int which, void *any);
 void                InsertRung(bool afterCursor);
 int                 RungContainingSelected();
-bool                ItemIsLastInCircuit(ElemLeaf *item);
+bool                ItemIsLastInCircuit(const ElemLeaf *item);
 int                 FindRung(int seek, char *name);
 int                 FindRungLast(int seek, char *name);
 int                 CountWhich(int seek1, int seek2, int seek3, char *name);

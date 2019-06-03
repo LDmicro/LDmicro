@@ -624,7 +624,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             if(strlen(s)) {
                 const char *pos = strstr(s, "OC");
                 if(pos) {
-                    pwm = strtol(pos + 2, NULL, 16); // PWM# (0x00, 0x1A, 0x1B, 0x02...) from pin description
+                    pwm = strtol(pos + 2, nullptr, 16); // PWM# (0x00, 0x1A, 0x1B, 0x02...) from pin description
                     PWM_Used[pwm] = 1;               // marked as used
                 } else
                     THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
@@ -1801,7 +1801,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     if(strlen(s)) {
                         const char *pos = strstr(s, "OC");
                         if(pos) {
-                            pwm = strtol(pos + 2, NULL, 16);
+                            pwm = strtol(pos + 2, nullptr, 16);
                             ;                  // PWM # (0x00, 0x1A, 0x1B, 0x02...) from pin description
                             PWM_Used[pwm] = 1; // marked as used
 
@@ -1884,7 +1884,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     if(strlen(s)) {
                         const char *pos = strstr(s, "OC");
                         if(pos) {
-                            pwm = strtol(pos + 2, NULL, 16);
+                            pwm = strtol(pos + 2, nullptr, 16);
                             ;                  // PWM # (0x00, 0x1A, 0x1B, 0x02...) from pin description
                             PWM_Used[pwm] = 1; // marked as used
 

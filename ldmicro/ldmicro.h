@@ -981,7 +981,7 @@ void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const NameArray& name, int sizeOfVar);
 int SizeOfVar(const NameArray& name);
 int AllocOfVar(const NameArray& name);
-int TestByteNeeded(int count, int32_t *vals);
+int TestByteNeeded(int count, const int32_t* vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FileTracker& f);
 bool LoadVarListFromFile(FileTracker& f);
@@ -1008,8 +1008,8 @@ extern int int_comment_level;
 extern int asm_comment_level;
 extern int asm_discover_names;
 extern int rungNow;
-void IntDumpListing(char *outFile);
-int32_t TestTimerPeriod(char *name, int32_t delay, int adjust); // delay in us
+void IntDumpListing(const char *outFile);
+int32_t TestTimerPeriod(const char* name, int32_t delay, int adjust); // delay in us
 bool GenerateIntermediateCode();
 bool CheckLeafElem(int which, void *elem);
 extern ADDR_T addrRUartRecvErrorFlag;

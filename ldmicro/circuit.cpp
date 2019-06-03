@@ -1509,29 +1509,27 @@ void NewProgram()
 // position of a series subcircuit that may be in a parallel subcircuit that
 // etc.)
 //-----------------------------------------------------------------------------
-static void LastInCircuit(int which, void *any, ElemLeaf *seek, bool *found, bool *andItemAfter)
+static void LastInCircuit(const SeriesNode* node, const ElemLeaf *seek, bool *found, bool *andItemAfter)
 {
-    switch(which) {
+    switch(node->which) {
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++) {
-                LastInCircuit(p->contents[i].which, p->contents[i].data.any, seek, found, andItemAfter);
+            const ElemSubcktParallel *p = node->parallel();
+            for(int i = 0; i < p->count; i++) {
+                LastInCircuit(&p->contents[i], seek, found, andItemAfter);
                 if(*found)
                     return;
             }
             break;
         }
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            LastInCircuit(
-                s->contents[s->count - 1].which, s->contents[s->count - 1].data.any, seek, found, andItemAfter);
+            const ElemSubcktSeries *s = node->series();
+            LastInCircuit(&s->contents[s->count - 1], seek, found, andItemAfter);
             break;
         }
         default:
             if(*found)
                 *andItemAfter = true;
-            if(any == seek)
+            if(node->leaf() == seek)
                 *found = true;
             break;
     }
@@ -1543,16 +1541,17 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek, bool *found, boo
 // circumstance in which it is okay to insert a coil, RES, etc. after
 // something
 //-----------------------------------------------------------------------------
-bool ItemIsLastInCircuit(ElemLeaf *item)
+bool ItemIsLastInCircuit(const ElemLeaf *item)
 {
-    int i = RungContainingSelected();
-    if(i < 0)
+    int rung_idx = RungContainingSelected();
+    if(rung_idx < 0)
         return false;
 
     bool found = false;
     bool andItemAfter = false;
 
-    LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs_[i], item, &found, &andItemAfter);
+	auto node = SeriesNode(Prog.rungs_[rung_idx]);
+    LastInCircuit(&node, item, &found, &andItemAfter);
 
     if(found)
         return !andItemAfter;

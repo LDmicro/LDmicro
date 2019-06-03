@@ -1,3 +1,19 @@
+== Release 5.3.?.?
+
+    * Added
+        "Atmel AVR ATmega32U4 44-Pin packages",
+        "Atmel AVR ATmega32 44-Pin packages",
+        "Atmel AVR ATmega328 32-Pin packages",
+        "Atmel AVR ATtiny85 8-Pin packages",
+        "Atmel AVR ATtiny85 20-Pin packages",
+        "Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP",
+        "Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP",
+        "Microchip PIC16F1527 64-Pin packages",
+        "Microchip PIC16F1824 14-Pin PDIP, SOIC, TSSOP",
+        "Microchip PIC16F1827 18-Pin PDIP, SOIC",
+        "Microchip PIC10F202 6-SOT"
+
+
 == Release 5.3.1.0
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES

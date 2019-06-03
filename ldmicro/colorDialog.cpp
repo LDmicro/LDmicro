@@ -102,7 +102,7 @@ bool ChooseClr(DWORD *rgbCurrent)
     cc.Flags = CC_FULLOPEN | CC_RGBINIT /*| CC_ENABLEHOOK*/;
     // cc.lpfnHook = &CCHookProc;
 
-    if(ChooseColor(&cc) == TRUE) {
+    if(ChooseColor(&cc) != FALSE) {
         *rgbCurrent = cc.rgbResult;
         rgbResult = cc.rgbResult;
         return true;
