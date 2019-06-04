@@ -1658,7 +1658,7 @@ void ShowStringDialog(char *dest, char *var, char *string)
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
-    ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0, 0x6, 0x7, dests);
+    ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0, 0x0, 0x7, dests);
     NoCheckingOnBox[0] = false;
     NoCheckingOnBox[1] = false;
     NoCheckingOnBox[2] = false;

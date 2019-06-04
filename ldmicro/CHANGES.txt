@@ -16,6 +16,14 @@
     * Added LIBRARIES_FOR\Pic16\UartLib.*
             LIBRARIES_FOR\AVR\UartLib.*
 
+    * Added "9-SEGMENT FONT converter"
+           "14-SEGMENT FONT converter"
+           "16-SEGMENT FONT converter"
+
+    * Added "BUS tracer" support
+
+    * Added STRING type support in generated C code ???
+
 == Release 5.3.1.0
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES

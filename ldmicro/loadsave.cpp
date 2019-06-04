@@ -30,7 +30,11 @@ char *FrmStrToStr(char *dest);
 char *DelNL(char *str);
 char *DelLastNL(char *str);
 
-typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
+typedef enum FRMTTag { //
+    FRMT_COMMENT,      //
+    FRMT_01,           //
+    FRMT_x20           //
+} FRMT;                //
 char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
 char *StrToFrmStr(char *dest, const char *src);
 
@@ -1498,39 +1502,72 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                 break;
             }
         case ELEM_STRING: {
-            int i;
-            fprintf(f, "STRING ");
-            if(*(l->d.fmtdStr.dest)) {
-                fprintf(f, "%s", l->d.fmtdStr.dest);
+            if(Prog.LDversion == "0.1") {
+                fprintf(f, "STRING ");
+                if(*(l->d.fmtdStr.dest)) {
+                    fprintf(f, "%s", l->d.fmtdStr.dest);
+                } else {
+                    fprintf(f, "(none)");
+                }
+                if(*(l->d.fmtdStr.var)) {
+                    fprintf(f, " %s", l->d.fmtdStr.var);
+                } else {
+                    fprintf(f, " (none)");
+                }
+                fprintf(f, " %d", strlen(l->d.fmtdStr.string));
+                for(int i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
+                    fprintf(f, " %d", l->d.fmtdStr.string[i]);
+                }
+                fprintf(f, "\n");
             } else {
-                fprintf(f, "(none)");
+                fprintf(f, "STRING ");
+                if(*(l->d.fmtdStr.dest)) {
+                    fprintf(f, "%s", l->d.fmtdStr.dest);
+                } else {
+                    fprintf(f, "(none)");
+                }
+                if(*(l->d.fmtdStr.var)) {
+                    fprintf(f, " %s", l->d.fmtdStr.var);
+                } else {
+                    fprintf(f, " (none)");
+                }
+                if(*(l->d.fmtdStr.string)) {
+                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+                } else {
+                    fprintf(f, " (none)");
+                }
+                fprintf(f, "\n");
             }
-            if(*(l->d.fmtdStr.var)) {
-                fprintf(f, " %s", l->d.fmtdStr.var);
-            } else {
-                fprintf(f, " (none)");
-            }
-            fprintf(f, " %d", strlen(l->d.fmtdStr.string));
-            for(i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
-                fprintf(f, " %d", l->d.fmtdStr.string[i]);
-            }
-            fprintf(f, "\n");
             break;
         }
 
         case ELEM_FORMATTED_STRING: {
-            int i;
-            fprintf(f, "FORMATTED_STRING ");
-            if(*(l->d.fmtdStr.var)) {
-                fprintf(f, "%s", l->d.fmtdStr.var);
+            if(Prog.LDversion == "0.1") {
+                fprintf(f, "FORMATTED_STRING ");
+                if(*(l->d.fmtdStr.var)) {
+                    fprintf(f, "%s", l->d.fmtdStr.var);
+                } else {
+                    fprintf(f, "(none)");
+                }
+                fprintf(f, " %d", strlen(l->d.fmtdStr.string));
+                for(int i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
+                    fprintf(f, " %d", l->d.fmtdStr.string[i]);
+                }
+                fprintf(f, "\n");
             } else {
-                fprintf(f, "(none)");
+                fprintf(f, "FORMATTED_STRING ");
+                if(*(l->d.fmtdStr.var)) {
+                    fprintf(f, "%s", l->d.fmtdStr.var);
+                } else {
+                    fprintf(f, "(none)");
+                }
+                if(*(l->d.fmtdStr.string)) {
+                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+                } else {
+                    fprintf(f, " (none)");
+                }
+                fprintf(f, "\n");
             }
-            fprintf(f, " %d", strlen(l->d.fmtdStr.string));
-            for(i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
-                fprintf(f, " %d", l->d.fmtdStr.string[i]);
-            }
-            fprintf(f, "\n");
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
@@ -1685,43 +1722,34 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
     } else {
         for(i = 0; i < (int)strlen(src); i++) {
             if((frmt == FRMT_x20) && (src[i] == ' ')) {
-                strcat(dest, "\\x20");
-                //          } else if(src[i] == '\'') {
-                //              strcat(dest, "\\\'");
-                //          } else if(src[i] == '\"') {
-                //              strcat(dest, "\\\"");
-                //          } else if(src[i] == '\?') {
-                //              strcat(dest, "\\\?");
-            } else if(src[i] == '\\') {
-                strcat(dest, "\\\\");
-            } else if(src[i]
-                      == 0x07) { //(alert) Produces an audible or visible alert without changing the active position.
-                strcat(dest, "\\a");
-            } else if(src[i]
-                      == '\b') { //(backspace) Moves the active position to the previous position on the current line.
-                strcat(dest, "\\b");
+                strcat(dest, "\\x20");  
+                // } else if(src[i] == '\'') {
+                //     strcat(dest, "\\\'");
+                // } else if(src[i] == '\"') {
+                //     strcat(dest, "\\\"");
+                // } else if(src[i] == '\?') {
+                //     strcat(dest, "\\\?");
+            } else if(src[i] == '\\') { //
+                strcat(dest, "\\\\");   //
+            } else if(src[i] == 0x07) { //(alert) Produces an audible or visible alert
+                strcat(dest, "\\a");    //  without changing the active position.
+            } else if(src[i] == '\b') { //(backspace) Moves the active position
+                strcat(dest, "\\b");    //  to the previous position on the current line.
             } else if(src[i] == 0x1B) { //Escape character
-                strcat(dest, "\\e");
-            } else if(
-                src[i]
-                == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
-                strcat(dest, "\\f");
-            } else if(src[i] == '\n') { //(new line) Moves the active position to the initial position of the next line.
-                strcat(dest, "\\n");
-            } else if(
-                src[i]
-                == '\r') { //(carriage return) Moves the active position to the initial position of the current line.
-                strcat(dest, "\\r");
-            } else if(
-                src[i]
-                == '\t') { //(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
-                strcat(dest, "\\t");
-            } else if(
-                src[i]
-                == '\v') { //(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
-                strcat(dest, "\\v");
-            } else {
-                strncat(dest, &src[i], 1);
+                strcat(dest, "\\e");    //
+            } else if(src[i] == '\f') { //(form feed) Moves the active position to the initial position at the start
+                strcat(dest, "\\f");    //  of the next logical page.
+            } else if(src[i] == '\n') { //(new line) Moves the active position to the initial position
+                strcat(dest, "\\n");    //  of the next line.
+            } else if(src[i] == '\r') { //(carriage return) Moves the active position
+                strcat(dest, "\\r");    //  to the initial position of the current line.
+            } else if(src[i] == '\t') { //(horizontal tab) Moves the active position
+                strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
+            } else if(src[i] == '\v') { //(vertical tab) Moves the active position to the initial position
+                strcat(dest, "\\v");    //  of the next vertical tabulation position.
+
+            } else {                       //
+                strncat(dest, &src[i], 1); //
             }
         }
     }

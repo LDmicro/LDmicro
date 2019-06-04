@@ -1037,6 +1037,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 
             case INT_WRITE_STRING:
                 strVar1 = IntCode[i].name1.c_str();
+                intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_SLEEP:
@@ -1975,6 +1976,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     doIndent(f, i);
                     fprintf(f, "sei();\n");
                 }
+                break;
+
+            case INT_WRITE_STRING:
+                    fprintf(f, "sprintf(%s, \"%s\", %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            IntCode[i].name2.c_str(),
+                            MapSym(IntCode[i].name3));
                 break;
 
 #ifdef TABLE_IN_FLASH
