@@ -2089,7 +2089,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega2560",
         "m2560def",
         "mega2560",
-        "",
+        "iom2560", // AVRGCC
         'P',
 //        A     B     C     D     E     F     G     H      I   J      K      L
         { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0,  0x103, 0x106, 0x109 }, // PINx  input
@@ -2123,7 +2123,7 @@ McuIoInfo SupportedMcus_[] = {
         "AT90USB647",
         "",
         "",
-        "",
+        "iousb647", // AVRGCC
         'P',
         { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
         { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
@@ -2156,7 +2156,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega128",
         "",
         "",
-        "",
+        "iom128", // AVRGCC
         'P',
 //        A     B     C     D     E     F     G     H      I   J      K      L
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
@@ -2190,7 +2190,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega64",
         "",
         "",
-        "",
+        "iom64", // AVRGCC
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x23, 0x62, 0x65 }, // PORTx
@@ -2223,7 +2223,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega162",
         "",
         "",
-        "",
+        "iom162", // AVRGCC
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x25 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x27 }, // PORTx
@@ -2256,7 +2256,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega32U4",
         "",
         "",
-        "",
+        "iom32u4", // AVRGCC
         'P',
 //        A     B     C     D     E     F     G     H      I   J      K      L
         { 0, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
@@ -2283,7 +2283,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega32",
         "m32def",
         "mega32",
-        "",
+        "iom32", // AVRGCC
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -2309,7 +2309,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega32",
         "m32def",
         "mega32",
-        "",
+        "iom32", // AVRGCC
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -2342,7 +2342,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega16",
         "",
         "",
-        "",
+        "iom16", // AVRGCC
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -2375,7 +2375,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega48",
         "",
         "",
-        "",
+        "iomx8", // AVRGCC
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -2408,7 +2408,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega88",
         "",
         "",
-        "",
+        "iomx8", // AVRGCC
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -2441,7 +2441,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega168",
         "",
         "",
-        "",
+        "iomx8", // AVRGCC
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -2474,7 +2474,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega328",
         "m328def",
         "mega328",
-        "",
+        "iom328p", // AVRGCC
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -2507,7 +2507,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega328",
         "m328def", // avrasm2.exe
         "mega328",
-        "",
+        "iom328p", // AVRGCC
         'P',                                  //char             portPrefix;
         { 0, 0x23, 0x26, 0x29 }, // PINx   //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
         { 0, 0x25, 0x28, 0x2B }, // PORTx  //DWORD            outputRegs[MAX_IO_PORTS];
@@ -2535,7 +2535,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega164",
         "",
         "",
-        "",
+        "iom164", // AVRGCC
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -2568,7 +2568,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega324",
         "",
         "",
-        "",
+        "iom324", // AVRGCC
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -2601,7 +2601,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega644",
         "",
         "",
-        "",
+        "iom644", // AVRGCC
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -2634,7 +2634,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega1284",
         "",
         "",
-        "",
+        "iom1284", // AVRGCC
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -2667,7 +2667,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATtiny85",
         "tn85def",
         "tiny85",
-        "",
+        "iotn85", // AVRGCC
         'P',
         { 0, 0x16 },
         { 0, 0x18 },
@@ -2695,7 +2695,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATtiny85",
         "tn85def",
         "tiny85",
-        "",
+        "iotn85", // AVRGCC
         'P',
         { 0, 0x16 },
         { 0, 0x18 },
@@ -2723,7 +2723,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATtiny10",
         "tn10def",
         "tiny10",
-        "",
+        "iotn11", // AVRGCC
         'P',
         { 0, 0x00 }, // PINx
         { 0, 0x02 }, // PORTx
@@ -2751,7 +2751,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega8",
         "m8def", // "iom8"
         "mega8",
-        "",
+        "iom8", // AVRGCC
         'P',                                 //char             portPrefix;
         { 0, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
         { 0, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
@@ -2787,7 +2787,7 @@ McuIoInfo SupportedMcus_[] = {
         "ATmega8",
         "m8def",
         "mega8",
-        "",
+        "iom8", // AVRGCC
         'P',
         { 0, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
         { 0, 0x38, 0x35, 0x32 }, // PORTx

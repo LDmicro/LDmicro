@@ -37,24 +37,25 @@ static int mcu_ISA = -1;
 static int compiler_variant = -1;
 
 ///// Added by JG
-static int TIMER_Used = 0; ///// for Cycle timer variable
-static int UART_Used = -1; ///// and UART #
-static int I2C_Used = -1;  ///// and I2C #
-static int SPI_Used = -1;  ///// and SPI # or SPI Port
-static int SPI_MOSI = 0;   ///// and SPI pins (for AVRs)
+static int TIMER_Used = 0; // for Cycle timer variable
+static int UART_Used = -1; // and UART #
+static int I2C_Used = -1;  // and I2C #
+static int SPI_Used = -1;  // and SPI # or SPI Port
+
+static int SPI_MOSI = 0;   // and SPI pins (for AVRs)
 static int SPI_MISO = 0;
 static int SPI_SCK = 0;
-static int SPI_SS = 0; /////
+static int SPI_SS = 0;
 
 #define MAX_ADC_C 256
-static int  ADC_Used[MAX_ADC_C]; ///// used ADC #
-static long ADC_Chan[MAX_ADC_C]; ///// ADC channel
+static int  ADC_Used[MAX_ADC_C]; // used ADC #
+static long ADC_Chan[MAX_ADC_C]; // ADC channel
 
 #define MAX_PWM_C 256
-static int  PWM_Used[MAX_PWM_C];  ///// used PWM #
-static long PWM_Freq[MAX_PWM_C];  ///// PWM Frequency
-static int  PWM_Resol[MAX_PWM_C]; ///// PWM Resolution
-static int  PWM_MaxCs[MAX_PWM_C]; ///// PWM Max prediv choices
+static int  PWM_Used[MAX_PWM_C];  // used PWM #
+static long PWM_Freq[MAX_PWM_C];  // PWM Frequency
+static int  PWM_Resol[MAX_PWM_C]; // PWM Resolution
+static int  PWM_MaxCs[MAX_PWM_C]; // PWM Max prediv choices
 static int  countpwm = 0;
 /////
 
@@ -2375,31 +2376,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "  typedef signed long int  SDWORD;\n"
                 "\n");
     }
-    if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                "#ifndef UCSRA\n"
-                "  #define UCSRA UCSR0A\n"
-                "#endif\n"
-                "#ifndef UDRE\n"
-                "  #define UDRE UDRE0\n"
-                "#endif\n"
-                "#ifndef UDR\n"
-                "  #define UDR UDR0\n"
-                "#endif\n"
-                "#ifndef RXC\n"
-                "  #define RXC RXC0\n"
-                "#endif\n"
-                "#ifndef UBRRH\n"
-                "  #define UBRRH UBRR0H\n"
-                "#endif\n"
-                "#ifndef UBRRL\n"
-                "  #define UBRRL UBRR0L\n"
-                "#endif\n"
-                "#ifndef UCSRB\n"
-                "  #define UCSRB UCSR0B\n"
-                "#endif\n"
-                "\n");
-    }
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
@@ -2452,7 +2428,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "#include \"Lib_usr.h\"\n"
                     "\n");
         else // CortexF4
-             /////
             fprintf(flh,
                     "\n"
                     "#include <stdio.h>\n"
@@ -2527,9 +2502,11 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n"
-                "#include <avr/io.h>\n"
+                "#include <avr\\io.h>\n"
+                "#include <avr\\%s.h>\n"
                 "#include \"UsrLib.h\"\n"
-                "\n");
+                "\n",
+                Prog.mcu()->mcuH2);
 
         if(AdcFunctionUsed()) {
             fprintf(flh,
@@ -2542,7 +2519,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
         }
         if(UartFunctionUsed()) {
-            //  UART is native for AVRs
+            fprintf(flh,
+                    "#include \"UartLib.h\"\n"
+                    "\n");
         }
         if(SpiFunctionUsed()) {
             fprintf(flh,
@@ -2555,7 +2534,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
         }
     }
-    /////
 
     FileTracker fh(desth, "w");
     if(!fh) {
@@ -2611,11 +2589,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <%s.h>\n"
                 "#elif defined(__GNUC__)\n"
                 "    //#warning __GNUC__\n"
-                "    #include <avr/io.h>\n"
-                "    #include <avr/pgmspace.h>\n"
+                "    #include <avr\\io.h>\n"
+                "    #include <avr\\pgmspace.h>\n"
                 "    #define __PROG_TYPES_COMPAT__ //arduino\n"
                 "    #ifdef USE_WDT\n"
-                "    #include <avr/wdt.h>\n"
+                "    #include <avr\\wdt.h>\n"
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu()->mcuH);
@@ -2667,8 +2645,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "extern void PlcCycle(void); //  and call PlcCycle() function once per PLC cycle timer.\n"
                 "\n");
     }
-    if(UartFunctionUsed()) {       
-       if(compiler_variant != MNU_COMPILE_HI_TECH_C) {
+    if(UartFunctionUsed()) {
+       if((compiler_variant != MNU_COMPILE_HI_TECH_C)
+       && (compiler_variant != MNU_COMPILE_AVRGCC)) {
           fprintf(fh,
                 "void UART_Init(void);\n"
                 "void UART_Transmit(unsigned char data);\n"
@@ -2728,8 +2707,9 @@ bool CompileAnsiC(const char *dest, int MNU)
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
     }
 
-    ///// Added by JG
-    if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
+    if((compiler_variant == MNU_COMPILE_ARMGCC) //
+    || (compiler_variant == MNU_COMPILE_HI_TECH_C) //
+    || (compiler_variant == MNU_COMPILE_AVRGCC)) {
         fprintf(f,
                 "/* This is auto-generated C code from LDmicro. Do not edit this file! Go\n"
                 "   back to the LDmicro ladder diagram source for changes in the ladder logic.\n\n"
@@ -2739,8 +2719,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "   and liked with this file when running flashMcu.bat.\n"
                 "   Generated .elf and .hex files will be created in 'bin' subdirectory.*/\n"
                 "\n");
-    } else
-        /////
+    } else {
         fprintf(f,
                 "/* This is auto-generated C code from LDmicro. Do not edit this file! Go\n"
                 "   back to the LDmicro ladder diagram source for changes in the ladder logic, and make\n"
@@ -2757,7 +2736,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n"
                 "   See the generated source code (below) for function names. */\n"
                 "\n");
-
+    }
+/*
     int    divisor = 0;
     double actual = 0;
     double percentErr = 0;
@@ -2765,6 +2745,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         calcAvrUsart(&divisor, &actual, &percentErr);
         testAvrUsart(divisor, actual, percentErr);
     }
+*/
     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
         fprintf(f,
                 "#define CCS_PIC_C // CCS C Compiler, Custom Computer Services, Inc.\n"
@@ -2806,18 +2787,9 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
-        /*
-    int i;
-    if(Prog.mcu())
-    for(i = 0; i < MAX_IO_PORTS; i++) {
-        if(IS_MCU_REG(i))
-            fprintf(f,
-"  #define PIN%c PORT%c\n"
-            , 'A'+i, 'A'+i);
-    }
-    */
     } else if(compiler_variant == MNU_COMPILE_CODEVISIONAVR) {
     }
+
     fprintf(f,
             "#include \"ladder.h\"\n"
             "#include \"%s.h\" // Copy this line into main project file where is function main().\n"
@@ -2910,6 +2882,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
         }
     } else if(mcu_ISA == ISA_AVR) {
+        /*
         if(UartFunctionUsed()) { //// { Missing: added by JG
 #define RXEN BIT4
 #define TXEN BIT3
@@ -2952,6 +2925,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "}\n"
                     "\n");
         } //// } Mising: added by JG
+        */
         ///// Added by JG
         if(SpiFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_AVRGCC) {
@@ -3066,8 +3040,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "\n",
                         Prog.baudRate);
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-				// used UartLib.h
-			} else {
+                // used UartLib.h
+            } else {
                 fprintf(f,
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n"
@@ -3104,7 +3078,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n"
                         "\n");
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-				// used UartLib.h
+                // used UartLib.h
             } else {
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
@@ -3625,8 +3599,15 @@ bool CompileAnsiC(const char *dest, int MNU)
                 int32_t divisor, brgh;
                 CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
                 fprintf(f, "    UART_Init(%d, %d);\n", divisor, brgh);
+            } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
+                int    divisor = 0;
+                double actual = 0;
+                double percentErr = 0;
+                calcAvrUsart(&divisor, &actual, &percentErr);
+                testAvrUsart(divisor, actual, percentErr);
+                fprintf(f, "    UART_Init(%d);\n", divisor);
             } else {
-                fprintf(f, "    UART_Init();\n");
+                fprintf(f, "    UART_Init(); // baudRate:%d\n", Prog.baudRate);
             }
         }
         if(AdcFunctionUsed()) {

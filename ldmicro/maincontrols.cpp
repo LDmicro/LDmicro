@@ -335,6 +335,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 
     t = Prog.mcu() ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(settings, MNU_PULL_UP_RESISTORS, t);
+/*
+    t = Prog.mcu() && (Prog.mcu()->core > ARMcores) && (Prog.mcu()->core < ARMcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(settings, MNU_COMPILE_ARMGCC, t);
+*/
 }
 
 //-----------------------------------------------------------------------------

@@ -151,10 +151,10 @@ goto exit
 @echo on
 REM Compilation with avr-gcc
 
-     SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
+@rem SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
-@rem SET GCC_PATH=c:\WinAVR-20100110
+     SET GCC_PATH=c:\WinAVR-20100110
 
      SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE
@@ -171,6 +171,7 @@ chdir %~p2
 REM Compilation of sources
 rmdir AVRGCC\obj /s /q
 rmdir AVRGCC\bin /s /q
+
 mkdir AVRGCC\obj
 mkdir AVRGCC\bin
 mkdir AVRGCC\lib
@@ -178,6 +179,7 @@ mkdir AVRGCC\lib
 if not exist AVRGCC\lib\UsrLib.c copy %LIB_PATH%\*.* AVRGCC\lib
 
 for %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%~dp2 -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
+:pause
 
 avr-gcc.exe -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.o %~f2.c -o AVRGCC\obj\%~nx2.o
 
@@ -191,6 +193,18 @@ REM Transfer of the program with AvrDude
 avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
 pause
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto exit
+REM Copy source code for debugging in Proteus
+copy AVRGCC\lib\*.h PROTEUS > nul
+copy AVRGCC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy AVRGCC\BIN\*.hex PROTEUS > nul
+copy AVRGCC\BIN\*.elf PROTEUS > nul
+
 goto exit
 
 @rem =======================================================================

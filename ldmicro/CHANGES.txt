@@ -13,6 +13,8 @@
         "Microchip PIC16F1827 18-Pin PDIP, SOIC",
         "Microchip PIC10F202 6-SOT"
 
+    * Added LIBRARIES_FOR\Pic16\UartLib.*
+            LIBRARIES_FOR\AVR\UartLib.*
 
 == Release 5.3.1.0
 
