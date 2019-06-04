@@ -893,6 +893,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_SPI:
+            if(strlen(l->d.spi.send))
+              if(!IsNumber(l->d.spi.send))
+                MarkWithCheck(l->d.spi.send, VAR_FLAG_ANY);
+            if(strlen(l->d.spi.recv))
+              if(!IsNumber(l->d.spi.recv))
+                MarkWithCheck(l->d.spi.recv, VAR_FLAG_ANY);
+            break;
+
             // clang-format off
         const char *s;
         case ELEM_7SEG:  s = "char7seg";  goto xseg;
@@ -979,7 +988,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
-        case ELEM_SPI:    ///// Added by JG
         case ELEM_SPI_WR: ///// Added by JG
         case ELEM_I2C_RD: ///// Added by JG
         case ELEM_I2C_WR: ///// Added by JG

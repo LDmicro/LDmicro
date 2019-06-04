@@ -1652,6 +1652,15 @@ static void InitTablesCircuit(const SeriesNode *elem)
                         if(elem->which == ELEM_7SEG) {
                             sovElement = 1;
                             Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                         } else if(elem->which == ELEM_9SEG) {
+                           sovElement = 2;
+                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN9SEG, sovElement, char9seg);
+                         } else if(elem->which == ELEM_14SEG) {
+                           sovElement = 2;
+                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN14SEG, sovElement, char14seg);
+                         } else if(elem->which == ELEM_16SEG) {
+                           sovElement = 3;
+                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN16SEG, sovElement, char16seg);
                         } else
                             oops();
                         MarkInitedVariable(nameTable);
@@ -2871,6 +2880,15 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                             case ELEM_7SEG:
                                 Xseg = char7seg[Xseg];
                                 break;
+                    case ELEM_9SEG:
+                        Xseg = char9seg[Xseg];
+                        break;
+                    case ELEM_14SEG:
+                        Xseg = char14seg[Xseg];
+                        break;
+                    case ELEM_16SEG:
+                        Xseg = char16seg[Xseg];
+                        break;
                             default:
                                 oops();
                         }
@@ -2906,6 +2924,21 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                                 strcpy(nameTable, "char7seg");
                                 sovElement = 1;
                                 Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
+                                break;
+                            case ELEM_9SEG:
+                                strcpy(nameTable, "char9seg");
+                                sovElement = 2;
+                                Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN9SEG, sovElement, char9seg);
+                                break;
+                            case ELEM_14SEG:
+                                strcpy(nameTable, "char14seg");
+                                sovElement = 2;
+                                Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN14SEG, sovElement, char14seg);
+                                break;
+                            case ELEM_16SEG:
+                                strcpy(nameTable, "char16seg");
+                                sovElement = 3;
+                                Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN16SEG, sovElement, char16seg);
                                 break;
                             default:
                                 oops();
@@ -3252,8 +3285,38 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         }
 
         case ELEM_BUS: {
+            if(IsNumber(leaf->d.bus.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Bus instruction: '%s' not a valid destination."),
+                    leaf->d.bus.dest);
+            }
+            if(IsNumber(leaf->d.bus.src)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Bus instruction: '%s' not a valid source."),
+                    leaf->d.bus.src);
+            }
+            BOOL isCross = false;
+            for(int i=0; i<=7; i++) {
+                if(leaf->d.bus.PCBbit[i] != i) {
+                    isCross = true;
+                    break;
+                 }
+            }
+            if(isCross) {
             Comment(3, "ELEM_BUS");
-
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_VARIABLE_TO_LITERAL, "$tmpVar8bit", (int32_t)0);
+                for(int i=0; i<=7; i++) {
+                  #ifdef NEW_FEATURE
+                  Op(INT_COPY_VAR_BIT_TO_VAR_BIT, "$tmpVar8bit", leaf->d.bus.src, NULL, leaf->d.bus.PCBbit[i], i);
+                  #endif
+                }
+                Op(INT_SET_VARIABLE_TO_VARIABLE, leaf->d.bus.dest, "$tmpVar8bit");
+              Op(INT_END_IF);
+            } else if(strcmp(leaf->d.bus.dest, leaf->d.bus.src)) {
+              Comment(3, "ELEM_BUS");
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, leaf->d.bus.dest, leaf->d.bus.src);
+              Op(INT_END_IF);
+            }
             break;
         }
 

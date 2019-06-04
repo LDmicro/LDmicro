@@ -2918,6 +2918,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if(LEN7SEG != arraylen(char7seg))
             oops();
 
+        if(LEN9SEG != arraylen(char9seg))
+            oops();
+
+        if(LEN14SEG != arraylen(char14seg))
+            oops();
+
+        if(LEN16SEG != arraylen(char16seg))
+            oops();
         if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
             Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
             oops();
