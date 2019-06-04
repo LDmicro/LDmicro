@@ -36,144 +36,146 @@
 // parallel subcircuits. A parallel subcircuit contains elements or series
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
-#define MAX_ELEMENTS_IN_SUBCKT 64
+// clang-format off
 
-#define ELEM_NULL 0x00
-#define ELEM_PLACEHOLDER 0x01
-#define ELEM_SERIES_SUBCKT 0x02
-#define ELEM_PARALLEL_SUBCKT 0x03
-#define ELEM_PADDING 0x04
-#define ELEM_COMMENT 0x05
+#define MAX_ELEMENTS_IN_SUBCKT  64
 
-#define ELEM_CONTACTS 0x10
-#define ELEM_COIL 0x11
-#define ELEM_TIME2COUNT 0x1210
+#define ELEM_NULL               0x00
+#define ELEM_PLACEHOLDER        0x01
+#define ELEM_SERIES_SUBCKT      0x02
+#define ELEM_PARALLEL_SUBCKT    0x03
+#define ELEM_PADDING            0x04
+#define ELEM_COMMENT            0x05
 
-#define ELEM_TCY 0x1201
-#define ELEM_TON 0x12
-#define ELEM_TOF 0x13
-#define ELEM_RTO 0x14
-#define ELEM_RTL 0x1401
-#define ELEM_THI 0x1410
-#define ELEM_TLO 0x1420
+#define ELEM_CONTACTS           0x10
+#define ELEM_COIL               0x11
+#define ELEM_TIME2COUNT         0x1210
 
-#define ELEM_RES 0x15
-#define ELEM_ONE_SHOT_RISING 0x16
-#define ELEM_ONE_SHOT_FALLING 0x17
-#define ELEM_ONE_SHOT_LOW 0x1701
-#define ELEM_MOVE 0x18
-#define ELEM_BIN2BCD 0x1801
-#define ELEM_BCD2BIN 0x1802
-#define ELEM_SWAP 0x1803
-#define ELEM_OPPOSITE 0x1804
-#define ELEM_ADD 0x19
-#define ELEM_SUB 0x1a
-#define ELEM_MUL 0x1b
-#define ELEM_DIV 0x1c
-#define ELEM_MOD 0x1c01
+#define ELEM_TCY                0x1201
+#define ELEM_TON                0x12
+#define ELEM_TOF                0x13
+#define ELEM_RTO                0x14
+#define ELEM_RTL                0x1401
+#define ELEM_THI                0x1410
+#define ELEM_TLO                0x1420
 
-#define ELEM_SET_BIT 0x1c81
-#define ELEM_CLEAR_BIT 0x1c82
-#define ELEM_COPY_BIT 0x1c83
-#define ELEM_XOR_COPY_BIT 0x1c84
+#define ELEM_RES                0x15
+#define ELEM_ONE_SHOT_RISING    0x16
+#define ELEM_ONE_SHOT_FALLING   0x17
+#define ELEM_ONE_SHOT_LOW       0x1701
+#define ELEM_MOVE               0x18
+#define ELEM_BIN2BCD            0x1801
+#define ELEM_BCD2BIN            0x1802
+#define ELEM_SWAP               0x1803
+#define ELEM_OPPOSITE           0x1804
+#define ELEM_ADD                0x19
+#define ELEM_SUB                0x1a
+#define ELEM_MUL                0x1b
+#define ELEM_DIV                0x1c
+#define ELEM_MOD                0x1c01
 
-#define ELEM_AND 0x1c41
-#define ELEM_OR 0x1c42
-#define ELEM_XOR 0x1c43
-#define ELEM_NOT 0x1c44
-#define ELEM_NEG 0x1c45
-#define ELEM_RANDOM 0x1c46
-#define ELEM_SEED_RANDOM 0x1c47
+#define ELEM_SET_BIT            0x1c81
+#define ELEM_CLEAR_BIT          0x1c82
+#define ELEM_COPY_BIT           0x1c83
+#define ELEM_XOR_COPY_BIT       0x1c84
 
-#define ELEM_SHL 0x1c21
-#define ELEM_SHR 0x1c22
-#define ELEM_SR0 0x1c23
-#define ELEM_ROL 0x1c24
-#define ELEM_ROR 0x1c25
+#define ELEM_AND                0x1c41
+#define ELEM_OR                 0x1c42
+#define ELEM_XOR                0x1c43
+#define ELEM_NOT                0x1c44
+#define ELEM_NEG                0x1c45
+#define ELEM_RANDOM             0x1c46
+#define ELEM_SEED_RANDOM        0x1c47
 
-#define ELEM_EQU 0x1d
-#define ELEM_NEQ 0x1e
-#define ELEM_GRT 0x1f
-#define ELEM_GEQ 0x20
-#define ELEM_LES 0x21
-#define ELEM_LEQ 0x22
-#define ELEM_IF_BIT_SET 0x2201
-#define ELEM_IF_BIT_CLEAR 0x2202
+#define ELEM_SHL                0x1c21
+#define ELEM_SHR                0x1c22
+#define ELEM_SR0                0x1c23
+#define ELEM_ROL                0x1c24
+#define ELEM_ROR                0x1c25
 
-#define ELEM_CTU 0x23
-#define ELEM_CTD 0x24
-#define ELEM_CTC 0x25
-#define ELEM_CTR 0x2501
+#define ELEM_EQU                0x1d
+#define ELEM_NEQ                0x1e
+#define ELEM_GRT                0x1f
+#define ELEM_GEQ                0x20
+#define ELEM_LES                0x21
+#define ELEM_LEQ                0x22
+#define ELEM_IF_BIT_SET         0x2201
+#define ELEM_IF_BIT_CLEAR       0x2202
 
-#define ELEM_SHORT 0x26
-#define ELEM_OPEN 0x27
-#define ELEM_READ_ADC 0x28
-#define ELEM_SET_PWM 0x29
-#define ELEM_SET_PWM_SOFT 0x2901
-#define ELEM_UART_RECV 0x2a
-#define ELEM_UART_RECVn 0x2a01
-#define ELEM_UART_RECV_AVAIL 0x2a02
-#define RUartRecvErrorFlag "RUartRecvErrorFlag"
-#define ELEM_UART_SEND 0x2b
-#define ELEM_UART_SENDn 0x2b01
-#define ELEM_UART_SEND_READY 0x2b02
-#define RUartSendErrorFlag "RUartSendErrorFlag"
-#define ELEM_MASTER_RELAY 0x2c
-#define ELEM_SLEEP 0x2c01
-#define ELEM_CLRWDT 0x2c02
-#define ELEM_LOCK 0x2c03
-#define ELEM_DELAY 0x2c04
-#define ELEM_TIME2DELAY 0x2c05
-#define ELEM_LABEL 0x2c20   // rung label // operate with rung only
-#define ELEM_GOTO 0x2c21    // goto rung  // operate with rung only
-#define ELEM_SUBPROG 0x2c22 // call rung  // operate with rung only
-#define ELEM_RETURN 0x2c23
-#define ELEM_ENDSUB 0x2c24
-#define ELEM_GOSUB 0x2c25
-#define ELEM_SHIFT_REGISTER 0x2d
-#define ELEM_LOOK_UP_TABLE 0x2e
-#define ELEM_FORMATTED_STRING 0x2f
-#define ELEM_PERSIST 0x30
-#define ELEM_PIECEWISE_LINEAR 0x31
+#define ELEM_CTU                0x23
+#define ELEM_CTD                0x24
+#define ELEM_CTC                0x25
+#define ELEM_CTR                0x2501
+
+#define ELEM_SHORT              0x26
+#define ELEM_OPEN               0x27
+#define ELEM_READ_ADC           0x28
+#define ELEM_SET_PWM            0x29
+#define ELEM_SET_PWM_SOFT       0x2901
+#define ELEM_UART_RECV          0x2a
+#define ELEM_UART_RECVn         0x2a01
+#define ELEM_UART_RECV_AVAIL    0x2a02
+#define RUartRecvErrorFlag     "RUartRecvErrorFlag"
+#define ELEM_UART_SEND          0x2b
+#define ELEM_UART_SENDn         0x2b01
+#define ELEM_UART_SEND_READY    0x2b02
+#define RUartSendErrorFlag     "RUartSendErrorFlag"
+#define ELEM_MASTER_RELAY       0x2c
+#define ELEM_SLEEP              0x2c01
+#define ELEM_CLRWDT             0x2c02
+#define ELEM_LOCK               0x2c03
+#define ELEM_DELAY              0x2c04
+#define ELEM_TIME2DELAY         0x2c05
+#define ELEM_LABEL              0x2c20 // rung label // operate with rung only
+#define ELEM_GOTO               0x2c21 // goto rung  // operate with rung only
+#define ELEM_SUBPROG            0x2c22 // call rung  // operate with rung only
+#define ELEM_RETURN             0x2c23
+#define ELEM_ENDSUB             0x2c24
+#define ELEM_GOSUB              0x2c25
+#define ELEM_SHIFT_REGISTER     0x2d
+#define ELEM_LOOK_UP_TABLE      0x2e
+#define ELEM_FORMATTED_STRING   0x2f
+#define ELEM_PERSIST            0x30
+#define ELEM_PIECEWISE_LINEAR   0x31
 
 #ifdef USE_SFR
-#define ELEM_RSFR 0x32    // Element read from SFR
-#define ELEM_WSFR 0x33    // Element write to  SFR
-#define ELEM_SSFR 0x34    // Element set bit in SFR
-#define ELEM_CSFR 0x35    // Element clear bit in SFR
-#define ELEM_TSFR 0x36    // Element test if set bit in SFR
-#define ELEM_T_C_SFR 0x37 // Element test if clear bit in SFR
+#define ELEM_RSFR               0x32    // Element read from SFR
+#define ELEM_WSFR               0x33    // Element write to  SFR
+#define ELEM_SSFR               0x34    // Element set bit in SFR
+#define ELEM_CSFR               0x35    // Element clear bit in SFR
+#define ELEM_TSFR               0x36    // Element test if set bit in SFR
+#define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 #endif
 
-#define ELEM_CPRINTF 0x4c01
-#define ELEM_SPRINTF 0x4c02
-#define ELEM_FPRINTF 0x4c03
-#define ELEM_PRINTF 0x4c04
-#define ELEM_I2C_CPRINTF 0x4c05
-#define ELEM_ISP_CPRINTF 0x4c06
-#define ELEM_UART_CPRINTF 0x4c07
+#define ELEM_CPRINTF            0x4c01
+#define ELEM_SPRINTF            0x4c02
+#define ELEM_FPRINTF            0x4c03
+#define ELEM_PRINTF             0x4c04
+#define ELEM_I2C_CPRINTF        0x4c05
+#define ELEM_ISP_CPRINTF        0x4c06
+#define ELEM_UART_CPRINTF       0x4c07
 
-#define ELEM_STRING 0x3f
-#define ELEM_OSC 0x4001
-#define ELEM_STEPPER 0x4002 //
-#define ELEM_PULSER 0x4003  //
-#define ELEM_NPULSE 0x4004  // N pulse generator use timer0 for generate meander
-#define ELEM_NPULSE_OFF 0x4005
+#define ELEM_STRING             0x3f
+#define ELEM_OSC                0x4001
+#define ELEM_STEPPER            0x4002   //
+#define ELEM_PULSER             0x4003   //
+#define ELEM_NPULSE             0x4004   // N pulse generator use timer0 for generate meander
+#define ELEM_NPULSE_OFF         0x4005
 //#define ELEM_PWM_OFF          0x4006
-#define ELEM_PWM_OFF_SOFT 0x4007
-#define ELEM_QUAD_ENCOD 0x4009
+#define ELEM_PWM_OFF_SOFT       0x4007
+#define ELEM_QUAD_ENCOD         0x4009
 
-#define ELEM_SPI 0x6001
-#define ELEM_SPI_WR 0x6002
+#define ELEM_SPI                0x6001
+#define ELEM_SPI_WR             0x6002
 
-#define ELEM_I2C_RD 0x6101 ///// Added by JG
-#define ELEM_I2C_WR 0x6102 /////
+#define ELEM_I2C_RD             0x6101      ///// Added by JG
+#define ELEM_I2C_WR             0x6102      /////
 
-#define ELEM_BUS 0x7001
-#define ELEM_7SEG 0x7007
-#define ELEM_9SEG 0x7009
-#define ELEM_14SEG 0x7014
-#define ELEM_16SEG 0x7016
+#define ELEM_BUS                0x7001
+#define ELEM_7SEG               0x7007
+#define ELEM_9SEG               0x7009
+#define ELEM_14SEG              0x7014
+#define ELEM_16SEG              0x7016
 
 // clang-format on
 
@@ -315,7 +317,6 @@ typedef struct ElemCoilTag {
 
 typedef struct ElemTimeTag {
     char name[MAX_NAME_LEN];
-    //SDWORD  delay; // us
     char delay[MAX_NAME_LEN]; // us
     int  adjust;              // adjust timer delay, default = 0, typical = -1
     // timer_delay = delay + adjust * PLC_cycle_time
@@ -360,10 +361,10 @@ typedef struct ElemSpiTag {
     char modes[MAX_NAME_LEN];
     char size[MAX_NAME_LEN];
     char first[MAX_NAME_LEN];
-    int  which; ///// Added by JG
+    int  which; 
 } ElemSpi;
 
-typedef struct ElemI2cTag {     ///// Added by JG
+typedef struct ElemI2cTag {     
     char name[MAX_NAME_LEN];    // nom I2Cn
     char send[MAX_NAME_LEN];    // to send
     char recv[MAX_NAME_LEN];    // to receive
@@ -440,7 +441,7 @@ typedef struct ResStepsTag {
 typedef struct ElemStepperTag {
     char name[MAX_NAME_LEN]; // step counter down from counter limit to 0
     char max[MAX_NAME_LEN];  // step counter limit
-    char P[MAX_NAME_LEN];
+    char P[MAX_NAME_LEN]; //
     int  nSize; // Table size:
     int  n;     // real accelaration/decelaratin table size
     int  graph;
@@ -518,7 +519,7 @@ typedef struct ElemPiecewiseLinearTag {
 
 typedef struct ElemFormattedStringTag {
     char var[MAX_NAME_LEN]; // also a varsList
-    char string[MAX_STRING_LEN];
+    char string[MAX_STRING_LEN]; //
     char dest[MAX_NAME_LEN];   // also a CHAR
     char enable[MAX_NAME_LEN]; // bitVar
     char error[MAX_NAME_LEN];  // bitVar
@@ -533,6 +534,7 @@ typedef struct ElemPerisistTag {
 #define SELECTED_BELOW 2
 #define SELECTED_RIGHT 3
 #define SELECTED_LEFT 4
+
 struct ElemLeaf {
     int  selectedState;
     bool poweredAfter;
@@ -549,7 +551,7 @@ struct ElemLeaf {
         ElemGoto            doGoto;
         ElemSfr             sfr;
         ElemSpi             spi;
-        ElemI2c             i2c; ///// Added by JG
+        ElemI2c             i2c;
         ElemBus             bus;
         ElemSegments        segments;
         ElemStepper         stepper;
