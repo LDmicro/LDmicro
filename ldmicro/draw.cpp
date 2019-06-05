@@ -165,8 +165,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_I2C_CPRINTF:
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
-        case ELEM_FORMATTED_STRING:
         case ELEM_UART_WR:
+        case ELEM_FORMATTED_STRING:
             return 2;
 
         case ELEM_COMMENT: {
@@ -1521,13 +1521,13 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
             sprintf(bot, "{\"%s\"}", str);
 
-//          PoweredText(poweredAfter);
-//          NameText();
-//          DrawChars(
-//              *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", leaf->d.fmtdStr.var, "", ""));
+            PoweredText(poweredAfter);
+            NameText();
+            DrawChars(
+                *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", leaf->d.fmtdStr.string, "", ""));
             BodyText();
 
-            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);
+            CenterWithWiresWidth(*cx, *cy, "{UART WRITE}", poweredBefore, poweredAfter, 2 * POS_WIDTH);
             *cx += 2 * POS_WIDTH;
             break;
         }
@@ -1738,6 +1738,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_I2C_CPRINTF:
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
+        case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx - 1, gy);
             DisplayMatrix[gx - 1][gy].data.leaf = leaf;

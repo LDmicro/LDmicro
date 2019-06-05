@@ -550,6 +550,19 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
+    } else if(sscanf(line, "UART_WR %s", l->d.fmtdStr.string) == 1) {
+        int i = strlen("UART_WR") + 1;
+		/*
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.var, "");
+        }
+		*/
+        FrmStrToStr(l->d.fmtdStr.string, &line[i]);
+        DelNL(l->d.fmtdStr.string);
+        if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.string, "");
+        }
+        *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
@@ -1540,7 +1553,23 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             break;
         }
-
+        case ELEM_UART_WR: {
+            fprintf(f, "UART_WR ");
+			/*
+			if(*(l->d.fmtdStr.var)) {
+                fprintf(f, "%s", l->d.fmtdStr.var);
+            } else {
+                fprintf(f, "(none)");
+            }
+			*/
+            if(*(l->d.fmtdStr.string)) {
+                fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+            } else {
+                fprintf(f, " (none)");
+            }
+            fprintf(f, "\n");
+            break;
+        }
         case ELEM_FORMATTED_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "FORMATTED_STRING ");
@@ -1631,8 +1660,8 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         }
 
         default:
-			ooops("ELEM_0x%x", which);
-            //Error("ELEM_0x%x", which);
+			//ooops("ELEM_0x%x", which);
+            Error("ELEM_0x%x", which);
 			//THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
             break;
     }

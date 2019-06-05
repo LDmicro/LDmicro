@@ -286,6 +286,7 @@
     case ELEM_I2C_CPRINTF:      \
     case ELEM_ISP_CPRINTF:      \
     case ELEM_UART_CPRINTF:     \
+    case ELEM_UART_WR:          \
     case ELEM_FORMATTED_STRING: \
     case ELEM_PERSIST:          \
     case ELEM_RSFR:             \
@@ -691,7 +692,7 @@ void                AddGoto(int which);
 void                AddLookUpTable();
 void                AddPiecewiseLinear();
 void                AddFormattedString();
-void				AddUartString();
+void                AddUartString();
 void                AddString();
 void                AddPrint(int code);
 void                DeleteSelectedFromProgram();

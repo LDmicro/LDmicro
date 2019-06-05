@@ -981,6 +981,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
+        case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;
         }
