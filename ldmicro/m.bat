@@ -1,4 +1,4 @@
-@rem This file used for compiling and debug. Ihor Nehrutsa
+@rem This file used for compiling and debug. Please don't modify. Ihor Nehrutsa
 
 @SET VMLAB=D:\xLogic\Projects\RUBKA\VMLAB
 @SET PROGECT=svarka
@@ -391,7 +391,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=d:\lds\PIC16F877\bits.ld
 @SET PROGECT=D:\LDs\frm\frm.ld
-@SET PROGECT=D:\lds\FormattedStr\FormattedStr.ld
+@SET PROGECT=c:\lds\FormattedStr\FormattedStr.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

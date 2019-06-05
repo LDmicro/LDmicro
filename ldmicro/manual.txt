@@ -61,12 +61,24 @@ processors are supported:
     * PIC16F819
     * PIC16F887
     * PIC16F886
+    * PIC16F72
+    * PIC12F675
+    * PIC12F683
+    * PIC16F1512
+    * PIC16F1516
+    * PIC16F1527
+    * PIC10F202
+    * PIC10F200
     * ATmega128
     * ATmega64
     * ATmega162
     * ATmega32
+    * ATmega32U4
     * ATmega16
     * ATmega8
+    * ESP8266
+    * STM32
+    * "PASCAL Code" for PC LPT and COM
     * and a lot of...
 
 It would be easy to support more AVR or PIC16 chips, but I do not have
@@ -1165,7 +1177,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     and it is equivalent to
          {OR     var :=}
-        -{   val | 0x10}-
+        -{   var | 0x10}-
 
 
     To clear bit number 4 in variable 'var'
@@ -1175,7 +1187,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     and it is equivalent to
          {AND    var :=}
-        -{   val & 0xEF}-
+        -{   var & 0xEF}-
 
     var must be a variable, not a literal value.
     The size of var must be from 1 to 4 bytes.
@@ -1994,7 +2006,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                  |
     DP --|>|-----+
 
-    a  --|<|-----+-- common Anodes connection
+    a  --|<|-----+-- common Anodes LED connection
                  |
     b  --|<|-----+
     ...          |
@@ -2021,6 +2033,60 @@ row+colmn |               |              |  from 0 to 15 - hex digits
 
     See  X-segment LED display, font example
     https://github.com/LDmicro/LDmicro/wiki/X-segment-LED-display,-font-example
+
+
+> 9-SEGMENTS FONT CONVERTER    {9SEG    dest:=}
+                             --{C          src}--
+         a
+        ---j
+     f|   / |b
+      |  /  |
+        ---g
+     e|  /  |c
+      | /   |
+       m---
+         d   DP
+
+    SEGMENT   0 0 m j DP g f e d c b a
+    BIT           9 8  7 6 5 4 3 2 1 0
+    nibbles  ^        ^       ^       ^
+    The size of the variable 'dest' must be at least 2 bytes.
+
+
+> 14-SEGMENTS FONT CONVERTER   {14SEG   dest:=}
+                             --{C          src}--
+         a
+      h --- j
+     f|\ |i/|b
+      | \|/ |
+     g1-- --g2
+     e| /|\ |c
+      |/ |l\|
+      m --- k
+         d   DP
+
+    SEGMENT  0 g2  l  k  i  h  m  j DP g1  f  e  d  c  b  a
+    BIT        14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+    nibbles ^          ^           ^           ^           ^
+    The size of the variable 'dest' must be at least 2 bytes.
+
+
+> 16-SEGMENTS FONT CONVERTER   {16SEG   dest:=}
+                             --{C          src}--
+       a1 a2
+      h-- --j
+     f|\ |i/|b
+      | \|/ |
+     g1-- --g2
+     e| /|\ |c
+      |/ |l\|
+      m-- --k
+       d1 d2 DP
+
+    SEGMENT   0  0  0 a2 d2 g2  l  k  i  h  m  j DP g1  f  e d1  c  b a1
+    BIT               16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+    nibbles  ^          ^           ^           ^           ^           ^
+    The size of the variable 'dest' must be at least 3 bytes.
 
 
 > BINARY TO BCD CONVERTER     {BIN2BCD dest:=}

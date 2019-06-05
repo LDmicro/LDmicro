@@ -170,6 +170,8 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_UART_RECV         0x34
 #define MNU_INSERT_UART_RECVn        0x3401
 #define MNU_INSERT_UART_RECV_AVAIL   0x3402
+#define MNU_INSERT_FMTD_STRING       0x3410 // "Insert Formatted String Over &UART"
+#define MNU_INSERT_UART_WRITE        0x3420 // "Insert String Over UART"
 #define MNU_INSERT_EQU          0x35
 #define MNU_INSERT_NEQ          0x36
 #define MNU_INSERT_GRT          0x37
@@ -194,7 +196,6 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_RETURN       0x3d25
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
-#define MNU_INSERT_FMTD_STRING  0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -751,6 +752,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList);
 int32_t GetSimulationVariable(const char *name);
 int32_t GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(const char *name, const char *val);
+char *GetSimulationStr(const char *name, bool forIoList);
 char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);

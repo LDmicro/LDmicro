@@ -1266,6 +1266,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddFormattedString());
             break;
 
+        case MNU_INSERT_UART_WRITE:
+            CHANGING_PROGRAM(AddUartString());
+            break;
+
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
             break;

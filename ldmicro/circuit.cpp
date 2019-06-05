@@ -460,7 +460,7 @@ void AddDelay()
 {
     oops();
     /*
-	if(!CanInsertOther)
+    if(!CanInsertOther)
         return;
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.delay, "10"); // 10 us
@@ -574,6 +574,16 @@ void AddFormattedString()
     strcpy(t->d.fmtdStr.var, "var");
     strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
     AddLeaf(ELEM_FORMATTED_STRING, t);
+}
+
+void AddUartString()
+{
+    if(!CanInsertOther)
+        return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.string, "str or var");
+    AddLeaf(ELEM_UART_WR, t);
 }
 
 void AddString()
@@ -898,7 +908,7 @@ void AddSetPwm()
     AddLeaf(ELEM_SET_PWM, t);
 }
 
-void AddUart(int which)
+void AddUart(int which) 
 {
     if(!CanInsertOther)
         return;
@@ -1392,7 +1402,7 @@ static void NullDisplayMatrix(int from, int to)
             }
         }
     }
-	*/
+    */
 }
 //-----------------------------------------------------------------------------
 // Insert a rung before rung i.
@@ -1550,7 +1560,7 @@ bool ItemIsLastInCircuit(const ElemLeaf *item)
     bool found = false;
     bool andItemAfter = false;
 
-	auto node = SeriesNode(Prog.rungs_[rung_idx]);
+    auto node = SeriesNode(Prog.rungs_[rung_idx]);
     LastInCircuit(&node, item, &found, &andItemAfter);
 
     if(found)

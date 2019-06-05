@@ -1653,8 +1653,8 @@ void ShowFormattedStringDialog(char *var, char *string)
 
 void ShowStringDialog(char *dest, char *var, char *string)
 {
-    const char *labels[] = {_("Variable list:"), _("Format string:"), _("Dest:")};
-    char *      dests[] = {var, string, dest};
+    const char *labels[] = {_("Dest:"), _("Format string:"), _("Variable list:")};
+    char *      dests[] = {dest, string, var};
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;

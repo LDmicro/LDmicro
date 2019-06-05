@@ -1631,7 +1631,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         }
 
         default:
-            Error("ELEM_0x%x", which);
+			ooops("ELEM_0x%x", which);
+            //Error("ELEM_0x%x", which);
+			//THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
             break;
     }
 }

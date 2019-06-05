@@ -120,6 +120,7 @@
 #define ELEM_UART_SENDn         0x2b01
 #define ELEM_UART_SEND_READY    0x2b02
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
+#define ELEM_UART_WR            0x2b03
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SLEEP              0x2c01
 #define ELEM_CLRWDT             0x2c02
@@ -361,10 +362,10 @@ typedef struct ElemSpiTag {
     char modes[MAX_NAME_LEN];
     char size[MAX_NAME_LEN];
     char first[MAX_NAME_LEN];
-    int  which; 
+    int  which;
 } ElemSpi;
 
-typedef struct ElemI2cTag {     
+typedef struct ElemI2cTag {
     char name[MAX_NAME_LEN];    // nom I2Cn
     char send[MAX_NAME_LEN];    // to send
     char recv[MAX_NAME_LEN];    // to receive
@@ -519,7 +520,7 @@ typedef struct ElemPiecewiseLinearTag {
 
 typedef struct ElemFormattedStringTag {
     char var[MAX_NAME_LEN]; // also a varsList
-    char string[MAX_STRING_LEN]; //
+    char string[MAX_STRING_LEN]; //  also a var
     char dest[MAX_NAME_LEN];   // also a CHAR
     char enable[MAX_NAME_LEN]; // bitVar
     char error[MAX_NAME_LEN];  // bitVar
@@ -690,6 +691,7 @@ void                AddGoto(int which);
 void                AddLookUpTable();
 void                AddPiecewiseLinear();
 void                AddFormattedString();
+void				AddUartString();
 void                AddString();
 void                AddPrint(int code);
 void                DeleteSelectedFromProgram();

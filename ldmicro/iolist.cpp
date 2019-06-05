@@ -627,6 +627,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_UART_WR:
+            if(l->d.fmtdStr.string[0] != '"') {
+                AppendIo(l->d.fmtdStr.string, IO_TYPE_STRING);
+            }
+            break;
+
         case ELEM_UART_SENDn:
         case ELEM_UART_SEND:
             AppendIo(l->d.uart.name, IO_TYPE_GENERAL);

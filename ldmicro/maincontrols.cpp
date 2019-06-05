@@ -303,6 +303,7 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
     EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_SPRINTF, t);
@@ -594,6 +595,7 @@ HMENU MakeMainWindowMenus()
 
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));

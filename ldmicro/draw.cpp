@@ -166,6 +166,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
         case ELEM_FORMATTED_STRING:
+        case ELEM_UART_WR:
             return 2;
 
         case ELEM_COMMENT: {
@@ -1511,7 +1512,25 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                         break;
                     }
             }
+        case ELEM_UART_WR: {
+            // Careful, string could be longer than fits in our space.
+            char str[POS_WIDTH * 2];
+            memset(str, 0, sizeof(str));
+            char *srcStr = leaf->d.fmtdStr.string;
+            memcpy(str, srcStr, std::min(strlen(srcStr), static_cast<size_t>(POS_WIDTH * 2 - 7)));
 
+            sprintf(bot, "{\"%s\"}", str);
+
+//          PoweredText(poweredAfter);
+//          NameText();
+//          DrawChars(
+//              *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", leaf->d.fmtdStr.var, "", ""));
+            BodyText();
+
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);
+            *cx += 2 * POS_WIDTH;
+            break;
+        }
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH * 2];

@@ -78,7 +78,7 @@ std::vector<IntOp> IntCode;
 int                ProgWriteP = 0;
 static int32_t *   Tdata;
 int                rungNow = -INT_MAX;
-static SeriesNode * leafNow = nullptr;
+static SeriesNode *leafNow = nullptr;
 
 static uint32_t GenSymCount;
 static uint32_t GenSymCountParThis;
@@ -1121,14 +1121,14 @@ int32_t TestTimerPeriod(const char *name, int32_t delay, int adjust) // delay in
 // Calculate the period in scan units from the period in microseconds, and
 // raise an error if the given period is unachievable.
 //-----------------------------------------------------------------------------
-static int32_t TimerPeriod(const ElemLeaf *l)
+static int32_t TimerPeriod(const ElemLeaf *leaf)
 {
     if(Prog.cycleTime <= 0) {
         Warning("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
 
-    int32_t period = TestTimerPeriod(l->d.timer.name, hobatoi(l->d.timer.delay), l->d.timer.adjust);
+    int32_t period = TestTimerPeriod(leaf->d.timer.name, hobatoi(leaf->d.timer.delay), leaf->d.timer.adjust);
     if(period < 1) {
         Error(_("Internal error."));
     }
@@ -1491,7 +1491,7 @@ static void InitVarsCircuit(const SeriesNode *elem, int *n)
                 return;
             }
             SDWORD period = TimerPeriod(l) - 1;
-            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
             break;
         }
         case ELEM_TON: {
@@ -1500,7 +1500,7 @@ static void InitVarsCircuit(const SeriesNode *elem, int *n)
                 return;
             }
             SDWORD period = TimerPeriod(l);
-            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
             break;
         }
 #endif
@@ -1545,10 +1545,10 @@ static void InitVarsCircuit(const SeriesNode *elem, int *n)
             }
             char prevA[MAX_NAME_LEN];
             char prevB[MAX_NAME_LEN];
-            sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
-            sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
-            Op(INT_COPY_BIT_TO_BIT, prevA, l->d.QuadEncod.inputA);
-            Op(INT_COPY_BIT_TO_BIT, prevB, l->d.QuadEncod.inputB);
+            sprintf(prevA, "$prev_%s", leaf->d.QuadEncod.inputA);
+            sprintf(prevB, "$prev_%s", leaf->d.QuadEncod.inputB);
+            Op(INT_COPY_BIT_TO_BIT, prevA, leaf->d.QuadEncod.inputA);
+            Op(INT_COPY_BIT_TO_BIT, prevB, leaf->d.QuadEncod.inputB);
             break;
         }
 #endif
@@ -1585,7 +1585,7 @@ static void InitVars()
 static void InitTablesCircuit(const SeriesNode *elem)
 {
     //int       sovElement = 0;
-    const ElemLeaf *l = elem ? elem->leaf() : nullptr;
+    const ElemLeaf *leaf = elem ? elem->leaf() : nullptr;
     switch(elem->which) {
         case ELEM_SERIES_SUBCKT: {
             const ElemSubcktSeries *s = elem->series();
@@ -1619,7 +1619,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
 #endif
         // case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
-            const ElemLookUpTable *t = &(l->d.lookUpTable);
+            const ElemLookUpTable *t = &(leaf->d.lookUpTable);
 
             char nameTable[MAX_NAME_LEN];
             sprintf(nameTable, "%s%s", t->name, ""); // "LutElement");
@@ -1637,39 +1637,45 @@ static void InitTablesCircuit(const SeriesNode *elem)
             }
             break;
         }
-        {
-        // clang-format off
-        const char *nameTable;
-        case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
-        case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
-        case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
-        case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
-            xseg:
-            // clang-format on
-                if(!IsNumber(l->d.segments.src)) {
-                    int sovElement = 0;
-                    if((isVarInited(nameTable) < 0)) {
-                        if(elem->which == ELEM_7SEG) {
-                            sovElement = 1;
-                            Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
-                         } else if(elem->which == ELEM_9SEG) {
-                           sovElement = 2;
-                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN9SEG, sovElement, char9seg);
-                         } else if(elem->which == ELEM_14SEG) {
-                           sovElement = 2;
-                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN14SEG, sovElement, char14seg);
-                         } else if(elem->which == ELEM_16SEG) {
-                           sovElement = 3;
-                           Op(INT_FLASH_INIT,nameTable, nullptr, nullptr, LEN16SEG, sovElement, char16seg);
-                        } else
-                            oops();
-                        MarkInitedVariable(nameTable);
-                    } else {
-                        Comment(
-                            _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
+            {
+                const char *nameTable;
+                case ELEM_7SEG:
+                    nameTable = "char7seg";
+                    goto xseg;
+                case ELEM_9SEG:
+                    nameTable = "char9seg";
+                    goto xseg;
+                case ELEM_14SEG:
+                    nameTable = "char14seg";
+                    goto xseg;
+                case ELEM_16SEG:
+                    nameTable = "char16seg";
+                    goto xseg;
+                xseg:
+                    if(!IsNumber(leaf->d.segments.src)) {
+                        int sovElement = 0;
+                        if((isVarInited(nameTable) < 0)) {
+                            if(elem->which == ELEM_7SEG) {
+                                sovElement = 1;
+                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                            } else if(elem->which == ELEM_9SEG) {
+                                sovElement = 2;
+                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN9SEG, sovElement, char9seg);
+                            } else if(elem->which == ELEM_14SEG) {
+                                sovElement = 2;
+                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN14SEG, sovElement, char14seg);
+                            } else if(elem->which == ELEM_16SEG) {
+                                sovElement = 3;
+                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN16SEG, sovElement, char16seg);
+                            } else
+                                oops();
+                            MarkInitedVariable(nameTable);
+                        } else {
+                            Comment(
+                                _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
+                        }
                     }
-                }
-                break;
+                    break;
             }
         default:
             break;
@@ -1703,9 +1709,9 @@ static const char *VarFromExpr(const char *expr, const char *tempName)
         return expr;
     }
 }
-#define PULSE                           \
-    Op(INT_SET_BIT, l->d.stepper.coil); \
-    Op(INT_CLEAR_BIT, l->d.stepper.coil);
+#define PULSE                              \
+    Op(INT_SET_BIT, leaf->d.stepper.coil); \
+    Op(INT_CLEAR_BIT, leaf->d.stepper.coil);
 
 //-----------------------------------------------------------------------------
 bool IsAddrInVar(const char *name)
@@ -1809,22 +1815,22 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_COIL: {
             Comment(3, "ELEM_COIL");
             #ifdef DEFAULT_COIL_ALGORITHM
-            if(l->d.coil.negated) {
+            if(leaf->d.coil.negated) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_CLEAR_BIT, l->d.coil.name);
+                  Op(INT_CLEAR_BIT, leaf->d.coil.name);
                 Op(INT_ELSE);
-                  Op(INT_SET_BIT, l->d.coil.name);
+                  Op(INT_SET_BIT, leaf->d.coil.name);
                 Op(INT_END_IF);
-            } else if(l->d.coil.setOnly) {
+            } else if(leaf->d.coil.setOnly) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_SET_BIT, l->d.coil.name);
+                  Op(INT_SET_BIT, leaf->d.coil.name);
                 Op(INT_END_IF);
-            } else if(l->d.coil.resetOnly) {
+            } else if(leaf->d.coil.resetOnly) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_CLEAR_BIT, l->d.coil.name);
+                  Op(INT_CLEAR_BIT, leaf->d.coil.name);
                 Op(INT_END_IF);
             } else {
-                Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
+                Op(INT_COPY_BIT_TO_BIT, leaf->d.coil.name, stateInOut);
             }
             #else
             //Load SAMPLE\coil_s_r_n.ld into LDmicto.exe.
@@ -1997,19 +2003,19 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             Op(INT_END_IF);
             #else
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
+              Op(INT_DECREMENT_VARIABLE, leaf->d.timer.name, stateInOut);
               Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is true
                 Op(INT_IF_BIT_CLEAR, store);
                   Op(INT_SET_BIT, store);
                 Op(INT_ELSE);
                   Op(INT_CLEAR_BIT, store);
                 Op(INT_END_IF);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
               Op(INT_END_IF);
               Op(INT_COPY_BIT_TO_BIT, stateInOut, store);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, store);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+              Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
             Op(INT_END_IF);
             #endif
             break;
@@ -2053,14 +2059,14 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             Op(INT_END_IF);
             #else
             char store[MAX_NAME_LEN];
-            GenSymOneShot(store, "TON", l->d.timer.name);
+            GenSymOneShot(store, "TON", leaf->d.timer.name);
 
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, store);
-                Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
+                Op(INT_DECREMENT_VARIABLE, leaf->d.timer.name, stateInOut);
                 Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is true
                   Op(INT_SET_BIT, store);
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
                 Op(INT_END_IF);
               Op(INT_END_IF);
             Op(INT_ELSE);
@@ -2095,10 +2101,10 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             // it finishes counting up. This does not seem to be what
             // people expect, so add a special case to fix that up.
             char antiGlitchName[MAX_NAME_LEN];
-            sprintf(antiGlitchName, "$%s_antiglitch", l->d.timer.name);
+            sprintf(antiGlitchName, "$%s_antiglitch", leaf->d.timer.name);
             Op(INT_IF_BIT_CLEAR, antiGlitchName);
               Op(INT_SET_BIT, antiGlitchName);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+              Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
             Op(INT_END_IF);
             //*/
             Op(INT_IF_BIT_CLEAR, stateInOut);
@@ -2120,14 +2126,14 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             Op(INT_END_IF);
             #else
             char store[MAX_NAME_LEN];
-            GenSymOneShot(store, "TOF", l->d.timer.name);
+            GenSymOneShot(store, "TOF", leaf->d.timer.name);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
               Op(INT_IF_BIT_CLEAR, store);
-                Op(INT_DECREMENT_VARIABLE, l->d.timer.name, store);
+                Op(INT_DECREMENT_VARIABLE, leaf->d.timer.name, store);
               Op(INT_END_IF);
               Op(INT_IF_BIT_SET, store); // overlap(0 to -1) flag is true
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                Op(INT_SET_VARIABLE_TO_LITERAL, leaf->d.timer.name, period);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
@@ -2688,8 +2694,8 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_NEQ: Comment(3, "ELEM_NEQ"); goto cmp;
         case ELEM_EQU: Comment(3, "ELEM_EQU"); goto cmp;
         cmp: {
-              char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
-              char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
+              char *op1 = VarFromExpr(leaf->d.cmp.op1, "$scratch1");
+              char *op2 = VarFromExpr(leaf->d.cmp.op2, "$scratch2");
 
               if(which == ELEM_GRT) {
                   Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
@@ -2856,14 +2862,12 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             break;
         }
         {
-        // clang-format off
         int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  deg=DEGREE7;  len=LEN7SEG;  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  deg=DEGREE9;  len=LEN9SEG;  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); deg=DEGREE14; len=LEN14SEG; goto xseg;
         case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); deg=DEGREE16; len=LEN16SEG; goto xseg;
         xseg :
-                    // clang-format on
 #ifdef TABLE_IN_FLASH
                     if(IsNumber(leaf->d.segments.dest)) {
                         THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."),
@@ -2880,15 +2884,15 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                             case ELEM_7SEG:
                                 Xseg = char7seg[Xseg];
                                 break;
-                    case ELEM_9SEG:
-                        Xseg = char9seg[Xseg];
-                        break;
-                    case ELEM_14SEG:
-                        Xseg = char14seg[Xseg];
-                        break;
-                    case ELEM_16SEG:
-                        Xseg = char16seg[Xseg];
-                        break;
+                            case ELEM_9SEG:
+                                Xseg = char9seg[Xseg];
+                                break;
+                            case ELEM_14SEG:
+                                Xseg = char14seg[Xseg];
+                                break;
+                            case ELEM_16SEG:
+                                Xseg = char16seg[Xseg];
+                                break;
                             default:
                                 oops();
                         }
@@ -3026,7 +3030,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
                 Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (int32_t)(0));
                 //vvv
-                //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, l->d.stepper.n);
+                //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, leaf->d.stepper.n);
                 char strn[20];
                 sprintf(strn, "%d", leaf->d.stepper.n - 1);
                 Op(INT_FLASH_READ, Tmul, nameTable, strn, leaf->d.stepper.n - 1, r.sovElement, Tdata);
@@ -3089,7 +3093,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 if(speed == 3) {
                     //OpSetVar(workP,Tmul);
                 } else {
-                    //Op(INT_SET_VARIABLE_MULTIPLY, workP, Tmul, l->d.stepper.P); //may bee overload
+                    //Op(INT_SET_VARIABLE_MULTIPLY, workP, Tmul, leaf->d.stepper.P); //may bee overload
                     Op(INT_SET_VARIABLE_MULTIPLY, workP, workP, leaf->d.stepper.P); //may bee overload
                     if(r.shrt) {
                         char rshrt[MAX_NAME_LEN];
@@ -3517,10 +3521,10 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                               leaf->d.QuadEncod.inputA,
                               leaf->d.QuadEncod.inputB);
 #else
-                        Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
+                        Op(INT_IF_BIT_SET, leaf->d.QuadEncod.inputA);
                         Op(INT_VARIABLE_SET_BIT, state, "0");
                         Op(INT_END_IF);
-                        Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
+                        Op(INT_IF_BIT_SET, leaf->d.QuadEncod.inputB);
                         Op(INT_VARIABLE_SET_BIT, state, "1");
                         Op(INT_END_IF);
 #endif
@@ -3548,20 +3552,20 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     Op(INT_END_IF);
 #elif QUAD_ALGO == 22
                     // http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
-                    Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
+                    Op(INT_COPY_BIT_TO_BIT, nowA, leaf->d.QuadEncod.inputA);
                     Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
-                    Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
-                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                    if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_IF_BIT_EQU_BIT, leaf->d.QuadEncod.inputB, nowA);
+                    Op(INT_INCREMENT_VARIABLE, leaf->d.QuadEncod.counter); // +
+                    if(leaf->d.QuadEncod.countPerRevol > 0)
                         Op(INT_INCREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                        Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                    if(strlen(leaf->d.QuadEncod.dir))
+                        Op(INT_SET_BIT, leaf->d.QuadEncod.dir);
                     Op(INT_ELSE);
-                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                    if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_DECREMENT_VARIABLE, leaf->d.QuadEncod.counter); // -
+                    if(leaf->d.QuadEncod.countPerRevol > 0)
                         Op(INT_DECREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                    if(strlen(leaf->d.QuadEncod.dir))
+                        Op(INT_CLEAR_BIT, leaf->d.QuadEncod.dir);
                     Op(INT_END_IF);
                     Op(INT_SET_BIT, stateInOut);
                     Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
@@ -3585,28 +3589,28 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                         Op(INT_END_IF);
                     } else {
                         Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"),
-                              l->d.QuadEncod.inputA,
-                              l->d.QuadEncod.inputB);
+                              leaf->d.QuadEncod.inputA,
+                              leaf->d.QuadEncod.inputB);
                     }
 #else
-                    Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
-                    Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
+                    Op(INT_COPY_BIT_TO_BIT, nowA, leaf->d.QuadEncod.inputA);
+                    Op(INT_COPY_BIT_TO_BIT, nowB, leaf->d.QuadEncod.inputB);
 #endif
 
                     Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
                     Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
                     Op(INT_IF_BIT_EQU_BIT, nowA, nowB);
-                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                    if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_INCREMENT_VARIABLE, leaf->d.QuadEncod.counter); // +
+                    if(leaf->d.QuadEncod.countPerRevol > 0)
                         Op(INT_INCREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                        Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                    if(strlen(leaf->d.QuadEncod.dir))
+                        Op(INT_SET_BIT, leaf->d.QuadEncod.dir);
                     Op(INT_ELSE);
-                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                    if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_DECREMENT_VARIABLE, leaf->d.QuadEncod.counter); // -
+                    if(leaf->d.QuadEncod.countPerRevol > 0)
                         Op(INT_DECREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                    if(strlen(leaf->d.QuadEncod.dir))
+                        Op(INT_CLEAR_BIT, leaf->d.QuadEncod.dir);
                     Op(INT_END_IF);
                     Op(INT_COPY_BIT_TO_BIT, prevB, nowB);
                     Op(INT_SET_BIT, stateInOut);
@@ -3615,7 +3619,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     Op(INT_END_IF);
 #elif QUAD_ALGO == 40
                     char A_xorB[MAX_NAME_LEN];
-                    sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
+                    sprintf(A_xorB, "$A_xorB_%s", leaf->d.QuadEncod.counter);
 #endif
                     if(strlen(leaf->d.QuadEncod.inputZ)) {
                         char storeName[MAX_NAME_LEN];
@@ -3754,7 +3758,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             // 1. It's need in Simulation Mode.
             // 2. It's need for Arduino.
         ////Op(INT_IF_BIT_SET, stateInOut); // ???
-            Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut returns BUSY flag
+            Op(INT_UART_SEND, leaf->d.uart.name, stateInOut); // stateInOut returns BUSY flag
         ////Op(INT_END_IF); // ???
 #else
                     if(leaf->d.uart.bytes == 1) {
@@ -3850,7 +3854,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     }
 #if 0
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_UART_RECV, l->d.uart.name, stateInOut);
+              Op(INT_UART_RECV, leaf->d.uart.name, stateInOut);
             Op(INT_END_IF);
 #else
                     Op(INT_IF_BIT_SET, stateInOut);
@@ -3929,11 +3933,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             Comment(3, "ELEM_SPI");
             ///// Added by JG
             Op(INT_IF_BIT_SET, stateInOut); // if(Read_Ib_rung_top()) {
-            Op(INT_SPI,
-               leaf->d.spi.name,
-               leaf->d.spi.send,
-               leaf->d.spi.recv);           //   SpiSendRecv[name1=name, name2=send, name3=recv]
-            Op(INT_SET_BIT, stateInOut); //   activate output line
+               Op(INT_SPI,
+                  leaf->d.spi.name,
+                  leaf->d.spi.send,
+                  leaf->d.spi.recv);           //   SpiSendRecv[name1=name, name2=send, name3=recv]
+               Op(INT_SET_BIT, stateInOut); //   activate output line
             Op(INT_END_IF);              // }
             /////
             break;
@@ -3943,8 +3947,8 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_SPI_WR: {
             Comment(3, "ELEM_SPI_WR");
             Op(INT_IF_BIT_SET, stateInOut);                  // if(Read_Ib_rung_top()) {
-            Op(INT_SPI_WRITE, leaf->d.spi.name, leaf->d.spi.send); //   SpiWrite[name1=name, name2=send]
-            Op(INT_SET_BIT, stateInOut);                     //   activate output line
+               Op(INT_SPI_WRITE, leaf->d.spi.name, leaf->d.spi.send); //   SpiWrite[name1=name, name2=send]
+               Op(INT_SET_BIT, stateInOut);                     //   activate output line
             Op(INT_END_IF);                                  // }
             break;
         }
@@ -3952,12 +3956,12 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_I2C_RD: {
             Comment(3, "ELEM_I2C_RD");
             Op(INT_IF_BIT_SET, stateInOut); // if(Read_Ib_rung_top()) {
-            Op(INT_I2C_READ,
-               leaf->d.i2c.name,
-               leaf->d.i2c.recv,
-               leaf->d.i2c.address,
-               leaf->d.i2c.registr);        //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
-            Op(INT_SET_BIT, stateInOut); //   activate output line
+               Op(INT_I2C_READ,
+                  leaf->d.i2c.name,
+                  leaf->d.i2c.recv,
+                  leaf->d.i2c.address,
+                  leaf->d.i2c.registr);        //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
+               Op(INT_SET_BIT, stateInOut); //   activate output line
             Op(INT_END_IF);              // }
             break;
         }
@@ -4040,8 +4044,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     if((intOp == INT_SET_VARIABLE_NEG) || (intOp == INT_SET_VARIABLE_NOT)) {
                         Op(intOp, leaf->d.math.dest, leaf->d.math.op1);
                     } else {
-                        if((leafNow->which == ELEM_SR0) || (leafNow->which == ELEM_SHL) || (leafNow->which == ELEM_SHR) || (leafNow->which == ELEM_ROL)
-                           || (leafNow->which == ELEM_ROR)) {
+                        if((leafNow->which == ELEM_SR0) //
+                        || (leafNow->which == ELEM_SHL) //
+                        || (leafNow->which == ELEM_SHR) //
+                        || (leafNow->which == ELEM_ROL) //
+                        || (leafNow->which == ELEM_ROR)) {
                             if((hobatoi(leaf->d.math.op2) < 0)
                                || (SizeOfVar(leaf->d.math.op1) * 8 < hobatoi(leaf->d.math.op2))) {
                                 THROW_COMPILER_EXCEPTION_FMT(
@@ -4192,7 +4199,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             int r;
             if(IsNumber(leaf->d.doGoto.label)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), leaf->d.doGoto.label);
-                //r = hobatoi(l->d.doGoto.label);
+                //r = hobatoi(leaf->d.doGoto.label);
                 //r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
                 r = FindRung(ELEM_SUBPROG, leaf->d.doGoto.label);
@@ -4212,8 +4219,8 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             if(n != 1) {
                 Error(_("LABEL: Only one LABEL '%s' is allowed!"), leaf->d.doGoto.label);
             }
-            //Op(INT_AllocKnownAddr, l->d.doGoto.label);
-            //Op(INT_AllocFwdAddr, l->d.doGoto.label);
+            //Op(INT_AllocKnownAddr, leaf->d.doGoto.label);
+            //Op(INT_AllocFwdAddr, leaf->d.doGoto.label);
             break;
         }
         case ELEM_SUBPROG: {
@@ -4242,8 +4249,8 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 GetLabelName(name, r + 2);
                 Op(INT_GOTO, name, leaf->d.doGoto.label, "ENDSUB", 0);
                 //char s[MAX_NAME_LEN];
-                //sprintf(s,"SUBPROG%s", l->d.doGoto.label);
-                //Op(INT_AllocKnownAddr, s, l->d.doGoto.label);
+                //sprintf(s,"SUBPROG%s", leaf->d.doGoto.label);
+                //Op(INT_AllocKnownAddr, s, leaf->d.doGoto.label);
             }
             break;
         }
@@ -4328,7 +4335,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             // add new int code instructions for this.
             int i;
             Op(INT_IF_BIT_SET, stateInOut);
-            ElemLookUpTable *t = &(l->d.lookUpTable);
+            ElemLookUpTable *t = &(leaf->d.lookUpTable);
             for(i = 0; i < t->count; i++) {
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                 Op(INT_IF_VARIABLE_EQUALS_VARIABLE, t->index, "$scratch");

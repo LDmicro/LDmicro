@@ -467,15 +467,22 @@ void SetSimulationStr(const char *name, const char *val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-char *GetSimulationStr(const char *name)
+char *GetSimulationStr(const char *name, bool forIoList)
 {
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].valstr;
         }
     }
+    if(forIoList)
+        return "";
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return GetSimulationStr(name);
+}
+
+char *GetSimulationStr(const char *name)
+{
+    return GetSimulationStr(name, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -2095,7 +2102,6 @@ static void SimulateIntCode()
                     index = a->literal1;
                     StopSimulation();
                 }
-                //dbps(GetSimulationStr(a->name1.c_str()))
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
@@ -2331,7 +2337,7 @@ void DescribeForIoList(const char *name, int type, char *out)
             break;
 
         case IO_TYPE_STRING:
-            sprintf(out, "\"%s\"", GetSimulationStr(name));
+            sprintf(out, "\"%s\"", GetSimulationStr(name, true));
             break;
 
         case IO_TYPE_VAL_IN_FLASH:
