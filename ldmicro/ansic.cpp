@@ -2891,6 +2891,8 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
     } else if(mcu_ISA == ISA_AVR) {
         /*
+        moved to LIBRARIES_FOR\Avr\SpiLib.c
+
         if(UartFunctionUsed()) { //// { Missing: added by JG
 #define RXEN BIT4
 #define TXEN BIT3
@@ -3086,7 +3088,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n"
                         "\n");
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                // used UartLib.h
+                // used LIBRARIES_FOR\Pic16\UsrLib.c
             } else {
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
