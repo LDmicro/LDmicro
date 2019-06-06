@@ -576,14 +576,14 @@ void AddFormattedString()
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
 
-void AddUartString()
+void AddWrite(int code)
 {
     if(!CanInsertOther)
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.string, "str or var");
-    AddLeaf(ELEM_UART_WR, t);
+    strcpy(t->d.fmtdStr.string, "\"String\" or var");
+    AddLeaf(code, t);
 }
 
 void AddString()
@@ -593,7 +593,7 @@ void AddString()
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "dest");
-    strcpy(t->d.fmtdStr.string, "fmtstring");
+    strcpy(t->d.fmtdStr.string, "frmtString");
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_STRING, t);
 }
@@ -908,7 +908,7 @@ void AddSetPwm()
     AddLeaf(ELEM_SET_PWM, t);
 }
 
-void AddUart(int which) 
+void AddUart(int which)
 {
     if(!CanInsertOther)
         return;

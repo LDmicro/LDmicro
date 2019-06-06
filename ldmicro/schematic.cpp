@@ -830,6 +830,10 @@ void EditSelectedElement()
             ShowUartDialog(Selected.which, Selected.leaf());
             break;
 
+        case ELEM_UART_WR:
+            ShowWrDialog(Selected.which, Selected.leaf());
+            break;
+
         case ELEM_PERSIST:
             ShowPersistDialog(Selected.leaf()->d.persist.var);
             break;

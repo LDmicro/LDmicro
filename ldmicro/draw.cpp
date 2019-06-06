@@ -1519,13 +1519,15 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             char *srcStr = leaf->d.fmtdStr.string;
             memcpy(str, srcStr, std::min(strlen(srcStr), static_cast<size_t>(POS_WIDTH * 2 - 7)));
 
-            sprintf(bot, "{\"%s\"}", str);
+//            sprintf(bot, "\"%s\"", str);
 
             PoweredText(poweredAfter);
-            NameText();
+            if(!IsString(str)) 
+				NameText();
             DrawChars(
-                *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", leaf->d.fmtdStr.string, "", ""));
-            BodyText();
+                *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", str, "", ""));
+            if(!IsString(str)) 
+				BodyText();
 
             CenterWithWiresWidth(*cx, *cy, "{UART WRITE}", poweredBefore, poweredAfter, 2 * POS_WIDTH);
             *cx += 2 * POS_WIDTH;

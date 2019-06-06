@@ -971,6 +971,12 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar2 = IntCode[i].name2.c_str();
                 break;
 
+            case INT_UART_WR:
+                if(!IsString(IntCode[i].name1)) {
+                    strVar1 = IntCode[i].name1.c_str();
+                }
+                break;
+
             case INT_UART_RECV_AVAIL:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
@@ -1616,6 +1622,16 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name2, ASINT));
                 break;
                 /////
+
+            case INT_UART_WR:
+                if(IsString(IntCode[i].name1)) {
+                    char buf[MAX_NAME_LEN];
+                    //fprintf(f, "UART_Write(%s);\n", StrToFrmStr(buf, IntCode[i].name1.c_str(), FRMT_SPACE));
+                    fprintf(f, "UART_Write(%s);\n", IntCode[i].name1.c_str());
+                } else {
+                    fprintf(f, "UART_Write(%s);\n", MapSym(IntCode[i].name1, ASSTR));
+                }
+                break;
 
             case INT_UART_RECV:
                 fprintf(f,

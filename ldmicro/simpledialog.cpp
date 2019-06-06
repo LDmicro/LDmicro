@@ -1640,6 +1640,20 @@ void ShowShiftRegisterDialog(char *name, int *stages)
     }
 }
 
+void ShowWrDialog(int which, ElemLeaf *l)
+{
+    ElemFormattedString *e = &(l->d.fmtdStr);
+	const char *labels[] = {IsString(e->string) ? _("String:") : _("Variable:"), _("Wait until all bytes are sent:")};
+    char wait[MAX_NAME_LEN];
+    sprintf(wait, "%d", e->wait);
+	char *dests[] = {e->string, wait};
+	NoCheckingOnBox[0] = true; 
+    if(ShowSimpleDialog(_("Write String Over UART"), 2, labels, 0x0, 0x0, 0x3, dests)) {
+        e->wait = hobatoi(wait) ? 1 : 0;
+	}
+	NoCheckingOnBox[0] = false;
+};
+
 void ShowFormattedStringDialog(char *var, char *string)
 {
     const char *labels[] = {_("Variable:"), _("String:")};
@@ -1658,7 +1672,7 @@ void ShowStringDialog(char *dest, char *var, char *string)
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
-    ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0, 0x0, 0x7, dests);
+    ShowSimpleDialog(_("sprintf Formatted String"), 3, labels, 0x0, 0x0, 0x7, dests);
     NoCheckingOnBox[0] = false;
     NoCheckingOnBox[1] = false;
     NoCheckingOnBox[2] = false;

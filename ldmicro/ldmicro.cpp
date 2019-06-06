@@ -1267,7 +1267,7 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_UART_WRITE:
-            CHANGING_PROGRAM(AddUartString());
+            CHANGING_PROGRAM(AddWrite(ELEM_UART_WR));
             break;
 
         case MNU_INSERT_STRING:

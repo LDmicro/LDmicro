@@ -525,6 +525,11 @@ typedef struct ElemFormattedStringTag {
     char dest[MAX_NAME_LEN];   // also a CHAR
     char enable[MAX_NAME_LEN]; // bitVar
     char error[MAX_NAME_LEN];  // bitVar
+    bool wait;  // Wait until all bytes are transmitted (UART, I2C, SPI)
+                //  in the same cycle of the PLC in which it started.
+                //  or transmit a one byte per a one PLC cycle,
+                // Default is false.
+                // The 'wait' parameter is not used when receiving the one byte.
 } ElemFormattedString;
 
 typedef struct ElemPerisistTag {
@@ -692,7 +697,7 @@ void                AddGoto(int which);
 void                AddLookUpTable();
 void                AddPiecewiseLinear();
 void                AddFormattedString();
-void                AddUartString();
+void                AddWrite(int code);
 void                AddString();
 void                AddPrint(int code);
 void                DeleteSelectedFromProgram();

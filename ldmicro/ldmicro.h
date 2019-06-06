@@ -51,8 +51,9 @@ typedef uint32_t ADDR_T;
 #define BYTES_OF_LD_VAR 2
 #define BITS_OF_LD_VAR (BYTES_OF_LD_VAR * 8)
 #define PLC_CLOCK_MIN 250 //500 //
-                          //-----------------------------------------------
-                          // `Configuration options.'
+
+//-----------------------------------------------
+// `Configuration options.'
 
 // clang-format off
 
@@ -374,6 +375,14 @@ extern DWORD scheme;
 #define IS_MCU_REG(i) ((Prog.mcu()) && (Prog.mcu()->inputRegs[i]) && (Prog.mcu()->outputRegs[i]) && (Prog.mcu()->dirRegs[i]))
 
 //-----------------------------------------------
+typedef enum FRMTTag { //
+    FRMT_COMMENT,      //
+    FRMT_01,           //
+    FRMT_x20,          // convert space char ' ' to hex code \x20
+    FRMT_SPACE,        //
+} FRMT;                //
+
+//-----------------------------------------------
 // Function prototypes
 
 // ldmicro.cpp
@@ -520,6 +529,8 @@ ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();
 
 // iolist.cpp
@@ -557,6 +568,7 @@ void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+void ShowWrDialog(int which, ElemLeaf *l);
 void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(void *e);
 void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
@@ -715,6 +727,8 @@ extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 bool IsNumber(const char *str);
 bool IsNumber(const NameArray& name);
+bool IsString(const char *str);
+bool IsString(const NameArray &name);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);

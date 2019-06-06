@@ -29,14 +29,7 @@ char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
 char *DelNL(char *str);
 char *DelLastNL(char *str);
-
-typedef enum FRMTTag { //
-    FRMT_COMMENT,      //
-    FRMT_01,           //
-    FRMT_x20           //
-} FRMT;                //
-char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
-char *StrToFrmStr(char *dest, const char *src);
+char *DelFramingDoubleQuotes(char *str);
 
 ElemSubcktSeries *LoadSeriesFromFile(FileTracker &f);
 
@@ -550,18 +543,21 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "UART_WR %s", l->d.fmtdStr.string) == 1) {
+    } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
+        /*
         int i = strlen("UART_WR") + 1;
-		/*
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
-		*/
-        FrmStrToStr(l->d.fmtdStr.string, &line[i]);
+        */
+        FrmStrToStr(l->d.fmtdStr.string);
+        //DelFramingDoubleQuotes(l->d.fmtdStr.string);
+/*
         DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
         }
+*/
         *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
@@ -1507,11 +1503,11 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                 fprintf(f,
                         "%s %s %s %s %s %s\n",
                         s,
-                        StrToFrmStr(str1, l->d.fmtdStr.var, FRMT_x20),
-                        StrToFrmStr(str2, l->d.fmtdStr.string, FRMT_x20),
+                        StrToFrmStr(str1, l->d.fmtdStr.var),
+                        StrToFrmStr(str2, l->d.fmtdStr.string),
                         l->d.fmtdStr.dest,
-                        StrToFrmStr(str3, l->d.fmtdStr.enable, FRMT_x20), //may be (none)
-                        StrToFrmStr(str4, l->d.fmtdStr.error, FRMT_x20)); //may be (none)
+                        StrToFrmStr(str3, l->d.fmtdStr.enable), //may be (none)
+                        StrToFrmStr(str4, l->d.fmtdStr.error)); //may be (none)
                 break;
             }
         case ELEM_STRING: {
@@ -1545,7 +1541,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                     fprintf(f, " (none)");
                 }
                 if(*(l->d.fmtdStr.string)) {
-                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string));
                 } else {
                     fprintf(f, " (none)");
                 }
@@ -1554,16 +1550,17 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_UART_WR: {
-            fprintf(f, "UART_WR ");
-			/*
-			if(*(l->d.fmtdStr.var)) {
+            fprintf(f, "UART_WR %d ", l->d.fmtdStr.wait);
+            /*
+            if(*(l->d.fmtdStr.var)) {
                 fprintf(f, "%s", l->d.fmtdStr.var);
             } else {
                 fprintf(f, "(none)");
             }
-			*/
+            */
             if(*(l->d.fmtdStr.string)) {
-                fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+                //fprintf(f, "\"%s\"", StrToFrmStr(str1, l->d.fmtdStr.string));
+                fprintf(f, "%s", StrToFrmStr(str1, l->d.fmtdStr.string));
             } else {
                 fprintf(f, " (none)");
             }
@@ -1591,7 +1588,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                     fprintf(f, "(none)");
                 }
                 if(*(l->d.fmtdStr.string)) {
-                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string, FRMT_x20));
+                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string));
                 } else {
                     fprintf(f, " (none)");
                 }
@@ -1660,9 +1657,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         }
 
         default:
-			//ooops("ELEM_0x%x", which);
+            //ooops("ELEM_0x%x", which);
             Error("ELEM_0x%x", which);
-			//THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
+            //THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
             break;
     }
 }
@@ -1753,10 +1750,10 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
     } else {
         for(i = 0; i < (int)strlen(src); i++) {
             if((frmt == FRMT_x20) && (src[i] == ' ')) {
-                strcat(dest, "\\x20");  
+                strcat(dest, "\\x20");
                 // } else if(src[i] == '\'') {
                 //     strcat(dest, "\\\'");
-                // } else if(src[i] == '\"') {
+                // } else if(src[i] == '"') {
                 //     strcat(dest, "\\\"");
                 // } else if(src[i] == '\?') {
                 //     strcat(dest, "\\\?");
@@ -1778,7 +1775,6 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
                 strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
             } else if(src[i] == '\v') { //(vertical tab) Moves the active position to the initial position
                 strcat(dest, "\\v");    //  of the next vertical tabulation position.
-
             } else {                       //
                 strncat(dest, &src[i], 1); //
             }
@@ -1885,5 +1881,19 @@ char *DelLastNL(char *str)
 {
     if(str[strlen(str) - 1] == '\n')
         str[strlen(str) - 1] = '\0';
+    return str;
+}
+//-----------------------------------------------------------------------------
+char *DelFramingDoubleQuotes(char *str)
+{
+    if(strlen(str) > 2) {
+        if((str[0] == '"') && (str[strlen(str)-1] == '"')) {
+            str[strlen(str)-1] = '\0';
+            char *dest = str;
+            char *src = &str[1];
+            while(*dest++ = *src++)
+                ;
+        }
+    }
     return str;
 }
