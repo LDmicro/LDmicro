@@ -1,4 +1,4 @@
-== Release 5.3.?.?
+== Release 5.4.0.0 String type support
 
     * Added
         "Atmel AVR ATmega32U4 44-Pin packages",
@@ -23,6 +23,7 @@
     * Added "BUS tracer" support
 
     * Added STRING type support in generated C code ???
+        Tested ATmega2560,
 
 == Release 5.3.1.0
 

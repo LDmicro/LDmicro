@@ -584,7 +584,8 @@ void AddWrite(int code)
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.string, "\"String\" or var");
+    //strcpy(t->d.fmtdStr.string, "\"String\" or var");
+    strcpy(t->d.fmtdStr.string, "var");
     AddLeaf(code, t);
 }
 

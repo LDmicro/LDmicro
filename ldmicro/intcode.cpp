@@ -501,18 +501,18 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
+//            case INT_UART_SENDn:
                 fprintf(f,
                         "uart send from '%s[%s+%d]'",
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str(),
                         IntCode[i].literal1);
                 break;
-
+/*
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
-
+*/
             case INT_UART_SEND_READY:
                 fprintf(f, "'%s' = is uart ready to send ?", IntCode[i].name1.c_str());
                 break;
@@ -521,7 +521,7 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "'%s' = is uart busy to send ?", IntCode[i].name1.c_str());
                 break;
 
-            case INT_UART_RECVn:
+//            case INT_UART_RECVn:
             case INT_UART_RECV1:
                 fprintf(f,
                         "uart recv into '%s[%s+%d]'",
@@ -529,11 +529,11 @@ void IntDumpListing(const char *outFile)
                         IntCode[i].name2.c_str(),
                         IntCode[i].literal1);
                 break;
-
+/*
             case INT_UART_RECV:
                 fprintf(f, "uart recv into '%s', have? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
-
+*/
             case INT_UART_RECV_AVAIL:
                 fprintf(f, "'%s' = is uart receive data available ?", IntCode[i].name1.c_str());
                 break;
@@ -1697,21 +1697,25 @@ static void InitTablesCircuit(const SeriesNode *elem)
                 }
             }
             break;
-        case ELEM_UART_WR: { 
-			if(!leaf->d.fmtdStr.wait) {
-				if(IsString((leaf->d.fmtdStr.string))) {
-					//static int32_t *data = (int32_t*)CheckMalloc(2 * strlen(leaf->d.fmtdStr.string));
-					char buf[MAX_NAME_LEN];
-					FrmStrToStr(buf, leaf->d.fmtdStr.string);
-					size_t i;
-					for(i = 1; i < (strlen(buf) - 1); i++)
-						data[i-1] = buf[i];
-					data[i-1] = 0;
-					strcpy(nameTable, "UART_WR");
-					Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, strlen(buf)-2+1, 1, data);
-				}
-			}
-			break;
+        case ELEM_STRING: {
+
+            }
+            break;
+        case ELEM_UART_WR: {
+            if(!leaf->d.fmtdStr.wait) {
+                if(IsString((leaf->d.fmtdStr.string))) {
+                    //static int32_t *data = (int32_t*)CheckMalloc(2 * strlen(leaf->d.fmtdStr.string));
+                    char buf[MAX_NAME_LEN];
+                    FrmStrToStr(buf, leaf->d.fmtdStr.string);
+                    size_t i;
+                    for(i = 1; i < (strlen(buf) - 1); i++)
+                        data[i-1] = buf[i];
+                    data[i-1] = 0;
+                    strcpy(nameTable, "UART_WR");
+                    Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, strlen(buf)-2+1, 1, data);
+                }
+            }
+            break;
         }
         default:
             break;
@@ -1721,7 +1725,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
 //-----------------------------------------------------------------------------
 static void InitTables()
 {
-    if(TablesUsed()) {
+    if(1 || TablesUsed()) {
         Comment("INIT TABLES");
         for(int i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
@@ -3751,6 +3755,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     EepromAddrFree += SizeOfVar(leaf->d.persist.var);
                     break;
                 }
+                /*
                 case ELEM_UART_SENDn: { ///// JG: this function is a huge mystery !
                     Comment(3, "ELEM_UART_SENDn");
                     char store[MAX_NAME_LEN];
@@ -3787,6 +3792,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     Op(INT_END_IF);
                     break;
                 }
+                */
                 case ELEM_UART_WR: {
                     Comment(3, "ELEM_UART_WR");
                     if(leaf->d.fmtdStr.wait || (IsString(leaf->d.fmtdStr.string) && (strlen(leaf->d.fmtdStr.string) == (1+2)))) {
@@ -3795,13 +3801,13 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                       Op(INT_END_IF);
                     } else {
                         if(IsString(leaf->d.fmtdStr.string)) {
-							char nameTable[MAX_NAME_LEN];
-							strcpy(nameTable, "UART_WR");
+                            char nameTable[MAX_NAME_LEN];
+                            strcpy(nameTable, "UART_WR");
                             char storeName[MAX_NAME_LEN];
                             GenSymOneShot(storeName, "UART_WR");
-							char buf[MAX_NAME_LEN];
-							FrmStrToStr(buf, leaf->d.fmtdStr.string);
-							int len = strlen(buf) - 2; // subtract double quotes
+                            char buf[MAX_NAME_LEN];
+                            FrmStrToStr(buf, leaf->d.fmtdStr.string);
+                            int len = strlen(buf) - 2; // subtract double quotes
                             char bytes[MAX_NAME_LEN];
                             sprintf(bytes, "%d", len);
 
@@ -3821,7 +3827,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                                 Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                                 Op(INT_IF_BIT_CLEAR, stateInOut);
                                 Op(INT_FLASH_READ, "$scratch", nameTable, numb, len, 1, data);
-								Op(INT_UART_SEND1, "$scratch"); 
+                                Op(INT_UART_SEND1, "$scratch");
                                   Op(INT_INCREMENT_VARIABLE, numb);
                                 Op(INT_END_IF);
                               Op(INT_END_IF);
@@ -3837,7 +3843,53 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                               Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                             Op(INT_END_IF);
                         } else {
-                        //var
+							//variable
+                            //char nameTable[MAX_NAME_LEN];
+                            //strcpy(nameTable, "UART_WR");
+                            char storeName[MAX_NAME_LEN];
+                            GenSymOneShot(storeName, "UART_WR");
+                            char buf[MAX_NAME_LEN];
+                            FrmStrToStr(buf, leaf->d.fmtdStr.string);
+                            int len = SizeOfVar(buf); //strlen(buf);
+                            char bytes[MAX_NAME_LEN];
+                            sprintf(bytes, "%d", len);
+
+                            Op(INT_IF_BIT_SET, stateInOut);
+                              Op(INT_IF_BIT_CLEAR, storeName);
+                                Op(INT_SET_BIT, storeName);
+
+                                char numb[MAX_NAME_LEN];
+                                GenVar(numb, "numb_UART_WR", "");
+                                Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
+                              Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_IF_LES, numb, bytes);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_CLEAR, stateInOut);
+                                  //Op(INT_FLASH_READ, "$scratch", nameTable, numb, len, 1, data);
+                                  Op(INT_SET_VARIABLE_TO_VARIABLE, "$scratch", buf, numb);
+								  Op(INT_IF_NEQ, "$scratch", "0");
+									Op(INT_UART_SEND1, "$scratch");
+                                    Op(INT_INCREMENT_VARIABLE, numb);
+								  Op(INT_ELSE);
+								    Op(INT_CLEAR_BIT, storeName);
+                                  Op(INT_END_IF);
+                                Op(INT_END_IF);
+                              Op(INT_END_IF);
+
+                              Op(INT_IF_GEQ, numb, bytes);
+                                Op(INT_CLEAR_BIT, storeName);
+                              Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_SET_BIT, stateInOut); // busy
+                            Op(INT_ELSE);
+                              Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_END_IF);
                         }
                     }
                     break;
@@ -3845,12 +3897,14 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 case ELEM_UART_SEND: {
                     Comment(3, "ELEM_UART_SEND");
 #if 0
+/*
             // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
             // 1. It's need in Simulation Mode.
             // 2. It's need for Arduino.
         ////Op(INT_IF_BIT_SET, stateInOut); // ???
             Op(INT_UART_SEND, leaf->d.uart.name, stateInOut); // stateInOut returns BUSY flag
         ////Op(INT_END_IF); // ???
+*/
 #else
                     if(leaf->d.uart.bytes == 1) {
                         // This is modified algorithm !!!
@@ -3944,9 +3998,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                         oops();
                     }
 #if 0
+/*
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_UART_RECV, leaf->d.uart.name, stateInOut);
             Op(INT_END_IF);
+*/
 #else
                     Op(INT_IF_BIT_SET, stateInOut);
                     if(leaf->d.uart.bytes == 1) {
@@ -5170,20 +5226,20 @@ bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECVn, ELEM_UART_SENDn, ELEM_UART_WR))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), /*ELEM_UART_RECVn, ELEM_UART_SENDn, */ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_SEND) ||       //
+        if((//IntCode[i].op == INT_UART_SEND) ||       //
            (IntCode[i].op == INT_UART_SEND1) ||      //
-           (IntCode[i].op == INT_UART_SENDn) ||      //
+//         (IntCode[i].op == INT_UART_SENDn) ||      //
            (IntCode[i].op == INT_UART_SEND_READY) || //
            (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
-           (IntCode[i].op == INT_UART_RECV_AVAIL) || //
+           (IntCode[i].op == INT_UART_RECV_AVAIL)/* || //
            (IntCode[i].op == INT_UART_RECVn) ||      //
-           (IntCode[i].op == INT_UART_RECV))
+           (IntCode[i].op == INT_UART_RECV)*/))
             return true;
     }
     return false;
@@ -5192,14 +5248,14 @@ bool UartFunctionUsed()
 bool UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, ELEM_UART_RECVn, -1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, /*ELEM_UART_RECVn, */-1))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_RECV) ||       //
-           (IntCode[i].op == INT_UART_RECV_AVAIL) || //
-           (IntCode[i].op == INT_UART_RECVn))
+        if(//(IntCode[i].op == INT_UART_RECV) || //
+//         (IntCode[i].op == INT_UART_RECVn) ||       //
+           (IntCode[i].op == INT_UART_RECV_AVAIL))
             return true;
     }
     return false;
@@ -5208,16 +5264,16 @@ bool UartRecvUsed()
 bool UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND, /*ELEM_UART_SENDn, */ELEM_FORMATTED_STRING))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_SEND) ||       //
+        if(//(IntCode[i].op == INT_UART_SEND) ||       //
            (IntCode[i].op == INT_UART_SEND_READY) || //
            (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
-           (IntCode[i].op == INT_UART_SEND1) ||      //
-           (IntCode[i].op == INT_UART_SENDn))
+//           (IntCode[i].op == INT_UART_SENDn) ||      //
+           (IntCode[i].op == INT_UART_SEND1))
             return true;
     }
     return false;

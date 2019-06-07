@@ -876,10 +876,17 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_NOT:
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
+                intVar1 = IntCode[i].name1.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
+                break;
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
                 if(!IsNumber(IntCode[i].name2))
                     intVar2 = IntCode[i].name2.c_str();
+                if(IntCode[i].name3.length())
+                    intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -954,18 +961,21 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 if(!IsNumber(IntCode[i].name4))
                     intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
                 break;
-
+/*
             case INT_UART_RECV:
             case INT_UART_SEND:
                 intVar1 = IntCode[i].name1.c_str();
                 bitVar1 = IntCode[i].name2.c_str();
                 break;
-
+*/
             case INT_UART_RECV1:
-            case INT_UART_RECVn:
+//          case INT_UART_RECVn:
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
-                intVar1 = IntCode[i].name1.c_str();
+//          case INT_UART_SENDn:
+                if(GetVariableType(IntCode[i].name1) == IO_TYPE_STRING)
+                    strVar1 = IntCode[i].name1.c_str();
+                else
+                    intVar1 = IntCode[i].name1.c_str();
                 if(IntCode[i].name2.length())
                     intVar2 = IntCode[i].name2.c_str();
                 break;
@@ -1078,13 +1088,13 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             sov2 = SizeOfVar(intVar2);
         if(intVar3)
             sov3 = SizeOfVar(intVar3);
-        if(intVar4) ///// Added by JG
+        if(intVar4)
             sov4 = SizeOfVar(intVar4);
 
         intVar1 = MapSym(intVar1, ASINT);
         intVar2 = MapSym(intVar2, ASINT);
         intVar3 = MapSym(intVar3, ASINT);
-        intVar4 = MapSym(intVar4, ASINT); ///// Added by JG
+        intVar4 = MapSym(intVar4, ASINT);
 
         if(bitVar1 && !SeenVariable(bitVar1))
             DeclareBit(f, fh, flh, bitVar1, bitVar1set1);
@@ -1097,7 +1107,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             DeclareInt(f, fh, intVar2, sov2);
         if(intVar3 && !SeenVariable(intVar3))
             DeclareInt(f, fh, intVar3, sov3);
-        if(intVar4 && !SeenVariable(intVar4)) ///// Added by JG
+        if(intVar4 && !SeenVariable(intVar4))
             DeclareInt(f, fh, intVar3, sov4);
 
         if(strVar1)
@@ -1233,36 +1243,27 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                /*
-                if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(f,
-                            "//pokeb(%s, %s); // Variants 1 and 2\n",
-                            IntCode[i].name1.c_str() + 1,
-                            MapSym(IntCode[i].name2, ASINT));
-                    doIndent(f, i);
-                }
-                if(IntCode[i].name2[0] == '#') {
-                    if(IsNumber(&IntCode[i].name2[1])) {
-                      fprintf(f,
-                            "//%s = peekb(%s); // Variants 1 and 2\n",
-                            MapSym(IntCode[i].name1.c_str(), ASINT),
-                            &IntCode[i].name2[1]);
-                    } else {
-                      ADDR_T addr;
-                      char name[MAX_NAME_LEN];
-                      sprintf(name,"#%s", &IntCode[i].name2[1]);
-                      MemForVariable(name, &addr);
-                      fprintf(f,
-                            "//%s = peekb(0x%X); // %s // Variants 1 and 2\n",
-                            MapSym(IntCode[i].name1.c_str(), ASINT),
-                            addr,
-                            &IntCode[i].name2[1]);
-                    }
-                    doIndent(f, i);
-                }
-                */
-                fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                if(IntCode[i].name2.length() && IntCode[i].literal1)
+                    fprintf(f, "%s = BYTE_AT(%s, %s+%d);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT), IntCode[i].literal1);
+                else if(IntCode[i].name2.length())
+                    fprintf(f, "%s = BYTE_AT(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                else
+                    fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
+/*
+            case INT_UART_SEND1:
+//          case INT_UART_SENDn:
+                if(IntCode[i].name2.length())
+                    fprintf(f,
+                            "UART_Transmit(BYTE_AT(%s, %s+%d));\n",
+                            MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT),
+                            MapSym(IntCode[i].name2, ASINT),
+                            IntCode[i].literal1);
+                else
+                    fprintf(
+                        f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT), IntCode[i].literal1);
+                break;
+*/
 
             case INT_SET_VARIABLE_NEG:
                 fprintf(f, "%s = - %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -1631,7 +1632,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "UART_Write(%s);\n", MapSym(IntCode[i].name1, ASSTR));
                 }
                 break;
-
+/*
             case INT_UART_RECV:
                 fprintf(f,
                         "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n",
@@ -1639,7 +1640,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         MapSym(IntCode[i].name1, ASINT),
                         MapSym(IntCode[i].name2, ASBIT));
                 break;
-
+*/
             case INT_UART_RECV1:
                 if(IntCode[i].name2.length())
                     fprintf(f,
@@ -1653,22 +1654,25 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
+//          case INT_UART_SENDn:
                 if(IntCode[i].name2.length())
                     fprintf(f,
                             "UART_Transmit(BYTE_AT(%s, %s+%d));\n",
-                            MapSym(IntCode[i].name1, ASINT),
+                            MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT),
                             MapSym(IntCode[i].name2, ASINT),
                             IntCode[i].literal1);
-                else
+                else if(IntCode[i].literal1)
                     fprintf(
-                        f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                        f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT), IntCode[i].literal1);
+                else 
+                    fprintf(
+                        f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT));
                 break;
-
+/*
             case INT_UART_SEND:
                 fprintf(f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 break;
-
+*/
             case INT_UART_RECV_AVAIL:
                 fprintf(f, "%s = UART_Receive_Avail();\n", MapSym(IntCode[i].name1, ASBIT));
                 break;
@@ -2112,20 +2116,20 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                     THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
                 if(sovElement == 1) {
-					char buf[10];
-					fprintf(f, "// {");
-					for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
-						fprintf(f, "'%s', ", ChrToFrmtStr(buf, IntCode[i].data[j], FRMT_SPACE));
-					}
-					fprintf(f, "'%s'};\n", ChrToFrmtStr(buf, IntCode[i].data[IntCode[i].literal1 - 1], FRMT_SPACE));
-                } 
-				//
+                    char buf[10];
+                    fprintf(f, "// {");
+                    for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
+                        fprintf(f, "'%s', ", ChrToFrmtStr(buf, IntCode[i].data[j], FRMT_SPACE));
+                    }
+                    fprintf(f, "'%s'};\n", ChrToFrmtStr(buf, IntCode[i].data[IntCode[i].literal1 - 1], FRMT_SPACE));
+                }
+                //
                 fprintf(f, "// {");
                 for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "0x%X, ", IntCode[i].data[j]);
                 }
                 fprintf(f, "0x%X};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
-				//
+                //
                 fprintf(f, "#ifdef __CODEVISIONAVR__\n");
                 fprintf(f, "%s %s[%d] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
                 for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
@@ -2419,122 +2423,101 @@ bool CompileAnsiC(const char *dest, int MNU)
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         fprintf(flh,
                 "\n"
-                "#include \"UsrLib.h\"\n"
-                "\n");
+                "#include \"UsrLib.h\"\n");
 
         if(AdcFunctionUsed()) {
             fprintf(flh,
-                    "#include \"AdcLib.h\"\n"
-                    "\n");
+                    "#include \"AdcLib.h\"\n");
         }
         if(PwmFunctionUsed()) {
             fprintf(flh,
-                    "#include \"PwmLib.h\"\n"
-                    "\n");
+                    "#include \"PwmLib.h\"\n");
         }
         if(UartFunctionUsed()) {
             fprintf(flh,
-                    "#include \"UartLib.h\"\n"
-                    "\n");
+                    "#include \"UartLib.h\"\n");
         }
         if(SpiFunctionUsed() && I2cFunctionUsed()) {
             THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
         }
         if(SpiFunctionUsed()) {
             fprintf(flh,
-                    "#include \"SpiLib.h\"\n"
-                    "\n");
+                    "#include \"SpiLib.h\"\n");
         }
         if(I2cFunctionUsed()) {
             fprintf(flh,
-                    "#include \"I2cLib.h\"\n"
-                    "\n");
+                    "#include \"I2cLib.h\"\n");
         }
     } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
         ///// Added by JG2 for CortexF1
+        fprintf(flh,
+                "\n"
+                "#include <stdio.h>\n");
         if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
             fprintf(flh,
-                    "\n"
-                    "#include <stdio.h>\n"
                     "#include \"stm32f10x.h\"\n"
                     "#include \"stm32f10x_gpio.h\"\n"
                     "#include \"stm32f10x_rcc.h\"\n"
-                    "#include \"stm32f10x_tim.h\"\n"
-                    "\n"
-                    "#include \"Lib_gpio.h\"\n"
-                    "#include \"Lib_timer.h\"\n"
-                    "#include \"Lib_usr.h\"\n"
-                    "\n");
+                    "#include \"stm32f10x_tim.h\"\n");
         else // CortexF4
             fprintf(flh,
-                    "\n"
-                    "#include <stdio.h>\n"
                     "#include \"stm32f4xx.h\"\n"
                     "#include \"stm32f4xx_gpio.h\"\n"
                     "#include \"stm32f4xx_rcc.h\"\n"
-                    "#include \"stm32f4xx_tim.h\"\n"
-                    "\n"
-                    "#include \"Lib_gpio.h\"\n"
-                    "#include \"Lib_timer.h\"\n"
-                    "#include \"Lib_usr.h\"\n"
-                    "\n");
+                    "#include \"stm32f4xx_tim.h\"\n");
+        fprintf(flh,
+                "\n"
+                "#include \"Lib_gpio.h\"\n"
+                "#include \"Lib_timer.h\"\n"
+                "#include \"Lib_usr.h\"\n");
 
         if(AdcFunctionUsed()) {
             ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_adc.h\"\n"
-                        "#include \"Lib_adc.h\"\n"
-                        "\n");
+                        "#include \"Lib_adc.h\"\n");
             else
                 fprintf(flh,
                         "#include \"stm32f4xx_adc.h\"\n"
-                        "#include \"Lib_adc.h\"\n"
-                        "\n");
+                        "#include \"Lib_adc.h\"\n");
         }
         if(PwmFunctionUsed()) {
             fprintf(flh,
-                    "#include \"Lib_pwm.h\"\n"
-                    "\n");
+                    "#include \"Lib_pwm.h\"\n");
         }
         if(UartFunctionUsed()) {
             ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_usart.h\"\n"
-                        "#include \"Lib_uart.h\"\n"
-                        "\n");
+                        "#include \"Lib_uart.h\"\n");
             else
                 fprintf(flh,
                         "#include \"stm32f4xx_usart.h\"\n"
-                        "#include \"Lib_uart.h\"\n"
-                        "\n");
+                        "#include \"Lib_uart.h\"\n");
         }
         if(SpiFunctionUsed()) {
             ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_spi.h\"\n"
-                        "#include \"Lib_spi.h\"\n"
-                        "\n");
+                        "#include \"Lib_spi.h\"\n");
             else
                 fprintf(flh,
                         "#include \"stm32f4xx_spi.h\"\n"
-                        "#include \"Lib_spi.h\"\n"
-                        "\n");
+                        "#include \"Lib_spi.h\"\n");
         }
         if(I2cFunctionUsed()) {
             ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_i2c.h\"\n"
-                        "#include \"Lib_i2c.h\"\n"
-                        "\n");
+                        "#include \"Lib_i2c.h\"\n");
             else
                 fprintf(flh,
                         "#include \"stm32f4xx_i2c.h\"\n"
-                        "#include \"Lib_i2c.h\"\n"
-                        "\n");
+                        "#include \"Lib_i2c.h\"\n");
         }
     } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
         fprintf(flh,
@@ -2548,28 +2531,23 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         if(AdcFunctionUsed()) {
             fprintf(flh,
-                    "#include \"AdcLib.h\"\n"
-                    "\n");
+                    "#include \"AdcLib.h\"\n");
         }
         if(PwmFunctionUsed()) {
             fprintf(flh,
-                    "#include \"PwmLib.h\"\n"
-                    "\n");
+                    "#include \"PwmLib.h\"\n");
         }
         if(UartFunctionUsed()) {
             fprintf(flh,
-                    "#include \"UartLib.h\"\n"
-                    "\n");
+                    "#include \"UartLib.h\"\n");
         }
         if(SpiFunctionUsed()) {
             fprintf(flh,
-                    "#include \"SpiLib.h\"\n"
-                    "\n");
+                    "#include \"SpiLib.h\"\n");
         }
         if(I2cFunctionUsed()) {
             fprintf(flh,
-                    "#include \"I2cLib.h\"\n"
-                    "\n");
+                    "#include \"I2cLib.h\"\n");
         }
     }
 
@@ -3823,15 +3801,15 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         fprintf(f, "}\n");
 
-		fprintf(f,"\n"
-				  "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
-        		  "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n");
+        fprintf(f,"\n"
+                  "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
+                  "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n");
         ///// added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
             fprintf(f,"    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n");
         }
         fprintf(f,"    setupPlc();\n"
-				  "    while(1) {\n");
+                  "    while(1) {\n");
         /*
     McuIoPinInfo *iop;
     if(Prog.cycleDuty) {
@@ -3918,7 +3896,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "        PlcDelay();\n"
                     "\n");
-        } 
+        }
             /////
         fprintf(f,
                 "\n"
@@ -3951,16 +3929,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
 
         fprintf(f,
-			"// You can use main() as is.\n"
+            "// You can use main() as is.\n"
                 "#ifdef __CODEVISIONAVR__\n"
                 "void main(void) {\n"
-				"    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
+                "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return;\n"
                 "}\n"
                 "#else\n"
                 "int main(void) {\n"
-				"    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
+                "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return 0;\n"
                 "}\n"

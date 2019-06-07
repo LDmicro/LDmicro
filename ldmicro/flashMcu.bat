@@ -195,8 +195,6 @@ avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~
 REM Transfer of the program with AvrDude
 avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
-pause
-
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto exit
@@ -208,6 +206,7 @@ copy *.c PROTEUS > nul
 copy AVRGCC\BIN\*.hex PROTEUS > nul
 copy AVRGCC\BIN\*.elf PROTEUS > nul
 
+pause
 goto exit
 
 @rem =======================================================================
@@ -338,8 +337,6 @@ picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=defa
 REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
-pause
-
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto exit
@@ -351,6 +348,7 @@ copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
 
+pause
 goto exit
 
 
