@@ -879,6 +879,10 @@ void GenSymOneShot(char *dest, const char *name1, const char *name2)
         sprintf(dest, "$once_%01x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
+void GenSymOneShot(char *dest, const char *name1)
+{
+    GenSymOneShot(dest, name1, "");
+}
 static void GenSymOneShot(char *dest)
 {
     GenSymOneShot(dest, "", "");
@@ -1601,10 +1605,12 @@ static void InitVars()
 
 #ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
+static int32_t data[MAX_NAME_LEN];
 static void InitTablesCircuit(const SeriesNode *elem)
 {
     //int       sovElement = 0;
     const ElemLeaf *leaf = elem ? elem->leaf() : nullptr;
+    char nameTable[MAX_NAME_LEN];
     switch(elem->which) {
         case ELEM_SERIES_SUBCKT: {
             const ElemSubcktSeries *s = elem->series();
@@ -1620,7 +1626,6 @@ static void InitTablesCircuit(const SeriesNode *elem)
         }
 #if QUAD_ALGO <= 4
         case ELEM_QUAD_ENCOD: {
-            char nameTable[MAX_NAME_LEN];
             strcpy(nameTable, "ELEM_QUAD_ENCOD");
             int32_t count = 16;
 #if QUAD_ALGO == 1
@@ -1640,7 +1645,6 @@ static void InitTablesCircuit(const SeriesNode *elem)
         case ELEM_LOOK_UP_TABLE: {
             const ElemLookUpTable *t = &(leaf->d.lookUpTable);
 
-            char nameTable[MAX_NAME_LEN];
             sprintf(nameTable, "%s%s", t->name, ""); // "LutElement");
 
             int sovElement;
@@ -1656,46 +1660,59 @@ static void InitTablesCircuit(const SeriesNode *elem)
             }
             break;
         }
-            {
-                const char *nameTable;
-                case ELEM_7SEG:
-                    nameTable = "char7seg";
-                    goto xseg;
-                case ELEM_9SEG:
-                    nameTable = "char9seg";
-                    goto xseg;
-                case ELEM_14SEG:
-                    nameTable = "char14seg";
-                    goto xseg;
-                case ELEM_16SEG:
-                    nameTable = "char16seg";
-                    goto xseg;
-                xseg:
-                    if(!IsNumber(leaf->d.segments.src)) {
-                        int sovElement = 0;
-                        if((isVarInited(nameTable) < 0)) {
-                            if(elem->which == ELEM_7SEG) {
-                                sovElement = 1;
-                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
-                            } else if(elem->which == ELEM_9SEG) {
-                                sovElement = 2;
-                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN9SEG, sovElement, char9seg);
-                            } else if(elem->which == ELEM_14SEG) {
-                                sovElement = 2;
-                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN14SEG, sovElement, char14seg);
-                            } else if(elem->which == ELEM_16SEG) {
-                                sovElement = 3;
-                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN16SEG, sovElement, char16seg);
-                            } else
-                                oops();
-                            MarkInitedVariable(nameTable);
-                        } else {
-                            Comment(
-                                _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
-                        }
-                    }
-                    break;
+        case ELEM_7SEG:
+            strcpy(nameTable, "char7seg");
+            goto xseg;
+        case ELEM_9SEG:
+            strcpy(nameTable, "char9seg");
+            goto xseg;
+        case ELEM_14SEG:
+            strcpy(nameTable, "char14seg");
+            goto xseg;
+        case ELEM_16SEG:
+            strcpy(nameTable, "char16seg");
+            goto xseg;
+        xseg:
+            if(!IsNumber(leaf->d.segments.src)) {
+                int sovElement = 0;
+                if((isVarInited(nameTable) < 0)) {
+                    if(elem->which == ELEM_7SEG) {
+                        sovElement = 1;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                    } else if(elem->which == ELEM_9SEG) {
+                        sovElement = 2;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN9SEG, sovElement, char9seg);
+                    } else if(elem->which == ELEM_14SEG) {
+                        sovElement = 2;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN14SEG, sovElement, char14seg);
+                    } else if(elem->which == ELEM_16SEG) {
+                        sovElement = 3;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN16SEG, sovElement, char16seg);
+                    } else
+                        oops();
+                    MarkInitedVariable(nameTable);
+                } else {
+                    Comment(
+                        _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
+                }
             }
+            break;
+        case ELEM_UART_WR: { 
+			if(!leaf->d.fmtdStr.wait) {
+				if(IsString((leaf->d.fmtdStr.string))) {
+					//static int32_t *data = (int32_t*)CheckMalloc(2 * strlen(leaf->d.fmtdStr.string));
+					char buf[MAX_NAME_LEN];
+					FrmStrToStr(buf, leaf->d.fmtdStr.string);
+					size_t i;
+					for(i = 1; i < (strlen(buf) - 1); i++)
+						data[i-1] = buf[i];
+					data[i-1] = 0;
+					strcpy(nameTable, "UART_WR");
+					Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, strlen(buf)-2+1, 1, data);
+				}
+			}
+			break;
+        }
         default:
             break;
     }
@@ -3349,7 +3366,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 THROW_COMPILER_EXCEPTION_FMT(_("BIN2BCD instruction: '%s' not a valid destination."), leaf->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_BIN2BCD, leaf->d.move.dest, leaf->d.move.src);
+              Op(INT_SET_BIN2BCD, leaf->d.move.dest, leaf->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3360,7 +3377,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 THROW_COMPILER_EXCEPTION_FMT(_("BCD2BIN instruction: '%s' not a valid destination."), leaf->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_BCD2BIN, leaf->d.move.dest, leaf->d.move.src);
+              Op(INT_SET_BCD2BIN, leaf->d.move.dest, leaf->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3371,7 +3388,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 THROW_COMPILER_EXCEPTION_FMT(_("OPPOSITE instruction: '%s' not a valid destination."), leaf->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_OPPOSITE, leaf->d.move.dest, leaf->d.move.src);
+              Op(INT_SET_OPPOSITE, leaf->d.move.dest, leaf->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3382,7 +3399,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 THROW_COMPILER_EXCEPTION_FMT(_("SWAP instruction: '%s' not a valid destination."), leaf->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_SWAP, leaf->d.move.dest, leaf->d.move.src);
+              Op(INT_SET_SWAP, leaf->d.move.dest, leaf->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -3390,7 +3407,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_WRITE_STRING, leaf->d.fmtdStr.dest, leaf->d.fmtdStr.string, leaf->d.fmtdStr.var);
+              Op(INT_WRITE_STRING, leaf->d.fmtdStr.dest, leaf->d.fmtdStr.string, leaf->d.fmtdStr.var);
             Op(INT_END_IF);
             break;
         }
@@ -3398,7 +3415,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_RANDOM:
             Comment(3, "ELEM_RANDOM");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_VARIABLE_RANDOM, leaf->d.readAdc.name);
+              Op(INT_SET_VARIABLE_RANDOM, leaf->d.readAdc.name);
             Op(INT_END_IF);
             break;
 
@@ -3772,13 +3789,57 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                 }
                 case ELEM_UART_WR: {
                     Comment(3, "ELEM_UART_WR");
-                    Op(INT_IF_BIT_SET, stateInOut);
-                      if(leaf->d.fmtdStr.string) {
+                    if(leaf->d.fmtdStr.wait || (IsString(leaf->d.fmtdStr.string) && (strlen(leaf->d.fmtdStr.string) == (1+2)))) {
+                      Op(INT_IF_BIT_SET, stateInOut);
                         Op(INT_UART_WR, leaf->d.fmtdStr.string);
-                      } else {
-aaa
-                      }
-                    Op(INT_END_IF);
+                      Op(INT_END_IF);
+                    } else {
+                        if(IsString(leaf->d.fmtdStr.string)) {
+							char nameTable[MAX_NAME_LEN];
+							strcpy(nameTable, "UART_WR");
+                            char storeName[MAX_NAME_LEN];
+                            GenSymOneShot(storeName, "UART_WR");
+							char buf[MAX_NAME_LEN];
+							FrmStrToStr(buf, leaf->d.fmtdStr.string);
+							int len = strlen(buf) - 2; // subtract double quotes
+                            char bytes[MAX_NAME_LEN];
+                            sprintf(bytes, "%d", len);
+
+                            Op(INT_IF_BIT_SET, stateInOut);
+                              Op(INT_IF_BIT_CLEAR, storeName);
+                                Op(INT_SET_BIT, storeName);
+
+                                char numb[MAX_NAME_LEN];
+                                GenVar(numb, "numb_UART_WR", "");
+                                Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
+                              Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_IF_LES, numb, bytes);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_CLEAR, stateInOut);
+                                Op(INT_FLASH_READ, "$scratch", nameTable, numb, len, 1, data);
+								Op(INT_UART_SEND1, "$scratch"); 
+                                  Op(INT_INCREMENT_VARIABLE, numb);
+                                Op(INT_END_IF);
+                              Op(INT_END_IF);
+
+                              Op(INT_IF_GEQ, numb, bytes);
+                                Op(INT_CLEAR_BIT, storeName);
+                              Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_SET_BIT, stateInOut); // busy
+                            Op(INT_ELSE);
+                              Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_END_IF);
+                        } else {
+                        //var
+                        }
+                    }
                     break;
                 }
                 case ELEM_UART_SEND: {
@@ -3833,22 +3894,22 @@ aaa
                             GenSymOneShot(storeName, "UART_SEND", leaf->d.uart.name);
 
                             Op(INT_IF_BIT_SET, stateInOut);
-                            Op(INT_IF_BIT_CLEAR, storeName);
-                            Op(INT_SET_BIT, storeName);
+                              Op(INT_IF_BIT_CLEAR, storeName);
+                                Op(INT_SET_BIT, storeName);
 
-                            char saved[MAX_NAME_LEN];
-                            GenVar(saved, "saved_UART_SEND", leaf->d.uart.name);
-                            SetSizeOfVar(saved, leaf->d.uart.bytes);
-                            Op(INT_SET_VARIABLE_TO_VARIABLE, saved, leaf->d.uart.name);
+                                char saved[MAX_NAME_LEN];
+                                GenVar(saved, "saved_UART_SEND", leaf->d.uart.name);
+                                SetSizeOfVar(saved, leaf->d.uart.bytes);
+                                Op(INT_SET_VARIABLE_TO_VARIABLE, saved, leaf->d.uart.name);
 
-                            char bytes[MAX_NAME_LEN];
-                            sprintf(bytes, "%d", leaf->d.uart.bytes);
+                                char bytes[MAX_NAME_LEN];
+                                sprintf(bytes, "%d", leaf->d.uart.bytes);
 
-                            char numb[MAX_NAME_LEN];
-                            GenVar(numb, "numb_UART_SEND", leaf->d.uart.name);
-                            Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+                                char numb[MAX_NAME_LEN];
+                                GenVar(numb, "numb_UART_SEND", leaf->d.uart.name);
+                                Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
 
-                            Op(INT_END_IF);
+                              Op(INT_END_IF);
                             Op(INT_END_IF);
 
                             Op(INT_IF_BIT_SET, storeName);
@@ -3858,7 +3919,7 @@ aaa
                                   Op(INT_UART_SEND1, saved, numb);
                                   Op(INT_INCREMENT_VARIABLE, numb);
                                 Op(INT_END_IF);
-                            Op(INT_END_IF);
+                              Op(INT_END_IF);
 
                               Op(INT_IF_GEQ, numb, bytes);
                                 Op(INT_CLEAR_BIT, storeName);

@@ -800,8 +800,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        if(!TIMER_Used) // to write this declarations once only
-        {
+        if(!TIMER_Used) { // to write this declarations once only
             fprintf(f,
                     "\n"
                     "// PLC Cycle timing variable.\n"
@@ -1625,7 +1624,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_UART_WR:
                 if(IsString(IntCode[i].name1)) {
-                    char buf[MAX_NAME_LEN];
+                    //char buf[MAX_NAME_LEN];
                     //fprintf(f, "UART_Write(%s);\n", StrToFrmStr(buf, IntCode[i].name1.c_str(), FRMT_SPACE));
                     fprintf(f, "UART_Write(%s);\n", IntCode[i].name1.c_str());
                 } else {
@@ -2112,6 +2111,21 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                 } else {
                     THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
+                if(sovElement == 1) {
+					char buf[10];
+					fprintf(f, "// {");
+					for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
+						fprintf(f, "'%s', ", ChrToFrmtStr(buf, IntCode[i].data[j], FRMT_SPACE));
+					}
+					fprintf(f, "'%s'};\n", ChrToFrmtStr(buf, IntCode[i].data[IntCode[i].literal1 - 1], FRMT_SPACE));
+                } 
+				//
+                fprintf(f, "// {");
+                for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
+                    fprintf(f, "0x%X, ", IntCode[i].data[j]);
+                }
+                fprintf(f, "0x%X};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
+				//
                 fprintf(f, "#ifdef __CODEVISIONAVR__\n");
                 fprintf(f, "%s %s[%d] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
                 for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
@@ -2158,7 +2172,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                     fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
                 fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
-                fprintf(f, "#endif\n\n");
+                fprintf(f, "#endif\n");
                 break;
             }
 #ifdef NEW_FEATURE
@@ -3317,7 +3331,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.cycleDuty) {
             fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
         }
-        fprintf(f, "        PlcCycle();\n");
+        fprintf(f, "        PlcCycle();\n\n");
         if(Prog.cycleDuty) {
             fprintf(f, "        Write0_Ub_YPlcCycleDuty();\n");
         }
@@ -3809,24 +3823,15 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         fprintf(f, "}\n");
 
+		fprintf(f,"\n"
+				  "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
+        		  "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n");
         ///// added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
-            fprintf(f,
-                    "\n"
-                    "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n\n"
-                    "    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n\n"
-                    "    setupPlc();\n\n"
-                    "    while(1) {\n");
-        } else
-        /////
-        {
-            fprintf(f,
-                    "\n"
-                    "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
-                    "    setupPlc();\n"
-                    "    while(1) {\n");
+            fprintf(f,"    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n");
         }
-
+        fprintf(f,"    setupPlc();\n"
+				  "    while(1) {\n");
         /*
     McuIoPinInfo *iop;
     if(Prog.cycleDuty) {
@@ -3913,40 +3918,29 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "        PlcDelay();\n"
                     "\n");
-            fprintf(f,
-                    "\n"
-                    "        PlcCycle();\n"
-                    "        // You can place your code here, if you don't generate C code from LDmicro again.\n"
-                    "        // ...\n");
-        } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
-            fprintf(f,
-                    "\n"
-                    "        PlcCycle();\n"
-                    "        // You can place your code here, if you don't generate C code from LDmicro again.\n"
-                    "        // ...\n");
-        } else
+        } 
             /////
-            fprintf(f,
-                    "\n"
-                    "        PlcCycle();\n"
-                    "        // You can place your code here, if you don't generate C code from LDmicro again.\n"
-                    "        // ...\n"
-                    "\n"
-                    "      #ifdef USE_WDT\n"
-                    "        // Watchdog reset\n"
-                    "        #ifdef __CODEVISIONAVR__\n"
-                    "            #asm(\"wdr\")\n"
-                    "        #elif defined(__GNUC__)\n"
-                    "            wdt_reset();\n"
-                    "        #elif defined(CCS_PIC_C)\n"
-                    "            restart_wdt();\n"
-                    "        #elif defined(HI_TECH_C)\n"
-                    "            CLRWDT();\n"
-                    "        #else\n"
-                    "            // Watchdog Reset is required. // You must provide this.\n"
-                    "        #endif\n"
-                    "      #endif\n"
-                    "\n");
+        fprintf(f,
+                "\n"
+                "        PlcCycle();\n"
+                "        // You can place your code here to run repeatedly, only if you no longer generate C code from LDmicro again.\n"
+                "        // ...\n"
+                "\n"
+                "      #ifdef USE_WDT\n"
+                "        // Watchdog reset\n"
+                "        #ifdef __CODEVISIONAVR__\n"
+                "            #asm(\"wdr\")\n"
+                "        #elif defined(__GNUC__)\n"
+                "            wdt_reset();\n"
+                "        #elif defined(CCS_PIC_C)\n"
+                "            restart_wdt();\n"
+                "        #elif defined(HI_TECH_C)\n"
+                "            CLRWDT();\n"
+                "        #else\n"
+                "            // Watchdog Reset is required. // You must provide this.\n"
+                "        #endif\n"
+                "      #endif\n"
+                "\n");
 
         if(Prog.cycleDuty) {
             fprintf(f, "        Write0_Ub_YPlcCycleDuty();\n");
@@ -3957,13 +3951,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
 
         fprintf(f,
+			"// You can use main() as is.\n"
                 "#ifdef __CODEVISIONAVR__\n"
-                "void main(void) { // You can use this as is.\n"
+                "void main(void) {\n"
+				"    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return;\n"
                 "}\n"
                 "#else\n"
-                "int main(void) { // You can use this as is.\n"
+                "int main(void) {\n"
+				"    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return 0;\n"
                 "}\n"
@@ -3998,13 +3995,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#include \"%s.h\"\n"
                 "\n"
                 "void setup() {\n"
-                "  // put your setup code here, to run once:\n"
+                "  // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "  setupPlc();\n"
                 "}\n"
                 "\n"
                 "void loop() {\n"
-                "  // put your main code here, to run repeatedly:\n"
                 "  loopPlc();\n"
+                "  // You can place your code here to run repeatedly, only if you no longer generate C code from LDmicro again.\n"
                 "}\n"
                 "\n",
                 CurrentLdName,

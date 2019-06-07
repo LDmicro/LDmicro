@@ -1730,6 +1730,47 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
+char *ChrToFrmtStr(char *dest, const char src, FRMT frmt)
+{
+	dest[0] = '\0';
+	if((frmt == FRMT_x20) && (src == ' ')) {
+		strcat(dest, "\\x20");
+		// } else if(src == '\'') {
+		//     strcat(dest, "\\\'");
+		// } else if(src == '"') {
+		//     strcat(dest, "\\\"");
+		// } else if(src == '\?') {
+		//     strcat(dest, "\\\?");
+	} else if(src == '\\') { //
+		strcat(dest, "\\\\");   //
+	} else if(src == 0x07) { //(alert) Produces an audible or visible alert
+		strcat(dest, "\\a");    //  without changing the active position.
+	} else if(src == '\b') { //(backspace) Moves the active position
+		strcat(dest, "\\b");    //  to the previous position on the current line.
+	} else if(src == 0x1B) { //Escape character
+		strcat(dest, "\\e");    //
+	} else if(src == '\f') { //(form feed) Moves the active position to the initial position at the start
+		strcat(dest, "\\f");    //  of the next logical page.
+	} else if(src == '\n') { //(new line) Moves the active position to the initial position
+		strcat(dest, "\\n");    //  of the next line.
+	} else if(src == '\r') { //(carriage return) Moves the active position
+		strcat(dest, "\\r");    //  to the initial position of the current line.
+	} else if(src == '\t') { //(horizontal tab) Moves the active position
+		strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
+	} else if(src == '\v') { //(vertical tab) Moves the active position to the initial position
+		strcat(dest, "\\v");    //  of the next vertical tabulation position.
+	} else if((src < ' ') || (src >= 127)) {       
+		sprintf(dest, "\\x%X", src); 
+	} else {                       
+		strncat(dest, &src, 1);    
+	}
+	return dest;
+}
+char *ChrToFrmtStr(char *dest, const char src)
+{
+	return ChrToFrmtStr(dest, src, FRMT_x20);
+}
+//---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
@@ -1738,46 +1779,20 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
     }
 
     strcpy(dest, "");
-    int i;
+    size_t i;
     if((frmt == FRMT_01) && (Prog.LDversion == "0.1")) {
         char str[1024];
         sprintf(str, " %d", strlen(src));
         strcat(dest, str);
-        for(i = 0; i < (int)strlen(src); i++) {
+        for(i = 0; i < strlen(src); i++) {
             sprintf(str, " %d", src[i]);
             strcat(dest, str);
         }
     } else {
-        for(i = 0; i < (int)strlen(src); i++) {
-            if((frmt == FRMT_x20) && (src[i] == ' ')) {
-                strcat(dest, "\\x20");
-                // } else if(src[i] == '\'') {
-                //     strcat(dest, "\\\'");
-                // } else if(src[i] == '"') {
-                //     strcat(dest, "\\\"");
-                // } else if(src[i] == '\?') {
-                //     strcat(dest, "\\\?");
-            } else if(src[i] == '\\') { //
-                strcat(dest, "\\\\");   //
-            } else if(src[i] == 0x07) { //(alert) Produces an audible or visible alert
-                strcat(dest, "\\a");    //  without changing the active position.
-            } else if(src[i] == '\b') { //(backspace) Moves the active position
-                strcat(dest, "\\b");    //  to the previous position on the current line.
-            } else if(src[i] == 0x1B) { //Escape character
-                strcat(dest, "\\e");    //
-            } else if(src[i] == '\f') { //(form feed) Moves the active position to the initial position at the start
-                strcat(dest, "\\f");    //  of the next logical page.
-            } else if(src[i] == '\n') { //(new line) Moves the active position to the initial position
-                strcat(dest, "\\n");    //  of the next line.
-            } else if(src[i] == '\r') { //(carriage return) Moves the active position
-                strcat(dest, "\\r");    //  to the initial position of the current line.
-            } else if(src[i] == '\t') { //(horizontal tab) Moves the active position
-                strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
-            } else if(src[i] == '\v') { //(vertical tab) Moves the active position to the initial position
-                strcat(dest, "\\v");    //  of the next vertical tabulation position.
-            } else {                       //
-                strncat(dest, &src[i], 1); //
-            }
+		char buf[10];
+        for(i = 0; i < strlen(src); i++) {
+ 			ChrToFrmtStr(buf, src[i], frmt);
+            strcat(dest, buf);
         }
     }
     return dest;

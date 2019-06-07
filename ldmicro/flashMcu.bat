@@ -178,6 +178,9 @@ mkdir AVRGCC\lib
 
 if not exist AVRGCC\lib\UsrLib.c copy %LIB_PATH%\*.* AVRGCC\lib
 
+if exist PROTEUS del PROTEUS\*.hex  > nul
+if exist PROTEUS del PROTEUS\*.elf  > nul
+
 for %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%~dp2 -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
 :pause
 
@@ -319,6 +322,9 @@ mkdir HTC\lib
 
 REM copy source code for compiling
 if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+
+if exist PROTEUS del PROTEUS\*.hex  > nul
+if exist PROTEUS del PROTEUS\*.elf  > nul
 
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
