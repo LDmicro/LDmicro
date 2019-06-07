@@ -487,9 +487,11 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
+/*
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
+*/
     } else if([&]() -> int {
                   int  tmp_bool;
                   auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
@@ -501,9 +503,11 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.uart.bytes = 1;
         l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
+/*
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
+*/
     } else if([&]() -> int {
                   int  tmp_bool;
                   auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
@@ -1456,7 +1460,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_UART_SEND:
             fprintf(f, "UART_SEND %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
             break;
-
+/*
         case ELEM_UART_RECVn:
             fprintf(f, "UART_RECVn %s\n", l->d.uart.name);
             break;
@@ -1464,7 +1468,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_UART_SENDn:
             fprintf(f, "UART_SENDn %s\n", l->d.uart.name);
             break;
-
+*/
         case ELEM_UART_SEND_READY:
             fprintf(f, "UART_SEND_READY\n");
             break;
@@ -1476,7 +1480,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_PERSIST:
             fprintf(f, "PERSIST %s\n", l->d.persist.var);
             break;
-
+/*
         case ELEM_CPRINTF:
             s = "CPRINTF";
             goto cprintf;
@@ -1510,6 +1514,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                         StrToFrmStr(str4, l->d.fmtdStr.error)); //may be (none)
                 break;
             }
+*/
         case ELEM_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "STRING ");
@@ -1732,43 +1737,43 @@ bool SaveProjectToFile(char *filename, int code)
 //---------------------------------------------------------------------------
 char *ChrToFrmtStr(char *dest, const char src, FRMT frmt)
 {
-	dest[0] = '\0';
-	if((frmt == FRMT_x20) && (src == ' ')) {
-		strcat(dest, "\\x20");
-		// } else if(src == '\'') {
-		//     strcat(dest, "\\\'");
-		// } else if(src == '"') {
-		//     strcat(dest, "\\\"");
-		// } else if(src == '\?') {
-		//     strcat(dest, "\\\?");
-	} else if(src == '\\') { //
-		strcat(dest, "\\\\");   //
-	} else if(src == 0x07) { //(alert) Produces an audible or visible alert
-		strcat(dest, "\\a");    //  without changing the active position.
-	} else if(src == '\b') { //(backspace) Moves the active position
-		strcat(dest, "\\b");    //  to the previous position on the current line.
-	} else if(src == 0x1B) { //Escape character
-		strcat(dest, "\\e");    //
-	} else if(src == '\f') { //(form feed) Moves the active position to the initial position at the start
-		strcat(dest, "\\f");    //  of the next logical page.
-	} else if(src == '\n') { //(new line) Moves the active position to the initial position
-		strcat(dest, "\\n");    //  of the next line.
-	} else if(src == '\r') { //(carriage return) Moves the active position
-		strcat(dest, "\\r");    //  to the initial position of the current line.
-	} else if(src == '\t') { //(horizontal tab) Moves the active position
-		strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
-	} else if(src == '\v') { //(vertical tab) Moves the active position to the initial position
-		strcat(dest, "\\v");    //  of the next vertical tabulation position.
-	} else if((src < ' ') || (src >= 127)) {       
-		sprintf(dest, "\\x%X", src); 
-	} else {                       
-		strncat(dest, &src, 1);    
-	}
-	return dest;
+    dest[0] = '\0';
+    if((frmt == FRMT_x20) && (src == ' ')) {
+        strcat(dest, "\\x20");
+        // } else if(src == '\'') {
+        //     strcat(dest, "\\\'");
+        // } else if(src == '"') {
+        //     strcat(dest, "\\\"");
+        // } else if(src == '\?') {
+        //     strcat(dest, "\\\?");
+    } else if(src == '\\') { //
+        strcat(dest, "\\\\");   //
+    } else if(src == 0x07) { //(alert) Produces an audible or visible alert
+        strcat(dest, "\\a");    //  without changing the active position.
+    } else if(src == '\b') { //(backspace) Moves the active position
+        strcat(dest, "\\b");    //  to the previous position on the current line.
+    } else if(src == 0x1B) { //Escape character
+        strcat(dest, "\\e");    //
+    } else if(src == '\f') { //(form feed) Moves the active position to the initial position at the start
+        strcat(dest, "\\f");    //  of the next logical page.
+    } else if(src == '\n') { //(new line) Moves the active position to the initial position
+        strcat(dest, "\\n");    //  of the next line.
+    } else if(src == '\r') { //(carriage return) Moves the active position
+        strcat(dest, "\\r");    //  to the initial position of the current line.
+    } else if(src == '\t') { //(horizontal tab) Moves the active position
+        strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
+    } else if(src == '\v') { //(vertical tab) Moves the active position to the initial position
+        strcat(dest, "\\v");    //  of the next vertical tabulation position.
+    } else if((src < ' ') || (src >= 127)) {
+        sprintf(dest, "\\x%X", src);
+    } else {
+        strncat(dest, &src, 1);
+    }
+    return dest;
 }
 char *ChrToFrmtStr(char *dest, const char src)
 {
-	return ChrToFrmtStr(dest, src, FRMT_x20);
+    return ChrToFrmtStr(dest, src, FRMT_x20);
 }
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
@@ -1789,9 +1794,9 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
             strcat(dest, str);
         }
     } else {
-		char buf[10];
+        char buf[10];
         for(i = 0; i < strlen(src); i++) {
- 			ChrToFrmtStr(buf, src[i], frmt);
+            ChrToFrmtStr(buf, src[i], frmt);
             strcat(dest, buf);
         }
     }

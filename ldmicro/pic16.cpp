@@ -3146,20 +3146,20 @@ static void AllocBitsVars()
             case INT_IF_BIT_CLEAR:
                 MemForSingleBit(a->name1, true, &addr, &bit);
                 break;
-
+/*
             case INT_UART_SENDn:
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, true, &addr, &bit);
                 break;
-
+*/
             case INT_UART_SEND1:
             case INT_UART_RECV1:
                 break;
-
+/*
             case INT_UART_RECV:
                 MemForSingleBit(a->name2, true, &addr, &bit);
                 break;
-
+*/
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
                 MemForSingleBit(a->name1, true, &addr, &bit);
@@ -4897,6 +4897,7 @@ otherwise the result was zero or greater.
                 Instruction(OP_MOVWF, REG_TXREG);
                 break;
             }
+/*
             case INT_UART_SEND: {
                 Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
@@ -4920,11 +4921,13 @@ otherwise the result was zero or greater.
                 FwdAddrIsNow(isBusy);
                 break;
             }
+*/
             case INT_UART_RECV_AVAIL: {
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 CopyBit(addr1, bit1, REG_PIR1, RCIF);
                 break;
             }
+/*
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -4967,6 +4970,7 @@ otherwise the result was zero or greater.
                 FwdAddrIsNow(done);
                 break;
             }
+*/
             case INT_UART_RECV1: {
                 //Receive one char/byte in a single PLC cycle.
                 //Skip if no char.

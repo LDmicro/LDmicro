@@ -166,10 +166,10 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-#define MNU_INSERT_UART_SENDn        0x3301
+//#define MNU_INSERT_UART_SENDn        0x3301 // impasse
 #define MNU_INSERT_UART_SEND_READY   0x3302
 #define MNU_INSERT_UART_RECV         0x34
-#define MNU_INSERT_UART_RECVn        0x3401
+//#define MNU_INSERT_UART_RECVn        0x3401 // impasse
 #define MNU_INSERT_UART_RECV_AVAIL   0x3402
 #define MNU_INSERT_FMTD_STRING       0x3410 // "Insert Formatted String Over &UART"
 #define MNU_INSERT_UART_WRITE        0x3420 // "Insert String Over UART"

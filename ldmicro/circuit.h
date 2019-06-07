@@ -113,11 +113,11 @@
 #define ELEM_SET_PWM            0x29
 #define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
-#define ELEM_UART_RECVn         0x2a01
+//#define ELEM_UART_RECVn         0x2a01 // impasse
 #define ELEM_UART_RECV_AVAIL    0x2a02
 #define RUartRecvErrorFlag     "RUartRecvErrorFlag"
 #define ELEM_UART_SEND          0x2b
-#define ELEM_UART_SENDn         0x2b01
+//#define ELEM_UART_SENDn         0x2b01 // impasse
 #define ELEM_UART_SEND_READY    0x2b02
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
 #define ELEM_UART_WR            0x2b03
@@ -147,15 +147,15 @@
 #define ELEM_TSFR               0x36    // Element test if set bit in SFR
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 #endif
-
-#define ELEM_CPRINTF            0x4c01
-#define ELEM_SPRINTF            0x4c02
-#define ELEM_FPRINTF            0x4c03
-#define ELEM_PRINTF             0x4c04
-#define ELEM_I2C_CPRINTF        0x4c05
-#define ELEM_ISP_CPRINTF        0x4c06
-#define ELEM_UART_CPRINTF       0x4c07
-
+/*
+#define ELEM_CPRINTF            0x4c01 // impasse
+#define ELEM_SPRINTF            0x4c02 // impasse
+#define ELEM_FPRINTF            0x4c03 // impasse
+#define ELEM_PRINTF             0x4c04 // impasse
+#define ELEM_I2C_CPRINTF        0x4c05 // impasse
+#define ELEM_ISP_CPRINTF        0x4c06 // impasse
+#define ELEM_UART_CPRINTF       0x4c07 // impasse
+*/
 #define ELEM_STRING             0x3f
 #define ELEM_OSC                0x4001
 #define ELEM_STEPPER            0x4002   //
@@ -259,10 +259,10 @@
     case ELEM_SET_PWM_SOFT:     \
     case ELEM_QUAD_ENCOD:       \
     case ELEM_UART_SEND:        \
-    case ELEM_UART_SENDn:       \
+/*    case ELEM_UART_SENDn:       */\
     case ELEM_UART_SEND_READY:  \
     case ELEM_UART_RECV:        \
-    case ELEM_UART_RECVn:       \
+/*    case ELEM_UART_RECVn:       */\
     case ELEM_UART_RECV_AVAIL:  \
     case ELEM_MASTER_RELAY:     \
     case ELEM_SLEEP:            \
@@ -279,13 +279,13 @@
     case ELEM_LOOK_UP_TABLE:    \
     case ELEM_PIECEWISE_LINEAR: \
     case ELEM_STRING:           \
-    case ELEM_CPRINTF:          \
-    case ELEM_SPRINTF:          \
-    case ELEM_FPRINTF:          \
-    case ELEM_PRINTF:           \
-    case ELEM_I2C_CPRINTF:      \
-    case ELEM_ISP_CPRINTF:      \
-    case ELEM_UART_CPRINTF:     \
+/*    case ELEM_CPRINTF:          */\
+/*    case ELEM_SPRINTF:          */\
+/*    case ELEM_FPRINTF:          */\
+/*    case ELEM_PRINTF:           */\
+/*    case ELEM_I2C_CPRINTF:      */\
+/*    case ELEM_ISP_CPRINTF:      */\
+/*    case ELEM_UART_CPRINTF:     */\
     case ELEM_UART_WR:          \
     case ELEM_FORMATTED_STRING: \
     case ELEM_PERSIST:          \

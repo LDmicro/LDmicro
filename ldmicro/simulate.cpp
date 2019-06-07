@@ -967,7 +967,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_UART_RECV:
-        case ELEM_UART_RECVn:
+//        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -993,7 +993,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
-        case ELEM_UART_SENDn:
+//        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_SPI_WR: ///// Added by JG
@@ -1964,6 +1964,7 @@ static void SimulateIntCode()
                     AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
+/*
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
@@ -1976,6 +1977,7 @@ static void SimulateIntCode()
                     SetSingleBit(a->name2, false); // not busy
                 }
                 break;
+*/
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, true); // ready
@@ -1993,7 +1995,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_UART_RECV1:
-            case INT_UART_RECV:
+//            case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
