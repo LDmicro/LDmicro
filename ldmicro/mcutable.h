@@ -739,31 +739,31 @@ McuExtIntPinInfo PicExtIntPinInfo64[] = {
 ///// Added by JG
 McuI2cInfo McuI2cInfoATmega8[] = {
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      28,     27 },       // I2C = PC5 + PC4
+    { "I2C1",    0,          0,          0,          0,      28,     27 },       // I2C = PC5 + PC4
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoATmega16[] = {                                             // For AtMega16, 32, 164, 324, 644, 1284
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      22,     23 },       // I2C = PB8 + PB9
+    { "I2C1",    0,          0,          0,          0,      22,     23 },       // I2C = PB8 + PB9
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoATmega64[] = {                                             // For AtMega16, 32, 164, 324, 644, 1284
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      25,     26 },       // I2C = PD0 + PD1
+    { "I2C1",    0,          0,          0,          0,      25,     26 },       // I2C = PD0 + PD1
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoATmega328[] = {                                            // For AtMega48, 88, 168, 328
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      28,     27 },       // I2C = PB8 + PB9
+    { "I2C1",    0,          0,          0,          0,      28,     27 },       // I2C = PB8 + PB9
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoATmega2560[] = {                                           // For AtMega640, 1280, 2560
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      43,     44 },       // I2C = PD0 + PD1
+    { "I2C1",    0,          0,          0,          0,      43,     44 },       // I2C = PD0 + PD1
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 /////
@@ -819,33 +819,33 @@ McuAdcPinInfo AvrAtmega328AdcPinInfo32[] = {
 McuSpiInfo McuSpiInfoATmega8[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x0D,    0x0E,    0x0F,  18,   17,  19,  16 },
+    { "SPI1",       0x0D,    0x0E,    0x0F,  18,   17,  19,  16 },
 };
 
 McuSpiInfo McuSpiInfoATmega16[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x0D,    0x0E,    0x0F,  7,    6,   8,   5 },        // For AtMega16, 32, 162, 164, 324, 644, 1284
+    { "SPI1",       0x0D,    0x0E,    0x0F,  7,    6,   8,   5 },        // For AtMega16, 32, 162, 164, 324, 644, 1284
 };
 
 McuSpiInfo McuSpiInfoATmega64[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x0D,    0x0E,    0x4E,  13,   12,  11,  10 },       // For AtMega64, 128
+    { "SPI1",       0x0D,    0x0E,    0x4E,  13,   12,  11,  10 },       // For AtMega64, 128
 };
 
 
 McuSpiInfo McuSpiInfoATmega328[] = {                                    // For AtMega48, 88, 168, 328
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x4C,    0x4D,    0x4E,  18,   17,  19,  16 },
+    { "SPI1",       0x4C,    0x4D,    0x4E,  18,   17,  19,  16 },
 };
 /////
 
 McuSpiInfo McuSpiInfoATmega2560[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
-    { "SPI",       0x4C,    0x4D,    0x4E,  22,   21,  20,  19 },
+    { "SPI1",       0x4C,    0x4D,    0x4E,  22,   21,  20,  19 },
 //  { "SPI_UART0", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
 //  { "SPI_UART1", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
 //  { "SPI_UART2", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
@@ -1081,19 +1081,19 @@ McuPwmPinInfo PicPwmPinInfo64[] = {
 ///// Added by JG
 McuI2cInfo McuI2cInfoPic16F88[] = {                                             // For PIC16F88, 819
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      10,     7 },        // I2C = RB4 + RB1
+    { "I2C1",    0,          0,          0,          0,      10,     7 },        // I2C = RB4 + RB1
 //  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoPic16F876[] = {                                            // For PIC16F876, 886
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      14,     15 },       // I2C = RC3 + RC4
+    { "I2C1",    0,          0,          0,          0,      14,     15 },       // I2C = RC3 + RC4
 //  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
 McuI2cInfo McuI2cInfoPic16F877[] = {                                            // For PIC16F877, 887
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
-    { "I2C",    0,          0,          0,          0,      18,     23 },       // I2C = RC3 + RC4
+    { "I2C1",    0,          0,          0,          0,      18,     23 },       // I2C = RC3 + RC4
 //  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
@@ -1104,21 +1104,21 @@ McuI2cInfo McuI2cInfoPic16F877[] = {                                            
 McuSpiInfo McuSpiInfoPic16F88[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
-    { "SPI",       0,       0,       0,      7,    8,  10,  11 },
+    { "SPI1",       0,       0,       0,      7,    8,  10,  11 },
 };
 
 // Pic16F876 or Pic16F886
 McuSpiInfo McuSpiInfoPic16F876[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
-    { "SPI",       0,       0,       0,     15,   16,  14,   7 },
+    { "SPI1",       0,       0,       0,     15,   16,  14,   7 },
 };
 
 // Pic16F877 or Pic16F887
 McuSpiInfo McuSpiInfoPic16F877[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
-    { "SPI",       0,       0,       0,     23,   24,  18,   7 },
+    { "SPI1",       0,       0,       0,     23,   24,  18,   7 },
 };
 /////
 
