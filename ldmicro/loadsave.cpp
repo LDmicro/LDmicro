@@ -1733,8 +1733,9 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
-char *ChrToFrmtStr(char *dest, const char src, FRMT frmt)
+const char *ChrToFrmtStr(const char src, FRMT frmt)
 {
+    static char dest[10] = "";
     dest[0] = '\0';
     if((frmt == FRMT_x20) && (src == ' ')) {
         strcat(dest, "\\x20");
@@ -1769,9 +1770,9 @@ char *ChrToFrmtStr(char *dest, const char src, FRMT frmt)
     }
     return dest;
 }
-char *ChrToFrmtStr(char *dest, const char src)
+const char *ChrToFrmtStr(const char src)
 {
-    return ChrToFrmtStr(dest, src, FRMT_x20);
+    return ChrToFrmtStr(src, FRMT_x20);
 }
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
@@ -1792,10 +1793,8 @@ char *StrToFrmStr(char *dest, const char *src, FRMT frmt)
             strcat(dest, str);
         }
     } else {
-        char buf[10];
         for(i = 0; i < strlen(src); i++) {
-            ChrToFrmtStr(buf, src[i], frmt);
-            strcat(dest, buf);
+            strcat(dest, ChrToFrmtStr(src[i], frmt));
         }
     }
     return dest;

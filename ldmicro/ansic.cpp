@@ -2116,12 +2116,11 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                     THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
                 if(sovElement == 1) {
-                    char buf[10];
                     fprintf(f, "// {");
                     for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
-                        fprintf(f, "'%s', ", ChrToFrmtStr(buf, IntCode[i].data[j], FRMT_SPACE));
+                        fprintf(f, "'%s', ", ChrToFrmtStr(IntCode[i].data[j], FRMT_SPACE));
                     }
-                    fprintf(f, "'%s'};\n", ChrToFrmtStr(buf, IntCode[i].data[IntCode[i].literal1 - 1], FRMT_SPACE));
+                    fprintf(f, "'%s'};\n", ChrToFrmtStr(IntCode[i].data[IntCode[i].literal1 - 1], FRMT_SPACE));
                 }
                 //
                 fprintf(f, "// {");
