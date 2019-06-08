@@ -51,8 +51,9 @@ typedef uint32_t ADDR_T;
 #define BYTES_OF_LD_VAR 2
 #define BITS_OF_LD_VAR (BYTES_OF_LD_VAR * 8)
 #define PLC_CLOCK_MIN 250 //500 //
-                          //-----------------------------------------------
-                          // `Configuration options.'
+
+//-----------------------------------------------
+// `Configuration options.'
 
 // clang-format off
 
@@ -165,11 +166,13 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-#define MNU_INSERT_UART_SENDn        0x3301
+//#define MNU_INSERT_UART_SENDn        0x3301 // impasse
 #define MNU_INSERT_UART_SEND_READY   0x3302
 #define MNU_INSERT_UART_RECV         0x34
-#define MNU_INSERT_UART_RECVn        0x3401
+//#define MNU_INSERT_UART_RECVn        0x3401 // impasse
 #define MNU_INSERT_UART_RECV_AVAIL   0x3402
+#define MNU_INSERT_FMTD_STRING       0x3410 // "Insert Formatted String Over &UART"
+#define MNU_INSERT_UART_WRITE        0x3420 // "Insert String Over UART"
 #define MNU_INSERT_EQU          0x35
 #define MNU_INSERT_NEQ          0x36
 #define MNU_INSERT_GRT          0x37
@@ -194,7 +197,6 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_RETURN       0x3d25
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
-#define MNU_INSERT_FMTD_STRING  0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -373,6 +375,14 @@ extern DWORD scheme;
 #define IS_MCU_REG(i) ((Prog.mcu()) && (Prog.mcu()->inputRegs[i]) && (Prog.mcu()->outputRegs[i]) && (Prog.mcu()->dirRegs[i]))
 
 //-----------------------------------------------
+typedef enum FRMTTag { //
+    FRMT_COMMENT,      //
+    FRMT_01,           //
+    FRMT_x20,          // convert space char ' ' to hex code \x20
+    FRMT_SPACE,        //
+} FRMT;                //
+
+//-----------------------------------------------
 // Function prototypes
 
 // ldmicro.cpp
@@ -519,6 +529,10 @@ ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+char *FrmStrToStr(char *dest);
+const char *ChrToFrmtStr(const char src, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();
 
 // iolist.cpp
@@ -556,6 +570,7 @@ void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+void ShowWrDialog(int which, ElemLeaf *l);
 void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(void *e);
 void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
@@ -714,6 +729,8 @@ extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 bool IsNumber(const char *str);
 bool IsNumber(const NameArray& name);
+bool IsString(const char *str);
+bool IsString(const NameArray &name);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -751,6 +768,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList);
 int32_t GetSimulationVariable(const char *name);
 int32_t GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(const char *name, const char *val);
+char *GetSimulationStr(const char *name, bool forIoList);
 char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);

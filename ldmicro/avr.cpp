@@ -5091,6 +5091,7 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
+/*
             case INT_UART_SEND: {
                 // Attention! Busy flag is not checked!!!
                 // Caller should check the busy flag!!!
@@ -5112,6 +5113,7 @@ static void CompileFromIntermediate()
                 CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 break;
             }
+*/
             case INT_UART_SEND1: {
                 // Attention! Busy flag is not checked!!!
                 // Caller should check the busy flag!!!
@@ -5138,6 +5140,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_ST_X, r16);
                 break;
             }
+/*
             case INT_UART_RECV: {
                 //Receive one char/byte in a single PLC cycle.
                 MemForVariable(a->name1, &addr1);
@@ -5163,6 +5166,7 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noChar);
                 break;
             }
+*/
             case INT_UART_RECV1: {
                 //Receive one char/byte in a single PLC cycle.
                 //Skip if no char.

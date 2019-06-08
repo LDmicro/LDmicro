@@ -1266,10 +1266,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddFormattedString());
             break;
 
+        case MNU_INSERT_UART_WRITE:
+            CHANGING_PROGRAM(AddWrite(ELEM_UART_WR));
+            break;
+
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
             break;
-
+/*
         case ELEM_CPRINTF:
         case ELEM_SPRINTF:
         case ELEM_FPRINTF:
@@ -1279,7 +1283,7 @@ static void ProcessMenu(int code)
         case ELEM_UART_CPRINTF:
             CHANGING_PROGRAM(AddPrint(code));
             break;
-
+*/
         case MNU_INSERT_OSR:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
             break;
@@ -1381,7 +1385,7 @@ static void ProcessMenu(int code)
         case MNU_INSERT_UART_RECV:
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
             break;
-
+/*
         case MNU_INSERT_UART_SENDn:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SENDn));
             break;
@@ -1389,7 +1393,7 @@ static void ProcessMenu(int code)
         case MNU_INSERT_UART_RECVn:
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECVn));
             break;
-
+*/
         case MNU_INSERT_UART_SEND_READY:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_READY));
             break;
@@ -2918,6 +2922,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if(LEN7SEG != arraylen(char7seg))
             oops();
 
+        if(LEN9SEG != arraylen(char9seg))
+            oops();
+
+        if(LEN14SEG != arraylen(char14seg))
+            oops();
+
+        if(LEN16SEG != arraylen(char16seg))
+            oops();
         if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
             Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
             oops();

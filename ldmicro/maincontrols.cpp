@@ -298,19 +298,24 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_ENDSUB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
+/*
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECVn, t);
+*/
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
-    EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
+/*    
+	EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_SPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_FPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_PRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_I2C_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF, t);
+*/
 
 #ifdef USE_SFR
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
@@ -335,6 +340,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 
     t = Prog.mcu() ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(settings, MNU_PULL_UP_RESISTORS, t);
+/*
+    t = Prog.mcu() && (Prog.mcu()->core > ARMcores) && (Prog.mcu()->core < ARMcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(settings, MNU_COMPILE_ARMGCC, t);
+*/
 }
 
 //-----------------------------------------------------------------------------
@@ -590,6 +599,7 @@ HMENU MakeMainWindowMenus()
 
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
@@ -622,12 +632,12 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("Insert QUADRATURE ENCODER"));
     DisplayMenu = CreatePopupMenu();
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("Insert BIN2BCD converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("SIMUL: Insert BUS tracer"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("Insert BCD2BIN converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("Insert BUS tracer"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("Insert 7-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("SIMUL: Insert 9-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG, _("SIMUL: Insert 14-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG, _("SIMUL: Insert 16-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("Insert 9-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG, _("Insert 14-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG, _("Insert 16-SEGMENT FONT converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu, _("Displays"));
 
 #ifdef USE_SFR

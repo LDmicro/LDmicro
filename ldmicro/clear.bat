@@ -52,12 +52,12 @@ del /S "%P3%%SL3%*.bak"
 attrib -R -A -S -H Thumbs.db /S
 del /S Thumbs.db
 ;
-del *.Chromium
-del *.file
-del *.Google
-del *.LLVM
-del *.Mozilla
-del *.Webkit
+del /S *.Chromium
+del /S *.file
+del /S *.Google
+del /S *.LLVM
+del /S *.Mozilla
+del /S *.Webkit
 ;
 goto exit
 ;

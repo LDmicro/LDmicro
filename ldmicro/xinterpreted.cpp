@@ -50,15 +50,13 @@ int PlcIos_AppendAndGet(const char *name)
 static int CheckRange(int value, const char *name)
 {
     if(value < 0 || value > 255) {
-        char msg[80];
-        sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-        THROW_COMPILER_EXCEPTION(msg);
+        THROW_COMPILER_EXCEPTION_FMT(_("%s=%d: out of range for 8bits target"), name, value);
     }
 
     return value;
 }
 
-static BYTE GetArduinoPinNumber(int pin)
+static int GetArduinoPinNumber(int pin)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
@@ -68,14 +66,14 @@ static BYTE GetArduinoPinNumber(int pin)
     return 0;
 }
 
-static BYTE AddrForBit(const char *name)
+static uint8_t AddrForBit(const char *name)
 {
-    return CheckRange(PlcIos_AppendAndGet(name), name);
+    return static_cast<uint8_t>(CheckRange(PlcIos_AppendAndGet(name), name));
 }
 
-static BYTE AddrForVariable(const char *name)
+static uint8_t AddrForVariable(const char *name)
 {
-    return CheckRange(PlcIos_AppendAndGet(name), name);
+    return static_cast<uint8_t>(CheckRange(PlcIos_AppendAndGet(name), name));
 }
 
 void CompileXInterpreted(const char *outFile)
@@ -230,10 +228,10 @@ void CompileXInterpreted(const char *outFile)
             case INT_SPI_WRITE: ///// Added by JG
             case INT_I2C_READ:  /////
             case INT_I2C_WRITE: /////
-            case INT_UART_SEND:
+//            case INT_UART_SEND:
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
-            case INT_UART_RECV:
+//            case INT_UART_SENDn:
+//            case INT_UART_RECV:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
             case INT_UART_RECV_AVAIL:

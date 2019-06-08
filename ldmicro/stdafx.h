@@ -21,29 +21,21 @@
 #include <locale.h>
 
 // C RunTime Header Files
-#include <stdlib.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <malloc.h>
-#include <memory.h>
-
-//#include <tchar.h>
-//#include <cstring>
-#include <string>
-
+#include <cstdlib>
+#include <cstdio>
+#include <cstddef>
 #include <cstdint>
+
+#include <cctype>
+#include <ctime>
+#include <cmath>
+
+#include <csignal>
+#include <cerrno>
+
+// C++ stdlib files
+#include <string>
 #include <vector>
-
-//#include <inttypes.h>
-#include <ctype.h>
-#include <time.h>
-#include <limits.h>
-#include <math.h>
-
-#include <signal.h>
-#include <setjmp.h>
-#include <errno.h>
-
 #include <algorithm>
 #include <unordered_set>
 
@@ -56,20 +48,5 @@
 #include "filetracker.hpp"
 
 #include "lang.h"
-
-// The library that I use to do registry stuff.
-#define FREEZE_SUBKEY "LDMicro"
-//#include "freeze.h"
-
-//TODO:  some day this macros should be change to std::max / std::min
-#ifndef NOMINMAX
-#ifndef max
-#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-#endif //NOMINMAX
 
 #endif // STDAFX_LDMICRO_H

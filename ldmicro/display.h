@@ -22,6 +22,10 @@
 #define __DISPLAY_H
 
 extern int32_t char7seg[129];
+extern int32_t char9seg[129]; 
+extern int32_t char14seg[129];
+extern int32_t char16seg[129];
+
 #define LEN7SEG 129
 #define LEN9SEG 129
 #define LEN14SEG 129
@@ -34,3 +38,4 @@ extern int32_t char7seg[129];
 #define DEGREE16 (LEN16SEG - 1)
 
 #endif
+

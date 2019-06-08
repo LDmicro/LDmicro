@@ -84,15 +84,16 @@
 #define INT_SLEEP                               1099
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
-#define INT_UART_SEND                           13
+//#define INT_UART_SEND                           13   // obsolete
 #define INT_UART_SEND1                          1301
-#define INT_UART_SENDn                          1302
+//#define INT_UART_SENDn                          1302 // impasse
 #define INT_UART_SEND_READY                     1303
 #define INT_UART_SEND_BUSY                      1304
-#define INT_UART_RECV                           14
+#define INT_UART_WR                             1310
+//#define INT_UART_RECV                           14   // obsolete
 #define INT_UART_RECV1                          1400
-#define INT_UART_RECVn                          1401
-#define INT_UART_RECVnn                         1402
+//#define INT_UART_RECVn                          1401 // impasse
+//#define INT_UART_RECVnn                         1402 // impasse
 #define INT_UART_RECV_AVAIL                     1403
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE

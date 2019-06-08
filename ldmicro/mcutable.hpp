@@ -46,6 +46,7 @@ typedef enum CoreTag {
     EnhancedCore128K,
     EnhancedCore4M,
     XMEGAcore,
+    AVRcores_, // end of AVRcores
 
     PICcores,
     BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
@@ -54,15 +55,18 @@ typedef enum CoreTag {
     EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
+    PICcores_, // end of PICcores
 
     ESPcores,
     ESP8266Core,
+    ESPcores_, // end of ESPcores
 
     ARMcores,
     CortexF1,
     CortexF2,
     CortexF3,
     CortexF4,
+    ARMcores_, // end of ARMcores
 
     PCcores,
     PC_LPT_COM,

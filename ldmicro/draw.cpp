@@ -107,10 +107,10 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_UART_RECV:
-        case ELEM_UART_RECVn:
+//        case ELEM_UART_RECVn:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_UART_SEND:
-        case ELEM_UART_SENDn:
+//        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
 #ifdef USE_SFR
         case ELEM_RSFR:
@@ -158,6 +158,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PULSER:
         case ELEM_STEPPER:
         case ELEM_STRING:
+/*
         case ELEM_CPRINTF:
         case ELEM_SPRINTF:
         case ELEM_FPRINTF:
@@ -165,6 +166,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_I2C_CPRINTF:
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
+*/
+        case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -691,7 +694,7 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
                         ":=}");
             formatWidth(bot, POS_WIDTH, "{", "", "", m->src, "}");
 
-            CenterWithSpaces(*cx, *cy, top, poweredAfter, false);
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, true); // false
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
@@ -1471,7 +1474,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_STRING: {
             // Careful, string could be longer than fits in our space.
             sprintf(s1, "%s", leaf->d.fmtdStr.dest);
-            formatWidth(top, 2 * POS_WIDTH, "{", "", s1, "", ":=}");
+            formatWidth(top, 2 * POS_WIDTH, "{""\x01""FRMT STR""\x02", "", "", s1, ":=}");
 
             sprintf(s1, "\"%s\",", leaf->d.fmtdStr.string);
             sprintf(s2, "%s", leaf->d.fmtdStr.var);
@@ -1482,7 +1485,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             *cx += 2 * POS_WIDTH;
             break;
         }
-
+/*
             {
                 const char *s;
                 // clang-format off
@@ -1511,7 +1514,28 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                         break;
                     }
             }
+*/
+        case ELEM_UART_WR: {
+            // Careful, string could be longer than fits in our space.
+            char str[POS_WIDTH * 2];
+            memset(str, 0, sizeof(str));
+            char *srcStr = leaf->d.fmtdStr.string;
+            memcpy(str, srcStr, std::min(strlen(srcStr), static_cast<size_t>(POS_WIDTH * 2 - 7)));
 
+//            sprintf(bot, "\"%s\"", str);
+
+            PoweredText(poweredAfter);
+            if(!IsString(str))
+                NameText();
+            DrawChars(
+                *cx, *cy + (POS_HEIGHT / 2) - 1, formatWidth(top, 2 * POS_WIDTH, "", "", str, "", ""));
+            if(!IsString(str))
+                BodyText();
+
+            CenterWithWiresWidth(*cx, *cy, "{UART WRITE}", poweredBefore, poweredAfter, 2 * POS_WIDTH);
+            *cx += 2 * POS_WIDTH;
+            break;
+        }
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH * 2];
@@ -1540,7 +1564,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "", "", s2, "", ""), poweredAfter, true);
             *cx += POS_WIDTH;
             break;
-
+/*
         case ELEM_UART_RECVn:
         case ELEM_UART_SENDn:
             CenterWithWires(
@@ -1550,7 +1574,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "", "", s2, "", ""), poweredAfter, true);
             *cx += POS_WIDTH;
             break;
-
+*/
         case ELEM_UART_SEND_READY:
             CenterWithSpaces(*cx, *cy, " Is ready? ", poweredAfter, false);
             CenterWithWires(*cx, *cy, "[UART SEND]", poweredBefore, poweredAfter);
@@ -1587,7 +1611,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             formatWidth(top,
                         POS_WIDTH,
                         "{\x01"
-                        "SPI_WR\x02 ",
+                        "SPI WR\x02 ",
                         "",
                         "",
                         m->name,
@@ -1605,7 +1629,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             formatWidth(top,
                         POS_WIDTH,
                         "{\x01"
-                        "I2C_RD\x02 ",
+                        "I2C RD\x02 ",
                         "",
                         "",
                         m->name,
@@ -1623,7 +1647,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             formatWidth(top,
                         POS_WIDTH,
                         "{\x01"
-                        "I2C_WR\x02 ",
+                        "I2C WR\x02 ",
                         "",
                         "",
                         m->name,
@@ -1712,13 +1736,16 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_PULSER:
         case ELEM_STEPPER:
         case ELEM_STRING:
-        case ELEM_CPRINTF:
+/*
+		case ELEM_CPRINTF:
         case ELEM_SPRINTF:
         case ELEM_FPRINTF:
         case ELEM_PRINTF:
         case ELEM_I2C_CPRINTF:
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
+*/
+        case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx - 1, gy);
             DisplayMatrix[gx - 1][gy].data.leaf = leaf;

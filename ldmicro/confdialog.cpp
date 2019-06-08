@@ -293,10 +293,7 @@ static void MakeControls()
                                        nullptr);
     NiceFont(ConfigBitsTextbox);
 
-    ///// Modified by JG to extend to AVRs & ARMs
-    if(!Prog.mcu()
-       || ((Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR)
-           && (Prog.mcu()->whichIsa != ISA_ARM))) {
+    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16)) {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
     }
@@ -324,14 +321,6 @@ static void MakeControls()
         EnableWindow(textLabel2, false);
     }
     // clang-format on
-
-    ///// Modified by JG to extend to AVRs & ARMs
-    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_AVR)
-       && (Prog.mcu()->whichIsa != ISA_ARM)) {
-        EnableWindow(ConfigBitsTextbox, false);
-        EnableWindow(textLabel2_, false);
-        //      EnableWindow(WDTECheckbox, false);
-    }
 
     ///// Added by JG
     if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_ARM)) {

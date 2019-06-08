@@ -34,6 +34,8 @@ void *CheckMalloc(size_t n)
     void *p = malloc(n);
     if(p)
         memset(p, 0, n);
+    else
+        THROW_COMPILER_EXCEPTION("CheckMalloc");
     return p;
 }
 void CheckFree(void *p)
@@ -460,7 +462,7 @@ void AddDelay()
 {
     oops();
     /*
-	if(!CanInsertOther)
+    if(!CanInsertOther)
         return;
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.delay, "10"); // 10 us
@@ -576,6 +578,17 @@ void AddFormattedString()
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
 
+void AddWrite(int code)
+{
+    if(!CanInsertOther)
+        return;
+
+    ElemLeaf *t = AllocLeaf();
+    //strcpy(t->d.fmtdStr.string, "\"String\" or var");
+    strcpy(t->d.fmtdStr.string, "var");
+    AddLeaf(code, t);
+}
+
 void AddString()
 {
     if(!CanInsertOther)
@@ -583,7 +596,7 @@ void AddString()
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "dest");
-    strcpy(t->d.fmtdStr.string, "fmtstring");
+    strcpy(t->d.fmtdStr.string, "frmtString");
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_STRING, t);
 }
@@ -1392,7 +1405,7 @@ static void NullDisplayMatrix(int from, int to)
             }
         }
     }
-	*/
+    */
 }
 //-----------------------------------------------------------------------------
 // Insert a rung before rung i.
@@ -1550,7 +1563,7 @@ bool ItemIsLastInCircuit(const ElemLeaf *item)
     bool found = false;
     bool andItemAfter = false;
 
-	auto node = SeriesNode(Prog.rungs_[rung_idx]);
+    auto node = SeriesNode(Prog.rungs_[rung_idx]);
     LastInCircuit(&node, item, &found, &andItemAfter);
 
     if(found)
@@ -1784,6 +1797,7 @@ bool TablesUsed()
         if((ContainsWhich(
                ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }

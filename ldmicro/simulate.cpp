@@ -467,15 +467,22 @@ void SetSimulationStr(const char *name, const char *val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-char *GetSimulationStr(const char *name)
+char *GetSimulationStr(const char *name, bool forIoList)
 {
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].valstr;
         }
     }
+    if(forIoList)
+        return "";
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return GetSimulationStr(name);
+}
+
+char *GetSimulationStr(const char *name)
+{
+    return GetSimulationStr(name, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -893,6 +900,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_SPI:
+            if(strlen(l->d.spi.send))
+              if(!IsNumber(l->d.spi.send))
+                MarkWithCheck(l->d.spi.send, VAR_FLAG_ANY);
+            if(strlen(l->d.spi.recv))
+              if(!IsNumber(l->d.spi.recv))
+                MarkWithCheck(l->d.spi.recv, VAR_FLAG_ANY);
+            break;
+
             // clang-format off
         const char *s;
         case ELEM_7SEG:  s = "char7seg";  goto xseg;
@@ -951,7 +967,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_UART_RECV:
-        case ELEM_UART_RECVn:
+//        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -965,6 +981,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
+        case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;
         }
@@ -976,10 +993,9 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
-        case ELEM_UART_SENDn:
+//        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
-        case ELEM_SPI:    ///// Added by JG
         case ELEM_SPI_WR: ///// Added by JG
         case ELEM_I2C_RD: ///// Added by JG
         case ELEM_I2C_WR: ///// Added by JG
@@ -1948,6 +1964,7 @@ static void SimulateIntCode()
                     AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
+/*
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
@@ -1960,6 +1977,7 @@ static void SimulateIntCode()
                     SetSingleBit(a->name2, false); // not busy
                 }
                 break;
+*/
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, true); // ready
@@ -1977,7 +1995,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_UART_RECV1:
-            case INT_UART_RECV:
+//            case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
@@ -2087,7 +2105,6 @@ static void SimulateIntCode()
                     index = a->literal1;
                     StopSimulation();
                 }
-                //dbps(GetSimulationStr(a->name1.c_str()))
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
@@ -2323,7 +2340,7 @@ void DescribeForIoList(const char *name, int type, char *out)
             break;
 
         case IO_TYPE_STRING:
-            sprintf(out, "\"%s\"", GetSimulationStr(name));
+            sprintf(out, "\"%s\"", GetSimulationStr(name, true));
             break;
 
         case IO_TYPE_VAL_IN_FLASH:

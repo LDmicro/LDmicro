@@ -1,4 +1,4 @@
-== Release 5.3.?.?
+== Release 5.4.0.0 String type support
 
     * Added
         "Atmel AVR ATmega32U4 44-Pin packages",
@@ -13,6 +13,17 @@
         "Microchip PIC16F1827 18-Pin PDIP, SOIC",
         "Microchip PIC10F202 6-SOT"
 
+    * Added LIBRARIES_FOR\Pic16\UartLib.*
+            LIBRARIES_FOR\AVR\UartLib.*
+
+    * Added "9-SEGMENT FONT converter"
+           "14-SEGMENT FONT converter"
+           "16-SEGMENT FONT converter"
+
+    * Added "BUS tracer" support
+
+    * Added STRING type support in generated C code ???
+        Tested ATmega2560,
 
 == Release 5.3.1.0
 

@@ -107,6 +107,7 @@ add_definitions(
     "-D_CRT_SECURE_NO_WARNINGS"
     "-D_CRT_SECURE_NO_DEPRECATE"
     "-DNOMINMAX"
+    -DFREEZE_SUBKEY="LDMicro"
     )
 
 set(LDMICRO_LIBS "")

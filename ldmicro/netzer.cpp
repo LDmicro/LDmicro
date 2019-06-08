@@ -493,10 +493,10 @@ int GenerateIntOpcodes()
             case INT_EEPROM_WRITE:
             case INT_READ_ADC:
             case INT_SET_PWM:
-            case INT_UART_SEND:
+//            case INT_UART_SEND:
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
-            case INT_UART_RECV:
+//            case INT_UART_SENDn:
+//            case INT_UART_RECV:
             case INT_UART_RECV_AVAIL:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
