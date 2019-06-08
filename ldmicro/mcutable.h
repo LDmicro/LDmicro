@@ -450,32 +450,32 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo44[] = {
 McuIoPinInfo AvrAtmega16U4or32U4IoPinInfo44[] = {
 //   port bit pin  pinName                  ArduinoPin  ArduinoName
 //                                                   X  Leonardo
-    { 'B',  0,  8, "PB0 (PCINT0/SS)"              ,  8, "" },
-    { 'B',  1,  9, "PB1 (PCINT1/SCL)"             ,  9, "" },
-    { 'B',  2, 10, "PB2 (PCINT2/PDI/MOSI)"        , 10, "" },
-    { 'B',  3, 11, "PB3 (PCINT3/PDO/MISO)"        , 11, "" },
-    { 'B',  4, 28, "PB4 (PCINT4/ADC11)"           , 28, "8"  },
-    { 'B',  5, 29, "PB5 (PCINT5/OC1A/OC4B/ADC12)" , 29, "9"  },
-    { 'B',  6, 30, "PB6 (PCINT6/OC1B/_OC4B/ADC13)", 30, "10" },
-    { 'B',  7, 12, "PB7 (PCINT7/OC1C/OC0A/_RTS)"  , 12, "11" },
-    { 'D',  0, 18, "PD0 (INT0/OC0B/SCL)"          , 18, "3"  },
-    { 'D',  1, 19, "PD1 (INT1/SDA)"               , 19, "2"  },
-    { 'D',  2, 20, "PD2 (INT2/RXD1)"              , 20, "0"  },
-    { 'D',  3, 21, "PD3 (INT3/TXD1)"              , 21, "1"  },
-    { 'D',  4, 25, "PD4 (ICP1/ADC8)"              , 25, "4"  },
-    { 'D',  5, 22, "PD5 (XCK1/_CTS)"              , 22, "" },
-    { 'D',  6, 26, "PD6 (T1/_OC4D/ADC9)"          , 26, "12" },
-    { 'D',  7, 27, "PD7 (T0/OC4D/ADC10)"          , 27, "6"  },
-    { 'C',  6, 31, "PC6 (OC3A/_OC4A)"             , 31, "5"  },
-    { 'C',  7, 32, "PC7 (ICP3/CLK0/OC4A)"         , 32, "13" },
-    { 'F',  0, 41, "PF0 (ADC0)"                   , 41, "A0" },
-    { 'F',  1, 40, "PF1 (ADC1)"                   , 40, "A1" },
-    { 'F',  4, 39, "PF4 (ADC4/TCK)"               , 39, "A4" },
-    { 'F',  5, 38, "PF5 (ADC5/TMS)"               , 38, "A5" },
-    { 'F',  6, 37, "PF6 (ADC6/TDO)"               , 37, "A6" },
-    { 'F',  7, 36, "PF7 (ADC7/TDI)"               , 36, "A7" },
-    { 'E',  2, 33, "PE2 (_HWB)"                   , 33, "" },
-    { 'E',  6,  1, "PE6 (INT6/AIN0)"              ,  1, "7"  },
+    { 'B',  0,  8, "PB0 (PCINT0/SS)"              ,  8, ""  , 0, 0, 0, 0 },
+    { 'B',  1,  9, "PB1 (PCINT1/SCL)"             ,  9, ""  , 0, 0, 0, 0 },
+    { 'B',  2, 10, "PB2 (PCINT2/PDI/MOSI)"        , 10, ""  , 0, 0, 0, 0 },
+    { 'B',  3, 11, "PB3 (PCINT3/PDO/MISO)"        , 11, ""  , 0, 0, 0, 0 },
+    { 'B',  4, 28, "PB4 (PCINT4/ADC11)"           , 28, "8" , 0, 0, 0, 0 },
+    { 'B',  5, 29, "PB5 (PCINT5/OC1A/OC4B/ADC12)" , 29, "9" , 0, 0, 0, 0 },
+    { 'B',  6, 30, "PB6 (PCINT6/OC1B/_OC4B/ADC13)", 30, "10", 0, 0, 0, 0 },
+    { 'B',  7, 12, "PB7 (PCINT7/OC1C/OC0A/_RTS)"  , 12, "11", 0, 0, 0, 0 },
+    { 'D',  0, 18, "PD0 (INT0/OC0B/SCL)"          , 18, "3" , 0, 0, 0, 0 },
+    { 'D',  1, 19, "PD1 (INT1/SDA)"               , 19, "2" , 0, 0, 0, 0 },
+    { 'D',  2, 20, "PD2 (INT2/RXD1)"              , 20, "0" , 0, 0, 0, 0 },
+    { 'D',  3, 21, "PD3 (INT3/TXD1)"              , 21, "1" , 0, 0, 0, 0 },
+    { 'D',  4, 25, "PD4 (ICP1/ADC8)"              , 25, "4" , 0, 0, 0, 0 },
+    { 'D',  5, 22, "PD5 (XCK1/_CTS)"              , 22, ""  , 0, 0, 0, 0 },
+    { 'D',  6, 26, "PD6 (T1/_OC4D/ADC9)"          , 26, "12", 0, 0, 0, 0 },
+    { 'D',  7, 27, "PD7 (T0/OC4D/ADC10)"          , 27, "6" , 0, 0, 0, 0 },
+    { 'C',  6, 31, "PC6 (OC3A/_OC4A)"             , 31, "5" , 0, 0, 0, 0 },
+    { 'C',  7, 32, "PC7 (ICP3/CLK0/OC4A)"         , 32, "13", 0, 0, 0, 0 },
+    { 'F',  0, 41, "PF0 (ADC0)"                   , 41, "A0", 0, 0, 0, 0 },
+    { 'F',  1, 40, "PF1 (ADC1)"                   , 40, "A1", 0, 0, 0, 0 },
+    { 'F',  4, 39, "PF4 (ADC4/TCK)"               , 39, "A4", 0, 0, 0, 0 },
+    { 'F',  5, 38, "PF5 (ADC5/TMS)"               , 38, "A5", 0, 0, 0, 0 },
+    { 'F',  6, 37, "PF6 (ADC6/TDO)"               , 37, "A6", 0, 0, 0, 0 },
+    { 'F',  7, 36, "PF7 (ADC7/TDI)"               , 36, "A7", 0, 0, 0, 0 },
+    { 'E',  2, 33, "PE2 (_HWB)"                   , 33, ""  , 0, 0, 0, 0 },
+    { 'E',  6,  1, "PE6 (INT6/AIN0)"              ,  1, "7" , 0, 0, 0, 0 },
 };
 
 McuAdcPinInfo AvrAtmega16U4or32U4AdcPinInfo44[] = {
@@ -600,10 +600,10 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // ATtiny10 6-Pin packages
 McuIoPinInfo AvrATtiny10IoPinInfo6[] = {
-    { 'B',  0,  1, "PB0 (PCINT0/ADC0/OC0A/TPIDATA/AIN0)" }, // {char port;  int bit;  int pin;}
-    { 'B',  1,  3, "PB1 (PCINT1/ADC1/OC0B/CLKI/TPICLK/ICP0/AIN1)" },
-    { 'B',  2,  4, "PB2 (PCINT2/ADC2/INT0/CLKO/T0)" },
-    { 'B',  3,  6, "PB3 (PCINT3/ADC3/RESET)" },
+    { 'B',  0,  1, "PB0 (PCINT0/ADC0/OC0A/TPIDATA/AIN0)"         , 0, "", 0, 0, 0, 0}, // {char port;  int bit;  int pin;}
+    { 'B',  1,  3, "PB1 (PCINT1/ADC1/OC0B/CLKI/TPICLK/ICP0/AIN1)", 0, "", 0, 0, 0, 0},
+    { 'B',  2,  4, "PB2 (PCINT2/ADC2/INT0/CLKO/T0)"              , 0, "", 0, 0, 0, 0},
+    { 'B',  3,  6, "PB3 (PCINT3/ADC3/RESET)"                     , 0, "", 0, 0, 0, 0},
 };
 
 McuAdcPinInfo AvrATtiny10AdcPinInfo6[] = {
@@ -623,23 +623,23 @@ McuExtIntPinInfo AvrExtIntPinInfo6[] = {
 //-----------------------------------------------------------------------------
 // ATtiny85 8-Pin packages
 McuIoPinInfo AvrATtiny85IoPinInfo8[] = {
-    { 'B',  0,  5, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)" },
-    { 'B',  1,  6, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"           },
-    { 'B',  2,  7, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"        },
-    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"            },
-    { 'B',  4,  3, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"             },
-    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                   },
+    { 'B',  0,  5, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)", 0, "", 0, 0, 0, 0},
+    { 'B',  1,  6, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"          , 0, "", 0, 0, 0, 0},
+    { 'B',  2,  7, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"       , 0, "", 0, 0, 0, 0},
+    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"           , 0, "", 0, 0, 0, 0},
+    { 'B',  4,  3, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"            , 0, "", 0, 0, 0, 0},
+    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                  , 0, "", 0, 0, 0, 0},
 };
 
 McuIoPinInfo AvrATtiny85IoPinInfo20[] = {
 //   port bit pin  pinName                                  ArduinoPin  ArduinoName
 //                                                                   X  Gemma
-    { 'B',  0, 11, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)", 11, "0 // D0/PWM~/SDA" },
-    { 'B',  1, 12, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"          , 12, "1 // D1/PWM~/SCL/LED" },
-    { 'B',  2, 14, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"       , 14, "2 // D2/A1" },
-    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"           ,  2, "" },
-    { 'B',  4,  5, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"            ,  5, "" },
-    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                  ,  1, "RESET" },
+    { 'B',  0, 11, "PB0 (PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF)", 11, "0 // D0/PWM~/SDA"    , 0, 0, 0, 0},
+    { 'B',  1, 12, "PB1 (PCINT1/MISO/DO/AIN1/OC0B/OC1A)"          , 12, "1 // D1/PWM~/SCL/LED", 0, 0, 0, 0},
+    { 'B',  2, 14, "PB2 (PCINT2/ADC1/SCK/USCK/SCL/T0/INT0)"       , 14, "2 // D2/A1"          , 0, 0, 0, 0},
+    { 'B',  3,  2, "PB3 (PCINT3/ADC3/XTAL1/CLKI/_OC1B)"           ,  2, ""                    , 0, 0, 0, 0},
+    { 'B',  4,  5, "PB4 (PCINT4/ADC2/XTAL2/CLKO/OC1B)"            ,  5, ""                    , 0, 0, 0, 0},
+    { 'B',  5,  1, "PB5 (PCINT5/ADC0/_RESET/dW)"                  ,  1, "RESET"               , 0, 0, 0, 0},
 };
 
 McuAdcPinInfo AvrATtiny85AdcPinInfo[] = {
@@ -774,31 +774,31 @@ McuI2cInfo McuI2cInfoATmega2560[] = {                                           
 McuIoPinInfo AvrAtmega328IoPinInfo32[] = {
 //   port bit pin  pinName             ArduinoPin  ArduinoName
 //                                              X  Nano
-    { 'D',  0, 30, "PD0 (PCINT16/RXD)"       , 30, "0" }, // {char port;  int bit;  int pin; char name[]}
-    { 'D',  1, 31, "PD1 (PCINT17/TXD)"       , 31, "1" },
-    { 'D',  2, 32, "PD2 (PCINT18/INT0)"      , 32, "2" },
-    { 'D',  3,  1, "PD3 (PCINT19/OC2B/INT1)" ,  1, "3" },
-    { 'D',  4,  2, "PD4 (PCINT20/XCK/T0)"    ,  2, "4" },
-    { 'D',  5,  9, "PD5 (PCINT21/OC0B/T1)"   ,  9, "5" },
-    { 'D',  6, 10, "PD6 (PCINT22/OC0A/AIN0)" , 10, "6" },
-    { 'D',  7, 11, "PD7 (PCINT23/AIN1)"      , 11, "7" },
-    { 'B',  0, 12, "PB0 (PCINT0/ICP1/CLKO)"  , 12, "8" },
-    { 'B',  1, 13, "PB1 (PCINT1/OC1A)"       , 13, "9" },
-    { 'B',  2, 14, "PB2 (PCINT2/OC1B/SS)"    , 14, "10" },
-    { 'B',  3, 15, "PB3 (PCINT3/OC2A/MOSI)"  , 15, "11" },
-    { 'B',  4, 16, "PB4 (PCINT4/MISO)"       , 16, "12" },
-    { 'B',  5, 17, "PB5 (PCINT5/SCK)"        , 17, "13" },
-    { 'B',  6,  7, "PB6 (PCINT6/XTAL1/TOSC1)",  7, "" },
-    { 'B',  7,  8, "PB7 (PCINT7/XTAL2/TOSC2)",  8, "" },
-    { 'C',  0, 23, "PC0 (PCINT8/ADC0)"       , 23, "A0" },
-    { 'C',  1, 24, "PC1 (PCINT9/ADC1)"       , 24, "A1" },
-    { 'C',  2, 25, "PC2 (PCINT10/ADC2)"      , 25, "A2" },
-    { 'C',  3, 26, "PC3 (PCINT11/ADC3)"      , 26, "A3" },
-    { 'C',  4, 27, "PC4 (PCINT12/ADC4/SDA)"  , 27, "A4" },
-    { 'C',  5, 28, "PC5 (PCINT13/ADC5/SCL)"  , 28, "A5" },
-    { 'C',  6, 29, "PC6 (PCINT14/RESET)"     , 29, "RST" },
-    { '\0', 6, 19, "(ADC6)"                  , 19, "A6" },
-    { '\0', 7, 22, "(ADC7)"                  , 22, "A7" }
+    { 'D',  0, 30, "PD0 (PCINT16/RXD)"       , 30, "0"  , 0, 0, 0, 0}, // {char port;  int bit;  int pin; char name[]}
+    { 'D',  1, 31, "PD1 (PCINT17/TXD)"       , 31, "1"  , 0, 0, 0, 0},
+    { 'D',  2, 32, "PD2 (PCINT18/INT0)"      , 32, "2"  , 0, 0, 0, 0},
+    { 'D',  3,  1, "PD3 (PCINT19/OC2B/INT1)" ,  1, "3"  , 0, 0, 0, 0},
+    { 'D',  4,  2, "PD4 (PCINT20/XCK/T0)"    ,  2, "4"  , 0, 0, 0, 0},
+    { 'D',  5,  9, "PD5 (PCINT21/OC0B/T1)"   ,  9, "5"  , 0, 0, 0, 0},
+    { 'D',  6, 10, "PD6 (PCINT22/OC0A/AIN0)" , 10, "6"  , 0, 0, 0, 0},
+    { 'D',  7, 11, "PD7 (PCINT23/AIN1)"      , 11, "7"  , 0, 0, 0, 0},
+    { 'B',  0, 12, "PB0 (PCINT0/ICP1/CLKO)"  , 12, "8"  , 0, 0, 0, 0},
+    { 'B',  1, 13, "PB1 (PCINT1/OC1A)"       , 13, "9"  , 0, 0, 0, 0},
+    { 'B',  2, 14, "PB2 (PCINT2/OC1B/SS)"    , 14, "10" , 0, 0, 0, 0},
+    { 'B',  3, 15, "PB3 (PCINT3/OC2A/MOSI)"  , 15, "11" , 0, 0, 0, 0},
+    { 'B',  4, 16, "PB4 (PCINT4/MISO)"       , 16, "12" , 0, 0, 0, 0},
+    { 'B',  5, 17, "PB5 (PCINT5/SCK)"        , 17, "13" , 0, 0, 0, 0},
+    { 'B',  6,  7, "PB6 (PCINT6/XTAL1/TOSC1)",  7, ""   , 0, 0, 0, 0},
+    { 'B',  7,  8, "PB7 (PCINT7/XTAL2/TOSC2)",  8, ""   , 0, 0, 0, 0},
+    { 'C',  0, 23, "PC0 (PCINT8/ADC0)"       , 23, "A0" , 0, 0, 0, 0},
+    { 'C',  1, 24, "PC1 (PCINT9/ADC1)"       , 24, "A1" , 0, 0, 0, 0},
+    { 'C',  2, 25, "PC2 (PCINT10/ADC2)"      , 25, "A2" , 0, 0, 0, 0},
+    { 'C',  3, 26, "PC3 (PCINT11/ADC3)"      , 26, "A3" , 0, 0, 0, 0},
+    { 'C',  4, 27, "PC4 (PCINT12/ADC4/SDA)"  , 27, "A4" , 0, 0, 0, 0},
+    { 'C',  5, 28, "PC5 (PCINT13/ADC5/SCL)"  , 28, "A5" , 0, 0, 0, 0},
+    { 'C',  6, 29, "PC6 (PCINT14/RESET)"     , 29, "RST", 0, 0, 0, 0},
+    { '\0', 6, 19, "(ADC6)"                  , 19, "A6" , 0, 0, 0, 0},
+    { '\0', 7, 22, "(ADC7)"                  , 22, "A7" , 0, 0, 0, 0}
 };
 
 McuAdcPinInfo AvrAtmega328AdcPinInfo32[] = {
@@ -867,10 +867,10 @@ McuSpiInfo McuSpiInfoATmega2560[] = {
 McuPwmPinInfo AvrPwmPinInfo8[] = { // ATtiny85
 ////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    {  5, 0, 8,    5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // OC0A
-    {  6, 0, 8,    5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC0B
-    {  6, 1, 8,    5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1A
-    {  4, 1, 8,    7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC1B
+    {  5, 0, 8,    5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    , ""}, // OC0A
+    {  6, 0, 8,    5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 , ""}, // OC0B
+    {  6, 1, 8,    5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 , ""}, // OC1A
+    {  4, 1, 8,    7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    , ""}, // OC1B
 };
 
 McuPwmPinInfo AvrPwmPinInfo28_[] = { // ATmega8, etc.
@@ -1026,14 +1026,14 @@ McuPwmPinInfo AvrPwmPinInfo32[] = {
 McuPwmPinInfo ATmegaXXU4PwmPinInfo[] = {
 ////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    { 12, 0, 8,    5, 0x47,  0,     0x44,  7,     6,     3,    0x45,  0    }, // OC0A // Fast PWM
-    { 18, 0, 8,    5, 0x48,  0,     0x44,  5,     4,     3,    0x45,  0    }, // OC0B
+    { 12, 0, 8,    5, 0x47,  0,     0x44,  7,     6,     3,    0x45,  0   , "" }, // OC0A // Fast PWM
+    { 18, 0, 8,    5, 0x48,  0,     0x44,  5,     4,     3,    0x45,  0   , "" }, // OC0B
 
-    { 29, 1, 8,    5, 0x88,  0x89,  0x80,  7,     6,     1,    0x81,  0x08 }, // OC1A
-    { 30, 1, 8,    5, 0x8A,  0x8B,  0x80,  5,     4,     1,    0x81,  0x08 }, // OC1B
-    { 12, 1, 8,    5, 0x8C,  0x8D,  0x80,  3,     2,     1,    0x81,  0x08 }, // OC1C
+    { 29, 1, 8,    5, 0x88,  0x89,  0x80,  7,     6,     1,    0x81,  0x08, "" }, // OC1A
+    { 30, 1, 8,    5, 0x8A,  0x8B,  0x80,  5,     4,     1,    0x81,  0x08, "" }, // OC1B
+    { 12, 1, 8,    5, 0x8C,  0x8D,  0x80,  3,     2,     1,    0x81,  0x08, "" }, // OC1C
 
-    { 31, 3, 8,    5, 0x98,  0x99,  0x90,  7,     6,     1,    0x91,  0x08 }, // OC3A
+    { 31, 3, 8,    5, 0x98,  0x99,  0x90,  7,     6,     1,    0x91,  0x08, "" }, // OC3A
 
 //  { 32, 4, 8,   15, 0xCF,  0,     0xC0,  7,     6,     3,    0xC3,  0    }, // OC4A
 //  { 30, 4, 8,   15, 0xD0,  0,     0xC0,  5,     4,     3,    0xC3,  0    }, // OC4B
@@ -1176,28 +1176,28 @@ McuAdcPinInfo AvrAtmega164AdcPinInfo[] = {
 
 McuIoPinInfo Pic14PinIoInfo[] = {
 //  { ' ', -1, 14, "Vss" },
-    { 'A',  0, 13, "RA0/AN0" },
-    { 'A',  1, 12, "RA1/AN1" },
-    { 'A',  2, 11, "RA2/AN2/CCP3/INT" },
-    { 'A',  3,  4, "RA3/_MCLR/Vpp" }, // input only
-    { 'A',  4,  3, "RA4/AN3/OSC2/CLKOUT" },
-    { 'A',  5,  2, "RA5/CCP2/OSC1/CLKIN" },
-//  { ' ', -1,  1, "Vdd" },
-    { 'C',  0, 10, "RC0/AN4" },
-    { 'C',  1,  9, "RC1/AN5/CCP4" },
-    { 'C',  2,  8, "RC2/AN6/P2B" },
-    { 'C',  3,  7, "RC3/AN7/P2A" },
-    { 'C',  4,  6, "RC4/P1B/TX/CK" },
-    { 'C',  5,  5, "RC5/P1A/RX/DT/CCP1" },
+    { 'A',  0, 13, "RA0/AN0"            , 0, "", 0, 0, 0, 0},
+    { 'A',  1, 12, "RA1/AN1"            , 0, "", 0, 0, 0, 0},
+    { 'A',  2, 11, "RA2/AN2/CCP3/INT"   , 0, "", 0, 0, 0, 0},
+    { 'A',  3,  4, "RA3/_MCLR/Vpp"      , 0, "", 0, 0, 0, 0}, // input only
+    { 'A',  4,  3, "RA4/AN3/OSC2/CLKOUT", 0, "", 0, 0, 0, 0},
+    { 'A',  5,  2, "RA5/CCP2/OSC1/CLKIN", 0, "", 0, 0, 0, 0},
+//  { ' ', -1,  1, "Vdd" },             , 0, "", 0, 0, 0, 0
+    { 'C',  0, 10, "RC0/AN4"            , 0, "", 0, 0, 0, 0},
+    { 'C',  1,  9, "RC1/AN5/CCP4"       , 0, "", 0, 0, 0, 0},
+    { 'C',  2,  8, "RC2/AN6/P2B"        , 0, "", 0, 0, 0, 0},
+    { 'C',  3,  7, "RC3/AN7/P2A"        , 0, "", 0, 0, 0, 0},
+    { 'C',  4,  6, "RC4/P1B/TX/CK"      , 0, "", 0, 0, 0, 0},
+    { 'C',  5,  5, "RC5/P1A/RX/DT/CCP1" , 0, "", 0, 0, 0, 0},
 };
 
 ////     ti
 //// pin mer
 McuPwmPinInfo Pic16F1824PwmPinInfo[] = {
-    {  5, 1 },
-    {  6, 1 },
-    {  7, 2 },
-    {  8, 2 },
+    {  5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    {  6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    {  7, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    {  8, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
 };
 
 //-----------------------------------------------------------------------------
@@ -1296,33 +1296,33 @@ McuAdcPinInfo Pic16F88AdcPinInfo[] = {
 // PIC16F1826, PIC16F1827
 
 McuIoPinInfo Pic16f1827IoPinInfo[] = {
-    { 'A',  2,  1, "RA2/AN2" },
-    { 'A',  3,  2, "RA3/AN3" },
-    { 'A',  4,  3, "RA4/AN4/T0CKI" },
-    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only
-//  { ' ', -1,  5, "Vss" },
-    { 'B',  0,  6, "RB0/INT" },
-    { 'B',  1,  7, "RB1/AN11/RX/DT" },
-    { 'B',  2,  8, "RB2/AN10/TX/CK" },
-    { 'B',  3,  9, "RB3/AN9/P1A/CCP1" },
-    { 'B',  4, 10, "RB4/AN8" },
-    { 'B',  5, 11, "RB5/AN7/P1B" },
-    { 'B',  6, 12, "RB6/AN5/P2A/T1CKI/CCP2" },
-    { 'B',  7, 13, "RB7/AN6/P2B" },
-//  { ' ', -1, 14, "Vdd" },
-    { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
-    { 'A',  7, 16, "RA7/OSC1/CLKIN" },
-    { 'A',  0, 17, "RA0/AN0" },
-    { 'A',  1, 18, "RA1/AN1" },
+    { 'A',  2,  1, "RA2/AN2"               , 0, "", 0, 0, 0, 0},
+    { 'A',  3,  2, "RA3/AN3"               , 0, "", 0, 0, 0, 0},
+    { 'A',  4,  3, "RA4/AN4/T0CKI"         , 0, "", 0, 0, 0, 0},
+    { 'A',  5,  4, "RA5/_MCLR/Vpp"         , 0, "", 0, 0, 0, 0}, // input only
+//  { ' ', -1,  5, "Vss" },                , 0, "", 0, 0, 0, 0
+    { 'B',  0,  6, "RB0/INT"               , 0, "", 0, 0, 0, 0},
+    { 'B',  1,  7, "RB1/AN11/RX/DT"        , 0, "", 0, 0, 0, 0},
+    { 'B',  2,  8, "RB2/AN10/TX/CK"        , 0, "", 0, 0, 0, 0},
+    { 'B',  3,  9, "RB3/AN9/P1A/CCP1"      , 0, "", 0, 0, 0, 0},
+    { 'B',  4, 10, "RB4/AN8"               , 0, "", 0, 0, 0, 0},
+    { 'B',  5, 11, "RB5/AN7/P1B"           , 0, "", 0, 0, 0, 0},
+    { 'B',  6, 12, "RB6/AN5/P2A/T1CKI/CCP2", 0, "", 0, 0, 0, 0},
+    { 'B',  7, 13, "RB7/AN6/P2B"           , 0, "", 0, 0, 0, 0},
+//  { ' ', -1, 14, "Vdd" },                , 0, "", 0, 0, 0, 0
+    { 'A',  6, 15, "RA6/OSC2/CLKOUT"       , 0, "", 0, 0, 0, 0},
+    { 'A',  7, 16, "RA7/OSC1/CLKIN"        , 0, "", 0, 0, 0, 0},
+    { 'A',  0, 17, "RA0/AN0"               , 0, "", 0, 0, 0, 0},
+    { 'A',  1, 18, "RA1/AN1"               , 0, "", 0, 0, 0, 0},
 };
 
 ////     ti
 //// pin mer
 McuPwmPinInfo Pic16F1827PwmPinInfo[] = {
-    {  9, 1 },
-    { 11, 1 },
-    { 12, 2 },
-    { 13, 2 },
+    {  9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    { 11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    { 12, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
+    { 13, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
 };
 
 //-----------------------------------------------------------------------------
@@ -1380,33 +1380,33 @@ McuAdcPinInfo Pic16F877AdcPinInfo[] = {
 // PIC16F72 28-Pin PDIP, SOIC, SSOP
 McuIoPinInfo Pic16F72IoPinInfo[] = {
 //  {          1, "MCLR/Vpp"},
-    { 'A', 0,  2, "RA0/AN0"},
-    { 'A', 1,  3, "RA1/AN1"},
-    { 'A', 2,  4, "RA2/AN2"},
-    { 'A', 3,  5, "RA3/AN3/VREF"},
-    { 'A', 4,  6, "RA4/T0CKI"},
-    { 'A', 5,  7, "RA5/AN4/SS"},
-//  {          8, "Vss"},
-//  {          9, "OSC1/CLKI"},
-//  {         10, "OSC2/CLKO"},
-    { 'C', 0, 11, "RC0/T1OSO/T1CKI"},
-    { 'C', 1, 12, "RC1/T1OSI"},
-    { 'C', 2, 13, "RC2/CCP1"},
-    { 'C', 3, 14, "RC3/SCK/SCL"},
-    { 'C', 4, 15, "RC4/SDI/SDA"},
-    { 'C', 5, 16, "RC5/SDO"},
-    { 'C', 6, 17, "RC6"},
-    { 'C', 7, 18, "RC7"},
-//  {         19, "Vss"},
-//  {         20, "Vdd"},
-    { 'B', 0, 21, "RB0/INT"},
-    { 'B', 1, 22, "RB1"},
-    { 'B', 2, 23, "RB2"},
-    { 'B', 3, 24, "RB3"},
-    { 'B', 4, 25, "RB4"},
-    { 'B', 5, 26, "RB5"},
-    { 'B', 6, 27, "RB6"},
-    { 'B', 7, 28, "RB7"},
+    { 'A', 0,  2, "RA0/AN0"        , 0, "", 0, 0, 0, 0},
+    { 'A', 1,  3, "RA1/AN1"        , 0, "", 0, 0, 0, 0},
+    { 'A', 2,  4, "RA2/AN2"        , 0, "", 0, 0, 0, 0},
+    { 'A', 3,  5, "RA3/AN3/VREF"   , 0, "", 0, 0, 0, 0},
+    { 'A', 4,  6, "RA4/T0CKI"      , 0, "", 0, 0, 0, 0},
+    { 'A', 5,  7, "RA5/AN4/SS"     , 0, "", 0, 0, 0, 0},
+//  {          8, "Vss"},          , 0, "", 0, 0, 0, 0
+//  {          9, "OSC1/CLKI"},    , 0, "", 0, 0, 0, 0
+//  {         10, "OSC2/CLKO"},    , 0, "", 0, 0, 0, 0
+    { 'C', 0, 11, "RC0/T1OSO/T1CKI", 0, "", 0, 0, 0, 0},
+    { 'C', 1, 12, "RC1/T1OSI"      , 0, "", 0, 0, 0, 0},
+    { 'C', 2, 13, "RC2/CCP1"       , 0, "", 0, 0, 0, 0},
+    { 'C', 3, 14, "RC3/SCK/SCL"    , 0, "", 0, 0, 0, 0},
+    { 'C', 4, 15, "RC4/SDI/SDA"    , 0, "", 0, 0, 0, 0},
+    { 'C', 5, 16, "RC5/SDO"        , 0, "", 0, 0, 0, 0},
+    { 'C', 6, 17, "RC6"            , 0, "", 0, 0, 0, 0},
+    { 'C', 7, 18, "RC7"            , 0, "", 0, 0, 0, 0},
+//  {         19, "Vss"},          , 0, "", 0, 0, 0, 0
+//  {         20, "Vdd"},          , 0, "", 0, 0, 0, 0
+    { 'B', 0, 21, "RB0/INT"        , 0, "", 0, 0, 0, 0},
+    { 'B', 1, 22, "RB1"            , 0, "", 0, 0, 0, 0},
+    { 'B', 2, 23, "RB2"            , 0, "", 0, 0, 0, 0},
+    { 'B', 3, 24, "RB3"            , 0, "", 0, 0, 0, 0},
+    { 'B', 4, 25, "RB4"            , 0, "", 0, 0, 0, 0},
+    { 'B', 5, 26, "RB5"            , 0, "", 0, 0, 0, 0},
+    { 'B', 6, 27, "RB6"            , 0, "", 0, 0, 0, 0},
+    { 'B', 7, 28, "RB7"            , 0, "", 0, 0, 0, 0},
 };
 
 McuAdcPinInfo Pic16F72AdcPinInfo[] = {
@@ -1591,59 +1591,59 @@ McuAdcPinInfo Pic16F1512AdcPinInfo[] = {
 // PIC16F1526, PIC16F1527
 
 McuIoPinInfo Pic16F1527IoPinInfo[] = {
-    { 'A', 0, 24 },
-    { 'A', 1, 23 },
-    { 'A', 2, 22 },
-    { 'A', 3, 21 },
-    { 'A', 4, 28 },
-    { 'A', 5, 27 },
-    { 'A', 6, 40 },
-    { 'A', 7, 39 },
-    { 'B', 0, 48 },
-    { 'B', 1, 47 },
-    { 'B', 2, 46 },
-    { 'B', 3, 45 },
-    { 'B', 4, 44 },
-    { 'B', 5, 43 },
-    { 'B', 6, 42 },
-    { 'B', 7, 37 },
-    { 'C', 0, 30 },
-    { 'C', 1, 29 },
-    { 'C', 2, 33 },
-    { 'C', 3, 34 },
-    { 'C', 4, 35 },
-    { 'C', 5, 36 },
-    { 'C', 6, 31 },
-    { 'C', 7, 32 },
-    { 'D', 0, 58 },
-    { 'D', 1, 55 },
-    { 'D', 2, 54 },
-    { 'D', 3, 53 },
-    { 'D', 4, 52 },
-    { 'D', 5, 51 },
-    { 'D', 6, 50 },
-    { 'D', 7, 49 },
-    { 'E', 0,  2 },
-    { 'E', 1,  1 },
-    { 'E', 2, 64 },
-    { 'E', 3, 63 },
-    { 'E', 4, 62 },
-    { 'E', 5, 61 },
-    { 'E', 6, 60 },
-    { 'E', 7, 59 },
-    { 'F', 0, 18 },
-    { 'F', 1, 17 },
-    { 'F', 2, 16 },
-    { 'F', 3, 15 },
-    { 'F', 4, 14 },
-    { 'F', 5, 13 },
-    { 'F', 6, 12 },
-    { 'F', 7, 11 },
-    { 'G', 0,  3 },
-    { 'G', 1,  4 },
-    { 'G', 2,  5 },
-    { 'G', 3,  6 },
-    { 'G', 4,  8 },
+    { 'A', 0, 24, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 1, 23, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 2, 22, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 3, 21, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 4, 28, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 5, 27, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 6, 40, "" , 0, "", 0, 0, 0, 0},
+    { 'A', 7, 39, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 0, 48, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 1, 47, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 2, 46, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 3, 45, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 4, 44, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 5, 43, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 6, 42, "" , 0, "", 0, 0, 0, 0},
+    { 'B', 7, 37, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 0, 30, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 1, 29, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 2, 33, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 3, 34, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 4, 35, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 5, 36, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 6, 31, "" , 0, "", 0, 0, 0, 0},
+    { 'C', 7, 32, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 0, 58, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 1, 55, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 2, 54, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 3, 53, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 4, 52, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 5, 51, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 6, 50, "" , 0, "", 0, 0, 0, 0},
+    { 'D', 7, 49, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 0,  2, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 1,  1, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 2, 64, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 3, 63, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 4, 62, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 5, 61, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 6, 60, "" , 0, "", 0, 0, 0, 0},
+    { 'E', 7, 59, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 0, 18, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 1, 17, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 2, 16, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 3, 15, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 4, 14, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 5, 13, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 6, 12, "" , 0, "", 0, 0, 0, 0},
+    { 'F', 7, 11, "" , 0, "", 0, 0, 0, 0},
+    { 'G', 0,  3, "" , 0, "", 0, 0, 0, 0},
+    { 'G', 1,  4, "" , 0, "", 0, 0, 0, 0},
+    { 'G', 2,  5, "" , 0, "", 0, 0, 0, 0},
+    { 'G', 3,  6, "" , 0, "", 0, 0, 0, 0},
+    { 'G', 4,  8, "" , 0, "", 0, 0, 0, 0},
 //  { 'G', 5,  7 }, //_MCLR
 };
 
@@ -2276,7 +2276,14 @@ McuIoInfo SupportedMcus_[] = {
         44,
         0,
         ATmegaXXU4PwmPinInfo,
-        arraylen(ATmegaXXU4PwmPinInfo)
+        arraylen(ATmegaXXU4PwmPinInfo),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Atmel AVR ATmega32 44-Pin packages",
@@ -2302,7 +2309,14 @@ McuIoInfo SupportedMcus_[] = {
         44,
         0,
         AvrPwmPinInfo44_,
-        arraylen(AvrPwmPinInfo44_)
+        arraylen(AvrPwmPinInfo44_),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Atmel AVR ATmega32 40-PDIP",
@@ -2529,6 +2543,11 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrPwmPinInfo32),      //int              pwmCount;
         AvrExtIntPinInfo32,
         arraylen(AvrExtIntPinInfo32),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },                                        //int int0PinA; int int1PinA;} QuadEncodNeeds;
     {
         "Atmel AVR ATmega164 40-PDIP",
@@ -2688,7 +2707,12 @@ McuIoInfo SupportedMcus_[] = {
         AvrPwmPinInfo8,
         arraylen(AvrPwmPinInfo8),
         AvrExtIntPinInfo8,
-        arraylen(AvrExtIntPinInfo8)
+        arraylen(AvrExtIntPinInfo8),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Atmel AVR ATtiny85 20-Pin packages",
@@ -2716,7 +2740,12 @@ McuIoInfo SupportedMcus_[] = {
         AvrPwmPinInfo8,
         arraylen(AvrPwmPinInfo8),
         AvrExtIntPinInfo8,
-        arraylen(AvrExtIntPinInfo8)
+        arraylen(AvrExtIntPinInfo8),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Atmel AVR ATtiny10 6-Pin packages",
@@ -2744,7 +2773,12 @@ McuIoInfo SupportedMcus_[] = {
         nullptr, //AvrPwmPinInfo6,
         0, //arraylen(AvrPwmPinInfo6),
         AvrExtIntPinInfo6,
-        arraylen(AvrExtIntPinInfo6)
+        arraylen(AvrExtIntPinInfo6),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
@@ -2813,7 +2847,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(McuSpiInfoATmega8),
         McuI2cInfoATmega8,
         arraylen(McuI2cInfoATmega8),
-            {{0,0}}
+        {{0,0}}
     },
 //===========================================================================
     {
@@ -3151,7 +3185,12 @@ McuIoInfo SupportedMcus_[] = {
         PicPwmPinInfo28_1,
         arraylen(PicPwmPinInfo28_1),
         PicExtIntPinInfo28,
-        arraylen(PicExtIntPinInfo28)
+        arraylen(PicExtIntPinInfo28),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC12F675 8-pin packages", // or PIC12F629
@@ -3186,7 +3225,14 @@ McuIoInfo SupportedMcus_[] = {
             (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
         */
         nullptr,
-        0
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC12F683 8-pin packages",
@@ -3270,7 +3316,12 @@ McuIoInfo SupportedMcus_[] = {
         PicPwmPinInfo28_2,
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
-        arraylen(PicExtIntPinInfo28)
+        arraylen(PicExtIntPinInfo28),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP",
@@ -3312,7 +3363,12 @@ McuIoInfo SupportedMcus_[] = {
         PicPwmPinInfo28_2,
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
-        arraylen(PicExtIntPinInfo28)
+        arraylen(PicExtIntPinInfo28),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC16F1527 64-Pin packages",
@@ -3354,7 +3410,12 @@ McuIoInfo SupportedMcus_[] = {
         PicPwmPinInfo64,
         arraylen(PicPwmPinInfo64),
         PicExtIntPinInfo64,
-        arraylen(PicExtIntPinInfo64)
+        arraylen(PicExtIntPinInfo64),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC16F1824 14-Pin PDIP, SOIC, TSSOP",
@@ -3398,7 +3459,12 @@ McuIoInfo SupportedMcus_[] = {
         Pic16F1824PwmPinInfo,
         arraylen(Pic16F1824PwmPinInfo),
         PicExtIntPinInfo14,
-        arraylen(PicExtIntPinInfo14)
+        arraylen(PicExtIntPinInfo14),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC16F1827 18-Pin PDIP, SOIC",
@@ -3442,7 +3508,12 @@ McuIoInfo SupportedMcus_[] = {
         Pic16F1827PwmPinInfo,
         arraylen(Pic16F1827PwmPinInfo),
         PicExtIntPinInfo18,
-        arraylen(PicExtIntPinInfo18)
+        arraylen(PicExtIntPinInfo18),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC10F202 6-SOT",
@@ -3474,7 +3545,14 @@ McuIoInfo SupportedMcus_[] = {
             (0 <<  1) |     //
             (0 <<  0),      //
         nullptr,
-        0
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC10F200 6-SOT",
@@ -3589,6 +3667,13 @@ McuIoInfo SupportedMcus_[] = {
         ArmSTM32F40X_144LQFPMcuI2cInfo,             // I2C info
         arraylen(ArmSTM32F40X_144LQFPMcuI2cInfo),   // I2C info size
         {{0,0}}
+        #undef BASE_A
+        #undef BASE_B
+        #undef BASE_C
+        #undef BASE_D
+        #undef BASE_E
+        #undef BASE_F
+        #undef BASE_G
     },
 
     {
@@ -3625,6 +3710,8 @@ McuIoInfo SupportedMcus_[] = {
         ArmSTM32F10X_48LQFPMcuI2cInfo,              // I2C info
         arraylen(ArmSTM32F10X_48LQFPMcuI2cInfo),    // I2C info size
         {{0,0}}
+        #undef BASE_A
+        #undef BASE_B
     },
 
 //===========================================================================

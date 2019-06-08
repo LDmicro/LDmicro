@@ -1075,12 +1075,10 @@ static void Indent(FileTracker &f, int depth)
 //-----------------------------------------------------------------------------
 void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 {
-    ElemLeaf *  l = (ElemLeaf *)any;
+    ElemLeaf* leaf = (ElemLeaf *)any;
     const char *s;
     char        str1[1024];
     char        str2[1024];
-    char        str3[1024];
-    char        str4[1024];
 
     Indent(f, depth);
 
@@ -1090,7 +1088,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_COMMENT: {
-            fprintf(f, "COMMENT %s\n", StrToFrmStr(str1, l->d.comment.str, FRMT_COMMENT));
+            fprintf(f, "COMMENT %s\n", StrToFrmStr(str1, leaf->d.comment.str, FRMT_COMMENT));
             break;
         }
         case ELEM_OPEN:
@@ -1106,15 +1104,15 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SLEEP:
-            fprintf(f, "SLEEP %s %s\n", l->d.timer.name, l->d.timer.delay);
+            fprintf(f, "SLEEP %s %s\n", leaf->d.timer.name, leaf->d.timer.delay);
             break;
 
         case ELEM_DELAY:
-            fprintf(f, "DELAY %s\n", l->d.timer.name);
+            fprintf(f, "DELAY %s\n", leaf->d.timer.name);
             break;
 
         case ELEM_TIME2DELAY:
-            fprintf(f, "TIME2DELAY %s %s\n", l->d.timer.name, l->d.timer.delay);
+            fprintf(f, "TIME2DELAY %s %s\n", leaf->d.timer.name, leaf->d.timer.delay);
             break;
 
         case ELEM_CLRWDT:
@@ -1130,43 +1128,43 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_GOTO:
-            fprintf(f, "GOTO %s\n", l->d.doGoto.label);
+            fprintf(f, "GOTO %s\n", leaf->d.doGoto.label);
             break;
 
         case ELEM_GOSUB:
-            fprintf(f, "GOSUB %s\n", l->d.doGoto.label);
+            fprintf(f, "GOSUB %s\n", leaf->d.doGoto.label);
             break;
 
         case ELEM_LABEL:
-            fprintf(f, "LABEL %s\n", l->d.doGoto.label);
+            fprintf(f, "LABEL %s\n", leaf->d.doGoto.label);
             break;
 
         case ELEM_SUBPROG:
-            fprintf(f, "SUBPROG %s\n", l->d.doGoto.label);
+            fprintf(f, "SUBPROG %s\n", leaf->d.doGoto.label);
             break;
 
         case ELEM_ENDSUB:
-            fprintf(f, "ENDSUB %s\n", l->d.doGoto.label);
+            fprintf(f, "ENDSUB %s\n", leaf->d.doGoto.label);
             break;
 
         case ELEM_SHIFT_REGISTER:
-            fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name, l->d.shiftRegister.stages);
+            fprintf(f, "SHIFT_REGISTER %s %d\n", leaf->d.shiftRegister.name, leaf->d.shiftRegister.stages);
             break;
 
         case ELEM_CONTACTS:
-            if(l->d.contacts.name[0] != 'X')
-                l->d.contacts.set1 = false;
-            fprintf(f, "CONTACTS %s %d %d\n", l->d.contacts.name, l->d.contacts.negated, l->d.contacts.set1);
+            if(leaf->d.contacts.name[0] != 'X')
+                leaf->d.contacts.set1 = false;
+            fprintf(f, "CONTACTS %s %d %d\n", leaf->d.contacts.name, leaf->d.contacts.negated, leaf->d.contacts.set1);
             break;
 
         case ELEM_COIL:
             fprintf(f,
                     "COIL %s %d %d %d %d\n",
-                    l->d.coil.name,
-                    l->d.coil.negated,
-                    l->d.coil.setOnly,
-                    l->d.coil.resetOnly,
-                    l->d.coil.ttrigger);
+                    leaf->d.coil.name,
+                    leaf->d.coil.negated,
+                    leaf->d.coil.setOnly,
+                    leaf->d.coil.resetOnly,
+                    leaf->d.coil.ttrigger);
             break;
 
         // clang-format off
@@ -1179,7 +1177,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_THI: s = "THI"; goto timer;
         case ELEM_TLO: s = "TLO"; goto timer;
         timer:
-            fprintf(f, "%s %s %s %d\n", s, l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
+            fprintf(f, "%s %s %s %d\n", s, leaf->d.timer.name, leaf->d.timer.delay, leaf->d.timer.adjust);
             break;
 
         case ELEM_CTU: s = "CTU"; goto counter;
@@ -1191,48 +1189,48 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             fprintf(f,
                     "%s %s %s %s %c\n",
                     s,
-                    l->d.counter.name,
-                    l->d.counter.max,
-                    l->d.counter.init,
-                    l->d.counter.inputKind);
+                    leaf->d.counter.name,
+                    leaf->d.counter.max,
+                    leaf->d.counter.init,
+                    leaf->d.counter.inputKind);
             break;
 
         case ELEM_STEPPER:
             fprintf(f,
                     "STEPPER %s %s %s %d %d %s\n",
-                    l->d.stepper.name,
-                    l->d.stepper.max,
-                    l->d.stepper.P,
-                    l->d.stepper.nSize,
-                    l->d.stepper.graph,
-                    l->d.stepper.coil);
+                    leaf->d.stepper.name,
+                    leaf->d.stepper.max,
+                    leaf->d.stepper.P,
+                    leaf->d.stepper.nSize,
+                    leaf->d.stepper.graph,
+                    leaf->d.stepper.coil);
             break;
 
         case ELEM_PULSER:
             fprintf(f,
                     "PULSER %s %s %s %s %s\n",
-                    l->d.pulser.P1,
-                    l->d.pulser.P0,
-                    l->d.pulser.accel,
-                    l->d.pulser.counter,
-                    l->d.pulser.busy);
+                    leaf->d.pulser.P1,
+                    leaf->d.pulser.P0,
+                    leaf->d.pulser.accel,
+                    leaf->d.pulser.counter,
+                    leaf->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
-            fprintf(f, "NPULSE %s %s %s\n", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil);
+            fprintf(f, "NPULSE %s %s %s\n", leaf->d.Npulse.counter, leaf->d.Npulse.targetFreq, leaf->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
             fprintf(f,
                     "QUAD_ENCOD %s %d %s %s %s %s %c %d\n",
-                    l->d.QuadEncod.counter,
-                    l->d.QuadEncod.int01,
-                    l->d.QuadEncod.inputA,
-                    l->d.QuadEncod.inputB,
-                    StrToFrmStr(str1, l->d.QuadEncod.inputZ),
-                    StrToFrmStr(str2, l->d.QuadEncod.dir),
-                    l->d.QuadEncod.inputZKind,
-                    l->d.QuadEncod.countPerRevol);
+                    leaf->d.QuadEncod.counter,
+                    leaf->d.QuadEncod.int01,
+                    leaf->d.QuadEncod.inputA,
+                    leaf->d.QuadEncod.inputB,
+                    StrToFrmStr(str1, leaf->d.QuadEncod.inputZ),
+                    StrToFrmStr(str2, leaf->d.QuadEncod.dir),
+                    leaf->d.QuadEncod.inputZKind,
+                    leaf->d.QuadEncod.countPerRevol);
             break;
 
         case ELEM_NPULSE_OFF:
@@ -1240,55 +1238,55 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_RES:
-            fprintf(f, "RES %s\n", l->d.reset.name);
+            fprintf(f, "RES %s\n", leaf->d.reset.name);
             break;
 
         case ELEM_MOVE:
-            fprintf(f, "MOVE %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "MOVE %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_BIN2BCD:
-            fprintf(f, "BIN2BCD %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "BIN2BCD %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_BCD2BIN:
-            fprintf(f, "BCD2BIN %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "BCD2BIN %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_OPPOSITE:
-            fprintf(f, "OPPOSITE %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "OPPOSITE %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_SWAP:
-            fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "SWAP %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         ///// Added by JG
         case ELEM_SPI_WR:
             fprintf(f,
                     "SPI_WR %s %s %s %s %s %s %s %s\n",
-                    l->d.spi.name,
-                    l->d.spi.send,
-                    l->d.spi.recv,
-                    l->d.spi.mode,
-                    l->d.spi.modes,
-                    l->d.spi.size,
-                    l->d.spi.first,
-                    l->d.spi.bitrate);
+                    leaf->d.spi.name,
+                    leaf->d.spi.send,
+                    leaf->d.spi.recv,
+                    leaf->d.spi.mode,
+                    leaf->d.spi.modes,
+                    leaf->d.spi.size,
+                    leaf->d.spi.first,
+                    leaf->d.spi.bitrate);
             break;
             /////
 
         case ELEM_SPI: {
             fprintf(f,
                     "SPI %s %s %s %s %s %s %s %s\n",
-                    l->d.spi.name,
-                    l->d.spi.send,
-                    l->d.spi.recv,
-                    l->d.spi.mode,
-                    l->d.spi.modes,
-                    l->d.spi.size,
-                    l->d.spi.first,
-                    l->d.spi.bitrate);
+                    leaf->d.spi.name,
+                    leaf->d.spi.send,
+                    leaf->d.spi.recv,
+                    leaf->d.spi.mode,
+                    leaf->d.spi.modes,
+                    leaf->d.spi.size,
+                    leaf->d.spi.first,
+                    leaf->d.spi.bitrate);
             break;
         }
 
@@ -1296,61 +1294,61 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_I2C_RD:
             fprintf(f,
                     "I2C_RD %s %s %s %s %s %s %s %s\n",
-                    l->d.i2c.name,
-                    l->d.i2c.send,
-                    l->d.i2c.recv,
-                    l->d.i2c.mode,
-                    l->d.i2c.address,
-                    l->d.i2c.registr,
-                    l->d.i2c.first,
-                    l->d.i2c.bitrate);
+                    leaf->d.i2c.name,
+                    leaf->d.i2c.send,
+                    leaf->d.i2c.recv,
+                    leaf->d.i2c.mode,
+                    leaf->d.i2c.address,
+                    leaf->d.i2c.registr,
+                    leaf->d.i2c.first,
+                    leaf->d.i2c.bitrate);
             break;
 
         case ELEM_I2C_WR:
             fprintf(f,
                     "I2C_WR %s %s %s %s %s %s %s %s\n",
-                    l->d.i2c.name,
-                    l->d.i2c.send,
-                    l->d.i2c.recv,
-                    l->d.i2c.mode,
-                    l->d.i2c.address,
-                    l->d.i2c.registr,
-                    l->d.i2c.first,
-                    l->d.i2c.bitrate);
+                    leaf->d.i2c.name,
+                    leaf->d.i2c.send,
+                    leaf->d.i2c.recv,
+                    leaf->d.i2c.mode,
+                    leaf->d.i2c.address,
+                    leaf->d.i2c.registr,
+                    leaf->d.i2c.first,
+                    leaf->d.i2c.bitrate);
             break;
 
             /////
 
         case ELEM_BUS: {
-            fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
+            fprintf(f, "BUS %s %s", leaf->d.bus.dest, leaf->d.bus.src);
             int i;
             for(i = 7; i >= 0; i--)
-                fprintf(f, " %d", l->d.bus.PCBbit[i]);
+                fprintf(f, " %d", leaf->d.bus.PCBbit[i]);
             fprintf(f, "\n");
             break;
         }
         case ELEM_7SEG:
-            fprintf(f, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "7SEGMENTS %s %s %c\n", leaf->d.segments.dest, leaf->d.segments.src, leaf->d.segments.common);
             break;
 
         case ELEM_9SEG:
-            fprintf(f, "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "9SEGMENTS %s %s %c\n", leaf->d.segments.dest, leaf->d.segments.src, leaf->d.segments.common);
             break;
 
         case ELEM_14SEG:
-            fprintf(f, "14SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "14SEGMENTS %s %s %c\n", leaf->d.segments.dest, leaf->d.segments.src, leaf->d.segments.common);
             break;
 
         case ELEM_16SEG:
-            fprintf(f, "16SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "16SEGMENTS %s %s %c\n", leaf->d.segments.dest, leaf->d.segments.src, leaf->d.segments.common);
             break;
 
         case ELEM_NOT:
-            fprintf(f, "NOT %s %s\n", l->d.math.dest, l->d.math.op1);
+            fprintf(f, "NOT %s %s\n", leaf->d.math.dest, leaf->d.math.op1);
             break;
 
         case ELEM_NEG:
-            fprintf(f, "NEG %s %s\n", l->d.math.dest, l->d.math.op1);
+            fprintf(f, "NEG %s %s\n", leaf->d.math.dest, leaf->d.math.op1);
             break;
 
         // clang-format off
@@ -1369,23 +1367,23 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_DIV: s = "DIV"; goto math;
         // clang-format on
         math:
-            fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1, l->d.math.op2);
+            fprintf(f, "%s %s %s %s\n", s, leaf->d.math.dest, leaf->d.math.op1, leaf->d.math.op2);
             break;
 
         case ELEM_SET_BIT:
-            fprintf(f, "SET_BIT %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "SET_BIT %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_CLEAR_BIT:
-            fprintf(f, "CLEAR_BIT %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "CLEAR_BIT %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_IF_BIT_SET:
-            fprintf(f, "IF_BIT_SET %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "IF_BIT_SET %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_IF_BIT_CLEAR:
-            fprintf(f, "IF_BIT_CLEAR %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "IF_BIT_CLEAR %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
 #ifdef USE_SFR
@@ -1399,7 +1397,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_T_C_SFR: s = "TCSFR"; goto sfrcmp;
         // clang-format on
         sfrcmp:
-            fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
+            fprintf(f, "%s %s %s\n", s, leaf->d.cmp.op1, leaf->d.cmp.op2);
             break;
 // Special function
 #endif
@@ -1413,7 +1411,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_LEQ: s = "LEQ"; goto cmp;
         // clang-format on
         cmp:
-            fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
+            fprintf(f, "%s %s %s\n", s, leaf->d.cmp.op1, leaf->d.cmp.op2);
             break;
 
         case ELEM_ONE_SHOT_RISING:
@@ -1433,32 +1431,32 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_READ_ADC:
-            fprintf(f, "READ_ADC %s %d\n", l->d.readAdc.name, l->d.readAdc.refs);
+            fprintf(f, "READ_ADC %s %d\n", leaf->d.readAdc.name, leaf->d.readAdc.refs);
             break;
 
         case ELEM_RANDOM:
-            fprintf(f, "RANDOM %s\n", l->d.readAdc.name);
+            fprintf(f, "RANDOM %s\n", leaf->d.readAdc.name);
             break;
 
         case ELEM_SEED_RANDOM:
-            fprintf(f, "SEED_RANDOM %s %s\n", l->d.move.dest, l->d.move.src);
+            fprintf(f, "SEED_RANDOM %s %s\n", leaf->d.move.dest, leaf->d.move.src);
             break;
 
         case ELEM_SET_PWM:
             fprintf(f,
                     "SET_PWM %s %s %s %s\n",
-                    l->d.setPwm.duty_cycle,
-                    l->d.setPwm.targetFreq,
-                    l->d.setPwm.name,
-                    l->d.setPwm.resolution);
+                    leaf->d.setPwm.duty_cycle,
+                    leaf->d.setPwm.targetFreq,
+                    leaf->d.setPwm.name,
+                    leaf->d.setPwm.resolution);
             break;
 
         case ELEM_UART_RECV:
-            fprintf(f, "UART_RECV %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
+            fprintf(f, "UART_RECV %s %d %d\n", leaf->d.uart.name, leaf->d.uart.bytes, leaf->d.uart.wait);
             break;
 
         case ELEM_UART_SEND:
-            fprintf(f, "UART_SEND %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
+            fprintf(f, "UART_SEND %s %d %d\n", leaf->d.uart.name, leaf->d.uart.bytes, leaf->d.uart.wait);
             break;
 /*
         case ELEM_UART_RECVn:
@@ -1478,7 +1476,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_PERSIST:
-            fprintf(f, "PERSIST %s\n", l->d.persist.var);
+            fprintf(f, "PERSIST %s\n", leaf->d.persist.var);
             break;
 /*
         case ELEM_CPRINTF:
@@ -1518,35 +1516,35 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "STRING ");
-                if(*(l->d.fmtdStr.dest)) {
-                    fprintf(f, "%s", l->d.fmtdStr.dest);
+                if(*(leaf->d.fmtdStr.dest)) {
+                    fprintf(f, "%s", leaf->d.fmtdStr.dest);
                 } else {
                     fprintf(f, "(none)");
                 }
-                if(*(l->d.fmtdStr.var)) {
-                    fprintf(f, " %s", l->d.fmtdStr.var);
+                if(*(leaf->d.fmtdStr.var)) {
+                    fprintf(f, " %s", leaf->d.fmtdStr.var);
                 } else {
                     fprintf(f, " (none)");
                 }
-                fprintf(f, " %d", strlen(l->d.fmtdStr.string));
-                for(int i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
-                    fprintf(f, " %d", l->d.fmtdStr.string[i]);
+                fprintf(f, " %d", strlen(leaf->d.fmtdStr.string));
+                for(int i = 0; i < (int)strlen(leaf->d.fmtdStr.string); i++) {
+                    fprintf(f, " %d", leaf->d.fmtdStr.string[i]);
                 }
                 fprintf(f, "\n");
             } else {
                 fprintf(f, "STRING ");
-                if(*(l->d.fmtdStr.dest)) {
-                    fprintf(f, "%s", l->d.fmtdStr.dest);
+                if(*(leaf->d.fmtdStr.dest)) {
+                    fprintf(f, "%s", leaf->d.fmtdStr.dest);
                 } else {
                     fprintf(f, "(none)");
                 }
-                if(*(l->d.fmtdStr.var)) {
-                    fprintf(f, " %s", l->d.fmtdStr.var);
+                if(*(leaf->d.fmtdStr.var)) {
+                    fprintf(f, " %s", leaf->d.fmtdStr.var);
                 } else {
                     fprintf(f, " (none)");
                 }
-                if(*(l->d.fmtdStr.string)) {
-                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string));
+                if(*(leaf->d.fmtdStr.string)) {
+                    fprintf(f, " %s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
                 } else {
                     fprintf(f, " (none)");
                 }
@@ -1555,7 +1553,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_UART_WR: {
-            fprintf(f, "UART_WR %d ", l->d.fmtdStr.wait);
+            fprintf(f, "UART_WR %d ", leaf->d.fmtdStr.wait);
             /*
             if(*(l->d.fmtdStr.var)) {
                 fprintf(f, "%s", l->d.fmtdStr.var);
@@ -1563,9 +1561,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
                 fprintf(f, "(none)");
             }
             */
-            if(*(l->d.fmtdStr.string)) {
+            if(*(leaf->d.fmtdStr.string)) {
                 //fprintf(f, "\"%s\"", StrToFrmStr(str1, l->d.fmtdStr.string));
-                fprintf(f, "%s", StrToFrmStr(str1, l->d.fmtdStr.string));
+                fprintf(f, "%s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
             } else {
                 fprintf(f, " (none)");
             }
@@ -1575,25 +1573,25 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_FORMATTED_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "FORMATTED_STRING ");
-                if(*(l->d.fmtdStr.var)) {
-                    fprintf(f, "%s", l->d.fmtdStr.var);
+                if(*(leaf->d.fmtdStr.var)) {
+                    fprintf(f, "%s", leaf->d.fmtdStr.var);
                 } else {
                     fprintf(f, "(none)");
                 }
-                fprintf(f, " %d", strlen(l->d.fmtdStr.string));
-                for(int i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
-                    fprintf(f, " %d", l->d.fmtdStr.string[i]);
+                fprintf(f, " %d", strlen(leaf->d.fmtdStr.string));
+                for(int i = 0; i < (int)strlen(leaf->d.fmtdStr.string); i++) {
+                    fprintf(f, " %d", leaf->d.fmtdStr.string[i]);
                 }
                 fprintf(f, "\n");
             } else {
                 fprintf(f, "FORMATTED_STRING ");
-                if(*(l->d.fmtdStr.var)) {
-                    fprintf(f, "%s", l->d.fmtdStr.var);
+                if(*(leaf->d.fmtdStr.var)) {
+                    fprintf(f, "%s", leaf->d.fmtdStr.var);
                 } else {
                     fprintf(f, "(none)");
                 }
-                if(*(l->d.fmtdStr.string)) {
-                    fprintf(f, " %s", StrToFrmStr(str1, l->d.fmtdStr.string));
+                if(*(leaf->d.fmtdStr.string)) {
+                    fprintf(f, " %s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
                 } else {
                     fprintf(f, " (none)");
                 }
@@ -1605,14 +1603,14 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             int i;
             fprintf(f,
                     "LOOK_UP_TABLE %s %s %d %d",
-                    l->d.lookUpTable.dest,
-                    l->d.lookUpTable.index,
-                    l->d.lookUpTable.count,
-                    l->d.lookUpTable.editAsString);
-            for(i = 0; i < l->d.lookUpTable.count; i++) {
-                fprintf(f, " %d", l->d.lookUpTable.vals[i]);
+                    leaf->d.lookUpTable.dest,
+                    leaf->d.lookUpTable.index,
+                    leaf->d.lookUpTable.count,
+                    leaf->d.lookUpTable.editAsString);
+            for(i = 0; i < leaf->d.lookUpTable.count; i++) {
+                fprintf(f, " %d", leaf->d.lookUpTable.vals[i]);
             }
-            fprintf(f, " %s", l->d.lookUpTable.name);
+            fprintf(f, " %s", leaf->d.lookUpTable.name);
             fprintf(f, "\n");
             break;
         }
@@ -1620,13 +1618,13 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             int i;
             fprintf(f,
                     "PIECEWISE_LINEAR %s %s %d",
-                    l->d.piecewiseLinear.dest,
-                    l->d.piecewiseLinear.index,
-                    l->d.piecewiseLinear.count);
-            for(i = 0; i < l->d.piecewiseLinear.count * 2; i++) {
-                fprintf(f, " %d", l->d.piecewiseLinear.vals[i]);
+                    leaf->d.piecewiseLinear.dest,
+                    leaf->d.piecewiseLinear.index,
+                    leaf->d.piecewiseLinear.count);
+            for(i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
+                fprintf(f, " %d", leaf->d.piecewiseLinear.vals[i]);
             }
-            fprintf(f, " %s", l->d.piecewiseLinear.name);
+            fprintf(f, " %s", leaf->d.piecewiseLinear.name);
             fprintf(f, "\n");
             break;
         }
