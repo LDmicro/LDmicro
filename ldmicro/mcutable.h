@@ -1453,6 +1453,65 @@ McuAdcPinInfo Pic16F876AdcPinInfo[] = {
 };
 
 //-----------------------------------------------------------------------------
+// PIC16F884, PIC16F887 44-TQFP
+
+McuIoPinInfo Pic16F887IoPinInfo44TQFP[] = {
+    { 'A',  0, 19, "RA0/AN0/ULPWU/C12IN0-"      , 0, "", 0, 0, 0, 0},
+    { 'A',  1, 20, "RA1/AN1/C12IN1-"            , 0, "", 0, 0, 0, 0},
+    { 'A',  2, 21, "RA2/AN2/VREF-/CVREF/C2IN+"  , 0, "", 0, 0, 0, 0},
+    { 'A',  3, 22, "RA3/AN3/VREF+/C1IN+"        , 0, "", 0, 0, 0, 0},
+    { 'A',  4, 23, "RA4/T0CKI/C1OUT"            , 0, "", 0, 0, 0, 0},
+    { 'A',  5, 24, "RA5/AN4/_SS/C2OUT"          , 0, "", 0, 0, 0, 0},
+    { 'A',  6, 31, "RA6/OSC2/CLKOUT"            , 0, "", 0, 0, 0, 0},
+    { 'A',  7, 30, "RA7/OSC1/CLKIN"             , 0, "", 0, 0, 0, 0},
+    { 'B',  0,  8, "RB0/AN12/INT"               , 0, "", 0, 0, 0, 0},
+    { 'B',  1,  9, "RB1/AN10/C12IN3-"           , 0, "", 0, 0, 0, 0},
+    { 'B',  2, 10, "RB2/AN8"                    , 0, "", 0, 0, 0, 0},
+    { 'B',  3, 11, "RB3/AN9/C12IN2-"            , 0, "", 0, 0, 0, 0},
+    { 'B',  4, 14, "RB4/AN11"                   , 0, "", 0, 0, 0, 0},
+    { 'B',  5, 15, "RB5/AN13/_T1G"              , 0, "", 0, 0, 0, 0},
+    { 'B',  6, 16, "RB6/ICSPCLK"                , 0, "", 0, 0, 0, 0},
+    { 'B',  7, 17, "RB7/ICSPDAT"                , 0, "", 0, 0, 0, 0},
+    { 'C',  0, 32, "RC0/T1OSO/T1CKI"            , 0, "", 0, 0, 0, 0},
+    { 'C',  1, 35, "RC1/T1OSI/CCP2"             , 0, "", 0, 0, 0, 0},
+    { 'C',  2, 36, "RC2/P1A/CCP1"               , 0, "", 0, 0, 0, 0},
+    { 'C',  3, 37, "RC3/SCK/SCL"                , 0, "", 0, 0, 0, 0},
+    { 'C',  4, 42, "RC4/SDI/SDA"                , 0, "", 0, 0, 0, 0},
+    { 'C',  5, 43, "RC5/SDO"                    , 0, "", 0, 0, 0, 0},
+    { 'C',  6, 44, "RC6/TX/CK"                  , 0, "", 0, 0, 0, 0},
+    { 'C',  7,  1, "RC7/RX/DT"                  , 0, "", 0, 0, 0, 0},
+    { 'D',  0, 38, "RD0"                        , 0, "", 0, 0, 0, 0},
+    { 'D',  1, 39, "RD1"                        , 0, "", 0, 0, 0, 0},
+    { 'D',  2, 40, "RD2"                        , 0, "", 0, 0, 0, 0},
+    { 'D',  3, 41, "RD3"                        , 0, "", 0, 0, 0, 0},
+    { 'D',  4,  2, "RD4"                        , 0, "", 0, 0, 0, 0},
+    { 'D',  5,  3, "RD5/P1B"                    , 0, "", 0, 0, 0, 0},
+    { 'D',  6,  4, "RD6/P1C"                    , 0, "", 0, 0, 0, 0},
+    { 'D',  7,  5, "RD7/P1D"                    , 0, "", 0, 0, 0, 0},
+    { 'E',  0, 25, "RE0/AN5"                    , 0, "", 0, 0, 0, 0},
+    { 'E',  1, 26, "RE1/AN6"                    , 0, "", 0, 0, 0, 0},
+    { 'E',  2, 27, "RE2/AN7"                    , 0, "", 0, 0, 0, 0},
+    { 'E',  3, 18, "RE3/_MCLR/Vpp (Input Only)" , 0, "", 0, 0, 0, 0},
+};
+
+McuAdcPinInfo Pic16F887AdcPinInfo44TQFP[] = {
+    { 19,   0x00 },
+    { 20,   0x01 },
+    { 21,   0x02 },
+    { 22,   0x03 },
+    { 24,   0x04 },
+    { 25,   0x05 },
+    { 26,   0x06 },
+    { 27,   0x07 },
+    { 10,   0x08 },
+    { 11,   0x09 },
+    {  9,   0x0a },
+    { 14,   0x0b },
+    {  8,   0x0c },
+    { 15,   0x0d },
+};
+
+//-----------------------------------------------------------------------------
 // PIC16F887, PIC16F884
 
 McuIoPinInfo Pic16F887IoPinInfo[] = {
@@ -1510,7 +1569,6 @@ McuAdcPinInfo Pic16F887AdcPinInfo[] = {
     { 37,   0x0b },
     { 38,   0x0d },
 };
-
 
 //-----------------------------------------------------------------------------
 // 28-Pin PDIP, SOIC, SSOP
@@ -3102,6 +3160,51 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo40),
         PicExtIntPinInfo40,
         arraylen(PicExtIntPinInfo40),
+        McuSpiInfoPic16F877,
+        arraylen(McuSpiInfoPic16F877),
+        McuI2cInfoPic16F877,
+        arraylen(McuI2cInfoPic16F877),
+        {{0,0}}
+    },
+    {
+        "Microchip PIC16F887 44-TQFP",
+        "PIC16F887",
+        "P16F887",
+        "P16F887",
+        "PIC16F887",
+        'R',
+        { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
+        { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
+        { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
+        8*1024,
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
+        Pic16F887IoPinInfo44TQFP,
+        arraylen(Pic16F887IoPinInfo44TQFP),
+        Pic16F887AdcPinInfo44TQFP,
+        arraylen(Pic16F887AdcPinInfo44TQFP),
+        1023,
+        { 26, 25 },
+        16,
+        ISA_PIC16,
+        MidrangeCore14bit,
+        40,
+            (3 << (9+16)) | // flash write protection off
+            (0 << (8+16)) | // BOR at 2.1 V
+            (1 << 13) |     // ICD disabled
+            (0 << 12) |     // LVP disabled
+            (0 << 11) |     // fail-safe clock monitor disabled
+            (0 << 10) |     // internal/external switchover disabled
+            (3 <<  8) |     // brown-out detect enabled
+            (1 <<  7) |     // data code protection disabled
+            (1 <<  6) |     // code protection disabled
+            (1 <<  5) |     // nMCLR enabled
+            (0 <<  4) |     // PWRTE enabled
+            (0 <<  3) |     // WDTE disabled
+            (2 <<  0),      // HS oscillator
+        PicPwmPinInfo44,
+        arraylen(PicPwmPinInfo44),
+        PicExtIntPinInfo44,
+        arraylen(PicExtIntPinInfo44),
         McuSpiInfoPic16F877,
         arraylen(McuSpiInfoPic16F877),
         McuI2cInfoPic16F877,
