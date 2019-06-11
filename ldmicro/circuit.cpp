@@ -924,7 +924,7 @@ void AddUart(int which)
     }
     ElemLeaf *t = AllocLeaf();
     if((which == ELEM_UART_SEND) || (which == ELEM_UART_RECV))
-        strcpy(t->d.uart.name, "char");
+        strcpy(t->d.uart.name, "var");
     else
         strcpy(t->d.uart.name, "var");
     t->d.uart.bytes = 1;    // Release 2.3 compatible
@@ -1813,6 +1813,11 @@ int PwmFunctionUsed()
 int AdcFunctionUsed()
 {
     return CountWhich(ELEM_READ_ADC);
+}
+
+int StringFunctionUsed()
+{
+    return CountWhich(ELEM_STRING);
 }
 //-----------------------------------------------------------------------------
 int QuadEncodFunctionUsed()

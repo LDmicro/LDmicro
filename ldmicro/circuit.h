@@ -712,6 +712,7 @@ int                 CountWhich(int seek1, int seek2, int seek3, char *name);
 int                 CountWhich(int seek1, int seek2, char *name);
 int                 CountWhich(int seek1, char *name);
 int                 CountWhich(int seek1);
+int					StringFunctionUsed();
 int                 AdcFunctionUsed();
 int                 PwmFunctionUsed();
 int                 QuadEncodFunctionUsed();

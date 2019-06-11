@@ -300,8 +300,8 @@ goto exit
 @echo on
 REM Compilation with HI-TECH C (picc.exe)
 
-@rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
-SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+     SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
+@rem SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
 
 SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
 
@@ -329,7 +329,7 @@ for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-:pause
+pause
 
 REM Linkage of objects
 picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
@@ -358,7 +358,10 @@ goto exit
 @echo on
 REM Compilation with arm-gcc
 
-SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\yagarto-20121222\bin
+     SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major\bin
+
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
 SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
@@ -430,6 +433,17 @@ arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 REM Transfer of the program with ST-Link CLI
 
 ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto exit
+REM Copy source code for debugging in Proteus
+copy ARMGCC\lib\*.h PROTEUS > nul
+copy ARMGCC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy ARMGCC\BIN\*.hex PROTEUS > nul
+copy ARMGCC\BIN\*.elf PROTEUS > nul
 
 pause
 goto exit

@@ -116,11 +116,9 @@
 #define INT_I2C_WRITE                           1952
 
 #define INT_WRITE_STRING                        21 // netzer
-#define INT_SPRINTF_STRING                      22 // sprintf()
-#define INT_CPRINTF                             2201
-#ifdef NEW_FEATURE
-#define INT_PRINTF_STRING                       23 // printf() out to console
-#endif
+#define INT_STRING                              22 // sprintf(), strcpy(), or "literal string"
+//#define INT_CPRINTF                             2201
+//#define INT_PRINTF_STRING                       23 // printf() out to console
 
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31

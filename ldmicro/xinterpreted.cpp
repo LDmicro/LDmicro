@@ -236,6 +236,7 @@ void CompileXInterpreted(const char *outFile)
             case INT_UART_SEND_BUSY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
+            case INT_STRING:
             default:
                 THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"),
                                              IntCode[ipc].op);

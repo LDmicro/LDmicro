@@ -2058,12 +2058,10 @@ static void SimulateIntCode()
                 }
                 break;
 
-#ifdef NEW_FEATURE
-            case INT_PRINTF_STRING:
+            case INT_STRING:
                 break;
-#endif
 
-#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+//#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
             case INT_WRITE_STRING: {
                 break;
             }

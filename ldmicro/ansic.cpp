@@ -82,6 +82,7 @@ static bool SeenVariable(const char *name)
 #define ASSTR 3
 static const char *MapSym(const char *str, int how = ASINT);
 static const char *MapSym(const char *str, int how)
+// TODO: Use GetVariableType() instead 'how'
 {
     if(!str)
         return nullptr;
@@ -1050,9 +1051,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 intVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_WRITE_STRING:
+            case INT_STRING:
                 strVar1 = IntCode[i].name1.c_str();
-                intVar3 = IntCode[i].name3.c_str();
+                if(IntCode[i].name3.length())
+                    intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_SLEEP:
@@ -1243,7 +1245,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                if(IntCode[i].name2.length() && IntCode[i].literal1)
+                if(GetVariableType(IntCode[i].name2) == IO_TYPE_STRING)
+                    fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                else if(IntCode[i].name2.length() && IntCode[i].literal1)
                     fprintf(f, "%s = BYTE_AT(%s, %s+%d);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT), IntCode[i].literal1);
                 else if(IntCode[i].name2.length())
                     fprintf(f, "%s = BYTE_AT(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
@@ -1664,7 +1668,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 else if(IntCode[i].literal1)
                     fprintf(
                         f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT), IntCode[i].literal1);
-                else 
+                else
                     fprintf(
                         f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT));
                 break;
@@ -1997,11 +2001,16 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
 
-            case INT_WRITE_STRING:
+            case INT_STRING:
+                if(IntCode[i].name3.length())
                     fprintf(f, "sprintf(%s, \"%s\", %s);\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             IntCode[i].name2.c_str(),
                             MapSym(IntCode[i].name3));
+                else
+                    fprintf(f, "strcpy(%s, \"%s\");\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            IntCode[i].name2.c_str());
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -2358,69 +2367,15 @@ bool CompileAnsiC(const char *dest, int MNU)
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
-    fprintf(flh,
-            "/*\n"
-            "  Type                  Size(bits)\n"
-            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
-            "  SBYTE     signed integer      8\n"
-            "  SWORD     signed integer     16\n"
-            "  SDWORD    signed integer     32\n"
-            "*/\n");
-    if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(flh,
-                "typedef boolean       ldBOOL;\n"
-                "typedef char           SBYTE;\n"
-                "typedef int            SWORD;\n"
-                "typedef long int      SDWORD;\n"
-                "\n");
-    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        fprintf(flh,
-                "  typedef uint8_t    ldBOOL;\n"
-                "  typedef int8_t     SBYTE;\n"
-                "  typedef int16_t    SWORD;\n"
-                "  typedef int32_t    SDWORD;\n"
-                "\n");
-    } else if(mcu_ISA == ISA_PIC16) {
-        fprintf(flh,
-                "#ifdef CCS_PIC_C\n"
-                "    typedef int1             ldBOOL;\n"
-                "    typedef signed  int8      SBYTE;\n"
-                "    typedef signed int16      SWORD;\n"
-                "    typedef signed int32     SDWORD;\n"
-                "#elif defined(HI_TECH_C)\n"
-                "    typedef unsigned char    ldBOOL;\n"
-                "    typedef signed char       SBYTE;\n"
-                "    typedef signed short int  SWORD;\n"
-                "    typedef signed long int  SDWORD;\n"
-                "#endif\n"
-                "\n");
-    } else if(mcu_ISA == ISA_ARM) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-
-    } else if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    } else {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    }
-
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-        fprintf(flh,
+
+        if(StringFunctionUsed()) {
+			fprintf(flh,
+					"#include <stdio.h>\n"
+					"#include <string.h>\n");
+		}
+		fprintf(flh,
                 "\n"
                 "#include \"UsrLib.h\"\n");
 
@@ -2448,10 +2403,14 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "#include \"I2cLib.h\"\n");
         }
     } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        ///// Added by JG2 for CortexF1
-        fprintf(flh,
+		fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n");
+        if(StringFunctionUsed()) {
+			fprintf(flh,
+                    "#include <string.h>\n");
+		}
+        ///// Added by JG2 for CortexF1
         if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
             fprintf(flh,
                     "#include \"stm32f10x.h\"\n"
@@ -2548,6 +2507,66 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(flh,
                     "#include \"I2cLib.h\"\n");
         }
+    }
+
+    fprintf(flh,
+            "/*\n"
+            "  Type                  Size(bits)\n"
+            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
+            "  SBYTE     signed integer      8\n"
+            "  SWORD     signed integer     16\n"
+            "  SDWORD    signed integer     32\n"
+            "*/\n");
+    if(compiler_variant == MNU_COMPILE_ARDUINO) {
+        fprintf(flh,
+                "typedef boolean       ldBOOL;\n"
+                "typedef char           SBYTE;\n"
+                "typedef int            SWORD;\n"
+                "typedef long int      SDWORD;\n"
+                "\n");
+    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+        fprintf(flh,
+                "  typedef uint8_t    ldBOOL;\n"
+                "  typedef int8_t     SBYTE;\n"
+                "  typedef int16_t    SWORD;\n"
+                "  typedef int32_t    SDWORD;\n"
+                "\n");
+    } else if(mcu_ISA == ISA_PIC16) {
+        fprintf(flh,
+                "#ifdef CCS_PIC_C\n"
+                "    typedef int1             ldBOOL;\n"
+                "    typedef signed  int8      SBYTE;\n"
+                "    typedef signed int16      SWORD;\n"
+                "    typedef signed int32     SDWORD;\n"
+                "#elif defined(HI_TECH_C)\n"
+                "    typedef unsigned char    ldBOOL;\n"
+                "    typedef signed char       SBYTE;\n"
+                "    typedef signed short int  SWORD;\n"
+                "    typedef signed long int  SDWORD;\n"
+                "#endif\n"
+                "\n");
+    } else if(mcu_ISA == ISA_ARM) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+
+    } else if(mcu_ISA == ISA_AVR) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    } else {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
     }
 
     FileTracker fh(desth, "w");

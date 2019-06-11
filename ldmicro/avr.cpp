@@ -5199,6 +5199,10 @@ static void CompileFromIntermediate()
             case INT_ELSE:
                 return;
 
+            case INT_STRING:
+                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_STRING' for target, skipped."));
+                break;
+
             case INT_WRITE_STRING:
                 THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
             case INT_SIMULATE_NODE_STATE:

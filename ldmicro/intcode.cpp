@@ -760,12 +760,17 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "RETURN # %s", IntCode[i].name1.c_str());
                 break;
 
-            case INT_WRITE_STRING:
-                fprintf(f,
-                        "sprintf(%s, \"%s\", %s);",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+            case INT_STRING:
+                if(IntCode[i].name3.length())
+                    fprintf(f,
+                            "sprintf(%s, \"%s\", %s);",
+                            IntCode[i].name1.c_str(),
+                            IntCode[i].name2.c_str(),
+                            IntCode[i].name3.c_str());
+                else
+                    fprintf(f, "strcpy(%s, \"%s\");\n",
+                            IntCode[i].name1.c_str(),
+                            IntCode[i].name2.c_str());
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -1697,10 +1702,12 @@ static void InitTablesCircuit(const SeriesNode *elem)
                 }
             }
             break;
-        case ELEM_STRING: {
+/*
+		case ELEM_STRING: {
 
             }
             break;
+*/
         case ELEM_UART_WR: {
             if(!leaf->d.fmtdStr.wait) {
                 if(IsString((leaf->d.fmtdStr.string))) {
@@ -3349,9 +3356,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$tmpVar8bit", (int32_t)0);
                 for(int i=0; i<=7; i++) {
-                  #ifdef NEW_FEATURE
                   Op(INT_COPY_VAR_BIT_TO_VAR_BIT, "$tmpVar8bit", leaf->d.bus.src, NULL, leaf->d.bus.PCBbit[i], i);
-                  #endif
                 }
                 Op(INT_SET_VARIABLE_TO_VARIABLE, leaf->d.bus.dest, "$tmpVar8bit");
               Op(INT_END_IF);
@@ -3411,7 +3416,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_WRITE_STRING, leaf->d.fmtdStr.dest, leaf->d.fmtdStr.string, leaf->d.fmtdStr.var);
+              Op(INT_STRING, leaf->d.fmtdStr.dest, leaf->d.fmtdStr.string, leaf->d.fmtdStr.var);
             Op(INT_END_IF);
             break;
         }
@@ -3800,6 +3805,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                         Op(INT_UART_WR, leaf->d.fmtdStr.string);
                       Op(INT_END_IF);
                     } else {
+                        // literal string
                         if(IsString(leaf->d.fmtdStr.string)) {
                             char nameTable[MAX_NAME_LEN];
                             strcpy(nameTable, "UART_WR");
@@ -3843,7 +3849,8 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                               Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                             Op(INT_END_IF);
                         } else {
-							//variable
+#if 0
+                            //variable
                             //char nameTable[MAX_NAME_LEN];
                             //strcpy(nameTable, "UART_WR");
                             char storeName[MAX_NAME_LEN];
@@ -3871,11 +3878,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                                 Op(INT_IF_BIT_CLEAR, stateInOut);
                                   //Op(INT_FLASH_READ, "$scratch", nameTable, numb, len, 1, data);
                                   Op(INT_SET_VARIABLE_TO_VARIABLE, "$scratch", buf, numb);
-								  Op(INT_IF_NEQ, "$scratch", "0");
-									Op(INT_UART_SEND1, "$scratch");
+                                  Op(INT_IF_NEQ, "$scratch", "0");
+                                    Op(INT_UART_SEND1, "$scratch");
                                     Op(INT_INCREMENT_VARIABLE, numb);
-								  Op(INT_ELSE);
-								    Op(INT_CLEAR_BIT, storeName);
+                                  Op(INT_ELSE);
+                                    Op(INT_CLEAR_BIT, storeName);
                                   Op(INT_END_IF);
                                 Op(INT_END_IF);
                               Op(INT_END_IF);
@@ -3890,6 +3897,47 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                             Op(INT_ELSE);
                               Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                             Op(INT_END_IF);
+#else
+                            //variable
+                            char storeName[MAX_NAME_LEN];
+                            GenSymOneShot(storeName, "UART_WR");
+                            char buf[MAX_NAME_LEN];
+                            FrmStrToStr(buf, leaf->d.fmtdStr.string);
+                            int len = SizeOfVar(buf); //strlen(buf);
+                            char bytes[MAX_NAME_LEN];
+                            sprintf(bytes, "%d", len);
+
+                            Op(INT_IF_BIT_SET, stateInOut);
+                              Op(INT_IF_BIT_CLEAR, storeName);
+                                Op(INT_SET_BIT, storeName);
+
+                                char numb[MAX_NAME_LEN];
+                                GenVar(numb, "numb_UART_WR", "");
+                                Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
+                              Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                              Op(INT_IF_BIT_CLEAR, stateInOut);
+                                  Op(INT_SET_VARIABLE_TO_VARIABLE, "$scratch", buf, numb);
+                                  Op(INT_IF_NEQ, "$scratch", "0");
+                                    Op(INT_UART_SEND1, "$scratch");
+                                    Op(INT_INCREMENT_VARIABLE, numb);
+                                  Op(INT_ELSE);
+                                    Op(INT_CLEAR_BIT, storeName);
+                                  Op(INT_END_IF);
+                              Op(INT_END_IF);
+
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                              Op(INT_SET_BIT, stateInOut); // busy
+                            Op(INT_ELSE);
+                              Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_END_IF);
+#endif
                         }
                     }
                     break;

@@ -5744,6 +5744,7 @@ otherwise the result was zero or greater.
             case INT_ELSE:
                 return;
 
+            case INT_STRING:
             case INT_WRITE_STRING:
                 Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:

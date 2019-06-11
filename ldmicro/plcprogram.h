@@ -45,15 +45,16 @@ struct PlcProgramSingleIo {
 #define IO_TYPE_PORT_OUTPUT     25 // 8bit PORT for out data - McuIoInfo.oututRegs
 #define IO_TYPE_MCU_REG         26 // 8bit register in/out data as McuIoInfo.dirRegs
 #define IO_TYPE_BCD             27 // unpacked, max 10 byte
-#define IO_TYPE_STRING          28 // max
-#define IO_TYPE_TABLE_IN_FLASH  29 // max limited (size of flsh - progSize)
-#define IO_TYPE_VAL_IN_FLASH    30 //
-#define IO_TYPE_SPI_MOSI        31
-#define IO_TYPE_SPI_MISO        32
-#define IO_TYPE_SPI_SCK         33
-#define IO_TYPE_SPI__SS         34
-#define IO_TYPE_I2C_SCL         35  ///// Added by JG
-#define IO_TYPE_I2C_SDA         36  /////
+#define IO_TYPE_STRING          28
+//#define IO_TYPE_STRING_LITERAL  29
+#define IO_TYPE_TABLE_IN_FLASH  30 // max limited (size of flsh - progSize)
+#define IO_TYPE_VAL_IN_FLASH    31 //
+#define IO_TYPE_SPI_MOSI        32
+#define IO_TYPE_SPI_MISO        33
+#define IO_TYPE_SPI_SCK         34
+#define IO_TYPE_SPI__SS         35
+#define IO_TYPE_I2C_SCL         36  ///// Added by JG
+#define IO_TYPE_I2C_SDA         37  /////
     int32_t    type;
 #define NO_PIN_ASSIGNED         0
     // clang-format on
