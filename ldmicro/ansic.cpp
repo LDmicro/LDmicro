@@ -2804,9 +2804,8 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(PwmFunctionUsed()) {
             fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
-        int i;
         if(Prog.mcu())
-            for(i = 0; i < MAX_IO_PORTS; i++) {
+            for(int i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i))
                     fprintf(f, "  #USE FAST_IO(%c)\n", 'A' + i);
             }
@@ -3389,8 +3388,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         if(Prog.mcu()) {
             BuildDirectionRegisters(isInput, isAnsel, isOutput);
-            int i;
-            for(i = 0; i < MAX_IO_PORTS; i++) {
+            for(int i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i)) {
                     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                         // drive the outputs low to start

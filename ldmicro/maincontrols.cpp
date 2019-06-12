@@ -1035,10 +1035,9 @@ void RefreshControlsToSettings()
 //-----------------------------------------------------------------------------
 void GenerateIoListDontLoseSelection()
 {
-    int i;
     int SaveIoListSelectionPoint = IoListSelectionPoint;
     IoListSelectionPoint = -1;
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
             IoListSelectionPoint = i;
             break;

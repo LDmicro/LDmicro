@@ -156,8 +156,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
     if(strcmp(name + 1, "new") == 0)
         return;
 
-    int i;
-    for(i = 0; i < IoSeenPreviouslyCount; i++) {
+    for(int i = 0; i < IoSeenPreviouslyCount; i++) {
         if(strcmp(name, IoSeenPreviously[i].name) == 0 && type == IoSeenPreviously[i].type) {
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
@@ -172,11 +171,10 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
         // things
         IoSeenPreviouslyCount = 0;
     }
-    i = IoSeenPreviouslyCount;
-    IoSeenPreviously[i].type = type;
-    IoSeenPreviously[i].pin = pin;
-    IoSeenPreviously[i].modbus = modbus;
-    strcpy(IoSeenPreviously[i].name, name);
+    IoSeenPreviously[IoSeenPreviouslyCount].type = type;
+    IoSeenPreviously[IoSeenPreviouslyCount].pin = pin;
+    IoSeenPreviously[IoSeenPreviouslyCount].modbus = modbus;
+    strcpy(IoSeenPreviously[IoSeenPreviouslyCount].name, name);
     IoSeenPreviouslyCount++;
 }
 
@@ -671,8 +669,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_SHIFT_REGISTER: {
-            int i;
-            for(i = 0; i < l->d.shiftRegister.stages; i++) {
+            for(int i = 0; i < l->d.shiftRegister.stages; i++) {
                 sprintf(str, "%s%d", l->d.shiftRegister.name, i);
                 AppendIo(str, IO_TYPE_GENERAL);
             }
@@ -1300,8 +1297,7 @@ void ShowIoDialog(int item)
 
     if(Prog.mcu()->core == NOTHING) {
         if(Prog.io.assignment[item].pin) {
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(strcmp(IoSeenPreviously[i].name, Prog.io.assignment[item].name) == 0) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
@@ -1593,8 +1589,7 @@ void ShowIoDialog(int item)
         char pin[MAX_NAME_LEN];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
         if(strcmp(pin, _("(no pin)")) == 0) {
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(strcmp(IoSeenPreviously[i].name, Prog.io.assignment[item].name) == 0) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
@@ -1606,8 +1601,7 @@ void ShowIoDialog(int item)
             // not another entry for this pin in the IoSeenPreviously list,
             // that might get used if the user creates a new pin with that
             // name.
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(IoSeenPreviously[i].pin == atoi(pin)) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }

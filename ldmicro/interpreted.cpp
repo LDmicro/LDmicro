@@ -243,8 +243,7 @@ void CompileInterpreted(const char *outFile)
         outPc++;
     }
 
-    int i;
-    for(i = 0; i < outPc; i++) {
+    for(int i = 0; i < outPc; i++) {
         Write(f, &OutProg[i]);
     }
     memset(&op, 0, sizeof(op));
@@ -252,13 +251,13 @@ void CompileInterpreted(const char *outFile)
     Write(f, &op);
 
     fprintf(f, "$$bits\n");
-    for(i = 0; i < InternalRelaysCount; i++) {
+    for(int i = 0; i < InternalRelaysCount; i++) {
         if(InternalRelays[i][0] != '$') {
             fprintf(f, "%s,%d\n", InternalRelays[i], i);
         }
     }
     fprintf(f, "$$int16s\n");
-    for(i = 0; i < VariablesCount; i++) {
+    for(int i = 0; i < VariablesCount; i++) {
         if(Variables[i][0] != '$') {
             fprintf(f, "%s,%d\n", Variables[i], i);
         }

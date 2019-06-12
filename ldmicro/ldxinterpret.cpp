@@ -82,13 +82,12 @@ int HexDigit(int c)
 int LoadProgram(char *fileName)
 {
     int pc;
-    int i;
 
     FILE *f = fopen(fileName, "r");
     char  line[80];
 
     line_number = 0;
-    for(i = 0; i < MAX_VARIABLES; i++) {
+    for(int i = 0; i < MAX_VARIABLES; i++) {
         sprintf(Symbols[i], "%d", i);
     }
 
@@ -394,7 +393,6 @@ void InterpretOneCycle()
 
 int main(int argc, char **argv)
 {
-    int i;
     int rc;
 
     if(argc != 2) {
@@ -411,7 +409,7 @@ int main(int argc, char **argv)
         exit(rc);
 
     // 1000 cycles times 10 ms gives 10 seconds execution
-    for(i = 0; i < 1000; i++) {
+    for(int i = 0; i < 1000; i++) {
         InterpretOneCycle();
         Sleep(10);
     }

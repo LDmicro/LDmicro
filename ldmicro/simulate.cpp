@@ -408,8 +408,7 @@ void SetSimulationVariable(const NameArray &name, int32_t val)
 
 void SetSimulationVariable(const char *name, int32_t val)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             Variables[i].val = val;
             return;
@@ -427,8 +426,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList)
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
     }
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].val;
         }
@@ -510,8 +508,7 @@ void SetAdcShadow(char *name, int32_t val)
 //-----------------------------------------------------------------------------
 int32_t GetAdcShadow(const char *name)
 {
-    int i;
-    for(i = 0; i < AdcShadowsCount; i++) {
+    for(int i = 0; i < AdcShadowsCount; i++) {
         if(strcmp(AdcShadows[i].name, name) == 0) {
             return AdcShadows[i].val;
         }
@@ -1032,8 +1029,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 //-----------------------------------------------------------------------------
 void CheckVariableNames()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1041,7 +1037,7 @@ void CheckVariableNames()
     // reCheck
     rungNow++;
 
-    for(i = 0; i < VariableCount; i++)
+    for(int i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
             if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
                 Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
@@ -1155,8 +1151,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
 static void CheckSingleBitNegate()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1454,8 +1449,7 @@ int packedbcd2bin(int val)
 int opposite(int val, int sov)
 {
     int ret = 0;
-    int i;
-    for(i = 0; i < sov * 8; i++) {
+    for(int i = 0; i < sov * 8; i++) {
         ret = ret << 1;
         ret |= val & 1;
         val = val >> 1;
@@ -2268,8 +2262,7 @@ void StartSimulationTimer()
 void ClrSimulationData()
 {
     seed = 1;
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         Variables[i].val = 0;
         Variables[i].usedFlags = 0;
         Variables[i].initedRung = -2;

@@ -418,14 +418,13 @@ uint8_t MuxForAdcVariable(const NameArray &name)
 int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
 {
     int res = 0, port = 0;
-    int i;
 
     if(!Prog.mcu())
         return 0;
     if(!spipins)
         return 0;
 
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
             if(Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
@@ -483,14 +482,13 @@ int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
 int PinsForI2cVariable(const NameArray &name, int n, int *i2cpins)
 {
     int res = 0, port = 0;
-    int i;
 
     if(!Prog.mcu())
         return 0;
     if(!i2cpins)
         return 0;
 
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
             if(Prog.io.assignment[i].type == IO_TYPE_I2C_SCL) {
                 for(uint32_t j = 0; j < Prog.mcu()->i2cCount; j++)
@@ -1058,8 +1056,7 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
 
     bool usedUart = UartFunctionUsed();
 
-    int i;
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         int pin = Prog.io.assignment[i].pin;
         int type = Prog.io.assignment[i].type;
 

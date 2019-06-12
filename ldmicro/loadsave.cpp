@@ -1321,8 +1321,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", leaf->d.bus.dest, leaf->d.bus.src);
-            int i;
-            for(i = 7; i >= 0; i--)
+            for(int i = 7; i >= 0; i--)
                 fprintf(f, " %d", leaf->d.bus.PCBbit[i]);
             fprintf(f, "\n");
             break;
@@ -1600,14 +1599,13 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
-            int i;
             fprintf(f,
                     "LOOK_UP_TABLE %s %s %d %d",
                     leaf->d.lookUpTable.dest,
                     leaf->d.lookUpTable.index,
                     leaf->d.lookUpTable.count,
                     leaf->d.lookUpTable.editAsString);
-            for(i = 0; i < leaf->d.lookUpTable.count; i++) {
+            for(int i = 0; i < leaf->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", leaf->d.lookUpTable.vals[i]);
             }
             fprintf(f, " %s", leaf->d.lookUpTable.name);
@@ -1615,13 +1613,12 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_PIECEWISE_LINEAR: {
-            int i;
             fprintf(f,
                     "PIECEWISE_LINEAR %s %s %d",
                     leaf->d.piecewiseLinear.dest,
                     leaf->d.piecewiseLinear.index,
                     leaf->d.piecewiseLinear.count);
-            for(i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
+            for(int i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
                 fprintf(f, " %d", leaf->d.piecewiseLinear.vals[i]);
             }
             fprintf(f, " %s", leaf->d.piecewiseLinear.name);

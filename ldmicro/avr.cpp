@@ -4940,8 +4940,7 @@ static void CompileFromIntermediate()
 #if 0
             case INT_EEPROM_READ: {
                 MemForVariable(a->name1, &addr1);
-                int i;
-                for(i = 0; i < 2; i++) {
+                for(int i = 0; i < 2; i++) {
                     WriteMemory(REG_EEARH, BYTE((a->literal+i) >> 8) & 0xff);
                     WriteMemory(REG_EEARL, BYTE((a->literal+i) & 0xff));
                     WriteMemory(REG_EECR, 1 << EERE);
@@ -4962,8 +4961,7 @@ static void CompileFromIntermediate()
                 LoadXAddr(addr1);
                 LoadYAddr(REG_EEDR);
                 sov = SizeOfVar(a->name1);
-                int i;
-                for(i = 0; i < sov; i++) {
+                for(int i = 0; i < sov; i++) {
                     WriteMemory(REG_EEARH, BYTE(((a->literal1 + i) >> 8) & 0xff));
                     WriteMemory(REG_EEARL, BYTE((a->literal1 + i) & 0xff));
                     WriteMemory(REG_EECR, 0x01);
@@ -5418,8 +5416,7 @@ static void CompileFromIntermediate()
                         Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                         clocksSave -= clocks * 4 + 1;
                     }
-                    int i;
-                    for(i = 0; i < clocksSave; i++)
+                    for(int i = 0; i < clocksSave; i++)
                         Instruction(OP_NOP); // 1 clocks
                 } else {
                     Comment("INT_DELAY %s us", a->name1.c_str());

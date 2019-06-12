@@ -4528,10 +4528,9 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             Comment(3, "ELEM_LOOK_UP_TABLE");
             // God this is stupid; but it will have to do, at least until I
             // add new int code instructions for this.
-            int i;
             Op(INT_IF_BIT_SET, stateInOut);
             ElemLookUpTable *t = &(leaf->d.lookUpTable);
-            for(i = 0; i < t->count; i++) {
+            for(int i = 0; i < t->count; i++) {
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                 Op(INT_IF_VARIABLE_EQUALS_VARIABLE, t->index, "$scratch");
                 Op(INT_SET_VARIABLE_TO_LITERAL, t->dest, t->vals[i]);

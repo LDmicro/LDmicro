@@ -370,8 +370,6 @@ void InterpretOneCycle()
 
 int main(int argc, char **argv)
 {
-    int i;
-
     if(argc != 2) {
         fprintf(stderr, "usage: %s xxx.int\n", argv[0]);
         return -1;
@@ -382,7 +380,7 @@ int main(int argc, char **argv)
     memset(Bits, 0, sizeof(Bits));
 
     // 1000 cycles times 10 ms gives 10 seconds execution
-    for(i = 0; i < 1000; i++) {
+    for(int i = 0; i < 1000; i++) {
         InterpretOneCycle();
 
         // Example for reaching in and reading a variable: just print it.

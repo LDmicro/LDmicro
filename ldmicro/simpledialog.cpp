@@ -896,9 +896,8 @@ void ShowBusDialog(ElemLeaf *l)
     char PCBbitStr2[10];
     strcpy(busStr, "|");
     strcpy(PCBbitStr, "|");
-    int i;
-
-    for(i = 7; i >= 0; i--) {
+    
+    for(int i = 7; i >= 0; i--) {
         sprintf(PCBbitStr2, "%2d|", s->PCBbit[i]);
         strcat(PCBbitStr, PCBbitStr2);
         strcat(busStr, PCBbitStr2);

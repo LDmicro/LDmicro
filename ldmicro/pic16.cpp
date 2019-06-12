@@ -2614,8 +2614,7 @@ static char *VarFromExpr(char *expr, char *tempName, ADDR_T addr)
     if(IsNumber(expr)) {
         int val = hobatoi(expr);
         int sov = SizeOfVar(expr);
-        int i;
-        for(i=0; i<sov; i++) {
+        for(int i=0; i<sov; i++) {
             Instruction(OP_MOVLW, ((val >> (8*i)) && 0xFF );
             Instruction(OP_MOVWF, addr + i);
         }

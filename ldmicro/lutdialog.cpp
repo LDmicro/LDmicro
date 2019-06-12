@@ -298,8 +298,7 @@ static void DestroyLutControls()
         // specified string, because we might as well do that when we
         // calculate the length.
     } else {
-        int i;
-        for(i = 0; i < WasCount; i++) {
+        for(int i = 0; i < WasCount; i++) {
             char buf[20];
             SendMessage(ValuesTextbox[i], WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
             ValuesCache[i] = hobatoi(buf);
@@ -308,8 +307,7 @@ static void DestroyLutControls()
 
     DestroyWindow(StringTextbox);
 
-    int i;
-    for(i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
+    for(int i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
         DestroyWindow(ValuesTextbox[i]);
         DestroyWindow(ValuesLabel[i]);
     }
@@ -375,14 +373,13 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) true, 0);
         MoveWindow(LutDialog, 100, 30, 320 + 20, 185 + 30, true);
     } else {
-        int i;
         int base;
         if(forPwl) {
             base = 100 + 40; ///// Modified by JG
         } else {
             base = 140 + 25; /////
         }
-        for(i = 0; i < count; i++) {
+        for(int i = 0; i < count; i++) {
             int x, y;
 
             if(i < 16) {
@@ -610,8 +607,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         DestroyLutControls();
         // The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there (whichever mode we were in before).
-        int i;
-        for(i = 0; i < count; i++) {
+        for(int i = 0; i < count; i++) {
             t->vals[i] = ValuesCache[i];
         }
         t->count = count;
