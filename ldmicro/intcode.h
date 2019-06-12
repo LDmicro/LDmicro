@@ -245,7 +245,7 @@ struct IntOp {
     bool *        poweredAfter;
     bool *        workingNow;
     int           rung;     //= rungNow  //this IntOp located in rung,
-    SeriesNode *  leaf;     //= leafNow  //
+    SeriesNode *  node;     //= nodeNow  //
     FileNameArray fileName; //in .c source file name
     int           fileLine; //and line in file
     bool          simulated;

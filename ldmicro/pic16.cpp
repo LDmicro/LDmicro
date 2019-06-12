@@ -2312,8 +2312,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             if(asm_comment_level >= 5) {
                 if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
-                    if(IntCode[PicProg[i].IntPc].leaf) {
-                        fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].leaf->which);
+                    if(IntCode[PicProg[i].IntPc].node) {
+                        fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].node->which);
                     }
                     if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].fileLine)) {
                         fprintf(fAsm,

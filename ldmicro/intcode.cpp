@@ -78,7 +78,7 @@ std::vector<IntOp> IntCode;
 int                ProgWriteP = 0;
 static int32_t *   Tdata;
 int                rungNow = -INT_MAX;
-static SeriesNode *leafNow = nullptr;
+static SeriesNode *nodeNow = nullptr;
 
 static uint32_t GenSymCount;
 static uint32_t GenSymCountParThis;
@@ -137,7 +137,7 @@ void IntDumpListing(const char *outFile)
             for(int j = 0; j < indent; j++)
                 fprintf(f, "    ");
 
-        ElemLeaf *leaf = (IntCode[i].leaf != nullptr) ? IntCode[i].leaf->data.leaf : nullptr;
+        ElemLeaf *leaf = (IntCode[i].node != nullptr) ? IntCode[i].node->data.leaf : nullptr;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -937,8 +937,8 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     intOp.literal2 = lit2;
     intOp.data = data;
     intOp.rung = rungNow;
-    intOp.leaf = leafNow;
-    intOp.poweredAfter = (leafNow != nullptr) ? &(leafNow->leaf()->poweredAfter) : nullptr;
+    intOp.node = nodeNow;
+    intOp.poweredAfter = (nodeNow != nullptr) ? &(nodeNow->leaf()->poweredAfter) : nullptr;
     intOp.fileLine = l;
     intOp.fileName = f;
     IntCode.emplace_back(intOp);
@@ -1019,7 +1019,7 @@ static void SimState(bool *b, const char *name, bool *w, const char *name2)
     if(name2)
         intOp.name2 = name2;
     intOp.rung = rungNow;
-    intOp.leaf = leafNow;
+    intOp.node = nodeNow;
     IntCode.emplace_back(intOp);
 }
 
@@ -1703,7 +1703,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
             }
             break;
 /*
-		case ELEM_STRING: {
+        case ELEM_STRING: {
 
             }
             break;
@@ -1774,11 +1774,11 @@ bool IsAddrInVar(const char *name)
 static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int rung)
 {
     const char *stateInOut2 = "$overlap";
-    leafNow = node;
+    nodeNow = node;
     ElemLeaf *leaf = node->leaf();
-    switch(leafNow->which) {
+    switch(nodeNow->which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = leafNow->series();
+            ElemSubcktSeries *s = nodeNow->series();
 
             Comment("start series [");
             for(int i = 0; i < s->count; i++) {
@@ -1792,7 +1792,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             char parOut[MAX_NAME_LEN];
 
             Comment("start parallel [");
-            ElemSubcktParallel *p = leafNow->parallel();
+            ElemSubcktParallel *p = nodeNow->parallel();
 
             bool ExistEnd = false; //false indicates that it is NEED to calculate the parOut
             for(int i = 0; i < p->count; i++) {
@@ -2927,7 +2927,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                             Xseg = deg;
                         else if((Xseg < 0x00) || (len <= Xseg))
                             Xseg = ' ';
-                        switch(leafNow->which) {
+                        switch(nodeNow->which) {
                             case ELEM_7SEG:
                                 Xseg = char7seg[Xseg];
                                 break;
@@ -2970,7 +2970,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                           Op(INT_END_IF);
                         Op(INT_END_IF);
                         /**/
-                        switch(leafNow->which) {
+                        switch(nodeNow->which) {
                             case ELEM_7SEG:
                                 strcpy(nameTable, "char7seg");
                                 sovElement = 1;
@@ -4239,11 +4239,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     if((intOp == INT_SET_VARIABLE_NEG) || (intOp == INT_SET_VARIABLE_NOT)) {
                         Op(intOp, leaf->d.math.dest, leaf->d.math.op1);
                     } else {
-                        if((leafNow->which == ELEM_SR0) //
-                        || (leafNow->which == ELEM_SHL) //
-                        || (leafNow->which == ELEM_SHR) //
-                        || (leafNow->which == ELEM_ROL) //
-                        || (leafNow->which == ELEM_ROR)) {
+                        if((nodeNow->which == ELEM_SR0) //
+                        || (nodeNow->which == ELEM_SHL) //
+                        || (nodeNow->which == ELEM_SHR) //
+                        || (nodeNow->which == ELEM_ROL) //
+                        || (nodeNow->which == ELEM_ROR)) {
                             if((hobatoi(leaf->d.math.op2) < 0)
                                || (SizeOfVar(leaf->d.math.op1) * 8 < hobatoi(leaf->d.math.op2))) {
                                 THROW_COMPILER_EXCEPTION_FMT(
@@ -5007,20 +5007,20 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             break;
         }
         default:
-            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", leafNow->which);
+            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", nodeNow->which);
             break;
     }
 #ifndef DEFAULT_COIL_ALGORITHM
-    if((leafNow->which == ELEM_COIL) || (leafNow->which == ELEM_SET_PWM)) {
+    if((nodeNow->which == ELEM_COIL) || (nodeNow->which == ELEM_SET_PWM)) {
         // ELEM_COIL is a special case, see above
         return;
     }
-    if(leafNow->which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
+    if(nodeNow->which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
         SimState(&(leaf->poweredAfter), stateInOut, &(leaf->workingNow), leaf->d.contacts.name); // variant 5
         return;
     }
 #endif
-    if(leafNow->which != ELEM_SERIES_SUBCKT && leafNow->which != ELEM_PARALLEL_SUBCKT) {
+    if(nodeNow->which != ELEM_SERIES_SUBCKT && nodeNow->which != ELEM_PARALLEL_SUBCKT) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
         SimState(&(leaf->poweredAfter), stateInOut);
@@ -5143,7 +5143,7 @@ bool GenerateIntermediateCode()
         EepromAddrFree = 0;
 
         rungNow = -100; //INT_MAX;
-        leafNow = nullptr;
+        nodeNow = nullptr;
 
         WipeIntMemory();
 
@@ -5171,7 +5171,7 @@ bool GenerateIntermediateCode()
         int       rung;
         for(rung = 0; rung <= Prog.numRungs; rung++) {
             rungNow = rung;
-            leafNow = nullptr;
+            nodeNow = nullptr;
             Prog.OpsInRung[rung] = 0;
             Prog.HexInRung[rung] = 0;
             sprintf(s1, "Rung%d", rung + 1);
@@ -5180,7 +5180,7 @@ bool GenerateIntermediateCode()
 
         for(rung = 0; rung < Prog.numRungs; rung++) {
             rungNow = rung;
-            leafNow = nullptr;
+            nodeNow = nullptr;
             if(int_comment_level != 1) {
                 Comment("");
                 Comment("======= START RUNG %d =======", rung + 1);
@@ -5415,7 +5415,7 @@ IntOp::IntOp() :
     poweredAfter(nullptr),
     workingNow(nullptr),
     rung(0),
-    leaf(nullptr),
+    node(nullptr),
     fileLine(0),
     simulated(false)
 {
