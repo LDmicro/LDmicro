@@ -75,7 +75,7 @@ static bool CheckBoundsUndoIfFails(int gx, int gy)
 // of the widths of its members, and the width of a parallel circuit is
 // the maximum of the widths of its members.
 //-----------------------------------------------------------------------------
-static int CountWidthOfElement(int which, void *elem, int soFar)
+static int CountWidthOfElement(int which, void *any, int soFar)
 {
     switch(which) {
         case ELEM_PADDING:
@@ -174,7 +174,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_COMMENT: {
             //if(soFar != 0) oops();
 
-            ElemLeaf *l = (ElemLeaf *)elem;
+            ElemLeaf *l = (ElemLeaf *)any;
             char      tbuf[MAX_COMMENT_LEN];
 
             strcpy(tbuf, l->d.comment.str);
@@ -232,7 +232,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SERIES_SUBCKT: {
             // total of the width of the members
             int               total = 0;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(int i = 0; i < s->count; i++) {
                 total += CountWidthOfElement(s->contents[i].which, s->contents[i].data.any, total + soFar);
             }
@@ -242,7 +242,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PARALLEL_SUBCKT: {
             // greatest of the width of the members
             int                 max = 0;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(int i = 0; i < p->count; i++) {
                 int w = CountWidthOfElement(p->contents[i].which, p->contents[i].data.any, soFar);
                 if(w > max) {
@@ -1811,17 +1811,17 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 }
 
 //-----------------------------------------------------------------------------
-static bool HasEndOfRungElem(int which, void *elem)
+static bool HasEndOfRungElem(int which, void *any)
 {
-    // ElemLeaf *leaf = (ElemLeaf *)elem;
+    // ElemLeaf *leaf = (ElemLeaf *)any;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             return HasEndOfRungElem(s->contents[s->count - 1].which, s->contents[s->count - 1].data.any);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(int i = 0; i < p->count; i++) {
                 if(HasEndOfRungElem(p->contents[i].which, p->contents[i].data.any))
                     return true;
@@ -1845,12 +1845,12 @@ static bool HasEndOfRungElem(int which, void *elem)
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore /*, int cols*/)
+bool DrawElement(int which, void *any, int *cx, int *cy, bool poweredBefore /*, int cols*/)
 {
     bool poweredAfter;
 
     int       cx0 = *cx, cy0 = *cy;
-    ElemLeaf *leaf = (ElemLeaf *)elem;
+    ElemLeaf *leaf = (ElemLeaf *)any;
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
     NormText();
@@ -1864,7 +1864,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore /*,
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             poweredAfter = poweredBefore;
             for(int i = 0; i < s->count; i++) {
                 poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter /*, 0*/);
@@ -1886,9 +1886,9 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore /*,
             */
         }
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
-            int                 widthMax = CountWidthOfElement(which, elem, (*cx) / POS_WIDTH);
-            int                 heightMax = CountHeightOfElement(which, elem);
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int                 widthMax = CountWidthOfElement(which, any, (*cx) / POS_WIDTH);
+            int                 heightMax = CountHeightOfElement(which, any);
 
             poweredAfter = false;
 

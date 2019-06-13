@@ -742,17 +742,16 @@ static void MarkWithCheck(const char *name, int flag)
     CheckMsg(name, s /*, -1*/);
 }
 //-----------------------------------------------------------------------------
-static void CheckVariableNamesCircuit(int which, void *elem)
+static void CheckVariableNamesCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-    //    char *    name = nullptr;
+    ElemLeaf *l = (ElemLeaf *)any; // not for ELEM_SERIES_SUBCKT, not for ELEM_PARALLEL_SUBCKT
     DWORD flag;
     char  str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckVariableNamesCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -761,7 +760,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckVariableNamesCircuit(p->contents[i].which, p->contents[i].data.any);
             }
@@ -1116,15 +1115,12 @@ void CheckVariableNames()
 //-----------------------------------------------------------------------------
 // Set normal closed inputs to 1 before simulating.
 //-----------------------------------------------------------------------------
-static void CheckSingleBitNegateCircuit(int which, void *elem)
+static void CheckSingleBitNegateCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-    //    char *    name = nullptr;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckSingleBitNegateCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -1133,13 +1129,14 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckSingleBitNegateCircuit(p->contents[i].which, p->contents[i].data.any);
             }
             break;
         }
         case ELEM_CONTACTS: {
+			ElemLeaf *l = (ElemLeaf *)any;
             if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
                 SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
             break;
