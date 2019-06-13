@@ -207,7 +207,6 @@ static void AppendIoAutoType(char *name, int default_type)
 static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-
     char str[MAX_NAME_LEN];
 
     switch(which) {
