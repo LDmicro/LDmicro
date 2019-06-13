@@ -469,7 +469,7 @@ char *GetSimulationStr(const char *name, bool forIoList)
 {
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
-            return Variables[i].valstr;
+            return Variables[i].valstr;                       
         }
     }
     if(forIoList)
@@ -1136,7 +1136,7 @@ static void CheckSingleBitNegateCircuit(int which, void *any)
             break;
         }
         case ELEM_CONTACTS: {
-			ElemLeaf *l = (ElemLeaf *)any;
+            ElemLeaf *l = (ElemLeaf *)any;
             if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
                 SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
             break;
@@ -1697,8 +1697,8 @@ static void SimulateIntCode()
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
                     NeedRedraw = a->op;
+					SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 }
-                SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -2049,9 +2049,23 @@ static void SimulateIntCode()
                 }
                 break;
 
-            case INT_STRING:
+            case INT_STRING: {
+				char buf[MAX_NAME_LEN];
+				int     sov = SizeOfVar(a->name3);
+				if(sov == 1)
+					sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xff);
+				else if(sov == 2)
+					sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xffff);
+				else if(sov == 3)
+					sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFffff);
+				else if(sov == 4)
+					sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFFFffff);
+				else
+                    oops();
+				SetSimulationStr(a->name1.c_str(), buf);
+                NeedRedraw = a->op;
                 break;
-
+			}
 //#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
             case INT_WRITE_STRING: {
                 break;
