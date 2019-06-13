@@ -231,7 +231,8 @@
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
 struct SeriesNode;
 struct IntOp {
-    int           op;
+    int           op;    
+	char		  name0[MAX_NAME_LEN];
     NameArray     name1;
     NameArray     name2;
     NameArray     name3;

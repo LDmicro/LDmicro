@@ -1954,8 +1954,11 @@ static void SimulateIntCode()
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
-                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
+					if(GetVariableType(a->name1) == IO_TYPE_STRING) {
+						static char *s = GetSimulationStr(a->name1.c_str());
+						AppendToSimulationTextControl(*s, UartSimulationTextControl);
+					} else
+						AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
 /*
