@@ -1574,8 +1574,7 @@ static void SimulateIntCode()
             case INT_SIMULATE_NODE_STATE:
                 if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
                     NeedRedraw = a->op;
-					bool b = SingleBitOn(a->name1);
-                    *(a->poweredAfter) = b; // <<<<<<<< pointer crash here
+                    *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
                 if(a->name2.size())

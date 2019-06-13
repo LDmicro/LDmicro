@@ -1771,18 +1771,18 @@ bool IsAddrInVar(const char *name)
 }
 //-----------------------------------------------------------------------------
 // clang-format off
-static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int rung)
+static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
 {
     const char *stateInOut2 = "$overlap";
-    nodeNow = node;
-    ElemLeaf *leaf = node->leaf();
-    switch(nodeNow->which) {
+    nodeNow = (SeriesNode *)any;
+    ElemLeaf *leaf = (ElemLeaf *)any;
+    switch(which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = nodeNow->series();
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
 
             Comment("start series [");
             for(int i = 0; i < s->count; i++) {
-                IntCodeFromCircuit(&s->contents[i], stateInOut, rung);
+                IntCodeFromCircuit(s->contents[i].which, s->contents[i].data.any, stateInOut, rung);
             }
             Comment("] finish series");
             break;
@@ -1792,7 +1792,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             char parOut[MAX_NAME_LEN];
 
             Comment("start parallel [");
-            ElemSubcktParallel *p = nodeNow->parallel();
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
 
             bool ExistEnd = false; //false indicates that it is NEED to calculate the parOut
             for(int i = 0; i < p->count; i++) {
@@ -1826,13 +1826,13 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             for(int i = 0; i < p->count; i++) {
 #ifndef DEFAULT_PARALLEL_ALGORITHM
                 if(CheckStaySameElem(&p->contents[i]))
-                    IntCodeFromCircuit(&p->contents[i], stateInOut, rung);
+                    IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any, stateInOut, rung);
                 else
 #endif
                 {
                     Op(INT_COPY_BIT_TO_BIT, parThis, stateInOut);
 
-                    IntCodeFromCircuit(&p->contents[i], parThis, rung);
+                    IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any, parThis, rung);
 
                     if(ExistEnd == false) {
                         Op(INT_IF_BIT_SET, parThis);
@@ -2927,7 +2927,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                             Xseg = deg;
                         else if((Xseg < 0x00) || (len <= Xseg))
                             Xseg = ' ';
-                        switch(nodeNow->which) {
+                        switch(which) {
                             case ELEM_7SEG:
                                 Xseg = char7seg[Xseg];
                                 break;
@@ -2970,7 +2970,7 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                           Op(INT_END_IF);
                         Op(INT_END_IF);
                         /**/
-                        switch(nodeNow->which) {
+                        switch(which) {
                             case ELEM_7SEG:
                                 strcpy(nameTable, "char7seg");
                                 sovElement = 1;
@@ -4239,11 +4239,11 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
                     if((intOp == INT_SET_VARIABLE_NEG) || (intOp == INT_SET_VARIABLE_NOT)) {
                         Op(intOp, leaf->d.math.dest, leaf->d.math.op1);
                     } else {
-                        if((nodeNow->which == ELEM_SR0) //
-                        || (nodeNow->which == ELEM_SHL) //
-                        || (nodeNow->which == ELEM_SHR) //
-                        || (nodeNow->which == ELEM_ROL) //
-                        || (nodeNow->which == ELEM_ROR)) {
+                        if((which == ELEM_SR0) //
+                        || (which == ELEM_SHL) //
+                        || (which == ELEM_SHR) //
+                        || (which == ELEM_ROL) //
+                        || (which == ELEM_ROR)) {
                             if((hobatoi(leaf->d.math.op2) < 0)
                                || (SizeOfVar(leaf->d.math.op1) * 8 < hobatoi(leaf->d.math.op2))) {
                                 THROW_COMPILER_EXCEPTION_FMT(
@@ -5006,20 +5006,20 @@ static void IntCodeFromCircuit(SeriesNode *node, const char *stateInOut, int run
             break;
         }
         default:
-            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", nodeNow->which);
+            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", which);
             break;
     }
 #ifndef DEFAULT_COIL_ALGORITHM
-    if((nodeNow->which == ELEM_COIL) || (nodeNow->which == ELEM_SET_PWM)) {
+    if((which == ELEM_COIL) || (which == ELEM_SET_PWM)) {
         // ELEM_COIL is a special case, see above
         return;
     }
-    if(nodeNow->which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
+    if(which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
         SimState(&(leaf->poweredAfter), stateInOut, &(leaf->workingNow), leaf->d.contacts.name); // variant 5
         return;
     }
 #endif
-    if(nodeNow->which != ELEM_SERIES_SUBCKT && nodeNow->which != ELEM_PARALLEL_SUBCKT) {
+    if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
         SimState(&(leaf->poweredAfter), stateInOut);
@@ -5220,11 +5220,15 @@ bool GenerateIntermediateCode()
             else
                 Op(INT_SET_BIT, "$rung_top");
             SimState(&(Prog.rungPowered[rung]), "$rung_top");
-            SeriesNode tmp;
+            /*
+			SeriesNode tmp;
             tmp.which = ELEM_SERIES_SUBCKT;
             tmp.data.series = Prog.rungs(rung);
             IntCodeFromCircuit(&tmp, "$rung_top", rung);
-        }
+			*/
+            IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
+		}
+        nodeNow = nullptr;
         // END of rung's
         rungNow++;
         sprintf(s1, "Rung%d", rung + 1);
