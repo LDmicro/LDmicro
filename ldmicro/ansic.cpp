@@ -882,6 +882,11 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar2 = IntCode[i].name2.c_str();
                 break;
 
+			case INT_SET_VARIABLE_INDEXED:
+                //intVar1 = IntCode[i].name1.c_str();
+                //intVar2 = IntCode[i].name2.c_str();
+                break;
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
                 if(!IsNumber(IntCode[i].name2))
@@ -1067,8 +1072,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
 #ifdef TABLE_IN_FLASH
+			case INT_STRING_INIT:
             case INT_FLASH_INIT:
                 break;
+
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1.c_str();
@@ -1244,7 +1251,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 indent--;
                 break;
 
-            case INT_SET_VARIABLE_TO_VARIABLE:
+			case INT_SET_VARIABLE_INDEXED:
+                    fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                break;
+
+			case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetVariableType(IntCode[i].name2) == IO_TYPE_STRING)
                     fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 else if(IntCode[i].name2.length() && IntCode[i].literal1)
@@ -2003,20 +2014,34 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_STRING:
                 if(IntCode[i].name3.length())
-                    fprintf(f, "sprintf(%s, \"%s\", %s);\n",
+				  #if 0
+					fprintf(f, "sprintf(%s, \"%s\", %s);\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             IntCode[i].name2.c_str(),
                             MapSym(IntCode[i].name3));
-                else
+				  #else
+                    fprintf(f, "sprintf(%s, %s, %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            MapSym(IntCode[i].name4.c_str(), ASSTR),
+                            MapSym(IntCode[i].name3));
+				  #endif
+				else
+				  #if 0
                     fprintf(f, "strcpy(%s, \"%s\");\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             IntCode[i].name2.c_str());
+				  #else
+                    fprintf(f, "strcpy(%s, %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            MapSym(IntCode[i].name4.c_str(), ASSTR));
+				  #endif
                 break;
 
 #ifdef TABLE_IN_FLASH
-            case INT_FLASH_INIT: {
+			case INT_STRING_INIT:
+            case INT_FLASH_INIT: 
                 break;
-            }
+
             case INT_FLASH_READ: {
                 if(IsNumber(IntCode[i].name3)) {
                     fprintf(f,
@@ -2100,6 +2125,12 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 #ifdef TABLE_IN_FLASH
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
+			case INT_STRING_INIT: {
+                fprintf(f, "const char %s[] = \"%s\";",
+                        MapSym(IntCode[i].name1.c_str(), ASSTR),
+                        IntCode[i].name2.c_str());
+                break;
+			}
             case INT_FLASH_INIT: {
                 int         sovElement = IntCode[i].literal2;
                 const char *sovs = "invalid SOV value";

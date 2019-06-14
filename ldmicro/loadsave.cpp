@@ -575,7 +575,8 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
+/*
+	} else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
         if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {                                           
             strcpy(l->d.fmtdStr.dest, "");
         }
@@ -604,6 +605,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_STRING;
+*/
     } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string) == 3) {
         int i = strlen("STRING") + 1 + strlen(l->d.fmtdStr.dest) + 1 + strlen(l->d.fmtdStr.var) + 1;
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);

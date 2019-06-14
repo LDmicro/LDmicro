@@ -387,11 +387,12 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\lds\spi\spi_echo.ld
 @SET PROGECT=D:\lds\I2C\i2c_echo.ld
 @SET PROGECT=d:\lds\I2C\i2c_lcd16x2bis.ld
-@SET PROGECT=D:\lds\PIC16F628\uart.ld
 
 @SET PROGECT=d:\lds\PIC16F877\bits.ld
 @SET PROGECT=D:\LDs\frm\frm.ld
-@SET PROGECT=d:\lds\FormattedStr\FormattedStr.ld
+@SET PROGECT=c:\lds\FormattedStr\FormattedStr.ld
+
+@SET PROGECT=c:\lds\PIC16F628\uart.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

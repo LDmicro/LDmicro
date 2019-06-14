@@ -531,6 +531,7 @@ char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
 char *FrmStrToStr(char *dest);
 const char *ChrToFrmtStr(const char src, FRMT frmt);
+const char *ChrToFrmtStr(const char src);
 char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
 char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();

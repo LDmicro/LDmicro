@@ -54,8 +54,10 @@
 //#define INT_VARIABLE_CLEAR_BITS                  3007
 #endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
-#define INT_SET_VARIABLE_INDIRECT                4001
+//#define INT_SET_VARIABLE_INDIRECT                4001
 #define INT_SET_VARIABLE_TO_VARIABLE             5
+#define INT_STRING_INIT                          5013 // store literal string in flash
+#define INT_SET_VARIABLE_INDEXED                 5014 // read literal string[index] from flash
 #if NEW_INT > 0
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
@@ -76,8 +78,8 @@
 #define INT_XOR_VAR_BIT_TO_VAR_BIT              1023
 #endif
 #ifdef TABLE_IN_FLASH
-#define INT_FLASH_INIT                          1003
-#define INT_FLASH_READ                          1004
+#define INT_FLASH_INIT                          1003 // store table in flash
+#define INT_FLASH_READ                          1004 // read table[index] from flash
 #define INT_RAM_READ                            1005
 #endif
 
@@ -231,8 +233,8 @@
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
 struct SeriesNode;
 struct IntOp {
-    int           op;    
-	char		  name0[MAX_NAME_LEN];
+    int           op;
+    char          name0[MAX_NAME_LEN];
     NameArray     name1;
     NameArray     name2;
     NameArray     name3;

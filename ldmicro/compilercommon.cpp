@@ -379,7 +379,28 @@ int GetAssignedType(const NameArray &name, const NameArray &fullName)
     }
     return type;
 }
-
+/*
+int GetAssignedType(const char* name, const char* fullName)
+{
+    int type = NO_PIN_ASSIGNED;
+    if(fullName)
+        if(fullName[0] == 'I') {
+            if(fullName[1] == 'b')
+                return IO_TYPE_INTERNAL_RELAY;
+            else if(fullName[1] == 'i')
+                return IO_TYPE_GENERAL;
+            else
+                oops();
+        }
+    for(int i = 0; i < Prog.io.count; i++) {
+        if(strcmp(Prog.io.assignment[i].name, name) == 0) {
+            type = Prog.io.assignment[i].type;
+            break;
+        }
+    }
+    return type;
+}
+*/
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------

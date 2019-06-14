@@ -621,8 +621,8 @@ void AddLookUpTable()
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.lookUpTable.name, "name");
     strcpy(t->d.lookUpTable.dest, "dest");
+    strcpy(t->d.lookUpTable.name, "tabName");
     strcpy(t->d.lookUpTable.index, "index");
     t->d.lookUpTable.count = 0;
     t->d.lookUpTable.editAsString = 0;
