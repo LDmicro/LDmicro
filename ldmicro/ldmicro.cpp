@@ -802,7 +802,7 @@ IsOpenAnable:
     /////
 
     try {
-        if((PwmFunctionUsed() && (Prog.mcu()) && (Prog.mcu()->pwmCount == 0) && Prog.mcu()->pwmNeedsPin == 0)
+        if((PwmFunctionUsed() && (Prog.mcu()) && (Prog.mcu()->pwmCount == 0))
            && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
            && (MNU != MNU_COMPILE_XINT) && (Prog.mcu()->whichIsa != ISA_XINTERPRETED)) {
             Error(_("PWM function used but not supported for this micro."));

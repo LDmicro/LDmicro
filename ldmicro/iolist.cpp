@@ -1351,8 +1351,7 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu()->pwmCount == 0)
-       && (Prog.mcu()->pwmNeedsPin == 0)) {
+    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu()->pwmCount == 0)) {
         Error(_("No PWM or PWM not supported for this MCU."));
         return;
     }
@@ -1361,7 +1360,7 @@ void ShowIoDialog(int item)
         Error(_("Rename I/O from default name ('%s') before assigning MCU pin."), Prog.io.assignment[item].name);
         return;
     }
-
+                                                       
     MakeWindowClass();
 
     // We need the TOOLWINDOW style, or else the window will be forced to
@@ -1453,9 +1452,7 @@ void ShowIoDialog(int item)
                     goto cant_use_this_io;
             else
                 goto cant_use_this_io;
-        }
-        ///// Added by JG
-        else if(type == IO_TYPE_I2C_SCL) {
+        } else if(type == IO_TYPE_I2C_SCL) {
             char *c = strchr(name, '_');
             if(c)
                 *c = '\0';
@@ -1480,7 +1477,6 @@ void ShowIoDialog(int item)
             else
                 goto cant_use_this_io;
         }
-        /////
 
         if(UartFunctionUsed() && Prog.mcu()
            && ((Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.rxPin)
@@ -1512,15 +1508,11 @@ void ShowIoDialog(int item)
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu()->pinInfo[i].pin, Prog.cycleTimer);
                 if(!iop)
                     goto cant_use_this_io;
-                if(/*(Prog.mcu()->whichIsa == ISA_AVR) && */ (iop->timer == Prog.cycleTimer))
+/*
+                if(iop->timer == Prog.cycleTimer)
                     goto cant_use_this_io;
+*/
                 // okay; we know how to connect it up to the PWM
-            } else {
-                if(Prog.mcu()->pwmNeedsPin == Prog.mcu()->pinInfo[i].pin)
-                    ; // okay; we know how to connect it up to the PWM
-                else {
-                    goto cant_use_this_io;
-                }
             }
         }
 

@@ -168,7 +168,7 @@ typedef struct McuIoInfoTag {
         int rxPin;
         int txPin;
     } uartNeeds;
-    int      pwmNeedsPin;
+//    int      pwmNeedsPin; // obsolete
     int      whichIsa;
     Core     core;
     int      pins;

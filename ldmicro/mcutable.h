@@ -2161,7 +2161,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega2560_100TQFPAdcPinInfo),
         1023,
         { 2 , 3 },
-        23,
+//        23,
         ISA_AVR,
         EnhancedCore4M,
         100,
@@ -2194,7 +2194,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAT90USB647_64TQFPAdcPinInfo),
         1023,
         { 27, 28 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K, //???
         64,
@@ -2228,7 +2228,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega128_64TQFPAdcPinInfo),
         1023,
         { 27, 28 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         64,
@@ -2261,7 +2261,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega128_64TQFPAdcPinInfo),
         1023,
         { 27, 28 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         64,
@@ -2294,7 +2294,7 @@ McuIoInfo SupportedMcus_[] = {
         0,
         0,
         { 0, 0 },
-        2, // OC2
+//        2, // OC2
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2328,7 +2328,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega16U4or32U4AdcPinInfo44),
         1023,
         { 20, 21 },
-        0, // OC2
+//        0, // OC2
         ISA_AVR,
         EnhancedCore128K,
         44,
@@ -2361,7 +2361,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega16or32AdcPinInfo44),
         1023,
         { 9, 10 },
-        16, // OC2
+//        16, // OC2
         ISA_AVR,
         EnhancedCore128K,
         44,
@@ -2394,7 +2394,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega16or32AdcPinInfo),
         1023,
         { 14, 15 },
-        21, // OC2
+//        21, // OC2
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2427,7 +2427,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega16or32AdcPinInfo),
         1023,
         { 14, 15 },
-        21, // OC2
+//        21, // OC2
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2460,7 +2460,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo),
         1023,
         { 2, 3 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         28,
@@ -2493,7 +2493,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo),
         1023,
         { 2, 3 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         28,
@@ -2526,7 +2526,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo),
         1023,
         { 2, 3 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         28,
@@ -2559,7 +2559,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo),
         1023,
         { 2, 3 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore128K,
         28,
@@ -2592,7 +2592,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega328AdcPinInfo32),   //int              adcCount;
         1023,                                 //int              adcMax;
         { 30, 31 },                           //{int rxPin; int txPin;} uartNeeds;
-        15,                                   //int              pwmNeedsPin;
+//        15,                                   //int              pwmNeedsPin;
         ISA_AVR,                             //int              whichIsa;
         EnhancedCore128K,                     //AvrFamily        Family;
         32,
@@ -2625,7 +2625,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega164AdcPinInfo),
         1023,
         { 14, 15 },
-        21,
+//        21,
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2658,7 +2658,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega164AdcPinInfo),
         1023,
         { 14, 15 },
-        21,
+//        21,
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2691,7 +2691,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega164AdcPinInfo),
         1023,
         { 14, 15 },
-        21,
+//        21,
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2724,7 +2724,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega164AdcPinInfo),
         1023,
         { 14, 15 },
-        21,
+//        21,
         ISA_AVR,
         EnhancedCore128K,
         40,
@@ -2757,7 +2757,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
         1023,
         { 0, 0 },
-        0, // OC2
+//        0, // OC2
         ISA_AVR,
         EnhancedCore128K,
         0,
@@ -2790,7 +2790,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
         1023,
         { 0, 0 },
-        0, // OC2
+//        0, // OC2
         ISA_AVR,
         EnhancedCore128K,
         0,
@@ -2823,7 +2823,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrATtiny10AdcPinInfo6),    //int              adcCount;
         255,
         { 0, 0 },
-        0, // OC2
+//        0, // OC2
         ISA_AVR,
         ReducedCore,
         0,
@@ -2856,7 +2856,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo32),    //int              adcCount;
         1023,                                //int              adcMax;
         { 30, 31 },                          //{int rxPin; int txPin;} uartNeeds;
-        15,// OC2                            //int              pwmNeedsPin;
+//        15,// OC2                            //int              pwmNeedsPin;
         ISA_AVR,                             //int              whichIsa;
         EnhancedCore8K,                      //AvrFamily        Family;
         0,                                   //DWORD            configurationWord;
@@ -2892,7 +2892,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(AvrAtmega8AdcPinInfo),
         1023,
         { 2, 3 },
-        17,
+//        17,
         ISA_AVR,
         EnhancedCore8K,
         28,
@@ -2926,7 +2926,7 @@ McuIoInfo SupportedMcus_[] = {
         0,
         0,
         { 7, 8 },
-        0,
+//        0,
         ISA_PIC16,
         MidrangeCore14bit,
         18,
@@ -2977,7 +2977,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F88AdcPinInfo),
         1023,
         { 8, 11 },
-        0,
+//        0,
         ISA_PIC16,
         MidrangeCore14bit,
         18,
@@ -3023,7 +3023,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F819AdcPinInfo),
         1023,
         { 0, 0 },
-        0,
+//        0,
         ISA_PIC16,
         MidrangeCore14bit,
         18,
@@ -3067,7 +3067,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F877AdcPinInfo),
         1023,
         { 26, 25 },
-        16,
+//        16,
         ISA_PIC16,
         MidrangeCore14bit,
         40,
@@ -3103,7 +3103,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F876AdcPinInfo),
         1023,
         { 18, 17 },
-        12,
+//        12,
         ISA_PIC16,
         MidrangeCore14bit,
         28,
@@ -3139,7 +3139,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F887AdcPinInfo),
         1023,
         { 26, 25 },
-        16,
+//        16,
         ISA_PIC16,
         MidrangeCore14bit,
         40,
@@ -3184,7 +3184,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F887AdcPinInfo44TQFP),
         1023,
         { 26, 25 },
-        16,
+//        16,
         ISA_PIC16,
         MidrangeCore14bit,
         40,
@@ -3229,7 +3229,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F886AdcPinInfo),
         1023,
         { 18, 17 },
-        12,
+//        12,
         ISA_PIC16,
         MidrangeCore14bit,
         28,
@@ -3276,7 +3276,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F72AdcPinInfo),
         255,
         { 0, 0 },
-        13,
+//        13,
         ISA_PIC16,
         MidrangeCore14bit,
         28,
@@ -3314,7 +3314,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic8PinAdcPinInfo),
         1024,
         { },
-        0,
+//        0,
         ISA_PIC16,
         MidrangeCore14bit,
         8,
@@ -3356,7 +3356,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic8PinAdcPinInfo),
         1024,
         { },
-        0,
+//        0,
         ISA_PIC16,
         MidrangeCore14bit,
         8,
@@ -3397,7 +3397,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F1512AdcPinInfo),
         1023,
         { 18, 17 },
-        12,
+//        12,
         ISA_PIC16,
         EnhancedMidrangeCore14bit,
         28,
@@ -3444,7 +3444,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F1512AdcPinInfo),
         1023,
         { 18, 17 },
-        12,
+//        12,
         ISA_PIC16,
         EnhancedMidrangeCore14bit,
         28,
@@ -3491,7 +3491,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F1527AdcPinInfo),
         1023,
         { 32, 31 }, //, 5, 4 },
-        29,
+//        29,
         ISA_PIC16,
         EnhancedMidrangeCore14bit,
         64,
@@ -3538,7 +3538,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F1824AdcPinInfo),
         1023,
         {  5, 6 },
-        0, // pwm TODO
+//        0, // pwm TODO
         ISA_PIC16,
         EnhancedMidrangeCore14bit,
         14,
@@ -3587,7 +3587,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(Pic16F1827AdcPinInfo),
         1023,
         { 7, 8 },
-        0, // pwm TODO
+//        0, // pwm TODO
         ISA_PIC16,
         EnhancedMidrangeCore14bit,
         18,
@@ -3638,7 +3638,7 @@ McuIoInfo SupportedMcus_[] = {
         0,
         0,
         { },
-        0,
+//        0,
         ISA_PIC16,
         BaselineCore12bit,
         6,
@@ -3677,7 +3677,7 @@ McuIoInfo SupportedMcus_[] = {
         0,
         0,
         { },
-        0,
+//        0,
         ISA_PIC16,
         BaselineCore12bit,
         6,
@@ -3715,7 +3715,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(ESP8266AdcPinInfo),
         1023,
         { 21 , 22 },
-        0,
+//        0,
         ISA_ESP8266,
         ESP8266Core,
         22,
@@ -3756,7 +3756,7 @@ McuIoInfo SupportedMcus_[] = {
         9,                                          // Nb Adc
         4095,                                       // Adc valeur Maxi                          // 12 bits
         {97, 96},                                   // UART RX + TX (UART 6)                    // RXn + TXn in I/O definition
-        0,                                          // PWM default Pin
+//        0,                                          // PWM default Pin
         ISA_ARM,                                    // Type
         CortexF4,                                   // Core
         144,                                        // Nb de broches
@@ -3799,7 +3799,7 @@ McuIoInfo SupportedMcus_[] = {
         8,                                          // Nb Adc
         4095,                                       // Adc valeur Maxi                          // 12 bits
         {22, 21},                                   // UART RX + TX (UART 3)                    // RXn + TXn in I/O definition
-        0,                                          // PWM default Pin
+//        0,                                          // PWM default Pin
         ISA_ARM,                                    // Type
         CortexF1,                                   // Core
         48,                                         // Nb de broches
@@ -3836,7 +3836,7 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(ControllinoMaxiAdcPinInfo),
         1023,
         { 2 , 3 },
-        23,
+//        23,
         ISA_XINTERPRETED,
         EnhancedCore4M,
         100,
@@ -3869,7 +3869,7 @@ McuIoInfo SupportedMcus_[] = {
         0,
         0,
         { 0, 0 },
-        0,
+//        0,
         ISA_PC,
         PC_LPT_COM,
         0,
