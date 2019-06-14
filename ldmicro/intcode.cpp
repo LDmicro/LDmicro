@@ -196,8 +196,8 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "let var '%s' := '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
 
-			case INT_SET_VARIABLE_INDEXED:
-				fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+            case INT_SET_VARIABLE_INDEXED:
+                fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_BIN2BCD:
@@ -776,8 +776,8 @@ void IntDumpListing(const char *outFile)
                             IntCode[i].name1.c_str(),
                             IntCode[i].name2.c_str());
                 break;
-			
-			case INT_STRING_INIT:
+
+            case INT_STRING_INIT:
                 fprintf(f, "INIT STRING char %s[] := \"%s\"",
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str());
@@ -926,7 +926,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     IntOp intOp;
     intOp.op = op;
     if(name1)
-		strcpy(intOp.name0, name1);
+        strcpy(intOp.name0, name1);
     if(name1)
         intOp.name1 = name1;
     if(name2)
@@ -1714,11 +1714,11 @@ static void InitTablesCircuit(const SeriesNode *elem)
                 }
             }
             break;
-		}
+        }
         case ELEM_STRING: {
-			char nameLit[MAX_NAME_LEN];
+            char nameLit[MAX_NAME_LEN];
             sprintf(nameLit, "%s_LITERAL", leaf->d.fmtdStr.dest);
-			Op(INT_STRING_INIT, nameLit, leaf->d.fmtdStr.string);
+            Op(INT_STRING_INIT, nameLit, leaf->d.fmtdStr.string);
             break;
         }
         case ELEM_UART_WR: {
@@ -3428,7 +3428,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
-			char nameLit[MAX_NAME_LEN];
+            char nameLit[MAX_NAME_LEN];
             sprintf(nameLit, "%s_LITERAL", leaf->d.fmtdStr.dest);
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_STRING, leaf->d.fmtdStr.dest, leaf->d.fmtdStr.string, leaf->d.fmtdStr.var, nameLit);
@@ -3478,7 +3478,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(iop) {
                         McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
                         if(ioPWM && (ioPWM->timer == Prog.cycleTimer)) {
-                            Error(
+							THROW_COMPILER_EXCEPTION_FMT(
                                 _("PWM '%s' and  PLC cycle timer can not use the same timer %d!\nChange the PLC cycle timer to 0.\nMenu Settings->MCU parameters..."),
                                 leaf->d.setPwm.name,
                                 Prog.cycleTimer);
@@ -3971,14 +3971,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         ////Op(INT_END_IF); // ???
 */
 #else
-					if(GetVariableType(leaf->d.uart.name) == IO_TYPE_STRING) {
+                    if(GetVariableType(leaf->d.uart.name) == IO_TYPE_STRING) {
                         //variable
                         char storeName[MAX_NAME_LEN];
                         GenSymOneShot(storeName, "ELEM_UART_SEND");
                         //char buf[MAX_NAME_LEN];
-						//FrmStrToStr(buf, leaf->d.uart.name);
-						char nameLit[MAX_NAME_LEN];
-						sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
+                        //FrmStrToStr(buf, leaf->d.uart.name);
+                        char nameLit[MAX_NAME_LEN];
+                        sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
                         //int len = SizeOfVar(buf); //strlen(buf);
                         //char bytes[MAX_NAME_LEN];
                         //sprintf(bytes, "%d", len);
@@ -4013,7 +4013,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         Op(INT_ELSE);
                             Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                         Op(INT_END_IF);
-					} else if(leaf->d.uart.bytes == 1) {
+                    } else if(leaf->d.uart.bytes == 1) {
                         // This is modified algorithm !!!
                         Op(INT_IF_BIT_SET, stateInOut);
                           Op(INT_UART_SEND1, leaf->d.uart.name);
@@ -5280,13 +5280,13 @@ bool GenerateIntermediateCode()
                 Op(INT_SET_BIT, "$rung_top");
             SimState(&(Prog.rungPowered[rung]), "$rung_top");
             /*
-			SeriesNode tmp;
+            SeriesNode tmp;
             tmp.which = ELEM_SERIES_SUBCKT;
             tmp.data.series = Prog.rungs(rung);
             IntCodeFromCircuit(&tmp, "$rung_top", rung);
-			*/
+            */
             IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
-		}
+        }
         nodeNow = nullptr;
         // END of rung's
         rungNow++;
