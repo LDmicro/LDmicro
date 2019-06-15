@@ -3972,47 +3972,53 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 */
 #else
                     if(GetVariableType(leaf->d.uart.name) == IO_TYPE_STRING) {
-                        //variable
-                        char storeName[MAX_NAME_LEN];
-                        GenSymOneShot(storeName, "ELEM_UART_SEND");
-                        //char buf[MAX_NAME_LEN];
-                        //FrmStrToStr(buf, leaf->d.uart.name);
-                        char nameLit[MAX_NAME_LEN];
-                        sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
-                        //int len = SizeOfVar(buf); //strlen(buf);
-                        //char bytes[MAX_NAME_LEN];
-                        //sprintf(bytes, "%d", len);
+						if(leaf->d.uart.wait) {
+						  Op(INT_IF_BIT_SET, stateInOut);
+							Op(INT_UART_WR, leaf->d.uart.name);
+						  Op(INT_END_IF);
+						} else {
+							//variable
+							char storeName[MAX_NAME_LEN];
+							GenSymOneShot(storeName, "ELEM_UART_SEND");
+							//char buf[MAX_NAME_LEN];
+							//FrmStrToStr(buf, leaf->d.uart.name);
+							char nameLit[MAX_NAME_LEN];
+							sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
+							//int len = SizeOfVar(buf); //strlen(buf);
+							//char bytes[MAX_NAME_LEN];
+							//sprintf(bytes, "%d", len);
 
-                        Op(INT_IF_BIT_SET, stateInOut);
-                            Op(INT_IF_BIT_CLEAR, storeName);
-                            Op(INT_SET_BIT, storeName);
+							Op(INT_IF_BIT_SET, stateInOut);
+								Op(INT_IF_BIT_CLEAR, storeName);
+								Op(INT_SET_BIT, storeName);
 
-                            char index[MAX_NAME_LEN];
-                            GenVar(index, "index_UART_SEND", "");
-                            Op(INT_SET_VARIABLE_TO_LITERAL, index, 0);
+								char index[MAX_NAME_LEN];
+								GenVar(index, "index_UART_SEND", "");
+								Op(INT_SET_VARIABLE_TO_LITERAL, index, 0);
 
-                            Op(INT_END_IF);
-                        Op(INT_END_IF);
+								Op(INT_END_IF);
+							Op(INT_END_IF);
 
-                        Op(INT_IF_BIT_SET, storeName);
-                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                            Op(INT_IF_BIT_CLEAR, stateInOut);
-                                Op(INT_SET_VARIABLE_INDEXED, "$scratch", leaf->d.uart.name, index, nameLit);
-                                Op(INT_IF_NEQ, "$scratch", "0");
-                                Op(INT_UART_SEND1, "$scratch");
-                                Op(INT_INCREMENT_VARIABLE, index);
-                                Op(INT_ELSE);
-                                Op(INT_CLEAR_BIT, storeName);
-                                Op(INT_END_IF);
-                            Op(INT_END_IF);
+							Op(INT_IF_BIT_SET, storeName);
+								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+								Op(INT_IF_BIT_CLEAR, stateInOut);
+									Op(INT_SET_VARIABLE_INDEXED, "$scratch", leaf->d.uart.name, index, nameLit);
+									Op(INT_IF_NEQ, "$scratch", "0");
+									Op(INT_UART_SEND1, "$scratch");
+									Op(INT_INCREMENT_VARIABLE, index);
+									Op(INT_ELSE);
+									Op(INT_CLEAR_BIT, storeName);
+									Op(INT_END_IF);
+								Op(INT_END_IF);
 
-                        Op(INT_END_IF);
+							Op(INT_END_IF);
 
-                        Op(INT_IF_BIT_SET, storeName);
-                            Op(INT_SET_BIT, stateInOut); // busy
-                        Op(INT_ELSE);
-                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                        Op(INT_END_IF);
+							Op(INT_IF_BIT_SET, storeName);
+								Op(INT_SET_BIT, stateInOut); // busy
+							Op(INT_ELSE);
+								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+							Op(INT_END_IF);
+						}
                     } else if(leaf->d.uart.bytes == 1) {
                         // This is modified algorithm !!!
                         Op(INT_IF_BIT_SET, stateInOut);

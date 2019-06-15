@@ -7,5 +7,6 @@ unsigned char UART_Receive(void);
 unsigned char UART_Transmit_Ready(void);
 unsigned char UART_Transmit_Busy(void);
 unsigned char UART_Receive_Avail(void);
+void          UART_Write(char *string);
 
 #endif

@@ -42,3 +42,11 @@ unsigned char UART_Receive_Avail(void)
 {
     return RCIF;
 }
+
+void UART_Write(char *string)
+{
+    while(*string) {
+        UART_Transmit(*string);
+        string++;
+    }
+}
