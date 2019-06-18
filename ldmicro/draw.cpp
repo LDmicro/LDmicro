@@ -167,7 +167,7 @@ static int CountWidthOfElement(int which, void *any, int soFar)
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
 */
-        case ELEM_UART_WR:
+//      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -1515,6 +1515,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                     }
             }
 */
+/*
         case ELEM_UART_WR: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH * 2];
@@ -1536,6 +1537,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             *cx += 2 * POS_WIDTH;
             break;
         }
+*/
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH * 2];
@@ -1737,7 +1739,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_STEPPER:
         case ELEM_STRING:
 /*
-		case ELEM_CPRINTF:
+        case ELEM_CPRINTF:
         case ELEM_SPRINTF:
         case ELEM_FPRINTF:
         case ELEM_PRINTF:
@@ -1745,7 +1747,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_ISP_CPRINTF:
         case ELEM_UART_CPRINTF:
 */
-        case ELEM_UART_WR:
+//      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx - 1, gy);
             DisplayMatrix[gx - 1][gy].data.leaf = leaf;

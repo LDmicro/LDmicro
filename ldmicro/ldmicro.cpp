@@ -344,6 +344,10 @@ const char *GetMnuCompilerName(int MNU)
         case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
         case MNU_COMPILE_ARDUINO       : return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
         case MNU_COMPILE_PASCAL        : return (char *)stringer(MNU_COMPILE_PASCAL) + 12;
+        case MNU_COMPILE_IHEX          : return (char *)stringer(MNU_COMPILE_IHEX) + 12;
+        case MNU_COMPILE_ASM           : return (char *)stringer(MNU_COMPILE_ASM) + 12;
+        case MNU_COMPILE_INT           : return (char *)stringer(MNU_COMPILE_INT) + 12;
+        case MNU_COMPILE_XINT          : return (char *)stringer(MNU_COMPILE_XINT) + 12;
         default                        : return "";
             // clang-format on
     }
@@ -1265,11 +1269,11 @@ static void ProcessMenu(int code)
         case MNU_INSERT_FMTD_STRING:
             CHANGING_PROGRAM(AddFormattedString());
             break;
-
+/*
         case MNU_INSERT_UART_WRITE:
             CHANGING_PROGRAM(AddWrite(ELEM_UART_WR));
             break;
-
+*/
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
             break;

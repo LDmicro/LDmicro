@@ -1721,6 +1721,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
             Op(INT_STRING_INIT, nameLit, leaf->d.fmtdStr.string);
             break;
         }
+/*
         case ELEM_UART_WR: {
             if(!leaf->d.fmtdStr.wait) {
                 if(IsString((leaf->d.fmtdStr.string))) {
@@ -1737,6 +1738,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
             }
             break;
         }
+*/
         default:
             break;
     }
@@ -3478,7 +3480,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(iop) {
                         McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
                         if(ioPWM && (ioPWM->timer == Prog.cycleTimer)) {
-							THROW_COMPILER_EXCEPTION_FMT(
+                            THROW_COMPILER_EXCEPTION_FMT(
                                 _("PWM '%s' and  PLC cycle timer can not use the same timer %d!\nChange the PLC cycle timer to 0.\nMenu Settings->MCU parameters..."),
                                 leaf->d.setPwm.name,
                                 Prog.cycleTimer);
@@ -3972,72 +3974,82 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 */
 #else
                     if(GetVariableType(leaf->d.uart.name) == IO_TYPE_STRING) {
-						if(leaf->d.uart.wait) {
-						  Op(INT_IF_BIT_SET, stateInOut);
-							Op(INT_UART_WR, leaf->d.uart.name);
-						  Op(INT_END_IF);
-						} else {
-							//variable
-							char storeName[MAX_NAME_LEN];
-							GenSymOneShot(storeName, "ELEM_UART_SEND");
-							//char buf[MAX_NAME_LEN];
-							//FrmStrToStr(buf, leaf->d.uart.name);
-							char nameLit[MAX_NAME_LEN];
-							sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
-							//int len = SizeOfVar(buf); //strlen(buf);
-							//char bytes[MAX_NAME_LEN];
-							//sprintf(bytes, "%d", len);
+                        if(leaf->d.uart.wait && (1)) {
+                          Op(INT_IF_BIT_SET, stateInOut);
+                            Op(INT_UART_WR, leaf->d.uart.name);
+							if(leaf->d.uart.wait) {
+								char label[MAX_NAME_LEN];
+								GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
 
-							Op(INT_IF_BIT_SET, stateInOut);
-								Op(INT_IF_BIT_CLEAR, storeName);
-								Op(INT_SET_BIT, storeName);
-
-								char index[MAX_NAME_LEN];
-								GenVar(index, "index_UART_SEND", "");
-								Op(INT_SET_VARIABLE_TO_LITERAL, index, 0);
-
-								Op(INT_END_IF);
-							Op(INT_END_IF);
-
-							Op(INT_IF_BIT_SET, storeName);
+								Op(INT_AllocKnownAddr, label);
 								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-								Op(INT_IF_BIT_CLEAR, stateInOut);
-									Op(INT_SET_VARIABLE_INDEXED, "$scratch", leaf->d.uart.name, index, nameLit);
-									Op(INT_IF_NEQ, "$scratch", "0");
-									Op(INT_UART_SEND1, "$scratch");
-									Op(INT_INCREMENT_VARIABLE, index);
-									Op(INT_ELSE);
-									Op(INT_CLEAR_BIT, storeName);
-									Op(INT_END_IF);
+								Op(INT_IF_BIT_SET, stateInOut);
+									Op(INT_GOTO, label, 1);
 								Op(INT_END_IF);
+							} 
+                          Op(INT_END_IF);
+                        } else {
+                            char storeName[MAX_NAME_LEN];
+                            GenSymOneShot(storeName, "ELEM_UART_SEND");
+                            //char buf[MAX_NAME_LEN];
+                            //FrmStrToStr(buf, leaf->d.uart.name);
+                            char nameLit[MAX_NAME_LEN];
+                            sprintf(nameLit, "%s_LITERAL", leaf->d.uart.name);
+                            //int len = SizeOfVar(buf); //strlen(buf);
+                            //char bytes[MAX_NAME_LEN];
+                            //sprintf(bytes, "%d", len);
 
-							Op(INT_END_IF);
+                            Op(INT_IF_BIT_SET, stateInOut);
+                                Op(INT_IF_BIT_CLEAR, storeName);
+                                Op(INT_SET_BIT, storeName);
 
-							Op(INT_IF_BIT_SET, storeName);
-								Op(INT_SET_BIT, stateInOut); // busy
-							Op(INT_ELSE);
-								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-							Op(INT_END_IF);
-						}
+                                char index[MAX_NAME_LEN];
+                                GenVar(index, "index_UART_SEND", "");
+                                Op(INT_SET_VARIABLE_TO_LITERAL, index, 0);
+
+                                Op(INT_END_IF);
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_CLEAR, stateInOut);
+                                    Op(INT_SET_VARIABLE_INDEXED, "$scratch", leaf->d.uart.name, index, nameLit);
+                                    Op(INT_IF_NEQ, "$scratch", "0");
+                                    Op(INT_UART_SEND1, "$scratch");
+                                    Op(INT_INCREMENT_VARIABLE, index);
+                                    Op(INT_ELSE);
+                                    Op(INT_CLEAR_BIT, storeName);
+                                    Op(INT_END_IF);
+                                Op(INT_END_IF);
+
+                            Op(INT_END_IF);
+
+                            Op(INT_IF_BIT_SET, storeName);
+                                Op(INT_SET_BIT, stateInOut); // busy
+                            Op(INT_ELSE);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                            Op(INT_END_IF);
+                        }
                     } else if(leaf->d.uart.bytes == 1) {
                         // This is modified algorithm !!!
                         Op(INT_IF_BIT_SET, stateInOut);
-                          Op(INT_UART_SEND1, leaf->d.uart.name);
+                            Op(INT_UART_SEND1, leaf->d.uart.name);
+							if(leaf->d.uart.wait) {
+								char label[MAX_NAME_LEN];
+								GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
+
+								Op(INT_AllocKnownAddr, label);
+								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+								Op(INT_IF_BIT_SET, stateInOut);
+									Op(INT_GOTO, label, 1);
+								Op(INT_END_IF);
+							} 
                         Op(INT_END_IF);
 
-                        if(!leaf->d.uart.wait) {
+						if(!leaf->d.uart.wait) {
                             Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                        } else {
-                            char label[MAX_NAME_LEN];
-                            GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
-
-                            Op(INT_AllocKnownAddr, label);
-                            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                            Op(INT_IF_BIT_SET, stateInOut);
-                              Op(INT_GOTO, label, 1);
-                            Op(INT_END_IF);
                         }
-                    } else {
+                    } else { // variable length is more than 1 byte
                         if(leaf->d.uart.wait) { // all bytes in one PLC cycle
                           Op(INT_IF_BIT_SET, stateInOut);
                             Op(INT_UART_SEND1, leaf->d.uart.name);

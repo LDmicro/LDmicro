@@ -547,22 +547,22 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
+//  } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
         /*
         int i = strlen("UART_WR") + 1;
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
         */
-        FrmStrToStr(l->d.fmtdStr.string);
+//      FrmStrToStr(l->d.fmtdStr.string);
+        /*
         //DelFramingDoubleQuotes(l->d.fmtdStr.string);
-/*
         DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
         }
-*/
-        *which = ELEM_UART_WR;
+        */
+//      *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
@@ -576,8 +576,8 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         }
         *which = ELEM_FORMATTED_STRING;
 /*
-	} else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
-        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {                                           
+    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
+        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
             strcpy(l->d.fmtdStr.dest, "");
         }
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
@@ -1553,15 +1553,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             break;
         }
+/*
         case ELEM_UART_WR: {
             fprintf(f, "UART_WR %d ", leaf->d.fmtdStr.wait);
-            /*
-            if(*(l->d.fmtdStr.var)) {
-                fprintf(f, "%s", l->d.fmtdStr.var);
-            } else {
-                fprintf(f, "(none)");
-            }
-            */
             if(*(leaf->d.fmtdStr.string)) {
                 //fprintf(f, "\"%s\"", StrToFrmStr(str1, l->d.fmtdStr.string));
                 fprintf(f, "%s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
@@ -1571,6 +1565,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             fprintf(f, "\n");
             break;
         }
+*/
         case ELEM_FORMATTED_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "FORMATTED_STRING ");

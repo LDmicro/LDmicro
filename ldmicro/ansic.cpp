@@ -3402,6 +3402,26 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         fprintf(f, "}\n");
     } else {
+		if(Prog.cycleTime > 0) {
+            if(mcu_ISA == ISA_PIC16) {
+                CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
+				if(plcTmr.softDivisor > 1) {
+					fprintf(f,
+                    "\n"
+					"static unsigned char softDivisor = %d;"
+					"\n", plcTmr.softDivisor);
+				}
+			} else if(mcu_ISA == ISA_AVR) {
+                CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
+				if(plcTmr.softDivisor > 1) {
+					fprintf(f,
+                    "\n"
+					"static unsigned char softDivisor = %d;"
+					"\n", plcTmr.softDivisor);
+				}
+            }
+		}
+
         fprintf(f,
                 "\n"
                 "void setupPlc(void) {\n");
@@ -3530,11 +3550,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
 
         if(Prog.cycleTime > 0) {
-            if(mcu_ISA == ISA_PIC16) ///// Added by JG
-            {
-                CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
-            }
-
             fprintf(f,
                     "    // Initialize PLC cycle timer here.\n"
                     "    // Configure Timer %d\n",
@@ -3565,7 +3580,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                             "    OPTION_REGbits.PS = %d;\n",
                             plcTmr.prescaler == 1 ? 1 : 0,
                             plcTmr.PS);
-                    //"          T1CON = plcTmr.PS;\n"
                 } else {
                     fprintf(f,
                             "    #ifdef USE_WDT\n"
@@ -3609,8 +3623,6 @@ bool CompileAnsiC(const char *dest, int MNU)
 
             } else if(mcu_ISA == ISA_AVR) {
                 if(Prog.cycleTime > 0) {
-                    CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
-
                     int counter = plcTmr.tmr - 1 /* + CorrectorPlcCycle*/; // TODO
                     // the counter is less than the divisor at 1
                     if(counter < 0)
@@ -3891,6 +3903,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                     Prog.cycleTimer,
                     plcTmr.tmr);
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+			if(plcTmr.softDivisor > 1) {
+				fprintf(f,	"        softDivisorLabel:\n");
+			}
             if(Prog.cycleTimer == 0) {
                 fprintf(f,
                         "        #ifndef T0IF\n"
@@ -3905,13 +3920,32 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "        while(CCP1IF == 0);\n"
                         "        CCP1IF = 0;\n");
             }
+			if(plcTmr.softDivisor > 1) {
+				fprintf(f,
+					"        softDivisor--;\n"
+					"        if(softDivisor)\n"
+					"            goto softDivisorLabel;\n"
+					"        softDivisor = %d;\n"
+					, plcTmr.softDivisor);
+			}
         } else if(mcu_ISA == ISA_AVR) {
+			if(plcTmr.softDivisor > 1) {
+				fprintf(f,	"        softDivisorLabel:\n");
+			}
             fprintf(f,
                     "        #ifndef TIFR\n"
                     "        #define TIFR TIFR1\n"
                     "        #endif\n"
                     "        while((TIFR & (1<<OCF1A)) == 0);\n"
                     "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
+			if(plcTmr.softDivisor > 1) {
+				fprintf(f,
+					"        softDivisor--;\n"
+					"        if(softDivisor)\n"
+					"            goto softDivisorLabel;\n"
+					"        softDivisor = %d;\n"
+					, plcTmr.softDivisor);
+			}
         } else {
             fprintf(f, "        //  You must check PLC timer interval.\n");
         }

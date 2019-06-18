@@ -623,13 +623,13 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);
             }
             break;
-
+/*
         case ELEM_UART_WR:
 //          if(l->d.fmtdStr.string[0] != '"') {
   //            AppendIo(l->d.fmtdStr.string, IO_TYPE_STRING);
 //          }
             break;
-
+*/
 //        case ELEM_UART_SENDn:
         case ELEM_UART_SEND:
             //AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
@@ -1360,7 +1360,7 @@ void ShowIoDialog(int item)
         Error(_("Rename I/O from default name ('%s') before assigning MCU pin."), Prog.io.assignment[item].name);
         return;
     }
-                                                       
+
     MakeWindowClass();
 
     // We need the TOOLWINDOW style, or else the window will be forced to
