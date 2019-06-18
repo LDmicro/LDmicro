@@ -13,9 +13,8 @@
 How to test LdMicro on ARMs (STM32F40X) with ADC, PWM, SPI or I2C functions:
 ______________________________________________________________________
 
-1)  Install EmIde (for instance) or install directly an arm-gcc for windows
-    from https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
-    (not tested).
+1)  Install EmIde (for instance) or install directly an arm-gcc for windows from
+    https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
 
 2)  Copy LdMicro executable and flashMCU.bat in a same directory.
     Also copy LIBRARIES_FOR directory and its content at the same place.

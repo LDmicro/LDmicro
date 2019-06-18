@@ -154,7 +154,9 @@ REM Compilation with avr-gcc
 @rem SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
-     SET GCC_PATH=c:\WinAVR-20100110
+@rem SET GCC_PATH=c:\WinAVR-20100110
+     SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
+@rem SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
 
      SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE

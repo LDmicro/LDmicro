@@ -42,13 +42,6 @@ unsigned char UART_Receive_Avail(void)
 
 void UART_Write(char *string)
 {
-    /*
-    int i= 0;
-    while(string[i] != 0) {
-        SPI_Send(string[i]);
-        i++;
-    }
-*/
     while(*string) {
         UART_Transmit(*string);
         string++;

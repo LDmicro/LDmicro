@@ -2299,9 +2299,8 @@ bool CompileAnsiC(const char *dest, int MNU)
             "#define __LADDER_H__\n"
             "\n");
 
-    ///// Added by JG
-    char deviceName[MAX_PATH]; ///// Added by JG
-    strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu");
+    char deviceName[MAX_PATH];
+    strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu"); 
     if(Prog.mcu())
         fprintf(flh,
                 "#define LDTARGET_%s\n\n"
@@ -2314,8 +2313,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 Prog.mcuClock);
 
     fprintf(flh, "#define CFG_WORD 0x%X\n\n", (WORD)Prog.configurationWord & 0xFFFF);
-
-    /////
 
     fprintf(flh,
             "/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
@@ -2691,7 +2688,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#ifdef __CODEVISIONAVR__\n"
                 "    #include <delay.h>\n"
                 "#elif defined(__GNUC__)\n"
-                "    #define F_CPU %d\n"
                 "    #include <util/delay.h>\n"
                 "#endif\n",
                 Prog.mcuClock);
@@ -3933,9 +3929,6 @@ bool CompileAnsiC(const char *dest, int MNU)
 				fprintf(f,	"        softDivisorLabel:\n");
 			}
             fprintf(f,
-                    "        #ifndef TIFR\n"
-                    "        #define TIFR TIFR1\n"
-                    "        #endif\n"
                     "        while((TIFR & (1<<OCF1A)) == 0);\n"
                     "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
 			if(plcTmr.softDivisor > 1) {
@@ -3944,7 +3937,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 					"        if(softDivisor)\n"
 					"            goto softDivisorLabel;\n"
 					"        softDivisor = %d;\n"
-					, plcTmr.softDivisor);
+					, plcTmr.softDivisor); 
 			}
         } else {
             fprintf(f, "        //  You must check PLC timer interval.\n");
