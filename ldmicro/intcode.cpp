@@ -3986,6 +3986,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 								Op(INT_IF_BIT_SET, stateInOut);
 									Op(INT_GOTO, label, 1);
 								Op(INT_END_IF);
+								Op(INT_SET_BIT, stateInOut);
 							} 
                           Op(INT_END_IF);
                         } else {
