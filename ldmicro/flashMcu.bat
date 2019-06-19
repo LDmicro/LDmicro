@@ -195,12 +195,9 @@ avr-gcc.exe -o AVRGCC\bin\%~nx2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%~nx2.map
 REM Convert Elf to Hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~nx2.elf AVRGCC\bin\%~nx2.hex
 
-REM Transfer of the program with AvrDude
-avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
-
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS1
 REM Copy source code for debugging in Proteus
 copy AVRGCC\lib\*.h PROTEUS > nul
 copy AVRGCC\lib\*.c PROTEUS > nul
@@ -208,6 +205,11 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy AVRGCC\BIN\*.hex PROTEUS > nul
 copy AVRGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS1
+@echo on
+
+REM Transfer of the program with AvrDude
+avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
 pause
 goto exit
@@ -341,7 +343,7 @@ picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=defa
 
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS2
 REM Copy source code for debugging in Proteus
 copy HTC\lib\*.h PROTEUS > nul
 copy HTC\lib\*.c PROTEUS > nul
@@ -350,6 +352,7 @@ copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
 copy HTC\OBJ\startup.as PROTEUS > nul
+:skipPROTEUS2
 @echo on
 
 REM Transfer of the program with Pickit3
@@ -388,6 +391,10 @@ mkdir ARMGCC\bin
 mkdir ARMGCC\lib
 
 if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
+
+if exist PROTEUS del PROTEUS\*.hex  > nul
+if exist PROTEUS del PROTEUS\*.elf  > nul
+if exist PROTEUS del PROTEUS\*.cof  > nul
 
 if "%4" == "stm32f10x" goto STM32F1
 
@@ -439,13 +446,9 @@ arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC
 REM Convert Elf to Hex
 arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 
-REM Transfer of the program with ST-Link CLI
-
-ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
-
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS3
 REM Copy source code for debugging in Proteus
 copy ARMGCC\lib\*.h PROTEUS > nul
 copy ARMGCC\lib\*.c PROTEUS > nul
@@ -453,6 +456,11 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy ARMGCC\BIN\*.hex PROTEUS > nul
 copy ARMGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS3
+@echo on
+
+REM Transfer of the program with ST-Link CLI
+ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
 pause
 goto exit

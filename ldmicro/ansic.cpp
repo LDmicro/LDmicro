@@ -2126,9 +2126,10 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_STRING_INIT: {
-                fprintf(f, "const char %s[] = \"%s\";",
+                fprintf(f, "const char %s[] = \"%s\"; // [%d]",
                         MapSym(IntCode[i].name1.c_str(), ASSTR),
-                        IntCode[i].name2.c_str());
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name2.length());
                 break;
             }
             case INT_FLASH_INIT: {
@@ -2510,6 +2511,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n"
                 "#include <stdio.h>\n"
                 "#include <avr\\io.h>\n"
+                "#include <avr\\interrupt.h>\n"
                 "#include <avr\\%s.h>\n"
                 "#include \"UsrLib.h\"\n"
                 "\n",
@@ -2642,7 +2644,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(fh, "#include <EEPROM.h>\n");
     } else if(mcu_ISA == ISA_PIC16) {
     } else if(mcu_ISA == ISA_AVR) {
-        fprintf(fh,
+        fprintf(flh,
                 "#include <stdio.h>\n"
                 "\n"
                 "#ifdef __CODEVISIONAVR__\n"
@@ -2651,7 +2653,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <%s.h>\n"
                 "#elif defined(__GNUC__)\n"
                 "    //#warning __GNUC__\n"
-                "    #include <avr\\io.h>\n"
                 "    #include <avr\\pgmspace.h>\n"
                 "    #define __PROG_TYPES_COMPAT__ //arduino\n"
                 "    #ifdef USE_WDT\n"
@@ -2659,28 +2660,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu()->mcuH);
-        /*
-      fprintf(fh,
-"#ifdef __GNUC__\n"
-"    //mem.h vvv\n"
-"    //CodeVisionAVR V2.0 C Compiler\n"
-"    //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
-"    //\n"
-"    //  Memory access macros\n"
-"\n"
-"    #ifndef _MEM_INCLUDED_\n"
-"    #define _MEM_INCLUDED_\n"
-"\n"
-"    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
-"    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
-"    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
-"    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
-"\n"
-"    #endif\n"
-"    //mem.h ^^^\n"
-"#endif\n"
-     );
-*/
     } else {
     }
     if(DelayUsed()) {
@@ -2886,9 +2865,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "const int analogReference_type = DEFAULT;\n"
                 "\n"
                 "// You must provide the I/O pin mapping for ARDUINO board in ladder.h here.\n");
-        //  if(Prog.cycleDuty) {
-        //      fprintf(flh,
-        // const int pin_Ub_YPlcCycleDuty = %d;\n
     } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
     }
@@ -3294,7 +3270,6 @@ bool CompileAnsiC(const char *dest, int MNU)
     /////
 
     //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
     fprintf(f,
             "\n"
             "/* Call this function once per PLC cycle. You are responsible for calling\n"
@@ -3428,6 +3403,21 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "static unsigned char softDivisor = %d;"
                     "\n", plcTmr.softDivisor);
+					if(Prog.cycleTimer == 0) {
+						fprintf(f,
+						"\n"
+						"ISR(INT0_vect)\n"
+						"{\n"
+						"//    if(T0IF) {\n"
+                        "//        TMR0 += %d;\n" // reprogram TMR0
+                        "//        T0IF = 0;\n"
+						"        if(softDivisor)\n"
+						"           softDivisor--;\n"
+						" //   }\n"
+						"}\n",
+                        256 - plcTmr.tmr + 1
+						);
+                    }
                 }
             }
         }
@@ -3649,11 +3639,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                     //dbp("divider=%d EQU counter=%d", divider, counter);
 
                     fprintf(f,
-                            "        TCCR1A = 0x00; // WGM11=0, WGM10=0\n"
-                            "        TCCR1B = (1<<WGM12) | %d; // WGM13=0, WGM12=1\n"
-                            "        // `the high byte must be written before the low byte\n"
-                            "        OCR1AH = (%d >> 8) & 0xff;\n"
-                            "        OCR1AL = %d  & 0xff;\n",
+                            "    TCCR1A = 0x00; // WGM11=0, WGM10=0\n"
+                            "    TCCR1B = (1<<WGM12) | %d; // WGM13=0, WGM12=1\n"
+                            "    // `the high byte must be written before the low byte\n"
+                            "    OCR1AH = (%d >> 8) & 0xff;\n"
+                            "    OCR1AL = %d  & 0xff;\n",
                             plcTmr.cs,
                             counter,
                             counter);
@@ -3886,24 +3876,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
         fprintf(f,"    setupPlc();\n"
                   "    while(1) {\n");
-        /*
-    McuIoPinInfo *iop;
-    if(Prog.cycleDuty) {
-        iop = PinInfoForName(YPlcCycleDuty);
-        if(iop) {
-          if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-            fprintf(f,
-"        output_low(PIN_%c%d); // YPlcCycleDuty\n", iop->port, iop->bit);
-          } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-            fprintf(f,
-"        R%c%d = 0; // YPlcCycleDuty\n", iop->port, iop->bit);
-          } else {
-            fprintf(f,
-"        PORT%c &= ~(1<<PORT%c%d); // YPlcCycleDuty\n", iop->port, iop->port, iop->bit);
-          }
-        }
-    }
-*/
+
         fprintf(f, "        // Test PLC cycle timer interval here.\n");
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
             fprintf(f,
@@ -3968,23 +3941,6 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(f, "\n");
         if(Prog.cycleDuty) {
             fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
-            /*
-        if(iop) {
-          if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-            fprintf(f,
-"        output_high(PIN_%c%d); // YPlcCycleDuty\n", iop->port, iop->bit);
-          } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-            fprintf(f,
-"        R%c%d = 1; // YPlcCycleDuty\n", iop->port, iop->bit);
-          } else if(compiler_variant == MNU_COMPILE_ARDUINO) {
-            fprintf(f,
-"        Write1_Ub_YPlcCycleDuty();\n");
-          } else {
-            fprintf(f,
-"        PORT%c |= 1<<PORT%c%d; // YPlcCycleDuty\n", iop->port, iop->port, iop->bit);
-          }
-        }
-*/
         }
 
         ///// added by JG
