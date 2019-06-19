@@ -547,22 +547,22 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
+//  } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
         /*
         int i = strlen("UART_WR") + 1;
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
         */
-        FrmStrToStr(l->d.fmtdStr.string);
+//      FrmStrToStr(l->d.fmtdStr.string);
+        /*
         //DelFramingDoubleQuotes(l->d.fmtdStr.string);
-/*
         DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
         }
-*/
-        *which = ELEM_UART_WR;
+        */
+//      *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
@@ -575,6 +575,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_FORMATTED_STRING;
+/*
     } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
         if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
             strcpy(l->d.fmtdStr.dest, "");
@@ -604,18 +605,19 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_STRING;
+*/
     } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string) == 3) {
-        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
-            strcpy(l->d.fmtdStr.dest, "");
-        }
-        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
-            strcpy(l->d.fmtdStr.var, "");
-        }
         int i = strlen("STRING") + 1 + strlen(l->d.fmtdStr.dest) + 1 + strlen(l->d.fmtdStr.var) + 1;
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
         DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
+        }
+        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.dest, "");
+        }
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.var, "");
         }
         *which = ELEM_STRING;
     } else if([&]() -> int {
@@ -1321,8 +1323,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", leaf->d.bus.dest, leaf->d.bus.src);
-            int i;
-            for(i = 7; i >= 0; i--)
+            for(int i = 7; i >= 0; i--)
                 fprintf(f, " %d", leaf->d.bus.PCBbit[i]);
             fprintf(f, "\n");
             break;
@@ -1552,15 +1553,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             break;
         }
+/*
         case ELEM_UART_WR: {
             fprintf(f, "UART_WR %d ", leaf->d.fmtdStr.wait);
-            /*
-            if(*(l->d.fmtdStr.var)) {
-                fprintf(f, "%s", l->d.fmtdStr.var);
-            } else {
-                fprintf(f, "(none)");
-            }
-            */
             if(*(leaf->d.fmtdStr.string)) {
                 //fprintf(f, "\"%s\"", StrToFrmStr(str1, l->d.fmtdStr.string));
                 fprintf(f, "%s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
@@ -1570,6 +1565,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             fprintf(f, "\n");
             break;
         }
+*/
         case ELEM_FORMATTED_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "FORMATTED_STRING ");
@@ -1600,14 +1596,13 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
-            int i;
             fprintf(f,
                     "LOOK_UP_TABLE %s %s %d %d",
                     leaf->d.lookUpTable.dest,
                     leaf->d.lookUpTable.index,
                     leaf->d.lookUpTable.count,
                     leaf->d.lookUpTable.editAsString);
-            for(i = 0; i < leaf->d.lookUpTable.count; i++) {
+            for(int i = 0; i < leaf->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", leaf->d.lookUpTable.vals[i]);
             }
             fprintf(f, " %s", leaf->d.lookUpTable.name);
@@ -1615,13 +1610,12 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_PIECEWISE_LINEAR: {
-            int i;
             fprintf(f,
                     "PIECEWISE_LINEAR %s %s %d",
                     leaf->d.piecewiseLinear.dest,
                     leaf->d.piecewiseLinear.index,
                     leaf->d.piecewiseLinear.count);
-            for(i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
+            for(int i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
                 fprintf(f, " %d", leaf->d.piecewiseLinear.vals[i]);
             }
             fprintf(f, " %s", leaf->d.piecewiseLinear.name);

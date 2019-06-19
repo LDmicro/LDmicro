@@ -363,7 +363,7 @@ static void MakeControls()
         if(Prog.mcu()->whichIsa == ISA_AVR) {
             b = CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
         } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
-            b = CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen) && PicProgLdLen;
+            b = CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen); // && PicProgLdLen;
         }
         char   s1[100];
         char   s2[100];

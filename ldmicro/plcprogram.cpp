@@ -123,8 +123,6 @@ int PlcProgram::mcuPWM() const
                         n++;
             prevPin = mcu_->pwmInfo[i].pin;
         }
-    } else if(mcu_->pwmNeedsPin) {
-        n = 1;
     }
     return n;
 }

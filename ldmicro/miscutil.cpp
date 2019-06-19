@@ -445,12 +445,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         return;
                     }
                 }
-                if(PwmFunctionUsed() && Prog.mcu()) {
+/*
+				if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(portName, _("<PWM needs!>"));
                         return;
                     }
                 }
+*/
                 /*
                 if(QuadEncodFunctionUsed() && Prog.mcu()) {
                     if((Prog.mcu()->IntNeeds.int0 == pin)
@@ -474,12 +476,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         return;
                     }
                 }
-                if(PwmFunctionUsed() && Prog.mcu()) {
+/*
+				if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(pinName, _("<PWM needs!>"));
                         return;
                     }
                 }
+*/
                 /*
                 if(QuadEncodFunctionUsed() && Prog.mcu()) {
                     if((Prog.mcu()->IntNeeds.int0 == pin)
@@ -552,10 +556,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
         if(!Prog.mcuPWM()) {
             strcpy(dest, _("<no PWM!>"));
         } else {
-            if(pin == 0) {
+/*
+			if(pin == 0) {
                 pin = Prog.mcu()->pwmNeedsPin;
                 io->pin = pin;
             }
+*/
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
             if(iop) {

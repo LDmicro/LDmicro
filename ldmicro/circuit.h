@@ -120,7 +120,7 @@
 //#define ELEM_UART_SENDn         0x2b01 // impasse
 #define ELEM_UART_SEND_READY    0x2b02
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
-#define ELEM_UART_WR            0x2b03
+//#define ELEM_UART_WR            0x2b03
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SLEEP              0x2c01
 #define ELEM_CLRWDT             0x2c02
@@ -286,7 +286,7 @@
 /*    case ELEM_I2C_CPRINTF:      */\
 /*    case ELEM_ISP_CPRINTF:      */\
 /*    case ELEM_UART_CPRINTF:     */\
-    case ELEM_UART_WR:          \
+/*    case ELEM_UART_WR:          */\
     case ELEM_FORMATTED_STRING: \
     case ELEM_PERSIST:          \
     case ELEM_RSFR:             \
@@ -712,6 +712,7 @@ int                 CountWhich(int seek1, int seek2, int seek3, char *name);
 int                 CountWhich(int seek1, int seek2, char *name);
 int                 CountWhich(int seek1, char *name);
 int                 CountWhich(int seek1);
+int                 StringFunctionUsed();
 int                 AdcFunctionUsed();
 int                 PwmFunctionUsed();
 int                 QuadEncodFunctionUsed();

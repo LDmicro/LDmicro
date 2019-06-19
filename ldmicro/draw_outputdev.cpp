@@ -724,8 +724,7 @@ void ExportDrawingAsText(char *file)
     ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
 
     int l = maxWidth * POS_WIDTH + 9;
-    int i;
-    for(i = 0; i < totalHeight; i++) {
+    for(int i = 0; i < totalHeight; i++) {
         ExportBuffer[i] = (char *)CheckMalloc(l);
         memset(ExportBuffer[i], ' ', l - 1);
         ExportBuffer[i][4] = '|';
@@ -740,7 +739,7 @@ void ExportDrawingAsText(char *file)
     char str[10] = "";
     int  cx;
     int  cy = 1;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         cx = 6;
         DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i] /*, 0*/);
         /*
@@ -808,7 +807,7 @@ void ExportDrawingAsText(char *file)
 
     fprintf(f, "%s", "\nLADDER DIAGRAM:\n");
 
-    for(i = 0; i < totalHeight; i++) {
+    for(int i = 0; i < totalHeight; i++) {
         ExportBuffer[i][4] = '|';
         fprintf(f, "%s\n", ExportBuffer[i]);
         CheckFree(ExportBuffer[i]);
@@ -820,7 +819,7 @@ void ExportDrawingAsText(char *file)
 
     fprintf(f, "%s", _("  Name                       | Type               | Pin | Port | Pin name\n"));
     fprintf(f, "%s", " ----------------------------+--------------------+-----+------+-----------\n");
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         char b[1024];
         memset(b, '\0', sizeof(b));
 
@@ -858,8 +857,7 @@ void SetUpScrollbars(bool *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
     //                 + 1; // for the end rung
     /*
     int totalHeight = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
         totalHeight++; //  for the empty rung between rungs
     }

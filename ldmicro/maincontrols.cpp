@@ -307,8 +307,8 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
-/*    
-	EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
+/*
+    EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_SPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_FPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_PRINTF, t);
@@ -597,9 +597,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string"));
 
-    ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
+    // AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
@@ -609,7 +608,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
 
-    ///// Submenus created by JG
     SpiMenu = CreatePopupMenu();
     AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI, _("Insert SPI Send/Receive"));
     AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI_WRITE, _("Insert SPI Write"));
@@ -619,7 +617,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_READ, _("Insert I2C Read"));
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_WRITE, _("Insert I2C Write"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)I2cMenu, _("I2C functions"));
-    /////
 
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM, _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
@@ -711,8 +708,8 @@ HMENU MakeMainWindowMenus()
     compile = CreatePopupMenu();
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
-    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX, _("Compile HEX->ASM"));
+    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,_("Compile ASM->HEX"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC, _("Compile ANSIC"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -1035,10 +1032,9 @@ void RefreshControlsToSettings()
 //-----------------------------------------------------------------------------
 void GenerateIoListDontLoseSelection()
 {
-    int i;
     int SaveIoListSelectionPoint = IoListSelectionPoint;
     IoListSelectionPoint = -1;
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
             IoListSelectionPoint = i;
             break;

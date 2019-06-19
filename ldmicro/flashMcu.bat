@@ -154,7 +154,9 @@ REM Compilation with avr-gcc
 @rem SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
-     SET GCC_PATH=c:\WinAVR-20100110
+@rem SET GCC_PATH=c:\WinAVR-20100110
+     SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
+@rem SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
 
      SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE
@@ -180,6 +182,7 @@ if not exist AVRGCC\lib\UsrLib.c copy %LIB_PATH%\*.* AVRGCC\lib
 
 if exist PROTEUS del PROTEUS\*.hex  > nul
 if exist PROTEUS del PROTEUS\*.elf  > nul
+if exist PROTEUS del PROTEUS\*.cof  > nul
 
 for %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%~dp2 -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
 :pause
@@ -300,10 +303,11 @@ goto exit
 @echo on
 REM Compilation with HI-TECH C (picc.exe)
 
-@rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
-SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+     SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
+@rem SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
 
-SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+@rem SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+     SET PICKIT_PATH=c:\Program Files (x86)\Microchip\MPLABX\v5.20\mplab_platform\mplab_ipe
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
 
@@ -324,6 +328,7 @@ if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 
 if exist PROTEUS del PROTEUS\*.hex  > nul
 if exist PROTEUS del PROTEUS\*.elf  > nul
+if exist PROTEUS del PROTEUS\*.cof  > nul
 
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
@@ -333,9 +338,6 @@ picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=defau
 
 REM Linkage of objects
 picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
-
-REM Transfer of the program with Pickit3
-PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 @echo off
 :mkdir PROTEUS
@@ -347,6 +349,10 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
+@echo on
+
+REM Transfer of the program with Pickit3
+PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 pause
 goto exit
@@ -358,7 +364,10 @@ goto exit
 @echo on
 REM Compilation with arm-gcc
 
-SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\yagarto-20121222\bin
+     SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major\bin
+
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
 SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
@@ -419,6 +428,8 @@ CD ARMGCC\lib
 for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
 CD ..\..
 
+pause
+
 arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
 
 REM Linkage of objects
@@ -430,6 +441,17 @@ arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 REM Transfer of the program with ST-Link CLI
 
 ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto exit
+REM Copy source code for debugging in Proteus
+copy ARMGCC\lib\*.h PROTEUS > nul
+copy ARMGCC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy ARMGCC\BIN\*.hex PROTEUS > nul
+copy ARMGCC\BIN\*.elf PROTEUS > nul
 
 pause
 goto exit

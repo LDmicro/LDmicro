@@ -621,8 +621,8 @@ void AddLookUpTable()
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.lookUpTable.name, "name");
     strcpy(t->d.lookUpTable.dest, "dest");
+    strcpy(t->d.lookUpTable.name, "tabName");
     strcpy(t->d.lookUpTable.index, "index");
     t->d.lookUpTable.count = 0;
     t->d.lookUpTable.editAsString = 0;
@@ -685,8 +685,7 @@ void AddBus(int which)
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.bus.dest, "dest");
     strcpy(t->d.bus.src, "src");
-    int i;
-    for(i = 0; i < PCBbit_LEN; i++)
+    for(int i = 0; i < PCBbit_LEN; i++)
         t->d.bus.PCBbit[i] = i;
     AddLeaf(which, t);
 }
@@ -924,7 +923,7 @@ void AddUart(int which)
     }
     ElemLeaf *t = AllocLeaf();
     if((which == ELEM_UART_SEND) || (which == ELEM_UART_RECV))
-        strcpy(t->d.uart.name, "char");
+        strcpy(t->d.uart.name, "var");
     else
         strcpy(t->d.uart.name, "var");
     t->d.uart.bytes = 1;    // Release 2.3 compatible
@@ -1581,8 +1580,7 @@ bool ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
+            for(int i = 0; i < p->count; i++) {
                 if(ContainsWhich(p->contents[i].which, p->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
@@ -1593,8 +1591,7 @@ bool ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 if(ContainsWhich(s->contents[i].which, s->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
@@ -1704,8 +1701,7 @@ static bool _FindRung(int which, void *any, int seek, const char *name)
 
 int FindRung(int seek, char *name)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
@@ -1713,8 +1709,7 @@ int FindRung(int seek, char *name)
 
 int FindRungLast(int seek, char *name)
 {
-    int i;
-    for(i = Prog.numRungs - 1; i >= 0; i--)
+    for(int i = Prog.numRungs - 1; i >= 0; i--)
         if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
@@ -1727,17 +1722,16 @@ int FindRungLast(int seek, char *name)
 static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, char *name)
 {
     int n = 0;
-    int i;
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            for(i = 0; i < p->count; i++)
+            for(int i = 0; i < p->count; i++)
                 n += CountWhich_(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3, name);
             break;
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            for(i = 0; i < s->count; i++)
+            for(int i = 0; i < s->count; i++)
                 n += CountWhich_(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3, name);
             break;
         }
@@ -1782,8 +1776,7 @@ int CountWhich(int seek1)
 
 bool DelayUsed()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_DELAY, -1, -1)) {
             return true;
         }
@@ -1797,7 +1790,7 @@ bool TablesUsed()
         if((ContainsWhich(
                ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
+//         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
@@ -1813,6 +1806,11 @@ int PwmFunctionUsed()
 int AdcFunctionUsed()
 {
     return CountWhich(ELEM_READ_ADC);
+}
+
+int StringFunctionUsed()
+{
+    return CountWhich(ELEM_STRING);
 }
 //-----------------------------------------------------------------------------
 int QuadEncodFunctionUsed()

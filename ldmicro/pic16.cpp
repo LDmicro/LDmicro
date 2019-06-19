@@ -1691,7 +1691,10 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
             CHECK((BYTE)arg1, 8);
             CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "retlw\t %s \t %s", arg1s, arg1comm);
+			if((hobatoi(arg1s) >= ' ') && (hobatoi(arg1s) < 127))
+	            sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, hobatoi(arg1s), arg1comm);
+			else
+	            sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, hobatoi(arg1s), arg1comm);
             return 0x3400 | (BYTE)arg1;
 
         case OP_RETURN:
@@ -2312,8 +2315,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             if(asm_comment_level >= 5) {
                 if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
-                    if(IntCode[PicProg[i].IntPc].leaf) {
-                        fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].leaf->which);
+                    if(IntCode[PicProg[i].IntPc].node) {
+                        fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].node->which);
                     }
                     if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].fileLine)) {
                         fprintf(fAsm,
@@ -2614,8 +2617,7 @@ static char *VarFromExpr(char *expr, char *tempName, ADDR_T addr)
     if(IsNumber(expr)) {
         int val = hobatoi(expr);
         int sov = SizeOfVar(expr);
-        int i;
-        for(i=0; i<sov; i++) {
+        for(int i=0; i<sov; i++) {
             Instruction(OP_MOVLW, ((val >> (8*i)) && 0xFF );
             Instruction(OP_MOVWF, addr + i);
         }
@@ -2726,8 +2728,8 @@ static uint32_t CopyRegToReg(ADDR_T addr1, int sov1, ADDR_T addr2, int sov2, con
         THROW_COMPILER_EXCEPTION(name1);
     if(sov2 < 1)
         THROW_COMPILER_EXCEPTION(name2);
-    if(sov2 > 4)
-        THROW_COMPILER_EXCEPTION(name2);
+    //if(sov2 > 4)
+        //THROW_COMPILER_EXCEPTION(name2);
 
     if(addr1 == 0)
         THROW_COMPILER_EXCEPTION(name1);
@@ -3818,6 +3820,50 @@ static void InitTable(IntOp *a)
     notRealocableAddr = PicProgWriteP - 1; // Index calculation can't be moved
 }
 
+static void InitTableString(IntOp *a)
+{
+    uint32_t savePicProgWriteP = PicProgWriteP;
+    ADDR_T   addrOfTableRoutine = 0;
+    MemOfVar(a->name1, &addrOfTableRoutine);
+	char str[MAX_NAME_LEN];
+	FrmStrToStr(str, a->name2.c_str());
+
+    if(addrOfTableRoutine == 0) {
+		Comment("TABLE %s[%d]", a->name1.c_str(), strlen(str));
+        addrOfTableRoutine = PicProgWriteP;
+
+        SetMemForVariable(a->name1, addrOfTableRoutine, strlen(str));
+
+#define TABLE_CALC 8
+        //This code is unrealocable.
+        Instruction(OP_MOVLW, ((addrOfTableRoutine + TABLE_CALC) >> 8) & 0xFF);
+        Instruction(OP_ADDWF, Scratch1, DEST_W); // index hi
+        Instruction(OP_MOVWF, REG_PCLATH);
+
+        Instruction(OP_MOVLW, (addrOfTableRoutine + TABLE_CALC) & 0xFF);
+        Instruction(OP_ADDWF, Scratch0, DEST_W); // index lo
+        skpnc;
+        Instruction(OP_INCF, REG_PCLATH, DEST_F);
+        Instruction(OP_MOVWF, REG_PCL); // jump
+
+        if((addrOfTableRoutine + TABLE_CALC) != PicProgWriteP)
+            THROW_COMPILER_EXCEPTION_FMT("TABLE_CALC=%u", PicProgWriteP - addrOfTableRoutine);
+
+        int sovElement = a->literal2;
+        Comment("DATA's size is 1");
+        for(int i = 0; i < strlen(str); i++) {
+           Instruction(OP_RETLW, str[i]);
+        }
+        Instruction(OP_RETLW, 0); // string final '\0' is included
+        Comment("TABLE %s END", a->name1.c_str());
+    }
+
+    if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
+        oops();
+
+    notRealocableAddr = PicProgWriteP - 1; // Index calculation can't be moved
+}
+
 //-----------------------------------------------------------------------------
 static void InitTables()
 {
@@ -3829,6 +3875,9 @@ static void InitTables()
             case INT_FLASH_INIT:
                 //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal1);
                 InitTable(a);
+                break;
+            case INT_STRING_INIT:
+                InitTableString(a);
                 break;
             default:
                 break;
@@ -5744,7 +5793,10 @@ otherwise the result was zero or greater.
             case INT_ELSE:
                 return;
 
-            case INT_WRITE_STRING:
+            case INT_STRING:
+                break;
+
+			case INT_WRITE_STRING:
                 Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
@@ -5798,9 +5850,74 @@ otherwise the result was zero or greater.
                 break;
             }
 #ifdef TABLE_IN_FLASH
+			case INT_STRING_INIT: // Inited by InitTableString()
             case INT_FLASH_INIT: {
                 // InitTable(a); // Inited by InitTables()
                 break;
+            }
+			case INT_SET_VARIABLE_INDEXED:{
+                sov1 = SizeOfVar(a->name1);
+                MemForVariable(a->name1, &addr1); // dest
+
+                Comment("Scratch0:1 := Index '%s'", a->name3.c_str());
+                if(IsNumber(a->name3)) {
+                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name3.c_str()), a->name3);
+                } else {
+                    MemForVariable(a->name3, &addr3);
+                    sov3 = SizeOfVar(a->name3);
+                    CopyRegToReg(Scratch0, 2, addr3, sov3, "$Scratch0", a->name3, false);
+                }
+
+                int sovElement = 1; // a->literal2;
+                Comment("Index := Index * sovElement '%d'", sovElement);
+                if(sovElement == 1) {
+                    // nothing
+                } else if(sovElement == 2) {
+                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
+                } else if(sovElement == 3) {
+                    CopyRegToReg(Scratch2, 2, addr3, 2, "$Scratch2", a->name3, false);
+                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
+                    VariableAdd(Scratch0, Scratch0, Scratch2, 2); // * 3
+                } else if(sovElement == 4) {
+                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
+                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 4
+                } else
+                    oops();
+
+                Comment("CALL Table '%s' address in flash", a->name4.c_str());
+                MemOfVar(a->name4, &addr2);
+
+                if(sovElement < 1)
+                    oops();
+                if(sovElement > 4)
+                    oops();
+
+                if((sovElement >= 1) && (sov1 >= 1)) {
+                    Instruction(OP_CALL, addr2);
+                    Instruction(OP_MOVWF, addr1);
+                    if((sovElement >= 2) && (sov1 >= 2)) {
+                        Increment(Scratch0, 2, "Index");
+                        Instruction(OP_CALL, addr2);
+                        Instruction(OP_MOVWF, addr1 + 1);
+                        if((sovElement >= 3) && (sov1 >= 3)) {
+                            Increment(Scratch0, 2, "Index");
+                            Instruction(OP_CALL, addr2);
+                            Instruction(OP_MOVWF, addr1 + 2);
+                            if((sovElement == 4) && (sov1 >= 4)) {
+                                Increment(Scratch0, 2, "Index");
+                                Instruction(OP_CALL, addr2);
+                                Instruction(OP_MOVWF, addr1 + 3);
+                            }
+                        }
+                    }
+                }
+                if(sovElement < sov1) {
+                    Comment("Clear upper bytes of dest");
+                    for(int i = 0; i < (sov1 - sovElement); i++)
+                        Instruction(OP_CLRF, addr1 + sovElement + i);
+                }
+                Comment("END CALLs");
+				break;
             }
             case INT_FLASH_READ: {
                 sov1 = SizeOfVar(a->name1);

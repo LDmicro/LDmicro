@@ -276,9 +276,9 @@ typedef uint32_t ADDR_T;
 
 #define MNU_COMPILE_ARDUINO         0x7400          // Arduino
 
-#define MNU_COMPILE_IHEX            0x7500
+#define MNU_COMPILE_IHEX            0x7500          // HEX->ASM
 #define MNU_COMPILE_IHEXDONE        0x7510
-#define MNU_COMPILE_ASM             0x7600
+#define MNU_COMPILE_ASM             0x7600          // ASM->HEX
 #define MNU_COMPILE_PASCAL          0x7700
 #define MNU_COMPILE_INT             0x7800          // Interpreter
 #define MNU_COMPILE_XINT            0x7810          // Extended interpreter
@@ -531,6 +531,7 @@ char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
 char *FrmStrToStr(char *dest);
 const char *ChrToFrmtStr(const char src, FRMT frmt);
+const char *ChrToFrmtStr(const char src);
 char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
 char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();

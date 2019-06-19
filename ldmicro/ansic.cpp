@@ -82,6 +82,7 @@ static bool SeenVariable(const char *name)
 #define ASSTR 3
 static const char *MapSym(const char *str, int how = ASINT);
 static const char *MapSym(const char *str, int how)
+// TODO: Use GetVariableType() instead 'how'
 {
     if(!str)
         return nullptr;
@@ -881,6 +882,11 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar2 = IntCode[i].name2.c_str();
                 break;
 
+            case INT_SET_VARIABLE_INDEXED:
+                //intVar1 = IntCode[i].name1.c_str();
+                //intVar2 = IntCode[i].name2.c_str();
+                break;
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
                 if(!IsNumber(IntCode[i].name2))
@@ -1050,9 +1056,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 intVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_WRITE_STRING:
+            case INT_STRING:
                 strVar1 = IntCode[i].name1.c_str();
-                intVar3 = IntCode[i].name3.c_str();
+                if(IntCode[i].name3.length())
+                    intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_SLEEP:
@@ -1065,8 +1072,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
 #ifdef TABLE_IN_FLASH
+            case INT_STRING_INIT:
             case INT_FLASH_INIT:
                 break;
+
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1.c_str();
@@ -1242,8 +1251,14 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 indent--;
                 break;
 
+            case INT_SET_VARIABLE_INDEXED:
+                    fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                break;
+
             case INT_SET_VARIABLE_TO_VARIABLE:
-                if(IntCode[i].name2.length() && IntCode[i].literal1)
+                if(GetVariableType(IntCode[i].name2) == IO_TYPE_STRING)
+                    fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                else if(IntCode[i].name2.length() && IntCode[i].literal1)
                     fprintf(f, "%s = BYTE_AT(%s, %s+%d);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT), IntCode[i].literal1);
                 else if(IntCode[i].name2.length())
                     fprintf(f, "%s = BYTE_AT(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
@@ -1664,7 +1679,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 else if(IntCode[i].literal1)
                     fprintf(
                         f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT), IntCode[i].literal1);
-                else 
+                else
                     fprintf(
                         f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, GetVariableType(IntCode[i].name1) == IO_TYPE_STRING ? ASSTR : ASINT));
                 break;
@@ -1997,17 +2012,36 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
 
-            case INT_WRITE_STRING:
+            case INT_STRING:
+                if(IntCode[i].name3.length())
+                  #if 0
                     fprintf(f, "sprintf(%s, \"%s\", %s);\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             IntCode[i].name2.c_str(),
                             MapSym(IntCode[i].name3));
+                  #else
+                    fprintf(f, "sprintf(%s, %s, %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            MapSym(IntCode[i].name4.c_str(), ASSTR),
+                            MapSym(IntCode[i].name3));
+                  #endif
+                else
+                  #if 0
+                    fprintf(f, "strcpy(%s, \"%s\");\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            IntCode[i].name2.c_str());
+                  #else
+                    fprintf(f, "strcpy(%s, %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            MapSym(IntCode[i].name4.c_str(), ASSTR));
+                  #endif
                 break;
 
 #ifdef TABLE_IN_FLASH
-            case INT_FLASH_INIT: {
+            case INT_STRING_INIT:
+            case INT_FLASH_INIT:
                 break;
-            }
+
             case INT_FLASH_READ: {
                 if(IsNumber(IntCode[i].name3)) {
                     fprintf(f,
@@ -2091,6 +2125,12 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 #ifdef TABLE_IN_FLASH
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
+            case INT_STRING_INIT: {
+                fprintf(f, "const char %s[] = \"%s\";",
+                        MapSym(IntCode[i].name1.c_str(), ASSTR),
+                        IntCode[i].name2.c_str());
+                break;
+            }
             case INT_FLASH_INIT: {
                 int         sovElement = IntCode[i].literal2;
                 const char *sovs = "invalid SOV value";
@@ -2259,8 +2299,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "#define __LADDER_H__\n"
             "\n");
 
-    ///// Added by JG
-    char deviceName[MAX_PATH]; ///// Added by JG
+    char deviceName[MAX_PATH];
     strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu");
     if(Prog.mcu())
         fprintf(flh,
@@ -2274,8 +2313,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 Prog.mcuClock);
 
     fprintf(flh, "#define CFG_WORD 0x%X\n\n", (WORD)Prog.configurationWord & 0xFFFF);
-
-    /////
 
     fprintf(flh,
             "/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
@@ -2358,68 +2395,14 @@ bool CompileAnsiC(const char *dest, int MNU)
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
-    fprintf(flh,
-            "/*\n"
-            "  Type                  Size(bits)\n"
-            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
-            "  SBYTE     signed integer      8\n"
-            "  SWORD     signed integer     16\n"
-            "  SDWORD    signed integer     32\n"
-            "*/\n");
-    if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(flh,
-                "typedef boolean       ldBOOL;\n"
-                "typedef char           SBYTE;\n"
-                "typedef int            SWORD;\n"
-                "typedef long int      SDWORD;\n"
-                "\n");
-    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        fprintf(flh,
-                "  typedef uint8_t    ldBOOL;\n"
-                "  typedef int8_t     SBYTE;\n"
-                "  typedef int16_t    SWORD;\n"
-                "  typedef int32_t    SDWORD;\n"
-                "\n");
-    } else if(mcu_ISA == ISA_PIC16) {
-        fprintf(flh,
-                "#ifdef CCS_PIC_C\n"
-                "    typedef int1             ldBOOL;\n"
-                "    typedef signed  int8      SBYTE;\n"
-                "    typedef signed int16      SWORD;\n"
-                "    typedef signed int32     SDWORD;\n"
-                "#elif defined(HI_TECH_C)\n"
-                "    typedef unsigned char    ldBOOL;\n"
-                "    typedef signed char       SBYTE;\n"
-                "    typedef signed short int  SWORD;\n"
-                "    typedef signed long int  SDWORD;\n"
-                "#endif\n"
-                "\n");
-    } else if(mcu_ISA == ISA_ARM) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-
-    } else if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    } else {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    }
-
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+
+        if(StringFunctionUsed()) {
+            fprintf(flh,
+                    "#include <stdio.h>\n"
+                    "#include <string.h>\n");
+        }
         fprintf(flh,
                 "\n"
                 "#include \"UsrLib.h\"\n");
@@ -2448,10 +2431,14 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "#include \"I2cLib.h\"\n");
         }
     } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        ///// Added by JG2 for CortexF1
         fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n");
+        if(StringFunctionUsed()) {
+            fprintf(flh,
+                    "#include <string.h>\n");
+        }
+        ///// Added by JG2 for CortexF1
         if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
             fprintf(flh,
                     "#include \"stm32f10x.h\"\n"
@@ -2550,6 +2537,66 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
     }
 
+    fprintf(flh,
+            "/*\n"
+            "  Type                  Size(bits)\n"
+            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
+            "  SBYTE     signed integer      8\n"
+            "  SWORD     signed integer     16\n"
+            "  SDWORD    signed integer     32\n"
+            "*/\n");
+    if(compiler_variant == MNU_COMPILE_ARDUINO) {
+        fprintf(flh,
+                "typedef boolean       ldBOOL;\n"
+                "typedef char           SBYTE;\n"
+                "typedef int            SWORD;\n"
+                "typedef long int      SDWORD;\n"
+                "\n");
+    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+        fprintf(flh,
+                "  typedef uint8_t    ldBOOL;\n"
+                "  typedef int8_t     SBYTE;\n"
+                "  typedef int16_t    SWORD;\n"
+                "  typedef int32_t    SDWORD;\n"
+                "\n");
+    } else if(mcu_ISA == ISA_PIC16) {
+        fprintf(flh,
+                "#ifdef CCS_PIC_C\n"
+                "    typedef int1             ldBOOL;\n"
+                "    typedef signed  int8      SBYTE;\n"
+                "    typedef signed int16      SWORD;\n"
+                "    typedef signed int32     SDWORD;\n"
+                "#elif defined(HI_TECH_C)\n"
+                "    typedef unsigned char    ldBOOL;\n"
+                "    typedef signed char       SBYTE;\n"
+                "    typedef signed short int  SWORD;\n"
+                "    typedef signed long int  SDWORD;\n"
+                "#endif\n"
+                "\n");
+    } else if(mcu_ISA == ISA_ARM) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+
+    } else if(mcu_ISA == ISA_AVR) {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    } else {
+        fprintf(flh,
+                "  typedef unsigned char    ldBOOL;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    }
+
     FileTracker fh(desth, "w");
     if(!fh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desth);
@@ -2641,7 +2688,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#ifdef __CODEVISIONAVR__\n"
                 "    #include <delay.h>\n"
                 "#elif defined(__GNUC__)\n"
-                "    #define F_CPU %d\n"
                 "    #include <util/delay.h>\n"
                 "#endif\n",
                 Prog.mcuClock);
@@ -2785,9 +2831,8 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(PwmFunctionUsed()) {
             fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
-        int i;
         if(Prog.mcu())
-            for(i = 0; i < MAX_IO_PORTS; i++) {
+            for(int i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i))
                     fprintf(f, "  #USE FAST_IO(%c)\n", 'A' + i);
             }
@@ -3353,6 +3398,26 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         fprintf(f, "}\n");
     } else {
+        if(Prog.cycleTime > 0) {
+            if(mcu_ISA == ISA_PIC16) {
+                CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
+                if(plcTmr.softDivisor > 1) {
+                    fprintf(f,
+                    "\n"
+                    "static unsigned char softDivisor = %d;"
+                    "\n", plcTmr.softDivisor);
+                }
+            } else if(mcu_ISA == ISA_AVR) {
+                CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
+                if(plcTmr.softDivisor > 1) {
+                    fprintf(f,
+                    "\n"
+                    "static unsigned char softDivisor = %d;"
+                    "\n", plcTmr.softDivisor);
+                }
+            }
+        }
+
         fprintf(f,
                 "\n"
                 "void setupPlc(void) {\n");
@@ -3370,8 +3435,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         if(Prog.mcu()) {
             BuildDirectionRegisters(isInput, isAnsel, isOutput);
-            int i;
-            for(i = 0; i < MAX_IO_PORTS; i++) {
+            for(int i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i)) {
                     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                         // drive the outputs low to start
@@ -3482,11 +3546,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
 
         if(Prog.cycleTime > 0) {
-            if(mcu_ISA == ISA_PIC16) ///// Added by JG
-            {
-                CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
-            }
-
             fprintf(f,
                     "    // Initialize PLC cycle timer here.\n"
                     "    // Configure Timer %d\n",
@@ -3517,7 +3576,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                             "    OPTION_REGbits.PS = %d;\n",
                             plcTmr.prescaler == 1 ? 1 : 0,
                             plcTmr.PS);
-                    //"          T1CON = plcTmr.PS;\n"
                 } else {
                     fprintf(f,
                             "    #ifdef USE_WDT\n"
@@ -3561,8 +3619,6 @@ bool CompileAnsiC(const char *dest, int MNU)
 
             } else if(mcu_ISA == ISA_AVR) {
                 if(Prog.cycleTime > 0) {
-                    CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
-
                     int counter = plcTmr.tmr - 1 /* + CorrectorPlcCycle*/; // TODO
                     // the counter is less than the divisor at 1
                     if(counter < 0)
@@ -3843,13 +3899,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                     Prog.cycleTimer,
                     plcTmr.tmr);
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+            if(plcTmr.softDivisor > 1) {
+                fprintf(f,  "        softDivisorLabel:\n");
+            }
             if(Prog.cycleTimer == 0) {
                 fprintf(f,
-                        "        #ifndef T0IF\n"
-                        "          #define T0IF TMR0IF\n"
-                        "        #endif\n"
                         "        while(T0IF == 0);\n"
-                        "        TMR0 += %ld;\n" // reprogram TMR0
+                        "        TMR0 += %d;\n" // reprogram TMR0
                         "        T0IF = 0;\n",
                         256 - plcTmr.tmr + 1);
             } else {
@@ -3857,13 +3913,29 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "        while(CCP1IF == 0);\n"
                         "        CCP1IF = 0;\n");
             }
+            if(plcTmr.softDivisor > 1) {
+                fprintf(f,
+                    "        softDivisor--;\n"
+                    "        if(softDivisor)\n"
+                    "            goto softDivisorLabel;\n"
+                    "        softDivisor = %d;\n"
+                    , plcTmr.softDivisor);
+            }
         } else if(mcu_ISA == ISA_AVR) {
+            if(plcTmr.softDivisor > 1) {
+                fprintf(f,  "        softDivisorLabel:\n");
+            }
             fprintf(f,
-                    "        #ifndef TIFR\n"
-                    "        #define TIFR TIFR1\n"
-                    "        #endif\n"
                     "        while((TIFR & (1<<OCF1A)) == 0);\n"
                     "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
+            if(plcTmr.softDivisor > 1) {
+                fprintf(f,
+                    "        softDivisor--;\n"
+                    "        if(softDivisor)\n"
+                    "            goto softDivisorLabel;\n"
+                    "        softDivisor = %d;\n"
+                    , plcTmr.softDivisor);
+            }
         } else {
             fprintf(f, "        //  You must check PLC timer interval.\n");
         }

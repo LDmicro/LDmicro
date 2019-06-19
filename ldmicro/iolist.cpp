@@ -156,8 +156,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
     if(strcmp(name + 1, "new") == 0)
         return;
 
-    int i;
-    for(i = 0; i < IoSeenPreviouslyCount; i++) {
+    for(int i = 0; i < IoSeenPreviouslyCount; i++) {
         if(strcmp(name, IoSeenPreviously[i].name) == 0 && type == IoSeenPreviously[i].type) {
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
@@ -172,11 +171,10 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
         // things
         IoSeenPreviouslyCount = 0;
     }
-    i = IoSeenPreviouslyCount;
-    IoSeenPreviously[i].type = type;
-    IoSeenPreviously[i].pin = pin;
-    IoSeenPreviously[i].modbus = modbus;
-    strcpy(IoSeenPreviously[i].name, name);
+    IoSeenPreviously[IoSeenPreviouslyCount].type = type;
+    IoSeenPreviously[IoSeenPreviouslyCount].pin = pin;
+    IoSeenPreviously[IoSeenPreviouslyCount].modbus = modbus;
+    strcpy(IoSeenPreviously[IoSeenPreviouslyCount].name, name);
     IoSeenPreviouslyCount++;
 }
 
@@ -209,7 +207,6 @@ static void AppendIoAutoType(char *name, int default_type)
 static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-
     char str[MAX_NAME_LEN];
 
     switch(which) {
@@ -626,13 +623,13 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);
             }
             break;
-
+/*
         case ELEM_UART_WR:
 //          if(l->d.fmtdStr.string[0] != '"') {
   //            AppendIo(l->d.fmtdStr.string, IO_TYPE_STRING);
 //          }
             break;
-
+*/
 //        case ELEM_UART_SENDn:
         case ELEM_UART_SEND:
             //AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
@@ -671,8 +668,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_SHIFT_REGISTER: {
-            int i;
-            for(i = 0; i < l->d.shiftRegister.stages; i++) {
+            for(int i = 0; i < l->d.shiftRegister.stages; i++) {
                 sprintf(str, "%s%d", l->d.shiftRegister.name, i);
                 AppendIo(str, IO_TYPE_GENERAL);
             }
@@ -1300,8 +1296,7 @@ void ShowIoDialog(int item)
 
     if(Prog.mcu()->core == NOTHING) {
         if(Prog.io.assignment[item].pin) {
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(strcmp(IoSeenPreviously[i].name, Prog.io.assignment[item].name) == 0) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
@@ -1356,8 +1351,7 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu()->pwmCount == 0)
-       && (Prog.mcu()->pwmNeedsPin == 0)) {
+    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu()->pwmCount == 0)) {
         Error(_("No PWM or PWM not supported for this MCU."));
         return;
     }
@@ -1458,9 +1452,7 @@ void ShowIoDialog(int item)
                     goto cant_use_this_io;
             else
                 goto cant_use_this_io;
-        }
-        ///// Added by JG
-        else if(type == IO_TYPE_I2C_SCL) {
+        } else if(type == IO_TYPE_I2C_SCL) {
             char *c = strchr(name, '_');
             if(c)
                 *c = '\0';
@@ -1485,7 +1477,6 @@ void ShowIoDialog(int item)
             else
                 goto cant_use_this_io;
         }
-        /////
 
         if(UartFunctionUsed() && Prog.mcu()
            && ((Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.rxPin)
@@ -1517,15 +1508,11 @@ void ShowIoDialog(int item)
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu()->pinInfo[i].pin, Prog.cycleTimer);
                 if(!iop)
                     goto cant_use_this_io;
-                if(/*(Prog.mcu()->whichIsa == ISA_AVR) && */ (iop->timer == Prog.cycleTimer))
+/*
+                if(iop->timer == Prog.cycleTimer)
                     goto cant_use_this_io;
+*/
                 // okay; we know how to connect it up to the PWM
-            } else {
-                if(Prog.mcu()->pwmNeedsPin == Prog.mcu()->pinInfo[i].pin)
-                    ; // okay; we know how to connect it up to the PWM
-                else {
-                    goto cant_use_this_io;
-                }
             }
         }
 
@@ -1593,8 +1580,7 @@ void ShowIoDialog(int item)
         char pin[MAX_NAME_LEN];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
         if(strcmp(pin, _("(no pin)")) == 0) {
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(strcmp(IoSeenPreviously[i].name, Prog.io.assignment[item].name) == 0) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
@@ -1606,8 +1592,7 @@ void ShowIoDialog(int item)
             // not another entry for this pin in the IoSeenPreviously list,
             // that might get used if the user creates a new pin with that
             // name.
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(IoSeenPreviously[i].pin == atoi(pin)) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }

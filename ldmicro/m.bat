@@ -376,7 +376,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=d:\lds\tmp\PRUEBAV0.ld
 @SET PROGECT=d:\lds\tmp\TMP.ld
-
+@SET PROGECT=d:\lds\PIC16F628\uart.ld
 
 @SET PROGEC2=D:\LDs\uart\UART_S_ATmega2560_4.ld
 @SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_4.ld
@@ -387,10 +387,10 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\lds\spi\spi_echo.ld
 @SET PROGECT=D:\lds\I2C\i2c_echo.ld
 @SET PROGECT=d:\lds\I2C\i2c_lcd16x2bis.ld
-@SET PROGECT=D:\lds\PIC16F628\uart.ld
 
 @SET PROGECT=d:\lds\PIC16F877\bits.ld
 @SET PROGECT=D:\LDs\frm\frm.ld
+
 @SET PROGECT=c:\lds\FormattedStr\FormattedStr.ld
 
 if "%1" == "" goto DO_BUILD

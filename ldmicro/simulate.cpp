@@ -408,8 +408,7 @@ void SetSimulationVariable(const NameArray &name, int32_t val)
 
 void SetSimulationVariable(const char *name, int32_t val)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             Variables[i].val = val;
             return;
@@ -427,8 +426,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList)
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
     }
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].val;
         }
@@ -510,8 +508,7 @@ void SetAdcShadow(char *name, int32_t val)
 //-----------------------------------------------------------------------------
 int32_t GetAdcShadow(const char *name)
 {
-    int i;
-    for(i = 0; i < AdcShadowsCount; i++) {
+    for(int i = 0; i < AdcShadowsCount; i++) {
         if(strcmp(AdcShadows[i].name, name) == 0) {
             return AdcShadows[i].val;
         }
@@ -745,17 +742,16 @@ static void MarkWithCheck(const char *name, int flag)
     CheckMsg(name, s /*, -1*/);
 }
 //-----------------------------------------------------------------------------
-static void CheckVariableNamesCircuit(int which, void *elem)
+static void CheckVariableNamesCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-    //    char *    name = nullptr;
+    ElemLeaf *l = (ElemLeaf *)any; // not for ELEM_SERIES_SUBCKT, not for ELEM_PARALLEL_SUBCKT
     DWORD flag;
     char  str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckVariableNamesCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -764,7 +760,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckVariableNamesCircuit(p->contents[i].which, p->contents[i].data.any);
             }
@@ -981,7 +977,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
-        case ELEM_UART_WR:
+            MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
+            break;
+
+//      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;
         }
@@ -1032,8 +1031,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 //-----------------------------------------------------------------------------
 void CheckVariableNames()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1041,7 +1039,7 @@ void CheckVariableNames()
     // reCheck
     rungNow++;
 
-    for(i = 0; i < VariableCount; i++)
+    for(int i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
             if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
                 Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
@@ -1120,15 +1118,12 @@ void CheckVariableNames()
 //-----------------------------------------------------------------------------
 // Set normal closed inputs to 1 before simulating.
 //-----------------------------------------------------------------------------
-static void CheckSingleBitNegateCircuit(int which, void *elem)
+static void CheckSingleBitNegateCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-    //    char *    name = nullptr;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckSingleBitNegateCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -1137,13 +1132,14 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckSingleBitNegateCircuit(p->contents[i].which, p->contents[i].data.any);
             }
             break;
         }
         case ELEM_CONTACTS: {
+            ElemLeaf *l = (ElemLeaf *)any;
             if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
                 SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
             break;
@@ -1155,8 +1151,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
 static void CheckSingleBitNegate()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1454,8 +1449,7 @@ int packedbcd2bin(int val)
 int opposite(int val, int sov)
 {
     int ret = 0;
-    int i;
-    for(i = 0; i < sov * 8; i++) {
+    for(int i = 0; i < sov * 8; i++) {
         ret = ret << 1;
         ret |= val & 1;
         val = val >> 1;
@@ -1706,8 +1700,8 @@ static void SimulateIntCode()
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
                     NeedRedraw = a->op;
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 }
-                SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -1957,11 +1951,17 @@ static void SimulateIntCode()
                 }
                 break;
             }
+            case INT_UART_WR:
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
-                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
+                    if(GetVariableType(a->name1) == IO_TYPE_STRING) {
+                        static char *s = GetSimulationStr(a->name1.c_str());
+                        for(auto i = 0; i < strlen(s); i++) {
+                            AppendToSimulationTextControl(s[i], UartSimulationTextControl);
+                        }
+                    } else
+                        AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
 /*
@@ -2058,12 +2058,29 @@ static void SimulateIntCode()
                 }
                 break;
 
-#ifdef NEW_FEATURE
-            case INT_PRINTF_STRING:
+            case INT_STRING: {
+                char buf[MAX_NAME_LEN];
+                if(a->name3.length()) {
+                    int  sov = SizeOfVar(a->name3);
+                    if(sov == 1)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xff);
+                    else if(sov == 2)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xffff);
+                    else if(sov == 3)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFffff);
+                    else if(sov == 4)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFFFffff);
+                    else
+                        oops();
+                } else {
+                    strcpy(buf, a->name2.c_str());
+                }
+                SetSimulationStr(a->name1.c_str(), buf);
+                NeedRedraw = a->op;
                 break;
-#endif
-
-#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+            }
+//#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+            case INT_STRING_INIT:
             case INT_WRITE_STRING: {
                 break;
             }
@@ -2270,8 +2287,7 @@ void StartSimulationTimer()
 void ClrSimulationData()
 {
     seed = 1;
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         Variables[i].val = 0;
         Variables[i].usedFlags = 0;
         Variables[i].initedRung = -2;

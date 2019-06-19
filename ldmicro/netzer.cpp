@@ -63,9 +63,8 @@ static uint8_t getInternalIntegerAddress(uint16_t Address);
 
 static int GetLocalVariablesAsMetaTags(FILE *f = nullptr)
 {
-    int i;
     int metas = 0;
-    for(i = 0; i < VariablesCount; i++) {
+    for(int i = 0; i < VariablesCount; i++) {
         if((Variables[i].Name[0] != '$') && !(Variables[i].Address & MAPPED_TO_IO)) {
             int name_len = strlen(Variables[i].Name);
             metas += name_len + 3;
@@ -85,9 +84,8 @@ static int GetLocalVariablesAsMetaTags(FILE *f = nullptr)
 
 static int GetLocalRelaysAsMetaTags(FILE *f = nullptr)
 {
-    int i;
     int metas = 0;
-    for(i = 0; i < RelaysCount; i++) {
+    for(int i = 0; i < RelaysCount; i++) {
         if((Relays[i].Name[0] != '$') && !(Relays[i].Address & MAPPED_TO_IO)) {
             int name_len = strlen(Relays[i].Name);
             metas += name_len + 3;
@@ -216,8 +214,7 @@ static void MapNotLocatedElements()
     // Address 15 is register 0 bit 15 (0.15).
     // Address 16 is register 1 bit 0 (1.0).
 
-    int i;
-    for(i = 0; i < RelaysCount; i++) {
+    for(int i = 0; i < RelaysCount; i++) {
         if(Relays[i].Address != NOT_LOCATED_YET) {
             // Relay is already mapped to address (common or io PAB).
             continue;
@@ -242,7 +239,7 @@ static void MapNotLocatedElements()
     // Bring next free address to register alignment and leave as register address.
     address = (address / 16) + 1;
 
-    for(i = 0; i < VariablesCount; i++) {
+    for(int i = 0; i < VariablesCount; i++) {
         if(Variables[i].Address != NOT_LOCATED_YET) {
             continue;
         }
