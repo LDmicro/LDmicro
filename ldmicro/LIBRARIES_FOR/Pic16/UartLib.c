@@ -15,7 +15,7 @@ void UART_Init(unsigned char divisor, unsigned char brgh)
 void UART_Transmit(unsigned char data)
 {
     // Wait for empty transmit buffer
-    //while(!TRMT)
+    //while(TRMT == 0) // 0 = Transmit Shift Register full
     while(TXIF == 0) // 0 = The USART transmit buffer is full
         ; // Put data into buffer, sends the data
     TXREG = data;
@@ -24,26 +24,26 @@ void UART_Transmit(unsigned char data)
 unsigned char UART_Receive(void)
 {
     // Wait for data to be received
-    while(!RCIF)
+    while(RCIF == 0)
         ; // Get and return received data from buffer
     return RCREG;
 }
 
 unsigned char UART_Transmit_Ready(void)
 {
-    //return TRMT;
+    //return TRMT == 1; // 1 = Transmit Shift Register empty
     return TXIF == 1; // 1 = The USART transmit buffer is empty
 }
 
 unsigned char UART_Transmit_Busy(void)
 {
-    //return !TRMT;
+    //return TRMT == 0; // 0 = Transmit Shift Register full
     return TXIF == 0; // 0 = The USART transmit buffer is full
 }
 
 unsigned char UART_Receive_Avail(void)
 {
-    return RCIF;
+    return RCIF == 1;
 }
 
 void UART_Write(char *string)

@@ -2655,7 +2655,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <avr\\pgmspace.h>\n"
                 "    #define __PROG_TYPES_COMPAT__ //arduino\n"
                 "    #ifdef USE_WDT\n"
-                "    #include <avr\\wdt.h>\n"
+                "      #include <avr\\wdt.h>\n"
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu()->mcuH);
@@ -2840,7 +2840,6 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         fprintf(f,
                 "#include <htc.h>\n"
-                "//#define _XTAL_FREQ %d\n"
                 "__CONFIG(0x%X);\n",
                 Prog.mcuClock,
                 (WORD)Prog.configurationWord & 0xFFFF);
@@ -3348,7 +3347,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "void loopPlc() {\n"
                 "    if (IsPlcInterval()) {\n"
                 "        #ifdef USE_WDT\n"
-                "        wdt_reset();\n"
+                "          wdt_reset();\n"
                 "        #endif\n");
         if(Prog.cycleDuty) {
             fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
@@ -3364,7 +3363,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "// Call setupPlc() function in setup() function of your arduino project once.\n"
                 "void setupPlc(void) {\n"
                 "   #ifdef USE_WDT\n"
-                "   wdt_enable(WDTO_2S);\n"
+                "     wdt_enable(WDTO_2S);\n"
                 "   #endif\n"
                 "// Initialize PLC cycle timer here if you need.\n"
                 "// ...\n"
@@ -3406,6 +3405,21 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "static unsigned char softDivisor = %d;"
                     "\n", plcTmr.softDivisor);
+					if(Prog.cycleTimer == 0) {
+						fprintf(f,
+						"\n"
+						"void interrupt IRQ()\n"
+						"{\n"
+						"    if(T0IF) {\n"
+                        "        TMR0 += %d;\n" // reprogram TMR0
+                        "        T0IF = 0;\n"
+						"        if(softDivisor)\n"
+						"           softDivisor--;\n"
+						"    }\n"
+						"}\n",
+                        256 - plcTmr.tmr + 1
+						);
+					}
                 }
             } else if(mcu_ISA == ISA_AVR) {
                 CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
@@ -3524,25 +3538,25 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "        nRBPU = 0;\n"
                     "    #endif\n"
                     "\n"
-                    "  #ifdef USE_WDT\n"
-                    "    // Watchdog on\n"
-                    "    #ifdef __CODEVISIONAVR__\n"
+                    "    #ifdef USE_WDT\n"
+                    "      // Watchdog on\n"
+                    "      #ifdef __CODEVISIONAVR__\n"
                     "        #ifndef WDTCR\n"
                     "            #define WDTCR WDTCSR\n"
                     "        #endif\n"
                     "        #asm(\"wdr\")\n"
                     "        WDTCR |= (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0);\n"
-                    "    #elif defined(__GNUC__)\n"
+                    "      #elif defined(__GNUC__)\n"
                     "        wdt_reset();\n"
                     "        wdt_enable(WDTO_2S);\n"
-                    "    #elif defined(CCS_PIC_C)\n"
+                    "      #elif defined(CCS_PIC_C)\n"
                     "        setup_wdt(WDT_2304MS);\n"
-                    "    #elif defined(HI_TECH_C)\n"
+                    "      #elif defined(HI_TECH_C)\n"
                     "        //WDTCON=1;\n"
-                    "    #else\n"
+                    "      #else\n"
                     "        // Watchdog Init is required. // You must provide this.\n"
+                    "      #endif\n"
                     "    #endif\n"
-                    "  #endif\n"
                     "\n");
 
         if(Prog.cycleTime > 0) {
@@ -3568,18 +3582,25 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(Prog.cycleTimer == 0) {
                     fprintf(f,
                             "    #ifdef USE_WDT\n"
-                            "    CLRWDT();\n"
+                            "      CLRWDT();\n"
                             "    #endif\n"
-                            "    TMR0 = 0;\n"
+                            "    TMR0 = %d;\n"
                             "    PSA = %d;\n"
                             "    T0CS = 0;\n"
                             "    OPTION_REGbits.PS = %d;\n",
+                            256 - plcTmr.tmr + 1,
                             plcTmr.prescaler == 1 ? 1 : 0,
                             plcTmr.PS);
+                    if(plcTmr.softDivisor > 1) {
+                        fprintf(f,
+                            "    GIE = 1;\n"
+                            "    T0IE = 1;\n"
+                            );
+                    }
                 } else {
                     fprintf(f,
                             "    #ifdef USE_WDT\n"
-                            "    CLRWDT(); // Clear WDT and prescaler\n"
+                            "      CLRWDT(); // Clear WDT and prescaler\n"
                             "    #endif\n"
                             "    CCPR1L = 0x%X;\n"
                             "    CCPR1H = 0x%X;\n"
@@ -3903,11 +3924,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                 fprintf(f,  "        softDivisorLabel:\n");
             }
             if(Prog.cycleTimer == 0) {
-                fprintf(f,
+                if(plcTmr.softDivisor == 1) {
+                  fprintf(f,
                         "        while(T0IF == 0);\n"
                         "        TMR0 += %d;\n" // reprogram TMR0
                         "        T0IF = 0;\n",
                         256 - plcTmr.tmr + 1);
+                }  
             } else {
                 fprintf(f,
                         "        while(CCP1IF == 0);\n"
@@ -3915,7 +3938,6 @@ bool CompileAnsiC(const char *dest, int MNU)
             }
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,
-                    "        softDivisor--;\n"
                     "        if(softDivisor)\n"
                     "            goto softDivisorLabel;\n"
                     "        softDivisor = %d;\n"
@@ -3975,20 +3997,20 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "        // You can place your code here to run repeatedly, only if you no longer generate C code from LDmicro again.\n"
                 "        // ...\n"
                 "\n"
-                "      #ifdef USE_WDT\n"
-                "        // Watchdog reset\n"
-                "        #ifdef __CODEVISIONAVR__\n"
+                "        #ifdef USE_WDT\n"
+                "          // Watchdog reset\n"
+                "          #ifdef __CODEVISIONAVR__\n"
                 "            #asm(\"wdr\")\n"
-                "        #elif defined(__GNUC__)\n"
+                "          #elif defined(__GNUC__)\n"
                 "            wdt_reset();\n"
-                "        #elif defined(CCS_PIC_C)\n"
+                "          #elif defined(CCS_PIC_C)\n"
                 "            restart_wdt();\n"
-                "        #elif defined(HI_TECH_C)\n"
+                "          #elif defined(HI_TECH_C)\n"
                 "            CLRWDT();\n"
-                "        #else\n"
+                "          #else\n"
                 "            // Watchdog Reset is required. // You must provide this.\n"
+                "          #endif\n"
                 "        #endif\n"
-                "      #endif\n"
                 "\n");
 
         if(Prog.cycleDuty) {

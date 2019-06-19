@@ -349,6 +349,7 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
+copy HTC\OBJ\startup.as PROTEUS > nul
 @echo on
 
 REM Transfer of the program with Pickit3
