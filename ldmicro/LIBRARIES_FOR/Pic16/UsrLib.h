@@ -42,3 +42,7 @@ void delay_ms(const unsigned md);       // md must be constant
     {   \
     __delay_ms(md);     \
     }
+
+#ifndef T0IF
+    #define T0IF TMR0IF
+#endif

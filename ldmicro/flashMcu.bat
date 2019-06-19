@@ -306,7 +306,8 @@ REM Compilation with HI-TECH C (picc.exe)
      SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
 @rem SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
 
-SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+@rem SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+     SET PICKIT_PATH=c:\Program Files (x86)\Microchip\MPLABX\v5.20\mplab_platform\mplab_ipe
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
 
@@ -338,9 +339,6 @@ picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=defau
 REM Linkage of objects
 picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
-REM Transfer of the program with Pickit3
-PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
-
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto exit
@@ -351,6 +349,10 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
+@echo on
+
+REM Transfer of the program with Pickit3
+PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 pause
 goto exit
