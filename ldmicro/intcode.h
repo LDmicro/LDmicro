@@ -234,7 +234,6 @@
 struct SeriesNode;
 struct IntOp {
     int           op;
-    char          name0[MAX_NAME_LEN];
     NameArray     name1;
     NameArray     name2;
     NameArray     name3;

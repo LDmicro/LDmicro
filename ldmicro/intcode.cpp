@@ -926,8 +926,6 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     IntOp intOp;
     intOp.op = op;
     if(name1)
-        strcpy(intOp.name0, name1);
-    if(name1)
         intOp.name1 = name1;
     if(name2)
         intOp.name2 = name2;
@@ -3977,17 +3975,17 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         if(leaf->d.uart.wait && (1)) {
                           Op(INT_IF_BIT_SET, stateInOut);
                             Op(INT_UART_WR, leaf->d.uart.name);
-							if(leaf->d.uart.wait) {
-								char label[MAX_NAME_LEN];
-								GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
+                            if(leaf->d.uart.wait) {
+                                char label[MAX_NAME_LEN];
+                                GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
 
-								Op(INT_AllocKnownAddr, label);
-								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-								Op(INT_IF_BIT_SET, stateInOut);
-									Op(INT_GOTO, label, 1);
-								Op(INT_END_IF);
-								Op(INT_SET_BIT, stateInOut);
-							} 
+                                Op(INT_AllocKnownAddr, label);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_SET, stateInOut);
+                                    Op(INT_GOTO, label, 1);
+                                Op(INT_END_IF);
+                                Op(INT_SET_BIT, stateInOut);
+                            }
                           Op(INT_END_IF);
                         } else {
                             char storeName[MAX_NAME_LEN];
@@ -4035,19 +4033,19 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         // This is modified algorithm !!!
                         Op(INT_IF_BIT_SET, stateInOut);
                             Op(INT_UART_SEND1, leaf->d.uart.name);
-							if(leaf->d.uart.wait) {
-								char label[MAX_NAME_LEN];
-								GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
+                            if(leaf->d.uart.wait) {
+                                char label[MAX_NAME_LEN];
+                                GenSym(label, "_wait", "UART_SEND", leaf->d.uart.name);
 
-								Op(INT_AllocKnownAddr, label);
-								Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-								Op(INT_IF_BIT_SET, stateInOut);
-									Op(INT_GOTO, label, 1);
-								Op(INT_END_IF);
-							} 
+                                Op(INT_AllocKnownAddr, label);
+                                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                                Op(INT_IF_BIT_SET, stateInOut);
+                                    Op(INT_GOTO, label, 1);
+                                Op(INT_END_IF);
+                            }
                         Op(INT_END_IF);
 
-						if(!leaf->d.uart.wait) {
+                        if(!leaf->d.uart.wait) {
                             Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                         }
                     } else { // variable length is more than 1 byte
