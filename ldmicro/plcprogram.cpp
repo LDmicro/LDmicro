@@ -44,6 +44,7 @@ PlcProgram::PlcProgram()
         OpsInRung[i] = 0;
         HexInRung[i] = 0;
     }
+	compiler = 0;
 }
 
 PlcProgram::PlcProgram(const PlcProgram &other)
