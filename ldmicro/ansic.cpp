@@ -3935,7 +3935,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                 fprintf(f,
                         "        while(CCP1IF == 0);\n"
                         "        CCP1IF = 0;\n");
-            }
+                if(plcTmr.softDivisor > 1) {
+                    fprintf(f,
+                    "        softDivisor--;\n");
+                }
+            } 
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,
                     "        if(softDivisor)\n"
