@@ -135,6 +135,48 @@ static void MakeControls()
                                     nullptr);
     NiceFont(CrystalTextbox);
 
+    HWND TimerLabel = CreateWindowEx(0,
+                                     WC_STATIC,
+                                     _("Timer0|1:"),
+                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+                                     255,
+                                     13,
+                                     70,
+                                     21,
+                                     ConfDialog,
+                                     nullptr,
+                                     Instance,
+                                     nullptr);
+    NiceFont(TimerLabel);
+
+    TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
+                                  WC_EDIT,
+                                  "",
+                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+                                  330,
+                                  12,
+                                  25,
+                                  21,
+                                  ConfDialog,
+                                  nullptr,
+                                  Instance,
+                                  nullptr);
+    NiceFont(TimerTextbox);
+
+    YPlcCycleDutyCheckbox = CreateWindowEx(0,
+                                           WC_BUTTON,
+                                           "YPlcCycleDuty",
+                                           WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+                                           370,
+                                           13,
+                                           100,
+                                           20,
+                                           ConfDialog,
+                                           nullptr,
+                                           Instance,
+                                           nullptr);
+    NiceFont(YPlcCycleDutyCheckbox);
+
     HWND textLabel3 = CreateWindowEx(0,
                                      WC_STATIC,
                                      _("UART Baud Rate (bps):"),
@@ -222,48 +264,6 @@ static void MakeControls()
                                   nullptr);
     NiceFont(SpeedTextbox);
     /////
-
-    HWND TimerLabel = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("Timer0|1:"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     255,
-                                     13,
-                                     70,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
-    NiceFont(TimerLabel);
-
-    TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  330,
-                                  12,
-                                  25,
-                                  21,
-                                  ConfDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
-    NiceFont(TimerTextbox);
-
-    YPlcCycleDutyCheckbox = CreateWindowEx(0,
-                                           WC_BUTTON,
-                                           "YPlcCycleDuty",
-                                           WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-                                           370,
-                                           13,
-                                           100,
-                                           20,
-                                           ConfDialog,
-                                           nullptr,
-                                           Instance,
-                                           nullptr);
-    NiceFont(YPlcCycleDutyCheckbox);
 
     HWND textLabel2_ = CreateWindowEx(0,
                                       WC_STATIC,

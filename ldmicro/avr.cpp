@@ -1253,7 +1253,21 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
             CHECK2(BYTE(arg1), 0, 255);
             CHECK2(BYTE(arg2), 0, 255);
             //      CHECK2(arg1, -128, 127); CHECK2(arg2, -128, 127);
-            sprintf(sAsm, ".db  \t 0x%02X, \t 0x%02X", BYTE(arg1), BYTE(arg2));
+            sprintf(sAsm, ".db  \t 0x%02X, \t 0x%02X ", BYTE(arg1), BYTE(arg2));
+
+            char s[20];
+            if((arg1 >= ' ') && (arg1 < 127))
+	            sprintf(s, "; '%c'", arg1);
+			else
+	            sprintf(s, "; '\\x%02X'", arg1);
+            strcat(sAsm, s);
+
+            if((arg2 >= ' ') && (arg2 < 127))
+	            sprintf(s, " '%c'", arg2);
+			else
+	            sprintf(s, " '\\x%02X'", arg2);
+            strcat(sAsm, s);
+
             return (BYTE(arg2) << 8) | BYTE(arg1);
 
         case OP_DW:
@@ -2535,7 +2549,6 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
 {
-    //  uint32_t saveAvrProgWriteP = AvrProgWriteP;
     ADDR_T addrOfTable = 0;
     MemOfVar(a->name1, &addrOfTable);
 
@@ -2551,17 +2564,14 @@ static void InitTable(IntOp *a)
         //sovElement = 1;
         if(sovElement == 2) {
             for(int i = 0; i < a->literal1; i++) {
-                //dbp("i=%d %d",i,a->data[i]);
                 Instruction(OP_DW, a->data[i]);
             }
         } else if(sovElement == 1) {
             for(int i = 0; i < a->literal1; i = i + 2) {
-                //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
                 Instruction(OP_DB2, a->data[i], i + 1 < a->literal1 ? a->data[i + 1] : 0);
             }
             /*
             for(i=0; i < a->literal; i++){
-              //dbp("i=%d %d", i, a->data[i]);
               Instruction(OP_DB, a->data[i]); // BAD! Hi byte of flash word is 0!
             }
             */
@@ -2580,8 +2590,31 @@ static void InitTable(IntOp *a)
             oops();
         Comment("TABLE %s END", a->name1.c_str());
     }
+}
 
-    //  if((saveAvrProgWriteP >> 11) != (AvrProgWriteP >> 11)) oops();
+static void InitTableString(IntOp *a)
+{
+    ADDR_T addrOfTable = 0;
+    MemOfVar(a->name1, &addrOfTable);
+	char str[MAX_NAME_LEN];
+	FrmStrToStr(str, a->name2.c_str());
+
+    if(addrOfTable == 0) {
+        Comment("TABLE %s", a->name1.c_str());
+        if(AvrProg.size() % 2)
+            Instruction(OP_NOP);
+        addrOfTable = AvrProg.size(); // << 1; //see LPM // data stored in flash
+
+        SetMemForVariable(a->name1, addrOfTable, 1);
+
+        Comment("DATA's size is 1");
+        for(int i = 0; i < strlen(str); i+=2) {
+           Instruction(OP_DB2, str[i], str[i + 1]);
+        }
+        if(strlen(str)%2 == 0)
+            Instruction(OP_DW, 0, 0); // string final '\0' is included
+        Comment("TABLE %s END", a->name1.c_str());
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -2594,6 +2627,9 @@ static void InitTables()
         switch(a->op) {
             case INT_FLASH_INIT:
                 InitTable(a);
+                break;
+            case INT_STRING_INIT:
+                InitTableString(a);
                 break;
             default:
                 break;
@@ -5198,7 +5234,7 @@ static void CompileFromIntermediate()
                 return;
 
             case INT_STRING:
-                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_STRING' for target, skipped."));
+                //THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_STRING' for target, skipped."));
                 break;
 
             case INT_WRITE_STRING:
@@ -5251,6 +5287,7 @@ static void CompileFromIntermediate()
                 break;
             }
 #ifdef TABLE_IN_FLASH
+			case INT_STRING_INIT: // Inited by InitTableString()
             case INT_FLASH_INIT: {
                 // Inited by InitTables()
                 /*
@@ -5264,6 +5301,50 @@ static void CompileFromIntermediate()
                     FwdAddrIsNow(SkipData);
                 }
                 */
+                break;
+            }
+            case INT_SET_VARIABLE_INDEXED: {
+                Comment("INT_SET_VARIABLE_INDEXED");
+                //int sovElement = a->literal1;
+                int sovElement = 1;
+                //Comment("Index in r16:r17");
+                CopyArgToReg(r16, 2, a->name3);
+
+                if(sovElement == 3) {
+                    Instruction(OP_MOV, r14, r16);
+                    Instruction(OP_MOV, r15, r17); // Save Index
+                }
+                if(sovElement >= 2) {
+                    Instruction(OP_LSL, r16);
+                    Instruction(OP_ROL, r17); // Index := Index * 2
+                }
+                if(sovElement == 3) {
+                    Instruction(OP_ADD, r16, r14);
+                    Instruction(OP_ADC, r17, r15); // Index := Index * 3
+                }
+                if(sovElement == 4) {
+                    Instruction(OP_LSL, r16);
+                    Instruction(OP_ROL, r17); // Index := Index * 4
+                }
+
+                ADDR_T addrOfTable = 0;
+                MemOfVar(a->name4, &addrOfTable);
+
+                CopyLitToReg(ZL, 2, addrOfTable << 1, "addrOfTable"); // see LPM // data stored in flash
+                //Comment(" Z == DataAddr");
+
+                Instruction(OP_ADD, ZL, r16);
+                Instruction(OP_ADC, ZH, r17); // Z = DataAddr + Index
+                //Comment(" Z == DataAddr + Index");
+
+                Instruction(OP_LPM_ZP, r20);
+                if(sovElement >= 2)
+                    Instruction(OP_LPM_ZP, r21);
+                if(sovElement >= 3)
+                    Instruction(OP_LPM_ZP, r22);
+                if(sovElement >= 4)
+                    Instruction(OP_LPM_ZP, r23);
+                CopyRegToVar(a->name1, r20, sovElement);
                 break;
             }
             case INT_FLASH_READ: {

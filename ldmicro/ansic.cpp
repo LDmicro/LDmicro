@@ -3372,18 +3372,19 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         fprintf(f, "}\n");
     } else {
+        //---------------------------------------------------------------------------------------
         if(Prog.cycleTime > 0) {
             if(mcu_ISA == ISA_PIC16) {
                 CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
                 if(plcTmr.softDivisor > 1) {
                     fprintf(f,
                     "\n"
-                    "static unsigned char softDivisor = %d;"
-                    "\n", plcTmr.softDivisor);
+                    "static volatile unsigned char softDivisor = %d;\n",
+                    plcTmr.softDivisor);
 					if(Prog.cycleTimer == 0) {
 						fprintf(f,
 						"\n"
-						"void interrupt IRQ()\n"
+						"void interrupt ISR()\n"
 						"{\n"
 						"    if(T0IF) {\n"
                         "        TMR0 += %d;\n" // reprogram TMR0
@@ -3401,19 +3402,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(plcTmr.softDivisor > 1) {
                     fprintf(f,
                     "\n"
-                    "static unsigned char softDivisor = %d;"
-                    "\n", plcTmr.softDivisor);
+                    "static volatile unsigned char softDivisor = %d;\n",
+                    plcTmr.softDivisor);
 					if(Prog.cycleTimer == 0) {
 						fprintf(f,
 						"\n"
-						"ISR(INT0_vect)\n"
+						"ISR(TIMER0_COMPA_vect)\n"
 						"{\n"
-						"//    if(T0IF) {\n"
-                        "//        TMR0 += %d;\n" // reprogram TMR0
-                        "//        T0IF = 0;\n"
-						"        if(softDivisor)\n"
-						"           softDivisor--;\n"
-						" //   }\n"
+                        //"    // TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
+						"    if(softDivisor)\n"
+						"        softDivisor--;\n"
 						"}\n",
                         256 - plcTmr.tmr + 1
 						);
@@ -3421,7 +3419,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
             }
         }
-
+        //---------------------------------------------------------------------------------------
         fprintf(f,
                 "\n"
                 "void setupPlc(void) {\n");
@@ -3517,7 +3515,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         ///// Added by JG
         if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
             // no watchdog
-        } else
+        } else {
             /////
             fprintf(f,
                     "\n"
@@ -3548,11 +3546,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "      #endif\n"
                     "    #endif\n"
                     "\n");
-
+        }
+        //---------------------------------------------------------------------
         if(Prog.cycleTime > 0) {
             fprintf(f,
-                    "    // Initialize PLC cycle timer here.\n"
-                    "    // Configure Timer %d\n",
+                    "    // Initialize PLC cycle Timer %d here.\n",
                     Prog.cycleTimer);
 
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
@@ -3568,6 +3566,24 @@ bool CompileAnsiC(const char *dest, int MNU)
                 } else {
                     fprintf(f, "    setup_timer_1(T1_INTERNAL | T1_DIV_BY_%ld);\n", plcTmr.prescaler);
                 }
+            } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                // compute timer frequency according to desired Cycle time
+                // real Cycle time can be adjusted by modifying declared frequency F
+                double fperiod = (double)(Prog.mcuClock) / 4000000;
+                fperiod = (fperiod * Prog.cycleTime) / 1000;
+                unsigned long period = (unsigned long)fperiod;
+                if(period == 0)
+                    period = 1;
+                if(period > 65535)
+                    period = 65535; // securities
+                fprintf(f,
+                        "\n"
+                        "    // init Timer 3 and activate interrupts\n"
+                        "    LibTimer_Init(TIM3, 1000, %lu);\n" // f= (F/4)/[(prediv)*(period)]
+                        "    LibTimer_Interrupts(TIM3, ENABLE);\n"
+                        "\n",
+                        period);
+
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 if(Prog.cycleTimer == 0) {
                     fprintf(f,
@@ -3608,36 +3624,28 @@ bool CompileAnsiC(const char *dest, int MNU)
                         fprintf(f, "    TMR1GE = 1;\n");
                     }
                 }
-            }
-            ///// Added by JG
-            else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-                // compute timer frequency according to desired Cycle time
-                // real Cycle time can be adjusted by modifying declared frequency F
-                double fperiod = (double)(Prog.mcuClock) / 4000000;
-                fperiod = (fperiod * Prog.cycleTime) / 1000;
-                unsigned long period = (unsigned long)fperiod;
-                if(period == 0)
-                    period = 1;
-                if(period > 65535)
-                    period = 65535; // securities
-                fprintf(f,
-                        "\n"
-                        "    // init Timer 3 and activate interrupts\n"
-                        "    LibTimer_Init(TIM3, 1000, %lu);\n" // f= (F/4)/[(prediv)*(period)]
-                        "    LibTimer_Interrupts(TIM3, ENABLE);\n"
-                        "\n",
-                        period);
-
             } else if(mcu_ISA == ISA_AVR) {
-                if(Prog.cycleTime > 0) {
-                    int counter = plcTmr.tmr - 1 /* + CorrectorPlcCycle*/; // TODO
+                if(Prog.cycleTimer == 0) {
+                    int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
                     // the counter is less than the divisor at 1
                     if(counter < 0)
-                        counter = 0;
-                    if(counter > 0xffff)
-                        counter = 0xffff;
-                    //dbp("divider=%d EQU counter=%d", divider, counter);
-
+                        counter = 0; 
+                    if(counter > 0xff)
+                        counter = 0xff;
+                    fprintf(f,
+                            "    TCCR0A = 1 << WGM01;\n" // WGM01=1, WGM00=0 // CTC mode
+                            "    TCCR0B = %d;\n" //  WGM02=0 // CTC mode
+                            "    OCR0A = %d;\n", 
+                    plcTmr.cs & 0xff,
+                    counter & 0xff);
+                    if(plcTmr.softDivisor > 1) {
+                        fprintf(f,
+                            "    TIMSK0 = 1<<OCIE0A;\n"
+                            "    sei();\n"
+                            );
+                    }
+                 } else {
+                   int counter = plcTmr.tmr - 1;
                     fprintf(f,
                             "    TCCR1A = 0x00; // WGM11=0, WGM10=0\n"
                             "    TCCR1B = (1<<WGM12) | %d; // WGM13=0, WGM12=1\n"
@@ -3651,8 +3659,8 @@ bool CompileAnsiC(const char *dest, int MNU)
             } else {
                 fprintf(f, "    //  You must init PLC timer.\n");
             }
-        } ///// } moved down by JG else AVR cycle timer is not initialized
-
+        } 
+        //---------------------------------------------------------------------
         if(UartFunctionUsed()) {
             ///// added by JG
             if(compiler_variant == MNU_COMPILE_ARMGCC) {
@@ -3874,10 +3882,11 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
             fprintf(f,"    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n");
         }
+        
         fprintf(f,"    setupPlc();\n"
                   "    while(1) {\n");
-
-        fprintf(f, "        // Test PLC cycle timer interval here.\n");
+        //------------------------------------------------------------------------------------
+        fprintf(f, "        // Test PLC cycle Timer %d interval here.\n", Prog.cycleTimer);
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
             fprintf(f,
                     "        while(get_timer%d() < (%ld-1));\n"
@@ -3924,12 +3933,20 @@ bool CompileAnsiC(const char *dest, int MNU)
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,  "        softDivisorLabel:\n");
             }
-            fprintf(f,
+            if(Prog.cycleTimer == 0) {
+                if(plcTmr.softDivisor == 1) {
+                fprintf(f,
+                    "        while((TIFR0 & (1<<OCF0A)) == 0);\n"
+                    "        TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                        );
+                }
+            } else {
+                fprintf(f,
                     "        while((TIFR & (1<<OCF1A)) == 0);\n"
                     "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
+            }
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,
-                    "        softDivisor--;\n"
                     "        if(softDivisor)\n"
                     "            goto softDivisorLabel;\n"
                     "        softDivisor = %d;\n"
@@ -3939,6 +3956,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(f, "        //  You must check PLC timer interval.\n");
         }
         fprintf(f, "\n");
+        //-----------------------------------------------------------------------------------------------
         if(Prog.cycleDuty) {
             fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
         }
@@ -4044,10 +4062,3 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     return true;
 }
-/*
-"    #ifdef __CODEVISIONAVR__\n"
-"        #asm\n"
-"            nop\n"
-"        #endasm\n"
-"    #endif\n"
-*/

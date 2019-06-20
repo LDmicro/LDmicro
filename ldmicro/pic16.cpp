@@ -3849,7 +3849,6 @@ static void InitTableString(IntOp *a)
         if((addrOfTableRoutine + TABLE_CALC) != PicProgWriteP)
             THROW_COMPILER_EXCEPTION_FMT("TABLE_CALC=%u", PicProgWriteP - addrOfTableRoutine);
 
-        int sovElement = a->literal2;
         Comment("DATA's size is 1");
         for(int i = 0; i < strlen(str); i++) {
            Instruction(OP_RETLW, str[i]);
@@ -3873,7 +3872,6 @@ static void InitTables()
         rungNow = a->rung;
         switch(a->op) {
             case INT_FLASH_INIT:
-                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal1);
                 InitTable(a);
                 break;
             case INT_STRING_INIT:
