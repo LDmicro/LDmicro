@@ -28,6 +28,8 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
+#define USE_STRING_LITERAL // --- //
+
 namespace {
     std::unordered_set<std::string> variables;
     bool                            all_arduino_pins_are_mapped;
@@ -2014,26 +2016,26 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_STRING:
                 if(IntCode[i].name3.length())
-                  #if 0
-                    fprintf(f, "sprintf(%s, \"%s\", %s);\n",
-                            MapSym(IntCode[i].name1, ASSTR),
-                            IntCode[i].name2.c_str(),
-                            MapSym(IntCode[i].name3));
-                  #else
+                  #ifdef USE_STRING_LITERAL
                     fprintf(f, "sprintf(%s, %s, %s);\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             MapSym(IntCode[i].name4.c_str(), ASSTR),
                             MapSym(IntCode[i].name3));
+                  #else
+                    fprintf(f, "sprintf(%s, \"%s\", %s);\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            IntCode[i].name2.c_str(),
+                            MapSym(IntCode[i].name3));
                   #endif
                 else
-                  #if 0
-                    fprintf(f, "strcpy(%s, \"%s\");\n",
-                            MapSym(IntCode[i].name1, ASSTR),
-                            IntCode[i].name2.c_str());
-                  #else
+                  #ifdef USE_STRING_LITERAL
                     fprintf(f, "strcpy(%s, %s);\n",
                             MapSym(IntCode[i].name1, ASSTR),
                             MapSym(IntCode[i].name4.c_str(), ASSTR));
+                  #else
+                    fprintf(f, "strcpy(%s, \"%s\");\n",
+                            MapSym(IntCode[i].name1, ASSTR),
+                            IntCode[i].name2.c_str());
                   #endif
                 break;
 
@@ -2126,10 +2128,12 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_STRING_INIT: {
-                fprintf(f, "const char %s[] = \"%s\"; // [%d]",
+				#ifdef USE_STRING_LITERAL
+				fprintf(f, "const char %s[] = \"%s\"; // [%d]\n",
                         MapSym(IntCode[i].name1.c_str(), ASSTR),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name2.length());
+				#endif
                 break;
             }
             case INT_FLASH_INIT: {
@@ -2832,6 +2836,17 @@ bool CompileAnsiC(const char *dest, int MNU)
             "#include \"ladder.h\"\n"
             "#include \"%s.h\" // Copy this line into main project file where is function main().\n"
             "\n"
+            "/* Ux_xxx symbols correspond to user-defined names. There is such a symbol\n"
+            "   for every internal relay, variable, timer, and so on in the ladder\n"
+            "   program. Ix_xxx symbols are internally generated. */\n"
+            "/* Ix_xxx\n"
+            "   Ux_xxx\n"
+            "    ^\n"
+            "    b means bool type\n"
+            "    i means int type */\n"
+            "\n",
+            CurrentLdName);
+    fprintf(flh,
             "/* Define EXTERN_EVERYTHING in ladder.h if you want all symbols extern.\n"
             "   This could be useful to implement `magic variables,' so that for\n"
             "   example when you write to the ladder variable duty_cycle, your PLC\n"
@@ -2843,17 +2858,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "#else\n"
             "  #define STATIC static\n"
             "#endif\n"
-            "\n"
-            "/* Ux_xxx symbols correspond to user-defined names. There is such a symbol\n"
-            "   for every internal relay, variable, timer, and so on in the ladder\n"
-            "   program. Ix_xxx symbols are internally generated. */\n"
-            "/* Ix_xxx\n"
-            "   Ux_xxx\n"
-            "    ^\n"
-            "    b means bool type\n"
-            "    i means int type */\n"
-            "\n",
-            CurrentLdName);
+            "\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(fh,

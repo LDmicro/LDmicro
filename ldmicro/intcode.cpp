@@ -3989,7 +3989,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                           Op(INT_END_IF);
                         } else {
                             char storeName[MAX_NAME_LEN];
-                            GenSymOneShot(storeName, "ELEM_UART_SEND");
+                            GenSymOneShot(storeName, "ELEM_UART_SEND");																		
                             //char buf[MAX_NAME_LEN];
                             //FrmStrToStr(buf, leaf->d.uart.name);
                             char nameLit[MAX_NAME_LEN];

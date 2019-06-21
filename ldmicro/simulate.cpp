@@ -2113,7 +2113,18 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+				break;
+			}
+			case INT_SET_VARIABLE_INDEXED: {
+                int index = GetSimulationVariable(a->name3);
+                //int32_t d = a->name2[index];
+                char d = GetSimulationStr(a->name4.c_str())[index];
+                if(GetSimulationVariable(a->name1) != d) {
+                    SetSimulationVariable(a->name1, d);
+                    NeedRedraw = a->op;
+                }
+				break;
+            }
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
@@ -2127,7 +2138,8 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name2, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+				break;
+            } 
 #endif
 
             case INT_DELAY:
@@ -2137,7 +2149,6 @@ static void SimulateIntCode()
             case INT_PWM_OFF:
                 break;
 
-            ///// Added by JG
             case INT_SPI:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), SpiSimulationTextControl);
                 if(QueuedSpiCharacter >= 0) {
@@ -2157,12 +2168,10 @@ static void SimulateIntCode()
                     QueuedI2cCharacter = -1;
                 }
                 break;
-
-            case INT_I2C_WRITE:
+             case INT_I2C_WRITE:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), I2cSimulationTextControl);
 
                 break;
-                /////
 
             default:
                 ooops("op=%d", a->op);
