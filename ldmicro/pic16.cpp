@@ -1691,10 +1691,16 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
             CHECK((BYTE)arg1, 8);
             CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
-			if((hobatoi(arg1s) >= ' ') && (hobatoi(arg1s) < 127))
-	            sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, hobatoi(arg1s), arg1comm);
-			else
-	            sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, hobatoi(arg1s), arg1comm);
+/*
+            if((hobatoi(arg1s) >= ' ') && (hobatoi(arg1s) < 127))
+                sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, hobatoi(arg1s), arg1comm); 
+            else
+                sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, hobatoi(arg1s), arg1comm);
+*/
+            if((arg1 >= ' ') && (arg1 < 127))
+                sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, arg1, arg1comm); 
+            else
+                sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, arg1, arg1comm);
             return 0x3400 | (BYTE)arg1;
 
         case OP_RETURN:
@@ -2340,20 +2346,19 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             fprintf(fAsm, " ;l=0x%02X PCLATH=0x%02X", PicProg[i].label, (PicProg[i].PCLATH >> 3) << 3); //ok
 #endif
 
-            if(asm_comment_level >= 2)
+            if(asm_comment_level >= 2) {
                 if(strlen(PicProg[i].commentAsm)) {
                     fprintf(fAsm, " ; %s", PicProg[i].commentAsm);
                 }
 
-            if(asm_comment_level >= 2)
                 if(strlen(PicProg[i].arg1name)) {
                     fprintf(fAsm, " ;; %s", PicProg[i].arg1name);
                 }
 
-            if(asm_comment_level >= 2)
                 if(strlen(PicProg[i].arg2name)) {
                     fprintf(fAsm, " ;;; %s", PicProg[i].arg2name);
                 }
+            }
 
             fprintf(fAsm, "\n");
         } else
@@ -3825,11 +3830,11 @@ static void InitTableString(IntOp *a)
     uint32_t savePicProgWriteP = PicProgWriteP;
     ADDR_T   addrOfTableRoutine = 0;
     MemOfVar(a->name1, &addrOfTableRoutine);
-	char str[MAX_NAME_LEN];
-	FrmStrToStr(str, a->name2.c_str());
+    char str[MAX_NAME_LEN];
+    FrmStrToStr(str, a->name2.c_str());
 
     if(addrOfTableRoutine == 0) {
-		Comment("TABLE %s[%d]", a->name1.c_str(), strlen(str));
+        Comment("TABLE %s[%d]", a->name1.c_str(), strlen(str));
         addrOfTableRoutine = PicProgWriteP;
 
         SetMemForVariable(a->name1, addrOfTableRoutine, strlen(str));
@@ -4637,7 +4642,7 @@ otherwise the result was zero or greater.
                 Instruction(OP_DECFSZ, ScratchS, DEST_F);
                 Instruction(OP_GOTO, loop);
 
-                if(a->name4.size()) {
+                if(a->name4.length()) {
                     MemForSingleBit(a->name4, true, &addr4, &bit4);
                     CopyBit(addr4, bit4, REG_STATUS, STATUS_C, a->name4, "REG_STATUS_C");
                 }
@@ -5794,7 +5799,7 @@ otherwise the result was zero or greater.
             case INT_STRING:
                 break;
 
-			case INT_WRITE_STRING:
+            case INT_WRITE_STRING:
                 Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
@@ -5848,12 +5853,12 @@ otherwise the result was zero or greater.
                 break;
             }
 #ifdef TABLE_IN_FLASH
-			case INT_STRING_INIT: // Inited by InitTableString()
+            case INT_STRING_INIT: // Inited by InitTableString()
             case INT_FLASH_INIT: {
                 // InitTable(a); // Inited by InitTables()
                 break;
             }
-			case INT_SET_VARIABLE_INDEXED:{
+            case INT_SET_VARIABLE_INDEXED:{
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1); // dest
 
@@ -5915,7 +5920,7 @@ otherwise the result was zero or greater.
                         Instruction(OP_CLRF, addr1 + sovElement + i);
                 }
                 Comment("END CALLs");
-				break;
+                break;
             }
             case INT_FLASH_READ: {
                 sov1 = SizeOfVar(a->name1);

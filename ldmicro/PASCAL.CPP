@@ -871,7 +871,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_COMMENT:
-                if(IntCode[i].name1.size()) {
+                if(IntCode[i].name1.length()) {
                     fprintf(f, "{ %s }\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");

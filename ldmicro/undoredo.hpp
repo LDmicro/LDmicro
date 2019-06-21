@@ -40,7 +40,7 @@ class ProgramStack {
     void pop();
     void empty();
 
-    int size()
+    const int size()
     {
         return count;
     }

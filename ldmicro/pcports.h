@@ -126,7 +126,7 @@
 #define DB25DCD 8
 #define DB9DCD 1
 //
-int  MaskToBit(int Pin);
+int  MaskToBit(int Mask);
 void LptDb25PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb9PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask);

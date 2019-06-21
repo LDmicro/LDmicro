@@ -294,7 +294,7 @@ void IntDumpListing(const char *outFile)
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name3.c_str());
-                if(IntCode[i].name4.size())
+                if(IntCode[i].name4.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
@@ -304,7 +304,7 @@ void IntDumpListing(const char *outFile)
                         IntCode[i].name1.c_str(),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name3.c_str());
-                if(IntCode[i].name4.size())
+                if(IntCode[i].name4.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
@@ -334,17 +334,17 @@ void IntDumpListing(const char *outFile)
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1.c_str());
-                if(IntCode[i].name2.size())
+                if(IntCode[i].name2.length())
                     fprintf(f, "; copy overlap(-1 to 0) flag to '%s'", IntCode[i].name2.c_str());
-                if(IntCode[i].name3.size())
+                if(IntCode[i].name3.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3.c_str());
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 fprintf(f, "decrement '%s'", IntCode[i].name1.c_str());
-                if(IntCode[i].name2.size())
+                if(IntCode[i].name2.length())
                     fprintf(f, "; copy overlap(0 to -1) flag to '%s'", IntCode[i].name2.c_str());
-                if(IntCode[i].name3.size())
+                if(IntCode[i].name3.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3.c_str());
                 break;
 
@@ -4064,7 +4064,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                             GenSymOneShot(storeName, "UART_SEND", leaf->d.uart.name);
                             Op(INT_IF_BIT_CLEAR, storeName);
                               Op(INT_IF_BIT_SET, stateInOut);
-                                Op(INT_SET_BIT, storeName); 
+                                Op(INT_SET_BIT, storeName);
 
                                 Op(INT_UART_SEND1, leaf->d.uart.name);
                                 char label[MAX_NAME_LEN];
@@ -4078,7 +4078,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                                 Op(INT_SET_BIT, stateInOut);
                               Op(INT_END_IF);
                             Op(INT_ELSE);
-                                Op(INT_CLEAR_BIT, storeName); 
+                                Op(INT_CLEAR_BIT, storeName);
                                 Op(INT_CLEAR_BIT, stateInOut);
                             Op(INT_END_IF);
                           #endif
@@ -4087,7 +4087,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                             GenSymOneShot(storeName, "UART_SEND", leaf->d.uart.name);
                             Op(INT_IF_BIT_CLEAR, storeName);
                               Op(INT_IF_BIT_SET, stateInOut);
-                                Op(INT_SET_BIT, storeName); 
+                                Op(INT_SET_BIT, storeName);
                                 Op(INT_UART_SEND1, leaf->d.uart.name);
                               Op(INT_END_IF);
                             Op(INT_ELSE);
@@ -4670,7 +4670,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 #ifdef TABLE_IN_FLASH_LINEAR
             int sovElement;
             sovElement = TestByteNeeded(t->count, t->vals);
-#endif  
+#endif
             Op(INT_IF_BIT_SET, stateInOut);
             for(int i = t->count - 1; i >= 1; i--) {
                 Comment("PWL %d", i);

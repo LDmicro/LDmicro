@@ -263,7 +263,7 @@ void CompileXInterpreted(const char *outFile)
     }
 
     // $$LDcode program_size
-    fprintf(f, "$$LDcode %lu\n", OutProg.size());
+    fprintf(f, "$$LDcode %zu\n", OutProg.size());
     for(uint32_t i = 0; i < OutProg.size(); i++) {
         fprintf(f, "%02X", OutProg[i]);
         if((i % 16) == 15 || i == OutProg.size() - 1)

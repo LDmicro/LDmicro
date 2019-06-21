@@ -1484,7 +1484,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_COMMENT:
-                if(IntCode[i].name1.size()) {
+                if(IntCode[i].name1.length()) {
                     fprintf(f, "// %s\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");
@@ -2128,12 +2128,12 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_STRING_INIT: {
-				#ifdef USE_STRING_LITERAL
-				fprintf(f, "const char %s[] = \"%s\"; // [%d]\n",
+                #ifdef USE_STRING_LITERAL
+                fprintf(f, "const char %s[] = \"%s\"; // [%d]\n",
                         MapSym(IntCode[i].name1.c_str(), ASSTR),
                         IntCode[i].name2.c_str(),
                         IntCode[i].name2.length());
-				#endif
+                #endif
                 break;
             }
             case INT_FLASH_INIT: {
@@ -3386,21 +3386,21 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "static volatile unsigned char softDivisor = %d;\n",
                     plcTmr.softDivisor);
-					if(Prog.cycleTimer == 0) {
-						fprintf(f,
-						"\n"
-						"void interrupt ISR()\n"
-						"{\n"
-						"    if(T0IF) {\n"
+                    if(Prog.cycleTimer == 0) {
+                        fprintf(f,
+                        "\n"
+                        "void interrupt ISR()\n"
+                        "{\n"
+                        "    if(T0IF) {\n"
                         "        TMR0 += %d;\n" // reprogram TMR0
                         "        T0IF = 0;\n"
-						"        if(softDivisor)\n"
-						"           softDivisor--;\n"
-						"    }\n"
-						"}\n",
+                        "        if(softDivisor)\n"
+                        "           softDivisor--;\n"
+                        "    }\n"
+                        "}\n",
                         256 - plcTmr.tmr + 1
-						);
-					}
+                        );
+                    }
                 }
             } else if(mcu_ISA == ISA_AVR) {
                 CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
@@ -3409,17 +3409,17 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n"
                     "static volatile unsigned char softDivisor = %d;\n",
                     plcTmr.softDivisor);
-					if(Prog.cycleTimer == 0) {
-						fprintf(f,
-						"\n"
-						"ISR(TIMER0_COMPA_vect)\n"
-						"{\n"
+                    if(Prog.cycleTimer == 0) {
+                        fprintf(f,
+                        "\n"
+                        "ISR(TIMER0_COMPA_vect)\n"
+                        "{\n"
                         //"    // TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
-						"    if(softDivisor)\n"
-						"        softDivisor--;\n"
-						"}\n",
+                        "    if(softDivisor)\n"
+                        "        softDivisor--;\n"
+                        "}\n",
                         256 - plcTmr.tmr + 1
-						);
+                        );
                     }
                 }
             }
@@ -3634,13 +3634,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                     int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
                     // the counter is less than the divisor at 1
                     if(counter < 0)
-                        counter = 0; 
+                        counter = 0;
                     if(counter > 0xff)
                         counter = 0xff;
                     fprintf(f,
                             "    TCCR0A = 1 << WGM01;\n" // WGM01=1, WGM00=0 // CTC mode
                             "    TCCR0B = %d;\n" //  WGM02=0 // CTC mode
-                            "    OCR0A = %d;\n", 
+                            "    OCR0A = %d;\n",
                     plcTmr.cs & 0xff,
                     counter & 0xff);
                     if(plcTmr.softDivisor > 1) {
@@ -3664,7 +3664,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             } else {
                 fprintf(f, "    //  You must init PLC timer.\n");
             }
-        } 
+        }
         //---------------------------------------------------------------------
         if(UartFunctionUsed()) {
             ///// added by JG
@@ -3887,7 +3887,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
             fprintf(f,"    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n");
         }
-        
+
         fprintf(f,"    setupPlc();\n"
                   "    while(1) {\n");
         //------------------------------------------------------------------------------------
@@ -3917,7 +3917,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "        TMR0 += %d;\n" // reprogram TMR0
                         "        T0IF = 0;\n",
                         256 - plcTmr.tmr + 1);
-                }  
+                }
             } else {
                 fprintf(f,
                         "        while(CCP1IF == 0);\n"
@@ -3926,7 +3926,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     fprintf(f,
                     "        softDivisor--;\n");
                 }
-            } 
+            }
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,
                     "        if(softDivisor)\n"

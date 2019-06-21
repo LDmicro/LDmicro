@@ -1397,9 +1397,9 @@ long shl(long val, int32_t n, int size, bool *state)
 //Binary to unpacked BCD
 int bin2bcd(int val)
 {
-    int sign = 1;
+    //int sign = 1;
     if(val < 0) {
-        sign = -1;
+        //sign = -1;
         Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
@@ -1580,7 +1580,7 @@ static void SimulateIntCode()
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(a->name2.size())
+                if(a->name2.length())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
                         NeedRedraw = a->op;
                         *(a->workingNow) = SingleBitOn(a->name2);
@@ -2113,9 +2113,9 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
                 }
-				break;
-			}
-			case INT_SET_VARIABLE_INDEXED: {
+                break;
+            }
+            case INT_SET_VARIABLE_INDEXED: {
                 int index = GetSimulationVariable(a->name3);
                 //int32_t d = a->name2[index];
                 char d = GetSimulationStr(a->name4.c_str())[index];
@@ -2123,7 +2123,7 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
                 }
-				break;
+                break;
             }
 
             case INT_RAM_READ: {
@@ -2138,8 +2138,8 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name2, d);
                     NeedRedraw = a->op;
                 }
-				break;
-            } 
+                break;
+            }
 #endif
 
             case INT_DELAY:
@@ -2158,7 +2158,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_SPI_WRITE:
-                for(unsigned int i = 0; i < a->name2.size(); i++) // send text to terminal window
+                for(unsigned int i = 0; i < a->name2.length(); i++) // send text to terminal window
                     AppendToSimulationTextControl(a->name2[i], SpiSimulationTextControl);
                 break;
 

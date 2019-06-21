@@ -44,7 +44,7 @@ PlcProgram::PlcProgram()
         OpsInRung[i] = 0;
         HexInRung[i] = 0;
     }
-	compiler = 0;
+    compiler = 0;
 }
 
 PlcProgram::PlcProgram(const PlcProgram &other)
@@ -91,9 +91,9 @@ PlcProgram::~PlcProgram()
 }
 
 void LoadWritePcPorts();
-void PlcProgram::setMcu(McuIoInfo *m)
+void PlcProgram::setMcu(McuIoInfo *mcu)
 {
-    mcu_ = m;
+    mcu_ = mcu;
     if(!mcu_)
         return;
 
