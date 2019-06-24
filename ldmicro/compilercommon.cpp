@@ -1014,7 +1014,8 @@ int isPinAssigned(const NameArray &name)
 
             case 'R':
             case '$':
-                //MemForBitInternal(name, addr, bit, !forRead);
+                //ADDR_T *addr; int *bit;
+                //MemForBitInternal(name, addr, bit, true);
                 break;
 
             default:

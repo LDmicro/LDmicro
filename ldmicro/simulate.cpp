@@ -979,7 +979,11 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_STRING:
             MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
             break;
-
+/*
+        case ELEM_UART_SEND:
+            MarkWithCheck("$scratch", VAR_FLAG_ANY);
+            break;
+*/
 //      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;

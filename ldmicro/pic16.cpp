@@ -1691,12 +1691,6 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
             CHECK((BYTE)arg1, 8);
             CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
-/*
-            if((hobatoi(arg1s) >= ' ') && (hobatoi(arg1s) < 127))
-                sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, hobatoi(arg1s), arg1comm); 
-            else
-                sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, hobatoi(arg1s), arg1comm);
-*/
             if((arg1 >= ' ') && (arg1 < 127))
                 sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, arg1, arg1comm); 
             else

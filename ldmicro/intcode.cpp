@@ -4025,6 +4025,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                             Op(INT_END_IF);
 
                             Op(INT_IF_BIT_SET, storeName);
+                                Op(INT_SET_BIT, "$scratch"); // dummy
                                 Op(INT_UART_SEND_BUSY, "$scratch"); // stateInOut returns BUSY flag
                                 Op(INT_IF_BIT_CLEAR, "$scratch");
                                     Op(INT_SET_VARIABLE_INDEXED, "$scratch", leaf->d.uart.name, index, nameLit);
