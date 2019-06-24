@@ -369,8 +369,9 @@ goto exit
 REM Compilation with arm-gcc
 
 @rem SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
-@rem SET GCC_PATH=C:\yagarto-20121222\bin
-     SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major\bin
+     SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\yagarto-20121222
+@rem SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major
 
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
 SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
