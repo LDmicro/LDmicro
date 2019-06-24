@@ -16,7 +16,7 @@ BraceWrapping:
 BreakBeforeBraces: WebKit
 BreakStringLiterals: false
 BreakBeforeBinaryOperators: NonAssignment
-ColumnLimit:     120
+ColumnLimit:     220
 IndentCaseLabels: true
 #IndentPPDirectives: AfterHash
 IndentWidth:     4

@@ -401,7 +401,7 @@ bool SavePcPorts(const char *filename)
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    return b != false;
+    return !b;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)

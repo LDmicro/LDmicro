@@ -51,7 +51,7 @@ static int SPI_SS = 0;
 
 #define MAX_ADC_C 256
 static int  ADC_Used[MAX_ADC_C]; // used ADC #
-static long ADC_Chan[MAX_ADC_C]; // ADC channel
+static int  ADC_Chan[MAX_ADC_C]; // ADC channel
 
 #define MAX_PWM_C 256
 static int  PWM_Used[MAX_PWM_C];  // used PWM #
@@ -747,7 +747,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "/* You provide this function. */\n");
                 fprintf(f, "SWORD Read_%s(void) {\n", str);
                 fprintf(f, "  SWORD v= 0;\n");
-                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%ld);\n", adc, chan); // acquisition ADC n Channel c
+                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%d);\n", adc, chan); // acquisition ADC n Channel c
                 fprintf(f, "  return v;\n");
                 fprintf(f, "}\n");
             } else {
@@ -2672,8 +2672,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <delay.h>\n"
                 "#elif defined(__GNUC__)\n"
                 "    #include <util/delay.h>\n"
-                "#endif\n",
-                Prog.mcuClock);
+                "#endif\n");
     }
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
@@ -2824,7 +2823,6 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(f,
                 "#include <htc.h>\n"
                 "__CONFIG(0x%X);\n",
-                Prog.mcuClock,
                 (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
@@ -3227,8 +3225,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "ldBOOL UART_Transmit_Busy(void) {\n"
                         "  if (UART_Transmit_Ready()) return 0;\n"
                         "  else return 1;\n"
-                        "}\n\n",
-                        UART_Used);
+                        "}\n\n");
                 fprintf(f,
                         "ldBOOL UART_Receive_Avail(void) {\n"
                         "  if (LibUart_Received_Data(USART%d)) return 1;\n"
@@ -3384,7 +3381,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(plcTmr.softDivisor > 1) {
                     fprintf(f,
                     "\n"
-                    "static volatile unsigned char softDivisor = %d;\n",
+                    "static volatile unsigned char softDivisor = %ld;\n",
                     plcTmr.softDivisor);
                     if(Prog.cycleTimer == 0) {
                         fprintf(f,
@@ -3417,9 +3414,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         //"    // TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
                         "    if(softDivisor)\n"
                         "        softDivisor--;\n"
-                        "}\n",
-                        256 - plcTmr.tmr + 1
-                        );
+                        "}\n");
                     }
                 }
             }
