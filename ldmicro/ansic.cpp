@@ -3281,31 +3281,6 @@ bool CompileAnsiC(const char *dest, int MNU)
     GenerateAnsiC(f, 0, IntCode.size() - 1);
     fprintf(f, "}\n");
     //---------------------------------------------------------------------------
-
-    ///// Added by JG
-    if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        // PlcDelay() function
-        fprintf(f,
-                "\n"
-                "// PLC Cycle timing function.\n"
-                "void PlcDelay() {\n"
-                "    while (! Next_Plc_Cycle);\n"
-                "    Next_Plc_Cycle= 0;\n"
-                "}\n"
-                "\n");
-
-        // Timer 3 interrupt routine for PLC Cycles
-        fprintf(f,
-                "\n"
-                "void TIM3_Handler() {\n"
-                "    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
-                "        Next_Plc_Cycle= 1;\n"
-                "        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);     // acknowledge interrupt\n"
-                "    }\n"
-                "}\n"
-                "\n");
-    }
-    /////
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(f,
                 "\n"
@@ -3376,7 +3351,26 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else {
         //---------------------------------------------------------------------------------------
         if(Prog.cycleTime > 0) {
-            if(mcu_ISA == ISA_PIC16) {
+            if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                // PlcDelay() function
+                fprintf(f,
+                        "\n"
+                        "// PLC Cycle timing function.\n"
+                        "void PlcDelay() {\n"
+                        "    while (! Next_Plc_Cycle);\n"
+                        "    Next_Plc_Cycle= 0;\n"
+                        "}\n");
+
+                // Timer 3 interrupt routine for PLC Cycles
+                fprintf(f,
+                        "\n"
+                        "void TIM3_Handler() {\n"
+                        "    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
+                        "        Next_Plc_Cycle= 1;\n"
+                        "        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);     // acknowledge interrupt\n"
+                        "    }\n"
+                        "}\n");
+            } else if(mcu_ISA == ISA_PIC16) {
                 CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
                 if(plcTmr.softDivisor > 1) {
                     fprintf(f,
@@ -3569,7 +3563,11 @@ bool CompileAnsiC(const char *dest, int MNU)
             } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                 // compute timer frequency according to desired Cycle time
                 // real Cycle time can be adjusted by modifying declared frequency F
-                double fperiod = (double)(Prog.mcuClock) / 4000000;
+                double fperiod = (double)(Prog.mcuClock);
+                if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
+                    fperiod /= 1000000;
+                else
+                    fperiod /= 4000000;
                 fperiod = (fperiod * Prog.cycleTime) / 1000;
                 unsigned long period = (unsigned long)fperiod;
                 if(period == 0)
@@ -3952,6 +3950,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "        softDivisor = %d;\n"
                     , plcTmr.softDivisor);
             }
+        } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+            fprintf(f, "        PlcDelay();\n");
         } else {
             fprintf(f, "        //  You must check PLC timer interval.\n");
         }
@@ -3960,15 +3960,6 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.cycleDuty) {
             fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
         }
-
-        ///// added by JG
-        if(compiler_variant == MNU_COMPILE_ARMGCC) {
-            fprintf(f,
-                    "\n"
-                    "        PlcDelay();\n"
-                    "\n");
-        }
-            /////
         fprintf(f,
                 "\n"
                 "        PlcCycle();\n"

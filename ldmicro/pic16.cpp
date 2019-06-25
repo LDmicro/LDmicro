@@ -1692,7 +1692,7 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
             CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
             if((arg1 >= ' ') && (arg1 < 127))
-                sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, arg1, arg1comm); 
+                sprintf(sAsm, "retlw\t %s \t; '%c' %s", arg1s, arg1, arg1comm);
             else
                 sprintf(sAsm, "retlw\t %s \t; '\\x%02X' %s", arg1s, arg1, arg1comm);
             return 0x3400 | (BYTE)arg1;
@@ -7802,7 +7802,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         }
 
         // TODO: WPUA - WPUG bits for PIC16F1512 - PIC16F1947
-        if(Prog.pullUpRegs[1] == 0) {
+        // TODO: WPUB
+        if((Prog.pullUpRegs[1] & 0xFF) != 0xFF) {
             // Pull-ups are enabled after direction settings !
             Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
             Instruction(OP_BCF, REG_OPTION, _RBPU);

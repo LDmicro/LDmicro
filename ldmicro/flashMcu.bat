@@ -437,7 +437,7 @@ CD ARMGCC\lib
 for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
 CD ..\..
 
-pause
+:pause
 
 arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
 
