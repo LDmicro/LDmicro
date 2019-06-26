@@ -39,7 +39,7 @@ uint8_t bin2bcd(uint8_t var)
     return res;
 }
 
-// delays in +/- µs
+// delays in +/- us
 void delay_us(uint16_t us)
 {
     uint32_t d = 10 * us / 2;

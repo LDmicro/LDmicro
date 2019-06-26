@@ -2517,6 +2517,7 @@ void TIM_ClearFlag(TIM_TypeDef *TIMx, uint16_t TIM_FLAG)
   */
 ITStatus TIM_GetITStatus(TIM_TypeDef *TIMx, uint16_t TIM_IT)
 {
+#if 0
     ITStatus bitstatus = RESET;
     uint16_t itstatus = 0x0, itenable = 0x0;
     /* Check the parameters */
@@ -2532,6 +2533,17 @@ ITStatus TIM_GetITStatus(TIM_TypeDef *TIMx, uint16_t TIM_IT)
         bitstatus = RESET;
     }
     return bitstatus;
+#else
+    /* Check the parameters */
+    assert_param(IS_TIM_ALL_PERIPH(TIMx));
+    assert_param(IS_TIM_GET_IT(TIM_IT));
+
+    if(((TIMx->SR & TIM_IT) != (uint16_t)RESET) && ((TIMx->DIER & TIM_IT) != (uint16_t)RESET)) {
+        return SET;
+    } else {
+        return RESET;
+    }
+#endif
 }
 
 /**

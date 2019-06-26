@@ -807,7 +807,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f,
                     "\n"
                     "// PLC Cycle timing variable.\n"
-                    "ldBOOL Next_Plc_Cycle= 0;\n"
+                    "volatile unsigned char Next_Plc_Cycle = 0;\n"
                     "\n");
 
             TIMER_Used = 1;
@@ -1501,6 +1501,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_DELAY:
+/*
                 fprintf(f, "#ifdef CCS_PIC_C\n");
                 doIndent(f, i);
                 fprintf(f, "  delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
@@ -1522,6 +1523,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "  delayMicroseconds(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#endif\n");
+*/
+                if(compiler_variant == MNU_COMPILE_ARDUINO)
+                    fprintf(f, "delayMicroseconds(%s);\n", MapSym(IntCode[i].name1, ASINT));
+                else
+                    fprintf(f, "delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
             case INT_SPI:
@@ -2667,12 +2673,11 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else {
     }
     if(DelayUsed()) {
-        fprintf(fh,
-                "#ifdef __CODEVISIONAVR__\n"
-                "    #include <delay.h>\n"
-                "#elif defined(__GNUC__)\n"
-                "    #include <util/delay.h>\n"
-                "#endif\n");
+        if(compiler_variant == MNU_COMPILE_CODEVISIONAVR) {
+            fprintf(fh, "#include <delay.h>\n");
+        } else if(mcu_ISA == ISA_AVR) {
+            fprintf(fh, "#include <util/delay.h>\n");
+        }
     }
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
@@ -3358,7 +3363,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "// PLC Cycle timing function.\n"
                         "void PlcDelay() {\n"
                         "    while (! Next_Plc_Cycle);\n"
-                        "    Next_Plc_Cycle= 0;\n"
+                        "    Next_Plc_Cycle = 0;\n"
                         "}\n");
 
                 // Timer 3 interrupt routine for PLC Cycles
@@ -3366,7 +3371,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "\n"
                         "void TIM3_Handler() {\n"
                         "    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
-                        "        Next_Plc_Cycle= 1;\n"
+                        "        Next_Plc_Cycle = 1;\n"
                         "        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);     // acknowledge interrupt\n"
                         "    }\n"
                         "}\n");
@@ -3575,11 +3580,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(period > 65535)
                     period = 65535; // securities
                 fprintf(f,
-                        "\n"
                         "    // init Timer 3 and activate interrupts\n"
                         "    LibTimer_Init(TIM3, 1000, %lu);\n" // f= (F/4)/[(prediv)*(period)]
                         "    LibTimer_Interrupts(TIM3, ENABLE);\n"
-                        "\n",
+                        "    //NVIC_SetPriority(TIM3_IRQn, 0);\n"
+                        "\n"
+                        "    SysTick_Config(72);\n"
+                        "    NVIC_SetPriority(SysTick_IRQn, 0);\n",
                         period);
 
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {

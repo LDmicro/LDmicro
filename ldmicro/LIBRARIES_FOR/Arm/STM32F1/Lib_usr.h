@@ -17,7 +17,9 @@ int16_t  opposite(int16_t var);
 uint8_t bcd2bin(uint8_t var);
 uint8_t bin2bcd(uint8_t var);
 
-void delay_us(uint16_t us);
-void delay_ms(uint16_t ms);
+extern volatile uint32_t usSysTick;
+
+void delay_us(uint32_t us);
+void delay_ms(uint32_t ms);
 
 #endif

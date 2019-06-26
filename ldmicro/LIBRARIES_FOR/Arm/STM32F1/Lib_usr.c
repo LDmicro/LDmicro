@@ -39,7 +39,31 @@ uint8_t bin2bcd(uint8_t var)
     return res;
 }
 
-// delays in +/- µs
+//static volatile uint32_t usSysTick = 0;
+volatile uint32_t usSysTick = 0;
+
+void SysTick_Handler() {
+    usSysTick++;
+}
+
+#if 1
+// delays in +/- us
+void delay_us(uint32_t us)
+{
+    us += usSysTick;
+    while(us != usSysTick)
+        ;
+}
+
+// delays in +/- ms
+void delay_ms(uint32_t ms)
+{
+    ms = ms * 1000 + usSysTick;
+    while(ms != usSysTick)
+        ;
+}
+#else
+// delays in +/- us
 void delay_us(uint16_t us)
 {
     uint32_t d = 7 * us / 2;
@@ -56,6 +80,7 @@ void delay_ms(uint16_t ms)
     for(; d > 0; d--)
         ;
 }
+#endif
 
 void _sbrk()
 {
