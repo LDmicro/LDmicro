@@ -374,7 +374,9 @@ REM Compilation with arm-gcc
 @rem SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major
 
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
-SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
+
+@rem SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
+     SET STL_PATH=C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
 if "%4" == "stm32f40x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F4
 if "%4" == "stm32f10x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F1
@@ -438,7 +440,7 @@ for %%F in (*.c) do arm-none-eabi-gcc.exe -S -O0 -mcpu=cortex-m3 -mthumb -g -IIn
 for %%F in (*.c) do arm-none-eabi-gcc.exe    -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
 CD ..\..
 
-pause
+:pause
 
 arm-none-eabi-gcc.exe -S -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.lst
 arm-none-eabi-gcc.exe    -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
@@ -446,7 +448,7 @@ arm-none-eabi-gcc.exe    -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\
 REM Linkage of objects
 arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
 
-pause
+:pause
 
 REM Convert Elf to Hex
 arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
@@ -467,7 +469,7 @@ copy ARMGCC\BIN\*.elf PROTEUS > nul
 REM Transfer of the program with ST-Link CLI
 ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
-pause
+if not exist "%STL_PATH%\ST-LINK_CLI.exe" pause
 goto exit
 
 

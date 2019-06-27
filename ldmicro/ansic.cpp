@@ -3362,7 +3362,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "\n"
                         "// PLC Cycle timing function.\n"
                         "void PlcDelay() {\n"
-                        "    while (! Next_Plc_Cycle);\n"
+                        "    while(!Next_Plc_Cycle)\n"
+                        "        ;\n"
                         "    Next_Plc_Cycle = 0;\n"
                         "}\n");
 
@@ -3370,7 +3371,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 fprintf(f,
                         "\n"
                         "void TIM3_Handler() {\n"
-                        "    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
+                        "    if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
                         "        Next_Plc_Cycle = 1;\n"
                         "        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);     // acknowledge interrupt\n"
                         "    }\n"
@@ -3580,15 +3581,18 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(period > 65535)
                     period = 65535; // securities
                 fprintf(f,
-                        "    // init Timer 3 and activate interrupts\n"
+                        "    // Init Timer 3 and activate interrupts.\n"
                         "    LibTimer_Init(TIM3, 1000, %lu);\n" // f= (F/4)/[(prediv)*(period)]
                         "    LibTimer_Interrupts(TIM3, ENABLE);\n"
-                        "    //NVIC_SetPriority(TIM3_IRQn, 0);\n"
-                        "\n"
-                        "    SysTick_Config(72);\n"
-                        "    NVIC_SetPriority(SysTick_IRQn, 0);\n",
+                        "    NVIC_SetPriority(TIM3_IRQn, 0);\n",
                         period);
-
+                if(DelayUsed()) {
+                    fprintf(f,
+                        "\n"
+                        "    // Init the SysTick Timer and activate interrupts for the delay_xs functions.\n"
+                        "    SysTick_Config(SystemCoreClock / 1000000); // 72\n"
+                        "    NVIC_SetPriority(SysTick_IRQn, 0xF);\n");
+                }
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 if(Prog.cycleTimer == 0) {
                     fprintf(f,
