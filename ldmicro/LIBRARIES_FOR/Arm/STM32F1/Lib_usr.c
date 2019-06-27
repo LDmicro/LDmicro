@@ -49,7 +49,12 @@ void SysTick_Handler() {
 // delays in +/- us
 void delay_us(uint16_t us)
 {
+    //NVIC_DisableIRQ(SysTick_IRQn);
+    //__disable_irq();
     us += usSysTick;
+    //NVIC_EnableIRQ(SysTick_IRQn);
+    //__enable_irq();
+    //while(us > usSysTick)
     while(us != usSysTick)
         ;
 }
