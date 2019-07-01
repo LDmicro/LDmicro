@@ -3590,8 +3590,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                     fprintf(f,
                         "\n"
                         "    // Init the SysTick Timer and activate interrupts for the delay_xs functions.\n"
-                        "    SysTick_Config(SystemCoreClock / 1000000); // 72\n"
-                        "    NVIC_SetPriority(SysTick_IRQn, 0xF);\n");
+                        "    // SysTick_Config(SystemCoreClock / 1000000); // 72\n"
+                        "    // NVIC_SetPriority(SysTick_IRQn, 0xF);\n");
                 }
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 if(Prog.cycleTimer == 0) {
