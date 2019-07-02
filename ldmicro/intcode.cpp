@@ -1804,18 +1804,22 @@ bool IsAddrInVar(const char *name)
 }
 //-----------------------------------------------------------------------------
 // clang-format off
-static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
+static void IntCodeFromCircuit(int which, SeriesNode *node, const char *stateInOut, int rung)
 {
     const char *stateInOut2 = "$overlap";
+/*
     nodeNow = (SeriesNode *)any;
     ElemLeaf *leaf = (ElemLeaf *)any;
+*/
+    nodeNow = node;
+    ElemLeaf *leaf = node->data.leaf;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            ElemSubcktSeries *s = node->data.series;
 
             Comment("start series [");
             for(int i = 0; i < s->count; i++) {
-                IntCodeFromCircuit(s->contents[i].which, s->contents[i].data.any, stateInOut, rung);
+                IntCodeFromCircuit(s->contents[i].which, &s->contents[i], stateInOut, rung);
             }
             Comment("] finish series");
             break;
@@ -1825,7 +1829,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char parOut[MAX_NAME_LEN];
 
             Comment("start parallel [");
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            ElemSubcktParallel *p = node->data.parallel;
 
             bool ExistEnd = false; //false indicates that it is NEED to calculate the parOut
             for(int i = 0; i < p->count; i++) {
@@ -1859,13 +1863,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             for(int i = 0; i < p->count; i++) {
 #ifndef DEFAULT_PARALLEL_ALGORITHM
                 if(CheckStaySameElem(&p->contents[i]))
-                    IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any, stateInOut, rung);
+                    IntCodeFromCircuit(p->contents[i].which, &p->contents[i], stateInOut, rung);
                 else
 #endif
                 {
                     Op(INT_COPY_BIT_TO_BIT, parThis, stateInOut);
 
-                    IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any, parThis, rung);
+                    IntCodeFromCircuit(p->contents[i].which, &p->contents[i], parThis, rung);
 
                     if(ExistEnd == false) {
                         Op(INT_IF_BIT_SET, parThis);
@@ -5337,7 +5341,7 @@ bool GenerateIntermediateCode()
             tmp.data.series = Prog.rungs(rung);
             IntCodeFromCircuit(&tmp, "$rung_top", rung);
             */
-            IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
+            IntCodeFromCircuit(ELEM_SERIES_SUBCKT, &(Prog.rungs(rung)->contents[0]), "$rung_top", rung);
         }
         nodeNow = nullptr;
         // END of rung's
