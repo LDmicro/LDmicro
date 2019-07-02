@@ -3681,12 +3681,12 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 // Only 1 UART can be used in a same ladder
                 if((UART_Used == 4) || (UART_Used == 5)) // UART != USART
                     fprintf(f,
-                            "    LibUart_Init(UART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);",
+                            "    LibUart_Init(UART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);\n",
                             UART_Used,
                             Prog.baudRate);
                 else
                     fprintf(f,
-                            "    LibUart_Init(USART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);",
+                            "    LibUart_Init(USART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);\n",
                             UART_Used,
                             Prog.baudRate);
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
