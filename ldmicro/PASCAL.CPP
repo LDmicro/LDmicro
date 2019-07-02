@@ -1010,7 +1010,7 @@ static char *GetUnitName(char *unitn, char *dest)
     return _GetUnitName(unitn);
 }
 //-----------------------------------------------------------------------------
-void CompilePascal(const char *dest)
+void CompilePascal(const char* outFile)
 {
     SeenVariablesCount = 0;
 
@@ -1030,15 +1030,15 @@ void CompilePascal(const char *dest)
     char *unitr;
     char *unitv;
 
-    strcpy(destn, dest);
-    SetExt(destu, dest, "U.pas");
-    SetExt(destr, dest, "R.pas");
-    SetExt(destv, dest, "V.pas");
-    SetExt(desti, dest, "U.inc");
+    strcpy(destn, outFile);
+    SetExt(destu, outFile, "U.pas");
+    SetExt(destr, outFile, "R.pas");
+    SetExt(destv, outFile, "V.pas");
+    SetExt(desti, outFile, "U.inc");
 
-    FileTracker f(dest, "w");
+    FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%s'"), outFile);
         return;
     }
     FileTracker fu(destu, "w");
@@ -1348,7 +1348,7 @@ void CompilePascal(const char *dest)
               "This is not a complete PASCAL program. You have to provide the runtime "
               "and all the I/O routines. See the comments in the source code for "
               "information about how to do this."),
-            dest);
+            outFile);
     CompileSuccessfulMessage(str);
 }
 

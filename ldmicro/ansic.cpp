@@ -548,14 +548,13 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "\n");
             ///// Added by JG
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-            int pwm = 0;
-
             McuIoPinInfo *iop = PinInfoForName(&str[3]); // infos on pin used by this PWM
             if(!iop)
                 THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
             McuPwmPinInfo *pop = PwmPinInfo(iop->pin);
             if(pop) {
+                int pwm = 0;
                 pwm = pop->timer;  // PWM# (0x01, 0x02) from timer number
                 PWM_Used[pwm] = 1; // marked as used
                 PWM_Resol[pwm] = 10;
@@ -574,7 +573,6 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in PWM pin layout
             }
         } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-            int pwm = 0;
             //  McuPwmPinInfo *ioq = PwmMaxInfoForName(&str[3], Prog.cycleTimer);       //// donne Pin # + timer # + resol
 
             McuIoPinInfo *iop = PinInfoForName(&str[3]); // infos on pin used by this PWM
@@ -583,6 +581,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
 
             const char *s = iop->pinName; // full pin name supposed to be in format (PWMn.c) n= PWM#, c=Channel#
             if(strlen(s)) {
+                int pwm = 0;
                 const char *pos = strstr(s, "PWM");
                 if(pos) {
                     pwm = 16 * atoi(pos + 3); // 16*PWM# from pin description
@@ -618,14 +617,13 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 THROW_COMPILER_EXCEPTION(_("PWM Internal error")); // error in PWM pin layout
             }
         } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
-            int pwm = 0;
-
             McuIoPinInfo *iop = PinInfoForName(&str[3]); // infos on pin used by this PWM
             if(!iop)
                 THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
             const char *s = iop->pinName; // full pin name supposed to be in format (OCn) n= PWM#
             if(strlen(s)) {
+                int pwm = 0;
                 const char *pos = strstr(s, "OC");
                 if(pos) {
                     pwm = strtol(pos + 2, nullptr, 16); // PWM# (0x00, 0x1A, 0x1B, 0x02...) from pin description
@@ -829,10 +827,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 {
     all_arduino_pins_are_mapped = true;
 
-    ADDR_T addr, addr2;
-    int    bit, bit2;
-
     for(uint32_t i = 0; i < IntCode.size(); i++) {
+        ADDR_T addr, addr2;
+        int    bit, bit2;
         const char *bitVar1 = nullptr, *bitVar2 = nullptr;
         const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr,
                    *intVar4 = nullptr; ///// intVar4 added by JG for I2C
@@ -1791,14 +1788,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_PWM_OFF:
                 ///// Added by JG
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    int pwm = 0;
-
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this PWM
                     if(!iop)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
                     McuPwmPinInfo *pop = PwmPinInfo(iop->pin);
                     if(pop) {
+                        int pwm = 0;
                         pwm = pop->timer;  // PWM# (0x01, 0x02) from timer number
                         PWM_Used[pwm] = 1; // marked as used
                         PWM_Resol[pwm] = 10;
@@ -1808,7 +1804,6 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in PWM pin layout
                     }
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-                    int pwm = 0;
                     //  McuPwmPinInfo *ioq = PwmMaxInfoForName(IntCode[i].name1.c_str(), Prog.cycleTimer);      //// donne Pin # + timer # resol
 
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this PWM
@@ -1817,6 +1812,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
                     const char *s = iop->pinName; // full pin name supposed to be in format (PWMn.c) n= PWM#, c=Channel#
                     if(strlen(s)) {
+                        int pwm = 0;
                         const char *pos = strstr(s, "PWM");
                         if(pos) {
                             pwm = 16 * atoi(pos + 3); // 16*PWM# from pin description
@@ -1835,14 +1831,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         THROW_COMPILER_EXCEPTION(_("PWM Internal error")); // error in PWM pin layout
                     }
                 } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
-                    int pwm = 0;
-
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this PWM
                     if(!iop)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
                     const char *s = iop->pinName; // full pin name supposed to be in format (OCn) n= PWM#
                     if(strlen(s)) {
+                        int pwm = 0;
                         const char *pos = strstr(s, "OC");
                         if(pos) {
                             pwm = strtol(pos + 2, nullptr, 16);
@@ -1866,14 +1861,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 ///// Added by JG
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    int pwm = 0;
-
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name3.c_str()); // infos on pin used by this PWM
                     if(!iop)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
                     McuPwmPinInfo *pop = PwmPinInfo(iop->pin);
                     if(pop) {
+                        int pwm = 0;
                         pwm = pop->timer;  // PWM# (0x01, 0x02) from timer number
                         PWM_Used[pwm] = 1; // marked as used
                         PWM_Resol[pwm] = 10;
@@ -1889,7 +1883,6 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in PWM pin layout
                     }
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-                    int pwm = 0;
                     //  McuPwmPinInfo *ioq = PwmMaxInfoForName(IntCode[i].name3.c_str(), Prog.cycleTimer);      //// donne Pin # + timer # resol
 
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name3.c_str()); // infos on pin used by this PWM
@@ -1898,6 +1891,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
                     const char *s = iop->pinName; // full pin name supposed to be in format (PWMn.c) n= PWM#, c=Channel#
                     if(strlen(s)) {
+                        int pwm = 0;
                         const char *pos = strstr(s, "PWM");
                         if(pos) {
                             pwm = 16 * atoi(pos + 3); // 16*PWM# from pin description
@@ -1918,14 +1912,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         THROW_COMPILER_EXCEPTION(_("PWM Internal error")); // error in PWM pin layout
                     }
                 } else if(compiler_variant == MNU_COMPILE_AVRGCC) {
-                    int pwm = 0;
-
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name3.c_str()); // infos on pin used by this PWM
                     if(!iop)
                         THROW_COMPILER_EXCEPTION(_("PWM pin error")); // error in pin layout
 
                     const char *s = iop->pinName; // full pin name supposed to be in format (OCn) n= PWM#
                     if(strlen(s)) {
+                        int pwm = 0;
                         const char *pos = strstr(s, "OC");
                         if(pos) {
                             pwm = strtol(pos + 2, nullptr, 16);
@@ -2212,11 +2205,11 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 
                 ///// Added by JG for HI-TECH C
                 fprintf(f, "#ifdef __PICC__\n");
-                fprintf(f, "const %s %s[%ld] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
+                fprintf(f, "const %s %s[%d] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
                 for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
-                    fprintf(f, "%ld, ", IntCode[i].data[j]);
+                    fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
-                fprintf(f, "%ld};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
+                fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
                 fprintf(f, "#endif\n");
                 /////
 
@@ -2242,7 +2235,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 #endif
 }
 
-bool CompileAnsiC(const char *dest, int MNU)
+bool CompileAnsiC(const char *outFile, int MNU)
 {
     if(Prog.mcu())
         mcu_ISA = Prog.mcu()->whichIsa;
@@ -2272,15 +2265,15 @@ bool CompileAnsiC(const char *dest, int MNU)
     ////
 
     char CurrentLdName[MAX_PATH];
-    GetFileName(CurrentLdName, dest);
+    GetFileName(CurrentLdName, outFile);
 
     char desth[MAX_PATH];
-    SetExt(desth, dest, ".h");
+    SetExt(desth, outFile, ".h");
 
     char ladderhName[MAX_PATH];
     char compilePath[MAX_PATH];
     char arduinoDest[MAX_PATH];
-    strcpy(compilePath, dest);
+    strcpy(compilePath, outFile);
     ExtractFileDir(compilePath);
 
     ///// Modified by JG
@@ -2745,14 +2738,14 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     FileTracker f;
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        SetExt(arduinoDest, dest, ".cpp");
+        SetExt(arduinoDest, outFile, ".cpp");
         f.open(arduinoDest, "w");
     } else {
-        f.open(dest, "w"); /// BUG ?
+        f.open(outFile, "w"); /// BUG ?
     }
 
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
     }
 
     if((compiler_variant == MNU_COMPILE_ARMGCC) //
@@ -4031,7 +4024,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     fprintf(flh, "#endif\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        SetExt(ladderhName, dest, ".ino_");
+        SetExt(ladderhName, outFile, ".ino_");
         FileTracker fino(ladderhName, "w");
         if(!fino) {
             THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);

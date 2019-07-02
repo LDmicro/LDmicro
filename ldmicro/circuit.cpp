@@ -344,7 +344,7 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
     return false;
 }
 
-bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
+bool AddLeafToParent(SeriesNode selected, const SeriesNode newLeaf)
 {
     if(selected.parent()->which == ELEM_SERIES_SUBCKT) {
         auto sn = std::find_if(selected.parent()->series()->contents,
@@ -388,7 +388,7 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
     return false;
 }
 
-static bool AddLeaf(SeriesNode newElem)
+static bool AddLeaf(const SeriesNode newElem)
 {
     if((!Selected.leaf()) || (Selected.leaf()->selectedState == SELECTED_NONE))
         return false;

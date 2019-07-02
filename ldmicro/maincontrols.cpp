@@ -196,10 +196,10 @@ void UpdateMainWindowTitleBar()
 // the schematic (e.g. can't insert two coils in series).
 //-----------------------------------------------------------------------------
 void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool canSetOnly, bool canDelete,
-                     bool canInsertEnd, bool canInsertOther, bool canPushDown, bool canPushUp, bool canInsertComment)
+                     bool canInsertEnd, bool canInsertOther, bool canPushRungDown, bool canPushRungUp, bool canInsertComment)
 {
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP, canPushUp ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN, canPushDown ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP, canPushRungUp ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN, canPushRungDown ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(EditMenu, MNU_DELETE_RUNG, (Prog.numRungs > 1) ? MF_ENABLED : MF_GRAYED);
 
     EnableMenuItem(InstructionMenu, MNU_NEGATE, canNegate ? MF_ENABLED : MF_GRAYED);

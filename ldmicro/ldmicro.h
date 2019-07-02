@@ -451,7 +451,7 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/);
+bool DrawElement(int which, void *any, int *cx, int *cy, bool poweredBefore/*, int cols*/);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern bool SelectionActive;
@@ -462,7 +462,7 @@ void SetSyntaxHighlightingColours();                            ///// Prototype 
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow();
-BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime, int mode);     ///// prototype modified by JG
+BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode);
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
@@ -532,7 +532,7 @@ char *FrmStrToStr(char *dest, const char *src);
 char *FrmStrToStr(char *dest);
 const char *ChrToFrmtStr(const char src, FRMT frmt);
 const char *ChrToFrmtStr(const char src);
-char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src, FRMT frmt);
 char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();
 
@@ -628,10 +628,10 @@ extern bool DialogCancel;
 #ifdef OOPS_AS_THROW
 #define ooops(FMT, ...) do { \
     dbp("rungNow=%d\n", rungNow); \
-    char __message[1024];\
-    sprintf(__message, (FMT),  __VA_ARGS__); \
-    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __message); \
-    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", __message, rungNow); \
+    char ooops__message[1024];\
+    sprintf(ooops__message, (FMT),  __VA_ARGS__); \
+    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, ooops__message); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.",ooops__message, rungNow); \
 } while(0)
 #define oops() do { \
     dbp("rungNow=%d\n", rungNow); \

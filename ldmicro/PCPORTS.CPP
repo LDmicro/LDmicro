@@ -291,7 +291,7 @@ void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask)
     };
 }
 //-----------------------------------------------------------------------------
-bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
+bool ParceVar(const char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
 {
     strcpy(prt, "???");
     *portN = 0;
@@ -307,7 +307,7 @@ bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Ad
 
     for(int i = 0; i < Prog.io.count; i++) {
         Transliterate(trans, Prog.io.assignment[i].name);
-        if(strcmp(trans, s + 3) == 0) {
+        if(strcmp(trans, str + 3) == 0) {
             pin = Prog.io.assignment[i].pin;
             break;
         };
