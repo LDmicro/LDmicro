@@ -600,10 +600,10 @@ struct SeriesNode {
     }
     int which;
     union {
-        void *              any;
+        void               *any;
         ElemSubcktParallel *parallel;
-        ElemSubcktSeries *  series; // used in the Copy-Paste command
-        ElemLeaf *          leaf;
+        ElemSubcktSeries   *series; // used in the Copy-Paste command
+        ElemLeaf           *leaf;
     } data;
     SeriesNode *parent_;
 

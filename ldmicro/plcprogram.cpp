@@ -12,7 +12,6 @@ static ElemSubcktSeries *AllocEmptyRung()
     s->contents[0].which = ELEM_PLACEHOLDER;
     ElemLeaf *l = AllocLeaf();
     s->contents[0].data.leaf = l;
-
     return s;
 }
 

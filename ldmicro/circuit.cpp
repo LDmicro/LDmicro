@@ -344,7 +344,7 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
     return false;
 }
 
-bool AddLeafToParent(SeriesNode selected, const SeriesNode newLeaf)
+bool AddLeafToParent(SeriesNode selected, const SeriesNode newNode)
 {
     if(selected.parent()->which == ELEM_SERIES_SUBCKT) {
         auto sn = std::find_if(selected.parent()->series()->contents,
@@ -355,7 +355,7 @@ bool AddLeafToParent(SeriesNode selected, const SeriesNode newLeaf)
             ElemSubcktSeries *s = const_cast<ElemSubcktSeries *>(selected.parent()->series());
             auto              i = pos;
             memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
-            s->contents[i] = newLeaf;
+            s->contents[i] = newNode;
             s->contents[i].parent_ = const_cast<SeriesNode *>(selected.parent());
             (s->count)++;
         } else if(selected.leaf()->selectedState == SELECTED_RIGHT) {
@@ -1510,7 +1510,6 @@ void NewProgram()
 {
     UndoFlush();
     FreeEntireProgram();
-
     Prog.appendEmptyRung();
 }
 
