@@ -1537,11 +1537,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         SPI_Used = u;
                     // send and / or receive 1 byte
                     fprintf(
-                        f, "%s= SPI_SendRecv(%s);\n", MapSym(IntCode[i].name3, ASINT), MapSym(IntCode[i].name2, ASINT));
+                        f, "%s = SPI_SendRecv(%s, %s);\n", MapSym(IntCode[i].name3, ASINT), IntCode[i].name1.c_str(), MapSym(IntCode[i].name2, ASINT));
                 } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16)) {
                     // send and / or receive 1 byte
                     fprintf(
-                        f, "%s= SPI_SendRecv(%s);\n", MapSym(IntCode[i].name3, ASINT), MapSym(IntCode[i].name2, ASINT));
+                        f, "%s = SPI_SendRecv(%s);\n", MapSym(IntCode[i].name3, ASINT), MapSym(IntCode[i].name2, ASINT));
                 } else
                     /////
                     fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -2438,7 +2438,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
         fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n");
-        if(StringFunctionUsed()) {
+        if(StringFunctionUsed() || SpiFunctionUsed()) {
             fprintf(flh,
                     "#include <string.h>\n");
         }
@@ -2700,9 +2700,15 @@ bool CompileAnsiC(const char *outFile, int MNU)
     }
     ///// Added by JG
     if(SpiFunctionUsed()) {
-        fprintf(fh,
+        if(mcu_ISA == ISA_ARM) 
+            fprintf(fh,
+                "SWORD SPI_SendRecv(SPI_TypeDef *SPIx, SWORD send);\n"
+                "void SPI_Write(char *str);\n"
+                "\n");
+        else
+            fprintf(fh,
                 "SWORD SPI_SendRecv(SWORD send);\n"
-                "void SPI_Write(char * string);\n"
+                "void SPI_Write(char *str);\n"
                 "\n");
     }
     if(I2cFunctionUsed()) {
@@ -2970,15 +2976,13 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f,
                         "\n"
                         "SWORD SPI_SendRecv(SWORD send) {\n"
-                        "  SWORD recv= 0;\n"
-                        "  recv= SPI_Send(send);\n"
-                        "  return recv;\n"
+                        "  return SPI_Send(send);\n"
                         "}\n\n");
                 fprintf(f,
-                        "void SPI_Write(char * string) {\n"
+                        "void SPI_Write(char *str) {\n"
                         "  int i= 0;\n"
-                        "  while(string[i] != 0) {\n"
-                        "    SPI_Send(string[i]);\n"
+                        "  while(str[i] != 0) {\n"
+                        "    SPI_Send(str[i]);\n"
                         "    i++;\n"
                         "   }\n"
                         "}\n\n");
@@ -3153,15 +3157,13 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f,
                         "\n"
                         "SWORD SPI_SendRecv(SWORD send) {\n"
-                        "  SWORD recv= 0;\n"
-                        "  recv= SPI_Send(send);\n"
-                        "  return recv;\n"
+                        "  return SPI_Send(send);\n"
                         "}\n\n");
                 fprintf(f,
-                        "void SPI_Write(char * string) {\n"
+                        "void SPI_Write(char *str) {\n"
                         "  int i= 0;\n"
-                        "  while(string[i] != 0) {\n"
-                        "    SPI_Send(string[i]);\n"
+                        "  while(str[i] != 0) {\n"
+                        "    SPI_Send(str[i]);\n"
                         "    i++;\n"
                         "   }\n"
                         "}\n\n");
@@ -3236,15 +3238,12 @@ bool CompileAnsiC(const char *outFile, int MNU)
             if(compiler_variant == MNU_COMPILE_ARMGCC) {
                 fprintf(f,
                         "\n"
-                        "SWORD SPI_SendRecv(SWORD send) {\n"
-                        "  SWORD recv= 0;\n"
-                        "  recv= LibSPI_Send(SPI%d, send);\n"
-                        "  return recv;\n"
-                        "}\n\n",
-                        SPI_Used);
+                        "SWORD SPI_SendRecv(SPI_TypeDef *SPIx, SWORD send) {\n"
+                        "  return LibSPI_Send(SPIx, send);\n"
+                        "}\n\n");
                 fprintf(f,
-                        "void SPI_Write(char * string) {\n"
-                        "  LibSPI_WriteMulti(SPI%d, string, strlen(string));\n"
+                        "void SPI_Write(char *str) {\n"
+                        "  LibSPI_WriteMulti(SPI%d, str, strlen(str));\n"
                         "}\n\n",
                         SPI_Used);
             }
