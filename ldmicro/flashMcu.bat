@@ -467,9 +467,9 @@ copy ARMGCC\BIN\*.elf PROTEUS > nul
 @echo on
 
 REM Transfer of the program with ST-Link CLI
-ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+:ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
-:pause
+pause
 goto exit
 
 
