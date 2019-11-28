@@ -22,10 +22,13 @@ Dans le champ 'send variable', vous pouvez placer une variable ou une valeur, sa
 vous avez 3 possibilités:
 
 - les valeurs entre 0 and 0x10 sont des commandes (voir dans les librairies):
- 	0= Effacer l'afficheur
-	1= Replacer le curseur en haut à gauche
-	2= Affichage clignotant
-	3= Affichage normal
+ 	0x00= Effacer l'afficheur
+	0x01= Replacer le curseur en haut à gauche
+	0x02= Affichage clignotant
+	0x03= Affichage normal
+
+	0x0F= Backlight off (si disponible)
+	0x10= Backlight on (si disponible)
 
 	D'autres valeurs / fonctions peuvent être ajoutées dans les libraries
 
@@ -39,7 +42,6 @@ vous avez 3 possibilités:
 - les valeurs entre 0x11 and 0x7F affichent un caractère standard à la position du curseur
 
 Cela n'empêche normalement pas d'utiliser d'autres périphériques I2C sur le même bus
-Cela a été testé avec succes sur STM32F407
+Cela a été testé avec succes sur STM32F407 et STM32F103.
 
 JG
-

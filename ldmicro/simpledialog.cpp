@@ -318,6 +318,9 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                     T = i; // to long long
                     T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+                } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
+                    T = i; // to long long
+                    T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
                 }
                 if(T != T0) {
                     T0 = T;
@@ -334,6 +337,9 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 T = 0x10000; // to long long
                 T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
             } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+                T = 0xffff; // to long long
+                T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+            } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
                 T = 0xffff; // to long long
                 T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
             }
@@ -473,11 +479,13 @@ void ShowDelayDialog(ElemLeaf *l)
     strcpy(buf1, _("Achievable DELAY values (us): "));
     long long T = 0, T0 = 0;
     int       i, n = 0;
-    if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16))) {
+    if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
         for(i = 0;; i++) {
             if(Prog.mcu()->whichIsa == ISA_AVR) {
                 T = i * 1000000 / Prog.mcuClock;
             } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+                T = i * 4000000 / Prog.mcuClock;
+            } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
                 T = i * 4000000 / Prog.mcuClock;
             }
             if(T != T0) {
@@ -495,6 +503,9 @@ void ShowDelayDialog(ElemLeaf *l)
             T = 0x10000; // to long long
             T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
         } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+            T = 0xffff; // to long long
+            T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+        } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
             T = 0xffff; // to long long
             T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
         }
@@ -864,12 +875,10 @@ void ShowSpiDialog(ElemLeaf *l)
 
     const char *labels[] = {_("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA):"), _("Data Size:"), _("Data Order:")};
 
-    ///// Added by JG
     if(l->d.spi.which == ELEM_SPI_WR) {
         labels[2] = _("Send string:");
         NoCheckingOnBox[2] = true;
     }
-    /////
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
 
@@ -883,14 +892,9 @@ void ShowSpiDialog(ElemLeaf *l)
             }
         }
 
-        ///// Added by JG
         if(Prog.mcu()->whichIsa == ISA_ARM) {
 
-        }
-
-        else
-        /////
-        {
+        } else {
             // Bit Rate (Hz):
             char buf[128];
             int  m;
@@ -898,6 +902,9 @@ void ShowSpiDialog(ElemLeaf *l)
                 m = 2;
                 comboRec[4].n = 7;
             } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+                m = 4;
+                comboRec[4].n = 3;
+            } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
                 m = 4;
                 comboRec[4].n = 3;
             } else
@@ -914,9 +921,8 @@ void ShowSpiDialog(ElemLeaf *l)
     }
     //  NoCheckingOnBox[3] = true;
 
-    ///// Added by JG
     if(Prog.mcu()) {
-        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
             if(l->d.spi.which == ELEM_SPI)
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
             if(l->d.spi.which == ELEM_SPI_WR) {
@@ -936,7 +942,6 @@ void ShowSpiDialog(ElemLeaf *l)
     }
 }
 
-///// Added by JG
 void ShowI2cDialog(ElemLeaf *l)
 {
     ElemI2c *   s = &(l->d.i2c);
@@ -945,7 +950,7 @@ void ShowI2cDialog(ElemLeaf *l)
     const char *labels[] = {_("I2C Name:"), _("I2C Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("I2C Address:"), _("I2C Register:"), _("Data Order:")};
 
     if(l->d.i2c.which == ELEM_I2C_RD) {
-        NoCheckingOnBox[2] = true; ///////////////////////// A VOIR
+        NoCheckingOnBox[2] = true; ///// A VOIR
     }
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->address, s->registr, s->first};
@@ -962,7 +967,7 @@ void ShowI2cDialog(ElemLeaf *l)
     }
 
     if(Prog.mcu()) {
-        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
             if(l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);

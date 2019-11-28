@@ -13,7 +13,7 @@
 How to test LdMicro on PICs (16F) with ADC, PWM, SPI or I2C functions:
 ______________________________________________________________________
 
-1)	Install Hi-Tech C alias PicC compiler for PIC16
+1)	Install Hi-Tech C alias PicC compiler for PIC16.
 	
 2)	Copy LdMicro executable and flashMCU.bat in a same directory.
 	Also copy LIBRARIES_FOR directory and its content at the same place.

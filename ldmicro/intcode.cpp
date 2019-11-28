@@ -358,7 +358,6 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "SPI '%s' send '%s', receive '%s', done? into '%s'", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, IntCode[i].name1.c_str());
                 break;
 
-            ///// Added by JG
             case INT_SPI_WRITE:
                 fprintf(f, "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, IntCode[i].name1.c_str());
                 break;
@@ -369,7 +368,6 @@ void IntDumpListing(const char *outFile)
             case INT_I2C_WRITE:
                 fprintf(f, "I2C_WRITE '%s' send '%s', done? into '%s'", leaf->d.i2c.name, leaf->d.i2c.send, IntCode[i].name1.c_str());
                 break;
-                /////
 
             case INT_UART_WR:
                 fprintf(f, "uart send '%s'", IntCode[i].name1.c_str());
@@ -761,8 +759,7 @@ static void GenSymStepper(char *dest, const char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, int32_t lit, int32_t lit2,
-                const int32_t *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, int32_t lit, int32_t lit2, const int32_t *data)
 {
     IntOp intOp;
     intOp.op = op;
@@ -994,6 +991,8 @@ int32_t CalcDelayClock(long long clocks) // in us
         if(Prog.mcu()->whichIsa == ISA_AVR) {
             ;
         } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+            clocks = clocks / 4;
+        } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
             clocks = clocks / 4;
         } else
             Error(_("Internal error."));
@@ -4258,6 +4257,10 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                     if(clocks > 0x10000)
                         clocks = 0x10000;
                 } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+                    clocks = (clocks - 10) / 6;
+                    if(clocks > 0xffff)
+                        clocks = 0xffff;
+                } else if(Prog.mcu()->whichIsa == ISA_PIC18) {
                     clocks = (clocks - 10) / 6;
                     if(clocks > 0xffff)
                         clocks = 0xffff;

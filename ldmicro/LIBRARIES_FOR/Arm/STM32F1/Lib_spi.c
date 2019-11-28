@@ -81,7 +81,6 @@ void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_Bau
         // Confugure MISO pin as Input Floating
         GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14;
         GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        ;
 
         GPIO_Init(GPIOB, &GPIO_InitStruct);
     }

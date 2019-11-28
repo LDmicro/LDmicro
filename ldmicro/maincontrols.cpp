@@ -43,6 +43,12 @@ static HMENU InstructionMenu;
 static HMENU CourseMenu;
 static HMENU FormatStrMenu;
 static HMENU ProcessorMenu;
+static HMENU ProcAvrMenu; /// JG3
+static HMENU ProcPic16Menu;
+static HMENU ProcPic18Menu;
+static HMENU ProcEspMenu;
+static HMENU ProcArmMenu;
+static HMENU ProcOthersMenu; /// JG3
 static HMENU ProcessorMenu2;
 static HMENU SimulateMenu;
 static HMENU TopMenu;
@@ -54,8 +60,8 @@ static HMENU TmpMenu;
 static HMENU CntMenu;
 static HMENU EdgMenu;
 static HMENU UrtMenu;
-static HMENU SpiMenu; ///// JG
-static HMENU I2cMenu; ///// JG
+static HMENU SpiMenu;
+static HMENU I2cMenu;
 static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
@@ -74,9 +80,9 @@ int         IoListTop;
 // whether the simulation is running in real time
 static bool RealTimeSimulationRunning;
 
-extern HWND UartSimulationWindow; ///// Added by JG
-extern HWND SpiSimulationWindow;  ///// Added by JG
-extern HWND I2cSimulationWindow;  ///// Added by JG
+extern HWND UartSimulationWindow;
+extern HWND SpiSimulationWindow;
+extern HWND I2cSimulationWindow;
 
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
@@ -293,10 +299,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t); ///// Added by JG
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);
 
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);  ///// Added by JG
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t); /////
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -437,7 +443,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConMenu, _("Contacts and Coils / Relays"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    ///// Submenu created by JG
+
     EdgMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSR, _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
@@ -454,7 +460,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu, _("Pulse generators"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    ///// Submenu created by JG
+
     TmpMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TON, _("Insert T&ON (Delayed Turn On)\tO"));
@@ -467,7 +473,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)TmpMenu, _("Temporization"));
 
-    ///// Submenu created by JG
     CntMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTU, _("Insert CT&U (Count Up)\tU"));
@@ -616,7 +621,40 @@ HMENU MakeMainWindowMenus()
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
+
     ProcessorMenu = CreatePopupMenu();
+    /// Modified by JG3
+    ProcAvrMenu = CreatePopupMenu();
+    ProcPic16Menu = CreatePopupMenu();
+    ProcPic18Menu = CreatePopupMenu();
+    ProcEspMenu = CreatePopupMenu();
+    ProcArmMenu = CreatePopupMenu();
+    ProcOthersMenu = CreatePopupMenu();
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
+        Core core = supportedMcus()[i].core;
+        if((core > AVRcores) && (core < PICcores))
+            AppendMenu(ProcAvrMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > PICcores) && (core < ESPcores))
+            if(core == PIC18HighEndCore16bit)
+                AppendMenu(ProcPic18Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+            else
+                AppendMenu(ProcPic16Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > ESPcores) && (core < ARMcores))
+            AppendMenu(ProcEspMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > ARMcores) && (core < PCcores))
+            AppendMenu(ProcArmMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if(core > PCcores)
+            AppendMenu(ProcOthersMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+    }
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcAvrMenu, _("Atmel AVR MCUs"));            /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic16Menu, _("Microchip Pic10-16 MCUs")); /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic18Menu, _("Microchip Pic18 MCUs"));    /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcArmMenu, _("ARM MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcOthersMenu, _("Other MCUs"));             /// To translate
+                                                                                                            ///
+
+    /*
     Core core = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(core != supportedMcus()[i].core) {
@@ -625,6 +663,8 @@ HMENU MakeMainWindowMenus()
         }
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
+*/
+
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
@@ -668,7 +708,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX, _("Compile HEX->ASM"));
-    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,_("Compile ASM->HEX"));
+    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX, _("Compile ASM->HEX"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC, _("Compile ANSIC"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -681,7 +721,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("Compile Sketch for ARDUINO"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM")); // Added by JG
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -695,7 +735,7 @@ HMENU MakeMainWindowMenus()
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
-    SetSyntaxHighlightingColours(); ///// Added by JG for translation
+    SetSyntaxHighlightingColours();
     for(int i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
         AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK + i, Schemes[i].sName);
     }
@@ -1062,7 +1102,6 @@ void ToggleSimulationMode(bool doSimulateOneRung)
         if(ClearSimulationData()) {
             // Recheck InSimulationMode, because there could have been a compile
             // error, which would have kicked us out of simulation mode.
-            ///// Modified by JG
             if(UartFunctionUsed() && InSimulationMode)
                 ShowSimulationWindow(SIM_UART);
             if(SpiFunctionUsed() && InSimulationMode)
@@ -1096,14 +1135,12 @@ void ToggleSimulationMode(bool doSimulateOneRung)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_UNCHECKED);
 
-        ///// Modified by JG
         if(UartFunctionUsed())
             DestroySimulationWindow(UartSimulationWindow);
         if(SpiFunctionUsed())
             DestroySimulationWindow(SpiSimulationWindow);
         if(I2cFunctionUsed())
             DestroySimulationWindow(I2cSimulationWindow);
-        /////
     }
 
     UpdateMainWindowTitleBar();
@@ -1132,14 +1169,12 @@ void StartSimulation()
 
     UpdateMainWindowTitleBar();
 
-    ///// Added by JG
     if(UartFunctionUsed())
         ShowWindow(UartSimulationWindow, true);
     if(SpiFunctionUsed())
         ShowWindow(SpiSimulationWindow, true);
     if(I2cFunctionUsed())
         ShowWindow(I2cSimulationWindow, true);
-    /////
 }
 
 //-----------------------------------------------------------------------------

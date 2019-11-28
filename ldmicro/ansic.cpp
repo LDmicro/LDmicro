@@ -38,7 +38,6 @@ namespace {
 static int mcu_ISA = -1;
 static int compiler_variant = -1;
 
-///// Added by JG
 static int TIMER_Used = 0; // for Cycle timer variable
 static int UART_Used = -1; // and UART #
 static int I2C_Used = -1;  // and I2C #
@@ -107,7 +106,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASSTR) {
         bit_int = 's';
     } else {
-        THROW_COMPILER_EXCEPTION(_("Can't assign prefix.")); ///// _() by JG
+        THROW_COMPILER_EXCEPTION(_("Can't assign prefix."));
     }
 
     // User and internal symbols are distinguished.
@@ -305,10 +304,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
-                    ///// Added by JG
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "    return GPIO_ReadInputDataBit(GPIO%c, GPIO_Pin_%d);\n", iop->port, iop->bit);
-                    /////
                 } else {
                     fprintf(f, "    return PIN%c & (1<<PIN%c%d);\n", iop->port, iop->port, iop->bit);
                 }
@@ -378,11 +375,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Read_%s() input_state(PIN_%c%d)\n", str, iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     fprintf(fh, "  #define Read_%s() R%c%d\n", str, iop->port, iop->bit);
-                }
-                ///// Added by JG
-                else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     // Do Nothing (no macro used)
-                    /////
                 } else {
                     fprintf(fh, "  #define Read_%s() (PORT%c & (1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
                 }
@@ -394,12 +388,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Write0_%s() (R%c%d = 0)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
-                    ///// Added by JG
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "\n");
                     // Do Nothing (no macro used)
                 } else {
-                    /////
                     fprintf(fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write1_%s() (PORT%c |= 1<<PORT%c%d)\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
@@ -418,13 +410,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
-                }
-                ///// Added by JG
-                else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "    return GPIO_ReadInputDataBit(GPIO%c, GPIO_Pin_%d);\n", iop->port, iop->bit);
-                }
-                /////
-                else {
+                } else {
                     fprintf(f, "    return PORT%c & (1<<PORT%c%d);\n", iop->port, iop->port, iop->bit);
                 }
                 fprintf(f, "  }\n");
@@ -436,16 +424,12 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "      output_high(PIN_%c%d);\n", iop->port, iop->bit);
                     fprintf(f, "    else\n");
                     fprintf(f, "      output_low(PIN_%c%d);\n", iop->port, iop->bit);
-                }
-                ///// Added by JG
-                else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "    if(b)\n");
                     fprintf(f, "      GPIO_SetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
                     fprintf(f, "    else\n");
                     fprintf(f, "      GPIO_ResetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
-                }
-                /////
-                else {
+                } else {
                     fprintf(f, "    if(b)\n");
                     fprintf(f, "      PORT%c |= 1<<PORT%c%d;\n", iop->port, iop->port, iop->bit);
                     fprintf(f, "    else\n");
@@ -457,13 +441,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "      output_high(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     fprintf(f, "      R%c%d = 1;\n", iop->port, iop->bit);
-                }
-                ///// Added by JG
-                else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "      GPIO_SetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
-                }
-                /////
-                else {
+                } else {
                     fprintf(f, "      PORT%c |= 1<<PORT%c%d;\n", iop->port, iop->port, iop->bit);
                 }
                 fprintf(f, "  }\n");
@@ -472,13 +452,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "      output_low(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     fprintf(f, "      R%c%d = 0;\n", iop->port, iop->bit);
-                }
-                ///// Added by JG
-                else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "      GPIO_ResetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
-                }
-                /////
-                else {
+                } else {
                     fprintf(f, "      PORT%c &= ~(1<<PORT%c%d);\n", iop->port, iop->port, iop->bit);
                 }
                 fprintf(f, "  }\n");
@@ -543,7 +519,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
-            ///// Added by JG
+            
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]); // infos on pin used by this PWM
             if(!iop)
@@ -639,8 +615,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             /////
         } else {
             fprintf(f, "/* You provide this function. */\n");
-            /////   fprintf(f, "SWORD Read_%s(void) {\n", str);             ///// Doesn't seem to be convenient for PWM (JG)
-            fprintf(f, "SWORD Write_%s(void) {\n", str); ///// Modified by JG
+            fprintf(f, "SWORD Write_%s(void) {\n", str);
             fprintf(f, "  return 0;\n");
             fprintf(f, "}\n");
         }
@@ -686,7 +661,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "}\n");
             fprintf(f, "\n");
         }
-        ///// Added by JG
+        
         else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
             MuxForAdcVariable(&str[3]); // to check pin assignment
 
@@ -694,7 +669,13 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             if(!iop)
                 THROW_COMPILER_EXCEPTION(_("ADC pin error")); // error in pin layout
 
-            const int s = iop->bit; // RA0 = AN0, ... RA7 = AN7
+            int s = iop->bit; // RA0 = AN0, ... ,RA3 = AN3
+            /// Bug corrected by JG3
+            if(s == 5)
+                s = 4; // RA5 = AN4
+            if(iop->port == 'E')
+                s += 5; // RE0 = AN5, ... ,RE2 = AN7
+                        ///
             if((s >= 0) && (s <= 7)) {
                 ADC_Used[s] = 1;
                 ADC_Chan[s] = 0;
@@ -724,7 +705,6 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 const char *pos = strstr(s, "ADC");
                 if(pos) {
                     adc = atoi(pos + 3); // ADC # from pin description
-                    ////////    ADC_Used[adc]= 1;
                     chan = MuxForAdcVariable(&str[3]); // channel # from McuAdcPinInfo (could also be retrieved from s)
                     ADC_Used[16 * adc + chan] = 1;     // 16*ADC# + Channel#
                     ADC_Chan[16 * adc + chan] = chan;
@@ -791,7 +771,6 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
         fprintf(fh, "\n");
     }
 
-    ///// Added by JG
     if(compiler_variant == MNU_COMPILE_ARMGCC) {
         if(!TIMER_Used) { // to write this declarations once only
             fprintf(f,
@@ -803,7 +782,6 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             TIMER_Used = 1;
         }
     }
-    /////
 }
 
 static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str)
@@ -823,8 +801,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
         ADDR_T      addr, addr2;
         int         bit, bit2;
         const char *bitVar1 = nullptr, *bitVar2 = nullptr;
-        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr,
-                   *intVar4 = nullptr; ///// intVar4 added by JG for I2C
+        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr, *intVar4 = nullptr; ///// intVar4 added by JG for I2C
         //const char *adcVar1 = nullptr;
         const char *strVar1 = nullptr;
         int         sov1 = 0, sov2 = 0, sov3 = 0, sov4 = 0; ///// sov4 added by JG for I2C
@@ -928,19 +905,19 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_SPI_WRITE:                     ///// Added by JG
+            case INT_SPI_WRITE:                     
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= spi name
                 //  intVar2 = IntCode[i].name2.c_str();     // don't create var name2= spi send var
                 break;
 
             case INT_SPI:
                 intVar1 = IntCode[i].name1.c_str();     // create var name1= spi name
-                if(!IsNumber(IntCode[i].name2))         ///// Added by JG
+                if(!IsNumber(IntCode[i].name2))         
                     intVar2 = IntCode[i].name2.c_str(); // create var name2= spi send var if not a number
-                intVar3 = IntCode[i].name3.c_str();     // create var name3= spi recv var       ///// Added by JG
+                intVar3 = IntCode[i].name3.c_str();     // create var name3= spi recv var       
                 break;
 
-            case INT_I2C_READ:                      ///// Added by JG
+            case INT_I2C_READ:                      
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
                 intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c recv var
                 if(!IsNumber(IntCode[i].name3))
@@ -949,7 +926,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
                 break;
 
-            case INT_I2C_WRITE:                     ///// Added by JG
+            case INT_I2C_WRITE:                     
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
                 if(!IsNumber(IntCode[i].name2))
                     intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c send var if not a number
@@ -1486,7 +1463,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SPI:
-                ///// Added by JG
+                
                 if(mcu_ISA == ISA_ARM) {
                     int u = atoi(MapSym(IntCode[i].name1, ASINT) + 6); // name1= "Ui_SPIn"
                     if((SPI_Used != -1) && (SPI_Used != u))
@@ -1495,7 +1472,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         SPI_Used = u;
                     // send and / or receive 1 byte
                     fprintf(f, "%s = SPI_SendRecv(%s, %s);\n", MapSym(IntCode[i].name3, ASINT), IntCode[i].name1.c_str(), MapSym(IntCode[i].name2, ASINT));
-                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16)) {
+                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
                     // send and / or receive 1 byte
                     fprintf(f, "%s = SPI_SendRecv(%s);\n", MapSym(IntCode[i].name3, ASINT), MapSym(IntCode[i].name2, ASINT));
                 } else
@@ -1503,7 +1480,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-            ///// Added by JG
+            
             case INT_SPI_WRITE:
                 if(mcu_ISA == ISA_ARM) {
                     int u = atoi(MapSym(IntCode[i].name1, ASINT) + 6); // name1= "Ui_SPIn"
@@ -1518,7 +1495,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     maxw = (maxw * ((double)Prog.spiRate)) / ((double)20);
                     if(strlen(MapSym(IntCode[i].name2, ASINT) + 3) > maxw)
                         THROW_COMPILER_EXCEPTION(_(" SPI: Sending too many chars in one cycle may cause timing issues"));
-                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16)) {
+                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
                     // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_SPI"
                     // send a literal string without reception care
                     fprintf(f, "SPI_Write((char *) \"%s\");\n", MapSym(IntCode[i].name2, ASINT) + 3); // remove "Ui_" prefix
@@ -1541,7 +1518,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
                     // read one byte from I2Caddr:reg in recv variable
                     fprintf(f, "%s= I2C_Recv(%s, %s);\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].name3.c_str(), IntCode[i].name4.c_str());
-                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16)) {
+                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
                     // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // read one byte from I2Caddr:reg in recv variable
@@ -1559,7 +1536,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         I2C_Used = u;
                     // write one byte from send variable or value
                     fprintf(f, "I2C_Send(%s, %s, %s);\n", IntCode[i].name3.c_str(), IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));
-                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16)) {
+                } else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
                     // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // write one byte from send variable or value
@@ -1663,7 +1640,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             }
             case INT_READ_ADC:
-                ///// Added by JG
+                
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this ADC
                     if(!iop)
@@ -1684,7 +1661,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_PWM_OFF:
-                ///// Added by JG
+                
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this PWM
                     if(!iop)
@@ -1756,7 +1733,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_PWM:
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                ///// Added by JG
+                
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name3.c_str()); // infos on pin used by this PWM
                     if(!iop)
@@ -1816,8 +1793,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             ;                  // PWM # (0x00, 0x1A, 0x1B, 0x02...) from pin description
                             PWM_Used[pwm] = 1; // marked as used
 
-                            McuPwmPinInfo *ioq = PwmMaxInfoForName(IntCode[i].name3.c_str(),
-                                                                   Prog.cycleTimer); // max available resolution
+                            McuPwmPinInfo *ioq = PwmMaxInfoForName(IntCode[i].name3.c_str(), Prog.cycleTimer); // max available resolution
 
                             PWM_MaxCs[pwm] = ioq->maxCS;      // number of possible prediv
                             PWM_Resol[pwm] = ioq->resolution; // 8, 10 bits...
@@ -1878,7 +1854,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "return;\n");
                 break;
             case INT_SLEEP:
-                ///// Added by JG
+                
                 if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
                     THROW_COMPILER_EXCEPTION(_("SLEEP not available in this mode"));
                 } else
@@ -2092,7 +2068,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
     variables.clear();
 
-    ///// Added by JG
     for(int i = 0; i < MAX_ADC_C; i++) {
         ADC_Used[i] = 0;
         ADC_Chan[i] = 0;
@@ -2108,7 +2083,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
     if((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) // ARM uses Timer 3
         Prog.cycleTimer = 3;
-    ////
 
     char CurrentLdName[MAX_PATH];
     GetFileName(CurrentLdName, outFile);
@@ -2122,7 +2096,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
     strcpy(compilePath, outFile);
     ExtractFileDir(compilePath);
 
-    ///// Modified by JG
     TIMER_Used = 0;
     SPI_Used = -1;
     I2C_Used = -1;
@@ -2131,7 +2104,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
         sprintf(ladderhName, "%s\\ladder.h", compilePath);
     else
         sprintf(ladderhName, "%s\\ladder.h_", compilePath);
-    /////
 
     FileTracker flh(ladderhName, "w");
     if(!flh) {
@@ -2185,7 +2157,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
             CurrentLdName,
             CurrentLdName);
 
-    ///// Modified by JG
     if(compiler_variant != MNU_COMPILE_ARMGCC) {
         fprintf(flh,
                 "/* Uncomment DO_LDSTUBS if you want to use the empty stub-functions\n"
@@ -2214,7 +2185,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 //        CurrentLdName,
                 CurrentLdName);
     }
-    /////
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(flh,
@@ -2244,7 +2214,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
-    ///// Added by JG
+    
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
 
         if(StringFunctionUsed()) {
@@ -2281,7 +2251,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
         if(StringFunctionUsed() || SpiFunctionUsed()) {
             fprintf(flh, "#include <string.h>\n");
         }
-        ///// Added by JG2 for CortexF1
         if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
             fprintf(flh,
                     "#include \"stm32f10x.h\"\n"
@@ -2301,7 +2270,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "#include \"Lib_usr.h\"\n");
 
         if(AdcFunctionUsed()) {
-            ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_adc.h\"\n"
@@ -2315,7 +2283,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
             fprintf(flh, "#include \"Lib_pwm.h\"\n");
         }
         if(UartFunctionUsed()) {
-            ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_usart.h\"\n"
@@ -2326,7 +2293,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "#include \"Lib_uart.h\"\n");
         }
         if(SpiFunctionUsed()) {
-            ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_spi.h\"\n"
@@ -2337,7 +2303,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "#include \"Lib_spi.h\"\n");
         }
         if(I2cFunctionUsed()) {
-            ///// Added by JG2 for CortexF1
             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                 fprintf(flh,
                         "#include \"stm32f10x_i2c.h\"\n"
@@ -2397,7 +2362,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "  typedef int16_t    SWORD;\n"
                 "  typedef int32_t    SDWORD;\n"
                 "\n");
-    } else if(mcu_ISA == ISA_PIC16) {
+    } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
         fprintf(flh,
                 "#ifdef CCS_PIC_C\n"
                 "    typedef int1             ldBOOL;\n"
@@ -2478,6 +2443,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
         if(EepromFunctionUsed())
             fprintf(fh, "#include <EEPROM.h>\n");
     } else if(mcu_ISA == ISA_PIC16) {
+    } else if(mcu_ISA == ISA_PIC18) {
     } else if(mcu_ISA == ISA_AVR) {
         fprintf(flh,
                 "#include <stdio.h>\n"
@@ -2529,7 +2495,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "\n");
         }
     }
-    ///// Added by JG
+    
     if(SpiFunctionUsed()) {
         if(mcu_ISA == ISA_ARM)
             fprintf(fh,
@@ -2548,9 +2514,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "void I2C_Send(SBYTE address, SBYTE registr, SWORD send);\n"
                 "\n");
     }
-    /////
     if(EepromFunctionUsed()) {
-        ///// Added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
             THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"));
         } else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -2559,7 +2523,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "unsigned char EEPROM_read(int addr);\n"
                     "\n");
         else
-            /////
             fprintf(fh,
                     "#define eeprom_busy_wait() do {} while(!eeprom_is_ready())\n"
                     "\n"
@@ -2655,12 +2618,24 @@ bool CompileAnsiC(const char *outFile, int MNU)
             }
         fprintf(f, "#endif\n");
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+        if(mcu_ISA == ISA_PIC16) {
         fprintf(f,
                 "#include <htc.h>\n"
                 "__CONFIG(0x%X);\n",
                 (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+        }
+        if(mcu_ISA == ISA_PIC18) { // Beware that __PROG_CONFIG may not work (HITECH-C 18 release notes)
+            fprintf(f,
+                    "#include <htc.h>\n\n"
+                    "//#define _XTAL_FREQ %d\n"
+                    "__PROG_CONFIG(1, 0x%4.4X);\n"
+                    "__CONFIG(2, WDTDIS & PWRTEN & BORDIS);\n"                 // No Wtdog, No Brown out, Pwrup timer
+                    "__CONFIG(3, MCLREN & PBDIGITAL);\n"                       // Mclr, PortB digital
+                    "__CONFIG(4, DEBUGDIS & XINSTDIS & LVPDIS & STVREN);\n\n", // No Debug, No Extended set, No LVP, Stack overflow
+                    Prog.mcuClock,
+                    (WORD)Prog.configurationWord & 0xFFFF); // Config words 5, 6, 7 are left to default
         }
     } else if(compiler_variant == MNU_COMPILE_CODEVISIONAVR) {
     }
@@ -2762,7 +2737,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 #define RXEN BIT4
 #define TXEN BIT3
             fprintf(f,
-                    "\n" ///// Added by JG
+                    "\n" 
                     "void UART_Init(void) {\n"
                     "  UBRRH = %d; \n"
                     "  UBRRL = %d; \n"
@@ -2801,7 +2776,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "\n");
         } //// } Mising: added by JG
         */
-        ///// Added by JG
+        
         if(SpiFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_AVRGCC) {
                 fprintf(f,
@@ -2834,8 +2809,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n\n" /*, I2C_Used*/);
             }
         }
-        /////
-    } else if(mcu_ISA == ISA_PIC16) {
+    } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
         if(EepromFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C)
                 fprintf(f,
@@ -2875,28 +2849,22 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
         if(AdcFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-                fprintf(f, "void ADC_Init(void) {\n"); ///// Modified by JG
+                fprintf(f, "void ADC_Init(void) {\n");
                 fprintf(f,
                         "  setup_adc_ports(ALL_ANALOG);\n"
                         "  setup_adc(ADC_CLOCK_INTERNAL | ADC_CLOCK_DIV_32);\n");
                 fprintf(f,
-                        "}\n" /////
+                        "}\n"
                         "\n");
-            }
-            ///// Added by JG
-            else if(compiler_variant != MNU_COMPILE_HI_TECH_C) {
+            } else if(compiler_variant != MNU_COMPILE_HI_TECH_C) {
                 fprintf(f, "void ADC_Init(void) {\n");
                 fprintf(f,
                         "}\n"
                         "\n");
             }
-            /////
         }
         if(PwmFunctionUsed()) {
-            ///// Added by JG
-            if(compiler_variant != MNU_COMPILE_HI_TECH_C)
-            /////
-            {
+            if(compiler_variant != MNU_COMPILE_HI_TECH_C) {
                 fprintf(f, "void PWM_Init(void) {\n");
                 fprintf(f,
                         "}\n"
@@ -2917,7 +2885,20 @@ bool CompileAnsiC(const char *outFile, int MNU)
             } else {
                 fprintf(f,
                         "void UART_Init(void) {\n"
-                        "  // UART baud rate setup\n"
+                        "  // UART baud rate setup\n");
+                if(compiler_variant != MNU_COMPILE_ANSIC) {
+                    int32_t divisor, brgh;
+                    CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
+                    if(brgh)
+                        fprintf(f, "  BRGH = 1;\n");
+                    else
+                        fprintf(f, "  BRGH = 0;\n");
+                    fprintf(f,
+                            "  SPBRG = %d;\n"
+                            "  TXEN = 1; CREN = 1; SPEN = 1;\n",
+                            divisor);
+                }
+                fprintf(f,
                         "}\n"
                         "\n");
             }
@@ -2950,8 +2931,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "  return kbhit();\n"
                         "}\n"
                         "\n");
-            } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                // used LIBRARIES_FOR\Pic16\UsrLib.c
             } else {
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
@@ -2982,7 +2961,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "\n");
             }
         }
-        ///// Added by JG
         if(SpiFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 fprintf(f,
@@ -3015,10 +2993,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n\n" /*, I2C_Used*/);
             }
         }
-        /////
-    }
-    ///// Added by JG
-    else if(mcu_ISA == ISA_ARM) {
+    } else if(mcu_ISA == ISA_ARM) {
         if(UartFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_ARMGCC) {
                 char pinName[MAX_NAME_LEN] = "";
@@ -3097,7 +3072,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
             }
         }
     }
-    /////
 
     //---------------------------------------------------------------------------
     fprintf(f,
@@ -3109,6 +3083,29 @@ bool CompileAnsiC(const char *outFile, int MNU)
     GenerateAnsiC(f, 0, IntCode.size() - 1);
     fprintf(f, "}\n");
     //---------------------------------------------------------------------------
+
+    if(compiler_variant == MNU_COMPILE_ARMGCC) {
+        // PlcDelay() function
+        fprintf(f,
+                "\n"
+                "// PLC Cycle timing function.\n"
+                "void PlcDelay() {\n"
+                "    while (! Next_Plc_Cycle);\n"
+                "    Next_Plc_Cycle= 0;\n"
+                "}\n"
+                "\n");
+
+        // Timer 3 interrupt routine for PLC Cycles
+        fprintf(f,
+                "\n"
+                "void TIM3_Handler() {\n"
+                "    if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) {\n"
+                "        Next_Plc_Cycle= 1;\n"
+                "        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);     // acknowledge interrupt\n"
+                "    }\n"
+                "}\n"
+                "\n");
+    }
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(f,
                 "\n"
@@ -3246,7 +3243,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "\n"
                 "void setupPlc(void) {\n");
 
-        if(mcu_ISA == ISA_PIC16)
+        if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18))
             fprintf(f,
                     "    // Set ports as digital instead of analogical (default).\n"
                     "    setPortDigitalIO();\n");
@@ -3271,9 +3268,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, 0x00);
                         // Set up I/O pins direction
                         fprintf(f, "    TRIS%c = 0x%02X;\n", 'A' + i, ~isOutput[i] & 0xff);
-                    }
-                    ///// Added by JG and modified by JG2
-                    else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                         // initialisation des ports utilisés en sortie et en entree (avec pull-up)
                         if(isOutput[i]) {
                             if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
@@ -3299,7 +3294,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                                     fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_NOPULL, GPIO_Speed_2MHz);\n", 'A' + i, mask);
                             }
                         }
-                        /////
                     } else {
                         //fprintf(f,"      pokeb(0x%X, 0x%X); // PORT%c\n",Prog.mcu()->dirRegs[i], isOutput[i], Prog.mcu()->pinInfo[i].port);
                         //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu()->dirRegs[i], isOutput[i]);
@@ -3311,21 +3305,33 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 }
             }
         }
-
-        ///// Added by JG
+        
         if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
             // no watchdog
         } else {
-            /////
+            if(Prog.pullUpRegs[1]) { /// if value is not 0 all pull-ups are enabled on Port B
             fprintf(f,
                     "\n"
-                    "    // Turn on the pull-ups.\n"
+                        "    // Turn on the pull-ups on Port B.\n"
                     "    #ifdef CCS_PIC_C\n"
                     "        port_b_pullups(true);\n"
                     "    #elif defined(HI_TECH_C)\n"
                     "        nRBPU = 0;\n"
                     "    #endif\n"
+                        "\n");
+            } else { /// else no pull-up at all on Port B (Modified by JG3)
+                fprintf(f,
                     "\n"
+                        "    // Turn off the pull-ups on Port B.\n"
+                        "    #ifdef CCS_PIC_C\n"
+                        "        port_b_pullups(false);\n"
+                        "    #elif defined(HI_TECH_C)\n"
+                        "        nRBPU = 1;\n"
+                        "    #endif\n"
+                        "\n");
+            }
+
+            fprintf(f,
                     "    #ifdef USE_WDT\n"
                     "      // Watchdog on\n"
                     "      #ifdef __CODEVISIONAVR__\n"
@@ -3349,7 +3355,14 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
         //---------------------------------------------------------------------
         if(Prog.cycleTime > 0) {
-            fprintf(f, "    // Initialize PLC cycle Timer %d here.\n", Prog.cycleTimer);
+            if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
+                CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
+            }
+
+            fprintf(f,
+                    "    // Initialize PLC cycle timer here.\n"
+                    "    // Configure Timer %d\n",
+                    Prog.cycleTimer);
 
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                 fprintf(f,
@@ -3466,7 +3479,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
         //---------------------------------------------------------------------
         if(UartFunctionUsed()) {
-            ///// added by JG
             if(compiler_variant == MNU_COMPILE_ARMGCC) {
                 char pinName[MAX_NAME_LEN] = "";
                 GetPinName(Prog.mcu()->uartNeeds.rxPin, pinName); // search for RXn / TXn pins in MCU definnition
@@ -3521,7 +3533,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 for(int a = 0; a < MAX_ADC_C; a++) {
                     if(ADC_Used[a] == 1) {
                         // Max resolution 12 bits used
-                        ///// Added by JG2 for CortexF1
                         if((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
                             fprintf(f, "    LibADC_Init(ADC%d, ADC_Channel_%d);\n", a / 16, ADC_Chan[a]);
                         else
@@ -3546,11 +3557,10 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f, "\n    ADC_Init(1, 10);\n");
 
             } else
-                /////
                 fprintf(f, "    ADC_Init();\n");
         }
         if(PwmFunctionUsed()) {
-            ///// Added by JG
+            
             if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 int usedpwm = 0;
 
@@ -3604,7 +3614,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f, "    PWM_Init();\n");
         }
 
-        ///// Added by JG
         if(SpiFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_ARMGCC) {
                 // Only 1 SPI can be used in a same ladder
@@ -3646,7 +3655,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f, "    I2C_Init(%d, %d);\n", Prog.mcuClock, Prog.i2cRate);
             }
         }
-        /////
 
         fprintf(f, "}\n");
 
