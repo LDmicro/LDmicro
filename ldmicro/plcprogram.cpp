@@ -119,7 +119,7 @@ int PlcProgram::mcuPWM() const
         for(uint32_t i = 0; i < mcu_->pwmCount; i++) {
             if(mcu_->pwmInfo[i].pin)
                 if(mcu_->pwmInfo[i].pin != prevPin)
-                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->pwmInfo[i].timer != cycleTimer))
+                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->whichIsa == ISA_PIC18) || (mcu_->pwmInfo[i].timer != cycleTimer))
                         n++;
             prevPin = mcu_->pwmInfo[i].pin;
         }

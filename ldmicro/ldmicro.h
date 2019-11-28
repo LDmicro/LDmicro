@@ -197,6 +197,7 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_RETURN       0x3d25
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
+//#define MNU_INSERT_FMTD_STRING  0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -299,7 +300,7 @@ typedef uint32_t ADDR_T;
 #define MNU_RELEASE             0x82
 
 #define MNU_SCHEME_BLACK        0x9000 // Must be a first
-#define NUM_SUPPORTED_SCHEMES   6      // ...
+#define NUM_SUPPORTED_SCHEMES   7      // ...
 #define MNU_SCHEME_USER         (MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1) // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 

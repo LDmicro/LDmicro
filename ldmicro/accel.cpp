@@ -147,8 +147,7 @@ void makeAccelTable(FileTracker &f, int max, int P, int nSize, ElemAccel **TT, c
                     int  sFt, // (1-sFt, 0-tFs)
                     int *n, int *Psum,
                     int *shrt, // mult = 2 ^ shrt
-                    int *sovElement, fxFunc *fs, double ks, fxFunc *ft, double kt, fxFunc *fv, double kv, fxFunc *fa,
-                    double ka, fxFunc *eFv, double m)
+                    int *sovElement, fxFunc *fs, double ks, fxFunc *ft, double kt, fxFunc *fv, double kv, fxFunc *fa, double ka, fxFunc *eFv, double m)
 {
     ElemAccel *T = nullptr;
     int        v1 = 10;
@@ -350,28 +349,8 @@ void makeAccelTable(FileTracker &f, int max, int P, int nSize, ElemAccel **TT, c
     }
     if(f) {
         fprintf(f, " %s\n", name);
-        fprintf(f,
-                " max=%d nSize=%d *n=%d P=%d *Psum=%d *shrt=%d *sovElement=%d nN=%d kv=%f\n",
-                max,
-                nSize,
-                *n,
-                P,
-                *Psum,
-                *shrt,
-                *sovElement,
-                nN,
-                kv);
-        fprintf(f,
-                "     %d       %d    %d   %d       %d       %d             %d    %d    %f\n",
-                max,
-                nSize,
-                *n,
-                P,
-                *Psum,
-                *shrt,
-                *sovElement,
-                nN,
-                kv);
+        fprintf(f, " max=%d nSize=%d *n=%d P=%d *Psum=%d *shrt=%d *sovElement=%d nN=%d kv=%f\n", max, nSize, *n, P, *Psum, *shrt, *sovElement, nN, kv);
+        fprintf(f, "     %d       %d    %d   %d       %d       %d             %d    %d    %f\n", max, nSize, *n, P, *Psum, *shrt, *sovElement, nN, kv);
         fprintf(f, " \n");
         fprintf(f, " \n");
         fprintf(f, " \n");
@@ -450,148 +429,24 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
     double k;
     if(graph == 1) {
         k = kProp(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*t  a=const  s=k*t^2/2  e=m*v^2/2",
-                       1,
-                       0,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &Proportional,
-                       1,
-                       &tsProp,
-                       k,
-                       &vProp,
-                       k,
-                       &aProp,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(f, max, P, nSize, &r->T, "v=k*t  a=const  s=k*t^2/2  e=m*v^2/2", 1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement, &Proportional, 1, &tsProp, k, &vProp, k, &aProp, k, &eFv, massa);
     } else if(graph == 2) {
         k = kSqrt2(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*sqrt(t)  a=k/(2*t^(1/2))  s=k*t^(3/2)/(3/2)  e=m*v^2/2",
-                       1,
-                       0,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &Proportional,
-                       1,
-                       &tsSqrt2,
-                       k,
-                       &vSqrt2,
-                       k,
-                       &aSqrt2,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(
+            f, max, P, nSize, &r->T, "v=k*sqrt(t)  a=k/(2*t^(1/2))  s=k*t^(3/2)/(3/2)  e=m*v^2/2", 1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement, &Proportional, 1, &tsSqrt2, k, &vSqrt2, k, &aSqrt2, k, &eFv, massa);
     } else if(graph == 3) {
         k = kSqrt3(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*t^(1/3)  a=k/(3*t^(2/3))  s=k*t^(4/3)/(4/3)  e=m*v^2/2",
-                       1,
-                       0,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &Proportional,
-                       1,
-                       &tsSqrt3,
-                       k,
-                       &vSqrt3,
-                       k,
-                       &aSqrt3,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(
+            f, max, P, nSize, &r->T, "v=k*t^(1/3)  a=k/(3*t^(2/3))  s=k*t^(4/3)/(4/3)  e=m*v^2/2", 1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement, &Proportional, 1, &tsSqrt3, k, &vSqrt3, k, &aSqrt3, k, &eFv, massa);
     } else if(graph == 4) {
         k = k2(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*t^2  a=k*2*t  s=k*t^3/3  e=m*v^2/2",
-                       1,
-                       0,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &Proportional,
-                       1,
-                       &ts2,
-                       k,
-                       &v2,
-                       k,
-                       &a2,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(f, max, P, nSize, &r->T, "v=k*t^2  a=k*2*t  s=k*t^3/3  e=m*v^2/2", 1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement, &Proportional, 1, &ts2, k, &v2, k, &a2, k, &eFv, massa);
     } else if(graph == 5) {
         k = ksS(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*t^2  a=k*2*t  s=k*t^3/3  s=i  e=m*v^2/2",
-                       2,
-                       0,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &Proportional,
-                       1.0,
-                       &tsS,
-                       k,
-                       &vS,
-                       k,
-                       &aS,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(f, max, P, nSize, &r->T, "v=k*t^2  a=k*2*t  s=k*t^3/3  s=i  e=m*v^2/2", 2, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement, &Proportional, 1.0, &tsS, k, &vS, k, &aS, k, &eFv, massa);
     } else if(graph == 6) {
         k = ktS(nSize);
-        makeAccelTable(f,
-                       max,
-                       P,
-                       nSize,
-                       &r->T,
-                       "v=k*t^2  a=k*2*t  s=k*t^3/3  t=i  e=m*v^2/2",
-                       2,
-                       1,
-                       &r->n,
-                       &r->Psum,
-                       &r->shrt,
-                       &r->sovElement,
-                       &stS,
-                       k,
-                       &Proportional,
-                       1,
-                       &vS,
-                       k,
-                       &aS,
-                       k,
-                       &eFv,
-                       massa);
+        makeAccelTable(f, max, P, nSize, &r->T, "v=k*t^2  a=k*2*t  s=k*t^3/3  t=i  e=m*v^2/2", 2, 1, &r->n, &r->Psum, &r->shrt, &r->sovElement, &stS, k, &Proportional, 1, &vS, k, &aS, k, &eFv, massa);
     } else {
         fprintf(f, "Generates %s steps without acceleration/deceleration.", s->max);
     }

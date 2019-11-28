@@ -51,8 +51,7 @@ typedef struct comboRecordTag {
 static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' || wParam == '@' || wParam == '#' || wParam == '\b'
-             || wParam == '-' || wParam == '\'')) {
+        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' || wParam == '@' || wParam == '#' || wParam == '\b' || wParam == '-' || wParam == '\'')) {
             return 0;
         }
     }
@@ -72,8 +71,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(ishobdigit(wParam) || wParam == '.' || wParam == '\b' || wParam == '\'' || wParam == '\\'
-             || wParam == '-')) {
+        if(!(ishobdigit(wParam) || wParam == '.' || wParam == '\b' || wParam == '\'' || wParam == '\\' || wParam == '-')) {
             return 0;
         }
     }
@@ -87,8 +85,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
     // return 0;
 }
 
-static void MakeControls(int labs, const char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo,
-                         comboRecord *combos)
+static void MakeControls(int labs, const char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, comboRecord *combos)
 {
     int i, j;
     HDC hdc = GetDC(SimpleDialog);
@@ -113,34 +110,13 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
     for(i = 0; i < labs; i++) {
         GetTextExtentPoint32(hdc, labels[i], strlen(labels[i]), &si);
 
-        Labels[i] = CreateWindowEx(0,
-                                   WC_STATIC,
-                                   labels[i],
-                                   WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                   (i < boxes ? (80 + adj) - si.cx : 0) + 15,
-                                   13 + i * 30,
-                                   si.cx,
-                                   21,
-                                   SimpleDialog,
-                                   nullptr,
-                                   Instance,
-                                   nullptr);
+        Labels[i] = CreateWindowEx(0, WC_STATIC, labels[i], WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, (i < boxes ? (80 + adj) - si.cx : 0) + 15, 13 + i * 30, si.cx, 21, SimpleDialog, nullptr, Instance, nullptr);
         NiceFont(Labels[i]);
     }
 
     for(i = 0; i < boxes; i++) {
-        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                      WC_EDIT,
-                                      "",
-                                      WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                      80 + 25 + adj,
-                                      12 + 30 * i,
-                                      120 + 535 - adj,
-                                      21,
-                                      SimpleDialog,
-                                      nullptr,
-                                      Instance,
-                                      nullptr);
+        Textboxes[i] =
+            CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 80 + 25 + adj, 12 + 30 * i, 120 + 535 - adj, 21, SimpleDialog, nullptr, Instance, nullptr);
 
         if(fixedFontMask & (1 << i)) {
             FixedFont(Textboxes[i]);
@@ -157,8 +133,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
             ComboBox[i] = CreateWindowEx(WS_EX_CLIENTEDGE,
                                          WC_COMBOBOX,
                                          "",
-                                         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_DROPDOWN
-                                             | CBS_HASSTRINGS | WS_OVERLAPPED,
+                                         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED,
                                          80 + 25 + adj,
                                          12 + 30 * i,
                                          120 + 535 - adj,
@@ -187,39 +162,15 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 
     ReleaseDC(SimpleDialog, hdc);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              218 + 550,
-                              11,
-                              70,
-                              23,
-                              SimpleDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 218 + 550, 11, 70, 23, SimpleDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  218 + 550,
-                                  41,
-                                  70,
-                                  23,
-                                  SimpleDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 218 + 550, 41, 70, 23, SimpleDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
 ///// prototype modified by JG with extra default parameter rdonly
-static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos,
-                             long rdOnly = 0)
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdOnly = 0)
 {
     bool didCancel = false;
 
@@ -236,18 +187,8 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
         if(combo > boxes)
             oops();
 
-        SimpleDialog = CreateWindowClient(0,
-                                          "LDmicroDialog",
-                                          title,
-                                          WS_OVERLAPPED | WS_SYSMENU,
-                                          100,
-                                          100,
-                                          304 + 550,
-                                          15 + 30 * (std::max(boxes, labs) < 2 ? 2 : std::max(boxes, labs)),
-                                          nullptr,
-                                          nullptr,
-                                          Instance,
-                                          nullptr);
+        SimpleDialog =
+            CreateWindowClient(0, "LDmicroDialog", title, WS_OVERLAPPED | WS_SYSMENU, 100, 100, 304 + 550, 15 + 30 * (std::max(boxes, labs) < 2 ? 2 : std::max(boxes, labs)), nullptr, nullptr, Instance, nullptr);
 
         MakeControls(labs, labels, boxes, dests, fixedFontMask, combo, combos);
 
@@ -313,8 +254,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
                     char get[MAX_NAME_LEN];
                     SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN - 1), (LPARAM)get);
 
-                    if((!strchr(get, '\'')) || (get[0] == '\'' && get[3] == '\'' && strlen(get) == 4 && get[1] == '\\')
-                       || (get[0] == '\'' && get[2] == '\'' && strlen(get) == 3)) {
+                    if((!strchr(get, '\'')) || (get[0] == '\'' && get[3] == '\'' && strlen(get) == 4 && get[1] == '\\') || (get[0] == '\'' && get[2] == '\'' && strlen(get) == 3)) {
                         if(strlen(get) == 0) {
                             Error(_("Empty textbox; not permitted."));
                         } else {
@@ -346,15 +286,13 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 }
 
 //as default : labels = boxes
-static bool ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, char **dests)
+static bool ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
     return ShowSimpleDialog(title, boxes, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
 
 //coment : labels > boxes
-static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests)
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests)
 {
     return ShowSimpleDialog(title, labs, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
@@ -404,14 +342,10 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         }
     }
     char buf2[100];
-    sprintf(buf2,
-            _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"),
+    sprintf(buf2, _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"),
             1.0 * Prog.cycleTime / 1000); //us show as ms
-    const char *labels[] = {_("Name:"),
-                            which == ELEM_TIME2DELAY ? _("Delay (us):") : _("Delay (ms):"),
-                            which == ELEM_TIME2DELAY ? buf1 : _("Adjust:"),
-                            _("* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"),
-                            buf2};
+    const char *labels[] = {
+        _("Name:"), which == ELEM_TIME2DELAY ? _("Delay (us):") : _("Delay (ms):"), which == ELEM_TIME2DELAY ? buf1 : _("Adjust:"), _("* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"), buf2};
 
     char adjustBuf[16];
     char delBuf[16];
@@ -461,8 +395,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 delay_us = (int32_t)round(delay_ms * 1000.0);
 
                 if(delay_us > LONG_MAX) {
-                    Error(_(
-                        "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+                    Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
                     delay_us = LONG_MAX;
                 }
 
@@ -514,8 +447,7 @@ void ShowSleepDialog(ElemLeaf *l)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1))))
-                  && (Prog.mcu()->whichIsa != ISA_PC)) {
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu()->whichIsa != ISA_PC)) {
             const char *s1 = _("Timer period too long (max 32767 times cycle time); use a slower cycle time.");
             char        s2[1024];
             sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del / 1000, period);
@@ -626,8 +558,7 @@ static void CheckConstantInRange(const char *name, const char *str, int32_t v)
         if((v < -2147483648LL || v > 2147483647) && (radix == 10))
             Error(_("Constant %s=%d out of variable '%s' range: -2147483648 to 2147483647 inclusive."), str, v, name);
         else if((DWORD(v) < 0 || DWORD(v) > 0xFFFFffff) && (radix != 10))
-            Error(
-                _("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
+            Error(_("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
     } else
         ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
 }
@@ -695,15 +626,12 @@ void ShowCounterDialog(int which, ElemLeaf *l)
             oops();
     }
 
-    const char *labels[] = {
-        _("Name:"),
-        //     ((which == ELEM_CTC)||(which == ELEM_CTU) ? _("Start value:") : _("Max value:")),
-        _("Start value:"),
-        (((which == ELEM_CTC)
-              ? _("Max value:")
-              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
-        _("Input kind:")};
-    char *dests[] = {name + 1, minV, maxV, inputKind};
+    const char *labels[] = {_("Name:"),
+                            //     ((which == ELEM_CTC)||(which == ELEM_CTU) ? _("Start value:") : _("Max value:")),
+                            _("Start value:"),
+                            (((which == ELEM_CTC) ? _("Max value:") : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
+                            _("Input kind:")};
+    char *      dests[] = {name + 1, minV, maxV, inputKind};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
         if(IsNumber(minV)) {
             int32_t _minV = hobatoi(minV);
@@ -896,7 +824,7 @@ void ShowBusDialog(ElemLeaf *l)
     char PCBbitStr2[10];
     strcpy(busStr, "|");
     strcpy(PCBbitStr, "|");
-    
+
     for(int i = 7; i >= 0; i--) {
         sprintf(PCBbitStr2, "%2d|", s->PCBbit[i]);
         strcat(PCBbitStr, PCBbitStr2);
@@ -934,14 +862,7 @@ void ShowSpiDialog(ElemLeaf *l)
     ElemSpi *   s = &(l->d.spi);
     const char *title = _("SPI - Serial Peripheral Interface");
 
-    const char *labels[] = {_("SPI Name:"),
-                            _("SPI Mode:"),
-                            _("Send variable:"),
-                            _("Receive to variable:"),
-                            _("Bit Rate (Hz):"),
-                            _("Data Modes (CPOL, CPHA):"),
-                            _("Data Size:"),
-                            _("Data Order:")};
+    const char *labels[] = {_("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA):"), _("Data Size:"), _("Data Order:")};
 
     ///// Added by JG
     if(l->d.spi.which == ELEM_SPI_WR) {
@@ -952,14 +873,7 @@ void ShowSpiDialog(ElemLeaf *l)
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
 
-    comboRecord comboRec[] = {{0, {nullptr}},
-                              {2, {"Master", "Slave"}},
-                              {0, {nullptr}},
-                              {0, {nullptr}},
-                              {0, {nullptr}},
-                              {4, {"0b00", "0b01", "0b10", "0b11"}},
-                              {0, {nullptr}},
-                              {2, {"MSB_FIRST", "LSB_FIRST"}}};
+    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0b00", "0b01", "0b10", "0b11"}}, {0, {nullptr}}, {2, {"MSB_FIRST", "LSB_FIRST"}}};
 
     if(Prog.mcu()) {
         if(Prog.mcu()->spiCount) {
@@ -1002,8 +916,7 @@ void ShowSpiDialog(ElemLeaf *l)
 
     ///// Added by JG
     if(Prog.mcu()) {
-        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR)
-           || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if(l->d.spi.which == ELEM_SPI)
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
             if(l->d.spi.which == ELEM_SPI_WR) {
@@ -1029,14 +942,7 @@ void ShowI2cDialog(ElemLeaf *l)
     ElemI2c *   s = &(l->d.i2c);
     const char *title = _("I2C - Two Wire Interface");
 
-    const char *labels[] = {_("I2C Name:"),
-                            _("I2C Mode:"),
-                            _("Send variable:"),
-                            _("Receive to variable:"),
-                            _("Bit Rate (Hz):"),
-                            _("I2C Address:"),
-                            _("I2C Register:"),
-                            _("Data Order:")};
+    const char *labels[] = {_("I2C Name:"), _("I2C Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("I2C Address:"), _("I2C Register:"), _("Data Order:")};
 
     if(l->d.i2c.which == ELEM_I2C_RD) {
         NoCheckingOnBox[2] = true; ///////////////////////// A VOIR
@@ -1044,14 +950,7 @@ void ShowI2cDialog(ElemLeaf *l)
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->address, s->registr, s->first};
 
-    comboRecord comboRec[] = {{0, {nullptr}},
-                              {2, {"Master", "Slave"}},
-                              {0, {nullptr}},
-                              {0, {nullptr}},
-                              {0, {nullptr}},
-                              {1, {"0"}},
-                              {1, {"0"}},
-                              {2, {"MSB_FIRST", "LSB_FIRST"}}};
+    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {1, {"0"}}, {1, {"0"}}, {2, {"MSB_FIRST", "LSB_FIRST"}}};
 
     if(Prog.mcu()) {
         if(Prog.mcu()->i2cCount) {
@@ -1063,8 +962,7 @@ void ShowI2cDialog(ElemLeaf *l)
     }
 
     if(Prog.mcu()) {
-        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR)
-           || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if(l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
                 ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);
@@ -1183,10 +1081,7 @@ void ShowSetPwmDialog(void *e)
 
     const char *labels[] = {_("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *      dests[] = {name + 1, duty_cycle, targetFreq, resolution};
-    comboRecord comboRec[] = {{0, {nullptr}},
-                              {0, {nullptr}},
-                              {0, {nullptr}},
-                              {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
+    comboRecord comboRec[] = {{0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
 
     NoCheckingOnBox[3] = true;
     if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, comboRec)) {
@@ -1220,15 +1115,13 @@ void ShowUartDialog(int which, ElemLeaf *l)
     char wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
 
-    const char *labels[] = {
-        (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
-        (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
-        (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sent:")};
-    char *dests[] = {e->name, bytes, wait};
+    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
+                            (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
+                            (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sent:")};
+    char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
-    if(ShowSimpleDialog(
-           (which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
+    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
         e->bytes = std::max(1, std::min(SizeOfVar(e->name), static_cast<int>(hobatoi(bytes))));
         e->wait = hobatoi(wait) ? 1 : 0;
     };
@@ -1306,14 +1199,9 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
             CheckConstantInRange(dest, op1, hobatoi(op1));
         if(IsNumber(op2)) {
             CheckConstantInRange(dest, op2, hobatoi(op2));
-            if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0) || (which == ELEM_ROL)
-               || (which == ELEM_ROR)) {
+            if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0) || (which == ELEM_ROL) || (which == ELEM_ROR)) {
                 if((hobatoi(op2) < 0) || (SizeOfVar(op1) * 8 < hobatoi(op2))) {
-                    Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."),
-                          op2,
-                          hobatoi(op2),
-                          op1,
-                          SizeOfVar(op1) * 8);
+                    Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), op2, hobatoi(op2), op1, SizeOfVar(op1) * 8);
                 }
             }
         }
@@ -1606,8 +1494,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     }
     if(ShowSimpleDialog(s, 2, labels, 0x3, 0x0, 0x3, dests)) {
         sov = hobatoi(sovStr);
-        if((sov <= 0) || ((io->type != IO_TYPE_STRING) && (sov > 4) && (io->type != IO_TYPE_BCD))
-           || ((io->type == IO_TYPE_BCD) && (sov > 10))) {
+        if((sov <= 0) || ((io->type != IO_TYPE_STRING) && (sov > 4) && (io->type != IO_TYPE_BCD)) || ((io->type == IO_TYPE_BCD) && (sov > 10))) {
             Error(_("Not a reasonable size for a variable."));
         } else {
             SetSizeOfVar(io->name, sov);
@@ -1642,15 +1529,15 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 void ShowWrDialog(int which, ElemLeaf *l)
 {
     ElemFormattedString *e = &(l->d.fmtdStr);
-	const char *labels[] = {IsString(e->string) ? _("String:") : _("String variable:"), _("Wait until all bytes are sent:")};
-    char wait[MAX_NAME_LEN];
+    const char *         labels[] = {IsString(e->string) ? _("String:") : _("String variable:"), _("Wait until all bytes are sent:")};
+    char                 wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
-	char *dests[] = {e->string, wait};
-	//NoCheckingOnBox[0] = true; 
+    char *dests[] = {e->string, wait};
+    //NoCheckingOnBox[0] = true;
     if(ShowSimpleDialog(_("String Variable Over UART"), 2, labels, 0x2, 0x1, 0x3, dests)) {
-        e->wait = hobatoi(wait) ? 1 : 0; 
-	}
-	//NoCheckingOnBox[0] = false;
+        e->wait = hobatoi(wait) ? 1 : 0;
+    }
+    //NoCheckingOnBox[0] = false;
 };
 
 void ShowFormattedStringDialog(char *var, char *string)
@@ -1674,12 +1561,12 @@ void ShowStringDialog(char *dest, char *var, char *string)
     ShowSimpleDialog(_("Formatted String: sprintf(dest, frmtStr, var)"), 3, labels, 0x0, 0x0, 0x7, dests);
     NoCheckingOnBox[0] = false;
     NoCheckingOnBox[1] = false;
-    NoCheckingOnBox[2] = false; 
+    NoCheckingOnBox[2] = false;
 }
 
 void ShowCprintfDialog(int which, void *e)
 {
-/*
+    /*
     ElemFormattedString *f = (ElemFormattedString *)e;
     char *               var = f->var;
     char *               string = f->string;
@@ -1745,10 +1632,8 @@ void ShowPullUpDialog()
             n++;
         }
     }
-    labels[n] =
-        (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
-    labels[n + 1] = (char *)_(
-        "*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
+    labels[n] = (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
+    labels[n + 1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
 
     if(ShowSimpleDialog(_("Set Pull-up input resistors"), n + 2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
         int port = 0;

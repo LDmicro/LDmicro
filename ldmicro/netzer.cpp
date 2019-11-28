@@ -466,15 +466,13 @@ int GenerateIntOpcodes()
                 op.name3 = AddrForString(IntCode[ipc].name3);   // source string
 
                 if(!(op.name1 & MAPPED_TO_IO)) {
-                    THROW_COMPILER_EXCEPTION(
-                        _("Dest variable of write string instruction must be located at IO register."));
+                    THROW_COMPILER_EXCEPTION(_("Dest variable of write string instruction must be located at IO register."));
                     //return -1;
                 }
 
                 // Check whether only one % sign is included!
                 if(GetPercentCharactersCount(IntCode[ipc].name3) > 1) {
-                    THROW_COMPILER_EXCEPTION(
-                        _("Maximal one format placeholder is allowed in write string instruction."));
+                    THROW_COMPILER_EXCEPTION(_("Maximal one format placeholder is allowed in write string instruction."));
                     //return -1;
                 }
 
@@ -490,10 +488,10 @@ int GenerateIntOpcodes()
             case INT_EEPROM_WRITE:
             case INT_READ_ADC:
             case INT_SET_PWM:
-//            case INT_UART_SEND:
+                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
-//            case INT_UART_RECV:
+                //            case INT_UART_SENDn:
+                //            case INT_UART_RECV:
             case INT_UART_RECV_AVAIL:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
@@ -648,12 +646,7 @@ static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c",
-                    OP_IF_BIT_SET_IO,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c", OP_IF_BIT_SET_IO, getIOAddress(Op->name1), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 4;
     } else {
         if(f)
@@ -679,12 +672,7 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c",
-                    OP_IF_BIT_CLEARED_IO,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c", OP_IF_BIT_CLEARED_IO, getIOAddress(Op->name1), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 4;
     } else {
         if(f)
@@ -746,19 +734,13 @@ static void setVariableToVariable(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullpt
             fprintf(f, "%c%c%c", OP_SET_VARIABLE_IO_TO_VARIABLE_IO, getIOAddress(src_var), getIOAddress(dst_var));
     } else if((src_var & MAPPED_TO_IO) && ((dst_var & MAPPED_TO_IO) == 0)) {
         if(f)
-            fprintf(
-                f, "%c%c%c", OP_SET_VARIABLE_TO_VARIABLE_IO, getIOAddress(src_var), getInternalIntegerAddress(dst_var));
+            fprintf(f, "%c%c%c", OP_SET_VARIABLE_TO_VARIABLE_IO, getIOAddress(src_var), getInternalIntegerAddress(dst_var));
     } else if(((src_var & MAPPED_TO_IO) == 0) && (dst_var & MAPPED_TO_IO)) {
         if(f)
-            fprintf(
-                f, "%c%c%c", OP_SET_VARIABLE_IO_TO_VARIABLE, getInternalIntegerAddress(src_var), getIOAddress(dst_var));
+            fprintf(f, "%c%c%c", OP_SET_VARIABLE_IO_TO_VARIABLE, getInternalIntegerAddress(src_var), getIOAddress(dst_var));
     } else if(((src_var & MAPPED_TO_IO) == 0) && ((dst_var & MAPPED_TO_IO) == 0)) {
         if(f)
-            fprintf(f,
-                    "%c%c%c",
-                    OP_SET_VARIABLE_TO_VARIABLE,
-                    getInternalIntegerAddress(src_var),
-                    getInternalIntegerAddress(dst_var));
+            fprintf(f, "%c%c%c", OP_SET_VARIABLE_TO_VARIABLE, getInternalIntegerAddress(src_var), getInternalIntegerAddress(dst_var));
     }
     pMeta->BytesConsumed += 3;
     pMeta->Opcodes += 1; // One opcode generated.
@@ -803,24 +785,10 @@ static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_IO_LES_LITERAL,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_IO_LES_LITERAL, getIOAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_LES_LITERAL,
-                    getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_LES_LITERAL, getInternalIntegerAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -836,24 +804,10 @@ static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_IO_GRT_LITERAL,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_IO_GRT_LITERAL, getIOAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_GRT_LITERAL,
-                    getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_GRT_LITERAL, getInternalIntegerAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -869,24 +823,10 @@ static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_IO_EQU_LITERAL,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_IO_EQU_LITERAL, getIOAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_EQU_LITERAL,
-                    getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_EQU_LITERAL, getInternalIntegerAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -902,24 +842,10 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_IO_NEQ_LITERAL,
-                    getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_IO_NEQ_LITERAL, getIOAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c%c%c",
-                    OP_IF_VARIABLE_NEQ_LITERAL,
-                    getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal1),
-                    (uint8_t)(Op->literal1 >> 8),
-                    (uint8_t)(labelAddress),
-                    (uint8_t)(labelAddress >> 8));
+            fprintf(f, "%c%c%c%c%c%c", OP_IF_VARIABLE_NEQ_LITERAL, getInternalIntegerAddress(Op->name1), (uint8_t)(Op->literal1), (uint8_t)(Op->literal1 >> 8), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -953,12 +879,7 @@ static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = 
     if(dst & MAPPED_TO_IO) {
         BinOp load;
         if(f)
-            fprintf(f,
-                    "%c%c%c%c",
-                    Opcode,
-                    getInternalIntegerAddress(src1),
-                    getInternalIntegerAddress(src2),
-                    getInternalIntegerAddress(AddrForVariable("$dummy1")));
+            fprintf(f, "%c%c%c%c", Opcode, getInternalIntegerAddress(src1), getInternalIntegerAddress(src2), getInternalIntegerAddress(AddrForVariable("$dummy1")));
 
         // Replay the calculated value.
         load.name1 = dst;
@@ -966,12 +887,7 @@ static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = 
         setVariableToVariable(&load, pMeta, f);
     } else {
         if(f)
-            fprintf(f,
-                    "%c%c%c%c",
-                    Opcode,
-                    getInternalIntegerAddress(src1),
-                    getInternalIntegerAddress(src2),
-                    getInternalIntegerAddress(dst));
+            fprintf(f, "%c%c%c%c", Opcode, getInternalIntegerAddress(src1), getInternalIntegerAddress(src2), getInternalIntegerAddress(dst));
     }
 
     pMeta->BytesConsumed += 4;
@@ -1003,13 +919,7 @@ static void ifVariable_X_Variable(BinOp *Op, uint8_t NetzerOp, OpcodeMeta *pMeta
 
     if(f) {
         uint16_t labelAddress = calculateJumpLabel(Op->name3);
-        fprintf(f,
-                "%c%c%c%c%c",
-                NetzerOp,
-                getInternalIntegerAddress(src1),
-                getInternalIntegerAddress(src2),
-                (uint8_t)(labelAddress),
-                (uint8_t)(labelAddress >> 8));
+        fprintf(f, "%c%c%c%c%c", NetzerOp, getInternalIntegerAddress(src1), getInternalIntegerAddress(src2), (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 5;

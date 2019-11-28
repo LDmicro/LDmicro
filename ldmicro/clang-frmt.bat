@@ -1,5 +1,5 @@
 :for /F %%F in ('dir /b *.i')   do clang-format.exe -i -style=file %%F
-:for /F %%F in ('dir /b *.cpp') do clang-format.exe -i -style=file %%F
+for /F %%F in ('dir /b *.cpp') do clang-format.exe -i -style=file %%F
 :for /F %%F in ('dir /b *.hpp') do clang-format.exe -i -style=file %%F
 :for /F %%F in ('dir /b *.h')   do clang-format.exe -i -style=file %%F
 

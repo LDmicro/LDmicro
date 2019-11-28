@@ -157,27 +157,15 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_SET_BIT_AND_BIT:
-                fprintf(f,
-                        "let bit '%s' := '%s' & '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let bit '%s' := '%s' & '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_BIT_OR_BIT:
-                fprintf(f,
-                        "let bit '%s' := '%s' | '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let bit '%s' := '%s' | '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_BIT_XOR_BIT:
-                fprintf(f,
-                        "let bit '%s' := '%s' ^ '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let bit '%s' := '%s' ^ '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -213,59 +201,31 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_SET_VARIABLE_ROL:
-                fprintf(f,
-                        "let var '%s' := '%s' rol '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' rol '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_ROR:
-                fprintf(f,
-                        "let var '%s' := '%s' ror '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' ror '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_SHL:
-                fprintf(f,
-                        "let var '%s' := '%s' << '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' << '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_SHR:
-                fprintf(f,
-                        "let var '%s' := '%s' >> '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' >> '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_AND:
-                fprintf(f,
-                        "let var '%s' := '%s' & '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' & '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_OR:
-                fprintf(f,
-                        "let var '%s' := '%s' | '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' | '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_XOR:
-                fprintf(f,
-                        "let var '%s' := '%s' ^ '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' ^ '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_NOT:
@@ -277,11 +237,7 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_SET_VARIABLE_SR0:
-                fprintf(f,
-                        "let var '%s' := '%s' sr0 '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' sr0 '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_NEG:
@@ -289,47 +245,27 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_SET_VARIABLE_ADD:
-                fprintf(f,
-                        "let var '%s' := '%s' + '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 if(IntCode[i].name4.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
-                fprintf(f,
-                        "let var '%s' := '%s' - '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 if(IntCode[i].name4.length())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
-                fprintf(f,
-                        "let var '%s' := '%s' * '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' * '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_DIVIDE:
-                fprintf(f,
-                        "let var '%s' := '%s' / '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                fprintf(f,
-                        "let var '%s' := '%s' %% '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "let var '%s' := '%s' %% '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -361,30 +297,15 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_SET_PWM:
-                fprintf(f,
-                        "set pwm '%s' %% %s Hz out '%s'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "set pwm '%s' %% %s Hz out '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_QUAD_ENCOD:
-                fprintf(f,
-                        "QUAD ENCOD %d %s %s %s %s %s",
-                        IntCode[i].literal1,
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str(),
-                        IntCode[i].name4.c_str(),
-                        IntCode[i].name5.c_str());
+                fprintf(f, "QUAD ENCOD %d %s %s %s %s %s", IntCode[i].literal1, IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str(), IntCode[i].name4.c_str(), IntCode[i].name5.c_str());
                 break;
 
             case INT_SET_NPULSE:
-                fprintf(f,
-                        "generate %s pulses %s Hz to %s",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str());
+                fprintf(f, "generate %s pulses %s Hz to %s", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 break;
 
             case INT_OFF_NPULSE:
@@ -404,26 +325,11 @@ void IntDumpListing(const char *outFile)
                 if(sov == 1)
                     fprintf(f, "read EEPROM[%d] into '%s'", IntCode[i].literal1, IntCode[i].name1.c_str());
                 else if(sov == 2)
-                    fprintf(f,
-                            "read EEPROM[%d,%d+1] into '%s'",
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].name1.c_str());
+                    fprintf(f, "read EEPROM[%d,%d+1] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
                 else if(sov == 3)
-                    fprintf(f,
-                            "read EEPROM[%d,%d+1,%d+2] into '%s'",
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].name1.c_str());
+                    fprintf(f, "read EEPROM[%d,%d+1,%d+2] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
                 else if(sov == 4)
-                    fprintf(f,
-                            "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'",
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].name1.c_str());
+                    fprintf(f, "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
                 else
                     oops();
                 break;
@@ -433,26 +339,11 @@ void IntDumpListing(const char *outFile)
                 if(sov == 1)
                     fprintf(f, "write '%s' into EEPROM[%d]", IntCode[i].name1.c_str(), IntCode[i].literal1);
                 else if(sov == 2)
-                    fprintf(f,
-                            "write '%s' into EEPROM[%d,%d+1]",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].literal1,
-                            IntCode[i].literal1);
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
                 else if(sov == 3)
-                    fprintf(f,
-                            "write '%s' into EEPROM[%d,%d+1,%d+2]",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1);
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1);
                 else if(sov == 4)
-                    fprintf(f,
-                            "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1,
-                            IntCode[i].literal1);
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1);
                 else
                     oops();
                 break;
@@ -464,55 +355,31 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "SPI_BUSY '%s', done? into '%s'", leaf->d.spi.name, IntCode[i].name1.c_str());
                 break;
             case INT_SPI:
-                fprintf(f,
-                        "SPI '%s' send '%s', receive '%s', done? into '%s'",
-                        leaf->d.spi.name,
-                        leaf->d.spi.send,
-                        leaf->d.spi.recv,
-                        IntCode[i].name1.c_str());
+                fprintf(f, "SPI '%s' send '%s', receive '%s', done? into '%s'", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, IntCode[i].name1.c_str());
                 break;
 
             ///// Added by JG
             case INT_SPI_WRITE:
-                fprintf(f,
-                        "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'",
-                        leaf->d.spi.name,
-                        leaf->d.spi.send,
-                        leaf->d.spi.recv,
-                        IntCode[i].name1.c_str());
+                fprintf(f, "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, IntCode[i].name1.c_str());
                 break;
 
             case INT_I2C_READ:
-                fprintf(f,
-                        "I2C_READ '%s' receive '%s', done? into '%s'",
-                        leaf->d.i2c.name,
-                        leaf->d.i2c.recv,
-                        IntCode[i].name1.c_str());
+                fprintf(f, "I2C_READ '%s' receive '%s', done? into '%s'", leaf->d.i2c.name, leaf->d.i2c.recv, IntCode[i].name1.c_str());
                 break;
             case INT_I2C_WRITE:
-                fprintf(f,
-                        "I2C_WRITE '%s' send '%s', done? into '%s'",
-                        leaf->d.i2c.name,
-                        leaf->d.i2c.send,
-                        IntCode[i].name1.c_str());
+                fprintf(f, "I2C_WRITE '%s' send '%s', done? into '%s'", leaf->d.i2c.name, leaf->d.i2c.send, IntCode[i].name1.c_str());
                 break;
                 /////
 
             case INT_UART_WR:
-                fprintf(f,
-                        "uart send '%s'",
-                        IntCode[i].name1.c_str());
+                fprintf(f, "uart send '%s'", IntCode[i].name1.c_str());
                 break;
 
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
-                fprintf(f,
-                        "uart send from '%s[%s+%d]'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].literal1);
+                //            case INT_UART_SENDn:
+                fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
-/*
+                /*
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
@@ -525,15 +392,11 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "'%s' = is uart busy to send ?", IntCode[i].name1.c_str());
                 break;
 
-//            case INT_UART_RECVn:
+                //            case INT_UART_RECVn:
             case INT_UART_RECV1:
-                fprintf(f,
-                        "uart recv into '%s[%s+%d]'",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].literal1);
+                fprintf(f, "uart recv into '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
-/*
+                /*
             case INT_UART_RECV:
                 fprintf(f, "uart recv into '%s', have? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
@@ -597,8 +460,7 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_IF_BITS_SET_IN_VAR:
-                fprintf(
-                    f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
+                fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
                 indent++;
                 break;
 
@@ -713,14 +575,7 @@ void IntDumpListing(const char *outFile)
                     case INT_TEST_C_SFR_VARIABLE_L:
                         fprintf(f, "if ");
                 }
-                fprintf(f,
-                        "SFR %d %s %s %s %d %d",
-                        IntCode[i].op,
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].name3.c_str(),
-                        IntCode[i].literal1,
-                        IntCode[i].literal2);
+                fprintf(f, "SFR %d %s %s %s %d %d", IntCode[i].op, IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str(), IntCode[i].literal1, IntCode[i].literal2);
                 switch(IntCode[i].op) {
                     case INT_TEST_SFR_LITERAL_L:
                     case INT_TEST_SFR_VARIABLE_L:
@@ -748,16 +603,11 @@ void IntDumpListing(const char *outFile)
                 break;
 
             case INT_GOTO:
-                fprintf(
-                    f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
+                fprintf(f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_GOSUB:
-                fprintf(f,
-                        "GOSUB Label%s # %s %d",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str(),
-                        IntCode[i].literal1);
+                fprintf(f, "GOSUB Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1);
                 break;
 
             case INT_RETURN:
@@ -766,30 +616,18 @@ void IntDumpListing(const char *outFile)
 
             case INT_STRING:
                 if(IntCode[i].name3.length())
-                    fprintf(f,
-                            "sprintf(%s, \"%s\", %s);",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].name2.c_str(),
-                            IntCode[i].name3.c_str());
+                    fprintf(f, "sprintf(%s, \"%s\", %s);", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 else
-                    fprintf(f, "strcpy(%s, \"%s\");\n",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].name2.c_str());
+                    fprintf(f, "strcpy(%s, \"%s\");\n", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
 
             case INT_STRING_INIT:
-                fprintf(f, "INIT STRING char %s[] := \"%s\"",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str());
+                fprintf(f, "INIT STRING char %s[] := \"%s\"", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
 
 #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
-                fprintf(f,
-                        "INIT TABLE signed %d byte %s[%d] := {",
-                        IntCode[i].literal2,
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].literal1);
+                fprintf(f, "INIT TABLE signed %d byte %s[%d] := {", IntCode[i].literal2, IntCode[i].name1.c_str(), IntCode[i].literal1);
                 for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
@@ -798,34 +636,17 @@ void IntDumpListing(const char *outFile)
 
             case INT_RAM_READ:
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f,
-                            "let var '%s' := '%s[%d]'",
-                            IntCode[i].name2.c_str(),
-                            IntCode[i].name1.c_str(),
-                            CheckMakeNumber(IntCode[i].name3));
+                    fprintf(f, "let var '%s' := '%s[%d]'", IntCode[i].name2.c_str(), IntCode[i].name1.c_str(), CheckMakeNumber(IntCode[i].name3));
                 } else {
-                    fprintf(f,
-                            "let var '%s' := '%s[%s]'",
-                            IntCode[i].name2.c_str(),
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].name3.c_str());
+                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name2.c_str(), IntCode[i].name1.c_str(), IntCode[i].name3.c_str());
                 }
                 break;
 
             case INT_FLASH_READ:
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f,
-                            "let var '%s' := %d # '%s[%s]'",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].data[hobatoi(IntCode[i].name3.c_str())],
-                            IntCode[i].name2.c_str(),
-                            IntCode[i].name3.c_str());
+                    fprintf(f, "let var '%s' := %d # '%s[%s]'", IntCode[i].name1.c_str(), IntCode[i].data[hobatoi(IntCode[i].name3.c_str())], IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 } else {
-                    fprintf(f,
-                            "let var '%s' := '%s[%s]'",
-                            IntCode[i].name1.c_str(),
-                            IntCode[i].name2.c_str(),
-                            IntCode[i].name3.c_str());
+                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
                 }
                 break;
 #endif
@@ -940,8 +761,8 @@ static void GenSymStepper(char *dest, const char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                const char *name4, const char *name5, const char *name6, int32_t lit, int32_t lit2, const int32_t *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, int32_t lit, int32_t lit2,
+                const int32_t *data)
 {
     IntOp intOp;
     intOp.op = op;
@@ -998,8 +819,7 @@ static void _Op(int l, const char *f, const char *args, int op)
 {
     _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                int32_t lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, int32_t lit)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
@@ -1008,26 +828,22 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                int32_t lit, int32_t lit2)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, int32_t lit, int32_t lit2)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                const char *name4)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4)
 {
     _Op(l, f, args, op, name1, name2, name3, name4, nullptr, nullptr, 0, 0, nullptr);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                const char *name4, const char *name5)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5)
 {
     _Op(l, f, args, op, name1, name2, name3, name4, name5, nullptr, 0, 0, nullptr);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                int32_t lit, int32_t lit2, const int32_t *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, int32_t lit, int32_t lit2, const int32_t *data)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
@@ -1128,17 +944,10 @@ int32_t TestTimerPeriod(const char *name, int32_t delay, int adjust) // delay in
         const char *s4 = _("Not available");
         Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
     } else if(period + adjust <= 0) {
-        Error("%s '%s': %s",
-              _("Timer"),
-              name,
-              _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
+        Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
         // period = -1;
     } else if(period <= adjust) {
-        Error(
-            "%s '%s': %s",
-            _("Timer"),
-            name,
-            _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
+        Error("%s '%s': %s", _("Timer"), name, _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
         // period = -1;
     }
 
@@ -1152,11 +961,7 @@ int32_t TestTimerPeriod(const char *name, int32_t delay, int adjust) // delay in
         sprintf(s2, _("Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."), name, 1.0 * delay / 1000, period);
         long double maxDelay = 1.0 * maxPeriod / 1000000 * Prog.cycleTime; // s
         char        s3[1024];
-        sprintf(s3,
-                _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."),
-                name,
-                maxDelay,
-                maxPeriod);
+        sprintf(s3, _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), name, maxDelay, maxPeriod);
         Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
@@ -1331,8 +1136,7 @@ long hobatoi(const char *str)
         char dest[MAX_NAME_LEN];
         FrmStrToStr(dest, start_ptr);
         if((strlen(dest) > 3) || (dest[0] != '\'') || (dest[2] != '\'')) {
-            THROW_COMPILER_EXCEPTION_FMT(
-                _("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), str);
+            THROW_COMPILER_EXCEPTION_FMT(_("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), str);
         }
         val = dest[1];
     } else {
@@ -1628,12 +1432,12 @@ static void InitVars()
         char storeInit[MAX_NAME_LEN];
         GenSymOneShot(storeInit, "INIT", "VARS");
         Op(INT_IF_BIT_CLEAR, storeInit);
-          Op(INT_SET_BIT, storeInit);
-          for(int i = 0; i < Prog.numRungs; i++) {
-              rungNow = i;
-              auto node = SeriesNode(Prog.rungs(i));
-              InitVarsCircuit(&node, nullptr);
-          }
+        Op(INT_SET_BIT, storeInit);
+        for(int i = 0; i < Prog.numRungs; i++) {
+            rungNow = i;
+            auto node = SeriesNode(Prog.rungs(i));
+            InitVarsCircuit(&node, nullptr);
+        }
         Op(INT_END_IF);
     }
 }
@@ -1641,11 +1445,11 @@ static void InitVars()
 #ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
 static int32_t data[MAX_NAME_LEN];
-static void InitTablesCircuit(const SeriesNode *elem)
+static void    InitTablesCircuit(const SeriesNode *elem)
 {
     //int       sovElement = 0;
     const ElemLeaf *leaf = elem ? elem->leaf() : nullptr;
-    char nameTable[MAX_NAME_LEN];
+    char            nameTable[MAX_NAME_LEN];
     switch(elem->which) {
         case ELEM_SERIES_SUBCKT: {
             const ElemSubcktSeries *s = elem->series();
@@ -1707,7 +1511,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
         case ELEM_16SEG:
             strcpy(nameTable, "char16seg");
             goto xseg;
-        xseg: {
+        xseg : {
             if(!IsNumber(leaf->d.segments.src)) {
                 int sovElement = 0;
                 if((isVarInited(nameTable) < 0)) {
@@ -1727,8 +1531,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
                         oops();
                     MarkInitedVariable(nameTable);
                 } else {
-                    Comment(
-                        _("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
+                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, LEN7SEG);
                 }
             }
             break;
@@ -1739,7 +1542,7 @@ static void InitTablesCircuit(const SeriesNode *elem)
             Op(INT_STRING_INIT, nameLit, leaf->d.fmtdStr.string);
             break;
         }
-/*
+            /*
         case ELEM_UART_WR: {
             if(!leaf->d.fmtdStr.wait) {
                 if(IsString((leaf->d.fmtdStr.string))) {
@@ -5378,7 +5181,7 @@ bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-//         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), /*ELEM_UART_RECVn, ELEM_UART_SENDn, */ELEM_UART_WR))
+           //         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), /*ELEM_UART_RECVn, ELEM_UART_SENDn, */ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return true;
     }
@@ -5400,14 +5203,14 @@ bool UartFunctionUsed()
 bool UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, /*ELEM_UART_RECVn, */-1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, /*ELEM_UART_RECVn, */ -1))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if(//(IntCode[i].op == INT_UART_RECV) || //
-//         (IntCode[i].op == INT_UART_RECVn) ||       //
-           (IntCode[i].op == INT_UART_RECV_AVAIL))
+        if( //(IntCode[i].op == INT_UART_RECV) || //
+            //         (IntCode[i].op == INT_UART_RECVn) ||       //
+            (IntCode[i].op == INT_UART_RECV_AVAIL))
             return true;
     }
     return false;
@@ -5416,16 +5219,16 @@ bool UartRecvUsed()
 bool UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND, /*ELEM_UART_SENDn, */ELEM_FORMATTED_STRING))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND, /*ELEM_UART_SENDn, */ ELEM_FORMATTED_STRING))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if(//(IntCode[i].op == INT_UART_SEND) ||       //
-           (IntCode[i].op == INT_UART_SEND_READY) || //
-           (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
-//           (IntCode[i].op == INT_UART_SENDn) ||      //
-           (IntCode[i].op == INT_UART_SEND1))
+        if(                                           //(IntCode[i].op == INT_UART_SEND) ||       //
+            (IntCode[i].op == INT_UART_SEND_READY) || //
+            (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
+                                                      //           (IntCode[i].op == INT_UART_SENDn) ||      //
+            (IntCode[i].op == INT_UART_SEND1))
             return true;
     }
     return false;

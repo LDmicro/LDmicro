@@ -393,7 +393,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=C:\LDs\asm_demo_PIC16F886\asm_demo.ld
 @SET PROGECT=C:\LDs\Buttonnombre\Buttonnombre.ld
 
-@SET PROGECT=c:\lds\FormattedStr\FormattedStr.ld
+@SET PROGECT=D:\lds\FormattedStr\FormattedStr.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

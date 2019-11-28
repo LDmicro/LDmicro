@@ -31,47 +31,14 @@ static HWND CommentTextbox;
 
 static void MakeControls(RECT r)
 {
-    CommentTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                    WC_EDIT,
-                                    "",
-                                    WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | ES_MULTILINE
-                                        | ES_WANTRETURN,
-                                    7,
-                                    10,
-                                    r.right - 137,
-                                    38,
-                                    CommentDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    CommentTextbox = CreateWindowEx(
+        WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | ES_MULTILINE | ES_WANTRETURN, 7, 10, r.right - 137, 38, CommentDialog, nullptr, Instance, nullptr);
     FixedFont(CommentTextbox);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              r.right - 120,
-                              6,
-                              70,
-                              23,
-                              CommentDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, r.right - 120, 6, 70, 23, CommentDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  r.right - 120,
-                                  36,
-                                  70,
-                                  23,
-                                  CommentDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, r.right - 120, 36, 70, 23, CommentDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -80,18 +47,7 @@ void ShowCommentDialog(char *comment)
     RECT r;
     GetClientRect(MainWindow, &r);
 
-    CommentDialog = CreateWindowClient(0,
-                                       "LDmicroDialog",
-                                       _("Comment"),
-                                       WS_OVERLAPPED | WS_SYSMENU,
-                                       r.left + 20,
-                                       100,
-                                       r.right - r.left - 40,
-                                       65,
-                                       nullptr,
-                                       nullptr,
-                                       Instance,
-                                       nullptr);
+    CommentDialog = CreateWindowClient(0, "LDmicroDialog", _("Comment"), WS_OVERLAPPED | WS_SYSMENU, r.left + 20, 100, r.right - r.left - 40, 65, nullptr, nullptr, Instance, nullptr);
 
     MakeControls(r);
 

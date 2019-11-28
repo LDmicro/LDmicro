@@ -299,16 +299,7 @@ void WhatCanWeDoFromCursorAndTopology()
 */
         CanInsertComment = false;
     }
-    SetMenusEnabled(canNegate,
-                    canNormal,
-                    canResetOnly,
-                    canSetOnly,
-                    canDelete,
-                    CanInsertEnd,
-                    CanInsertOther,
-                    canPushDown,
-                    canPushUp,
-                    CanInsertComment);
+    SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete, CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);
 }
 
 //-----------------------------------------------------------------------------
@@ -405,8 +396,7 @@ void MoveCursorKeyboard(int keyCode)
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
-                while(i >= 0
-                      && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j].data.leaf == Selected.leaf()))) {
+                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j].data.leaf == Selected.leaf()))) {
                     i--;
                 }
                 if(i >= 0) {
@@ -661,17 +651,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_CONTACTS:
-            ShowContactsDialog(&(Selected.leaf()->d.contacts.negated),
-                               &(Selected.leaf()->d.contacts.set1),
-                               Selected.leaf()->d.contacts.name);
+            ShowContactsDialog(&(Selected.leaf()->d.contacts.negated), &(Selected.leaf()->d.contacts.set1), Selected.leaf()->d.contacts.name);
             break;
 
         case ELEM_COIL:
-            ShowCoilDialog(&(Selected.leaf()->d.coil.negated),
-                           &(Selected.leaf()->d.coil.setOnly),
-                           &(Selected.leaf()->d.coil.resetOnly),
-                           &(Selected.leaf()->d.coil.ttrigger),
-                           Selected.leaf()->d.coil.name);
+            ShowCoilDialog(&(Selected.leaf()->d.coil.negated), &(Selected.leaf()->d.coil.setOnly), &(Selected.leaf()->d.coil.resetOnly), &(Selected.leaf()->d.coil.ttrigger), Selected.leaf()->d.coil.name);
             break;
 
         case ELEM_TIME2DELAY:
@@ -745,8 +729,7 @@ void EditSelectedElement()
         case ELEM_XOR:
         case ELEM_NOT:
         case ELEM_NEG:
-            ShowMathDialog(
-                Selected.which, Selected.leaf()->d.math.dest, Selected.leaf()->d.math.op1, Selected.leaf()->d.math.op2);
+            ShowMathDialog(Selected.which, Selected.leaf()->d.math.dest, Selected.leaf()->d.math.op1, Selected.leaf()->d.math.op2);
             break;
 
         case ELEM_STEPPER:
@@ -754,17 +737,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_PULSER:
-            ShowPulserDialog(Selected.leaf()->d.pulser.P1,
-                             Selected.leaf()->d.pulser.P0,
-                             Selected.leaf()->d.pulser.accel,
-                             Selected.leaf()->d.pulser.counter,
-                             Selected.leaf()->d.pulser.busy);
+            ShowPulserDialog(Selected.leaf()->d.pulser.P1, Selected.leaf()->d.pulser.P0, Selected.leaf()->d.pulser.accel, Selected.leaf()->d.pulser.counter, Selected.leaf()->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
-            ShowNPulseDialog(Selected.leaf()->d.Npulse.counter,
-                             Selected.leaf()->d.Npulse.targetFreq,
-                             Selected.leaf()->d.Npulse.coil);
+            ShowNPulseDialog(Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
@@ -827,11 +804,11 @@ void EditSelectedElement()
 
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
-//      case ELEM_UART_RECVn:
-//      case ELEM_UART_SENDn:
+            //      case ELEM_UART_RECVn:
+            //      case ELEM_UART_SENDn:
             ShowUartDialog(Selected.which, Selected.leaf());
             break;
-/*
+            /*
         case ELEM_UART_WR:
             ShowWrDialog(Selected.which, Selected.leaf());
             break;
@@ -845,8 +822,7 @@ void EditSelectedElement()
             break;
 
         case ELEM_STRING:
-            ShowStringDialog(
-                Selected.leaf()->d.fmtdStr.dest, Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
+            ShowStringDialog(Selected.leaf()->d.fmtdStr.dest, Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
         case ELEM_FORMATTED_STRING:
@@ -967,8 +943,7 @@ void MoveCursorMouseClick(int x, int y)
                 dleft += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }
-            if((gx < (DISPLAY_MATRIX_X_SIZE - 1))
-               && (DisplayMatrix[gx + 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
+            if((gx < (DISPLAY_MATRIX_X_SIZE - 1)) && (DisplayMatrix[gx + 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
                 dright += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }

@@ -122,18 +122,12 @@ int UsedRAM()
 void PrintVariables(FileTracker &f)
 {
     fprintf(f, "\n");
-    fprintf(f,
-            ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
+    fprintf(f, ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
 
     fprintf(f, ";|Variables: %d\n", VariableCount);
     for(int i = 0; i < VariableCount; i++) {
         if(Variables[i].addr) {
-            fprintf(f,
-                    ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n",
-                    i,
-                    Variables[i].name,
-                    Variables[i].SizeOfVar,
-                    Variables[i].addr);
+            fprintf(f, ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addr);
         }
         /*
         else {
@@ -158,13 +152,7 @@ void PrintVariables(FileTracker &f)
 
     fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
     for(int i = 0; i < InternalRelayCount; i++) {
-        fprintf(f,
-                ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n",
-                i,
-                InternalRelays[i].name,
-                1,
-                InternalRelays[i].addr,
-                InternalRelays[i].bit);
+        fprintf(f, ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].bit);
     }
     fprintf(f, "\n");
 }
@@ -212,8 +200,7 @@ ADDR_T AllocOctetRam(int bytes) // The desired number of bytes.
     }
 
     if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu()->ram[RamSection].len)) {
-        THROW_COMPILER_EXCEPTION_FMT(
-            "%s %s", _("RAM:"), _("Out of memory; simplify program or choose microcontroller with more memory."));
+        THROW_COMPILER_EXCEPTION_FMT("%s %s", _("RAM:"), _("Out of memory; simplify program or choose microcontroller with more memory."));
     }
 
     MemOffset += bytes;
@@ -349,9 +336,7 @@ int SingleBitAssigned(const NameArray &name)
 
     if(Prog.mcu()) {
         pin = Prog.io.assignment[i].pin;
-        auto pp = std::find_if(Prog.mcu()->pinInfo,
-                               Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
-                               [pin](const McuIoPinInfo &info) { return pin == info.pin; });
+        auto pp = std::find_if(Prog.mcu()->pinInfo, Prog.mcu()->pinInfo + Prog.mcu()->pinCount, [pin](const McuIoPinInfo &info) { return pin == info.pin; });
         if(pp == (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
             pin = 0;
     }
@@ -379,28 +364,7 @@ int GetAssignedType(const NameArray &name, const NameArray &fullName)
     }
     return type;
 }
-/*
-int GetAssignedType(const char* name, const char* fullName)
-{
-    int type = NO_PIN_ASSIGNED;
-    if(fullName)
-        if(fullName[0] == 'I') {
-            if(fullName[1] == 'b')
-                return IO_TYPE_INTERNAL_RELAY;
-            else if(fullName[1] == 'i')
-                return IO_TYPE_GENERAL;
-            else
-                oops();
-        }
-    for(int i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name) == 0) {
-            type = Prog.io.assignment[i].type;
-            break;
-        }
-    }
-    return type;
-}
-*/
+
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
@@ -449,8 +413,7 @@ int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
         if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
             if(Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name)
-                       && (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->spiInfo[j].name) && (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         port = iop->port; // all SPI pins supposed on same port
                         spipins[0] = iop->bit;
@@ -460,8 +423,7 @@ int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
             }
             if(Prog.io.assignment[i].type == IO_TYPE_SPI_MISO) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name)
-                       && (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->spiInfo[j].name) && (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         spipins[1] = iop->bit;
                         res++;
@@ -470,8 +432,7 @@ int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
             }
             if(Prog.io.assignment[i].type == IO_TYPE_SPI_SCK) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name)
-                       && (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->spiInfo[j].name) && (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         spipins[2] = iop->bit;
                         res++;
@@ -480,8 +441,7 @@ int PinsForSpiVariable(const NameArray &name, int n, int *spipins)
             }
             if(Prog.io.assignment[i].type == IO_TYPE_SPI__SS) {
                 for(uint32_t j = 0; j < Prog.mcu()->spiCount; j++)
-                    if((name == Prog.mcu()->spiInfo[j].name)
-                       && (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->spiInfo[j].name) && (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         spipins[3] = iop->bit;
                         res++;
@@ -513,8 +473,7 @@ int PinsForI2cVariable(const NameArray &name, int n, int *i2cpins)
         if(strncmp(Prog.io.assignment[i].name, name.c_str(), n) == 0) {
             if(Prog.io.assignment[i].type == IO_TYPE_I2C_SCL) {
                 for(uint32_t j = 0; j < Prog.mcu()->i2cCount; j++)
-                    if((name == Prog.mcu()->i2cInfo[j].name)
-                       && (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->i2cInfo[j].name) && (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         port = iop->port; // all I2C pins supposed on same port
                         i2cpins[0] = iop->bit;
@@ -524,8 +483,7 @@ int PinsForI2cVariable(const NameArray &name, int n, int *i2cpins)
             }
             if(Prog.io.assignment[i].type == IO_TYPE_I2C_SDA) {
                 for(uint32_t j = 0; j < Prog.mcu()->i2cCount; j++)
-                    if((name == Prog.mcu()->i2cInfo[j].name)
-                       && (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin)) {
+                    if((name == Prog.mcu()->i2cInfo[j].name) && (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin)) {
                         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
                         i2cpins[1] = iop->bit;
                         res++;
@@ -855,18 +813,11 @@ int AllocOfVar(const NameArray &name)
 //-----------------------------------------------------------------------------
 void SaveVarListToFile(FileTracker &f)
 {
-    std::sort(std::begin(Variables),
-              std::begin(Variables) + VariableCount,
-              [](const VariablesList &a, const VariablesList &b) { return (strcmp(a.name, b.name) < 0); });
+    std::sort(std::begin(Variables), std::begin(Variables) + VariableCount, [](const VariablesList &a, const VariablesList &b) { return (strcmp(a.name, b.name) < 0); });
 
     for(int i = 0; i < VariableCount; i++) {
-        if(!IsIoType(Variables[i].type) && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
-           && (Variables[i].name[0] != '$')) {
-            fprintf(f,
-                    "  %3d bytes %s%s\n",
-                    SizeOfVar(Variables[i].name),
-                    Variables[i].name,
-                    Variables[i].Allocated ? "" : _(" \tNow not used !!!"));
+        if(!IsIoType(Variables[i].type) && (Variables[i].type != IO_TYPE_INTERNAL_RELAY) && (Variables[i].name[0] != '$')) {
+            fprintf(f, "  %3d bytes %s%s\n", SizeOfVar(Variables[i].name), Variables[i].name, Variables[i].Allocated ? "" : _(" \tNow not used !!!"));
         }
     }
 }
@@ -903,8 +854,7 @@ bool LoadVarListFromFile(FileTracker &f)
             }
         }
         if(!Ok) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."),
-                                         strspacer(line));
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
             //return false;
         }
     }
@@ -983,29 +933,23 @@ void MemForSingleBit(const NameArray &name, ADDR_T *addr, int *bit)
 int isPinAssigned(const NameArray &name)
 {
     int res = 0;
-    if((Prog.mcu()) && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)))
+    if((Prog.mcu()) && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)))
         switch(name[0]) {
             case 'A':
             case 'I':
             case 'X':
             case 'Y': {
-                auto assign = std::find_if(Prog.io.assignment,
-                                           Prog.io.assignment + Prog.io.count,
-                                           [name](const PlcProgramSingleIo &io) { return (name == io.name); });
+                auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count, [name](const PlcProgramSingleIo &io) { return (name == io.name); });
                 if(assign == (Prog.io.assignment + Prog.io.count))
                     THROW_COMPILER_EXCEPTION(_("Can't find right assign."));
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {
-                    auto info = std::find_if(Prog.mcu()->adcInfo,
-                                             Prog.mcu()->adcInfo + Prog.mcu()->adcCount,
-                                             [pin](const McuAdcPinInfo &info) { return (info.pin == pin); });
+                    auto info = std::find_if(Prog.mcu()->adcInfo, Prog.mcu()->adcInfo + Prog.mcu()->adcCount, [pin](const McuAdcPinInfo &info) { return (info.pin == pin); });
                     if(info != (Prog.mcu()->adcInfo + Prog.mcu()->adcCount))
                         res = 1;
                 } else {
-                    auto info = std::find_if(Prog.mcu()->pinInfo,
-                                             Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
-                                             [pin](const McuIoPinInfo &info) { return (info.pin == pin); });
+                    auto info = std::find_if(Prog.mcu()->pinInfo, Prog.mcu()->pinInfo + Prog.mcu()->pinCount, [pin](const McuIoPinInfo &info) { return (info.pin == pin); });
                     if(info != (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
                         res = 1;
                 }
@@ -1053,8 +997,7 @@ void MemCheckForErrorsPostCompile()
 {
     for(int i = 0; i < InternalRelayCount; i++) {
         if(!InternalRelays[i].assignedTo) {
-            THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."),
-                                         InternalRelays[i].name);
+            THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
         }
     }
 }
@@ -1083,9 +1026,7 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
-            auto iop = std::find_if(Prog.mcu()->pinInfo,
-                                    Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
-                                    [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
+            auto iop = std::find_if(Prog.mcu()->pinInfo, Prog.mcu()->pinInfo + Prog.mcu()->pinCount, [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
             if(iop != (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
                 isAnsel[iop->port - 'A'] |= (1 << iop->bit);
         }
@@ -1095,12 +1036,9 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
            type == IO_TYPE_INT_INPUT ||  //
            type == IO_TYPE_DIG_INPUT) {
 
-            auto iop = std::find_if(Prog.mcu()->pinInfo,
-                                    Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
-                                    [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
+            auto iop = std::find_if(Prog.mcu()->pinInfo, Prog.mcu()->pinInfo + Prog.mcu()->pinCount, [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
             if(iop == (Prog.mcu()->pinInfo + Prog.mcu()->pinCount)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."),
-                                             Prog.io.assignment[i].name);
+                THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
             }
             if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
                 isOutput[iop->port - 'A'] |= (1 << iop->bit);
@@ -1110,9 +1048,7 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
 
             if(raiseError) {
                 if(usedUart && (pin == Prog.mcu()->uartNeeds.rxPin || pin == Prog.mcu()->uartNeeds.txPin)) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
-                                                 Prog.mcu()->uartNeeds.rxPin,
-                                                 Prog.mcu()->uartNeeds.txPin);
+                    THROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."), Prog.mcu()->uartNeeds.rxPin, Prog.mcu()->uartNeeds.txPin);
                 }
             }
         }
@@ -1131,7 +1067,7 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
         else
             THROW_COMPILER_EXCEPTION(_("Invalid RX pin."));
     }
-    if(McuAs("Microchip PIC16F877 ")) {
+    if(McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC18F4520 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
         // enables the PSP, and must be kept clear (set here as will be
         // inverted).
