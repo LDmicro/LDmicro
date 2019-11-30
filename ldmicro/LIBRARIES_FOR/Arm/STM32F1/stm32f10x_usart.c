@@ -204,8 +204,7 @@ void USART_Init(USART_TypeDef *USARTx, USART_InitTypeDef *USART_InitStruct)
     /* Set the M bits according to USART_WordLength value */
     /* Set PCE and PS bits according to USART_Parity value */
     /* Set TE and RE bits according to USART_Mode value */
-    tmpreg |=
-        (uint32_t)USART_InitStruct->USART_WordLength | USART_InitStruct->USART_Parity | USART_InitStruct->USART_Mode;
+    tmpreg |= (uint32_t)USART_InitStruct->USART_WordLength | USART_InitStruct->USART_Parity | USART_InitStruct->USART_Mode;
     /* Write to USART CR1 */
     USARTx->CR1 = (uint16_t)tmpreg;
 
@@ -300,8 +299,7 @@ void USART_ClockInit(USART_TypeDef *USARTx, USART_ClockInitTypeDef *USART_ClockI
     /* Set CPOL bit according to USART_CPOL value */
     /* Set CPHA bit according to USART_CPHA value */
     /* Set LBCL bit according to USART_LastBit value */
-    tmpreg |= (uint32_t)USART_ClockInitStruct->USART_Clock | USART_ClockInitStruct->USART_CPOL
-              | USART_ClockInitStruct->USART_CPHA | USART_ClockInitStruct->USART_LastBit;
+    tmpreg |= (uint32_t)USART_ClockInitStruct->USART_Clock | USART_ClockInitStruct->USART_CPOL | USART_ClockInitStruct->USART_CPHA | USART_ClockInitStruct->USART_LastBit;
     /* Write to USART CR2 */
     USARTx->CR2 = (uint16_t)tmpreg;
 }

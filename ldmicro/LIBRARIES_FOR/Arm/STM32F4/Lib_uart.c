@@ -125,13 +125,11 @@ void LibUsart1_InitPins(LibUart_PinsPack_t pinspack)
     // Init pins
     if(pinspack == LibUart_PinsPack_1) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOA, GPIO_Pin_9 | GPIO_Pin_10, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART1);
+        LibGPIO_InitAlternate(GPIOA, GPIO_Pin_9 | GPIO_Pin_10, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART1);
     }
     if(pinspack == LibUart_PinsPack_2) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOB, GPIO_Pin_6 | GPIO_Pin_7, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART1);
+        LibGPIO_InitAlternate(GPIOB, GPIO_Pin_6 | GPIO_Pin_7, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART1);
     }
 }
 
@@ -143,13 +141,11 @@ void LibUsart2_InitPins(LibUart_PinsPack_t pinspack)
     // Init pins
     if(pinspack == LibUart_PinsPack_1) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOA, GPIO_Pin_2 | GPIO_Pin_3, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART2);
+        LibGPIO_InitAlternate(GPIOA, GPIO_Pin_2 | GPIO_Pin_3, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART2);
     }
     if(pinspack == LibUart_PinsPack_2) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOD, GPIO_Pin_5 | GPIO_Pin_6, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART2);
+        LibGPIO_InitAlternate(GPIOD, GPIO_Pin_5 | GPIO_Pin_6, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART2);
     }
 }
 
@@ -161,18 +157,15 @@ void LibUsart3_InitPins(LibUart_PinsPack_t pinspack)
     // Init pins
     if(pinspack == LibUart_PinsPack_1) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOB, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
+        LibGPIO_InitAlternate(GPIOB, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
     }
     if(pinspack == LibUart_PinsPack_2) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOC, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
+        LibGPIO_InitAlternate(GPIOC, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
     }
     if(pinspack == LibUart_PinsPack_3) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOD, GPIO_Pin_8 | GPIO_Pin_9, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
+        LibGPIO_InitAlternate(GPIOD, GPIO_Pin_8 | GPIO_Pin_9, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART3);
     }
 }
 
@@ -184,13 +177,11 @@ void LibUart4_InitPins(LibUart_PinsPack_t pinspack)
     // Init pins
     if(pinspack == LibUart_PinsPack_1) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOA, GPIO_Pin_0 | GPIO_Pin_1, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_UART4);
+        LibGPIO_InitAlternate(GPIOA, GPIO_Pin_0 | GPIO_Pin_1, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_UART4);
     }
     if(pinspack == LibUart_PinsPack_2) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOC, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_UART4);
+        LibGPIO_InitAlternate(GPIOC, GPIO_Pin_10 | GPIO_Pin_11, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_UART4);
     }
 }
 
@@ -216,12 +207,10 @@ void LibUsart6_InitPins(LibUart_PinsPack_t pinspack)
     // Init pins
     if(pinspack == LibUart_PinsPack_1) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOC, GPIO_Pin_6 | GPIO_Pin_7, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART6);
+        LibGPIO_InitAlternate(GPIOC, GPIO_Pin_6 | GPIO_Pin_7, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART6);
     }
     if(pinspack == LibUart_PinsPack_2) {
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE); // by JG
-        LibGPIO_InitAlternate(
-            GPIOG, GPIO_Pin_14 | GPIO_Pin_9, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART6);
+        LibGPIO_InitAlternate(GPIOG, GPIO_Pin_14 | GPIO_Pin_9, GPIO_OType_PP, GPIO_PuPd_UP, LibGPIO_Speed_High, GPIO_AF_USART6);
     }
 }

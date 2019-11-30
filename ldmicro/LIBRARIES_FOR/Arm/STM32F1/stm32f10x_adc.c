@@ -243,8 +243,7 @@ void ADC_Init(ADC_TypeDef *ADCx, ADC_InitTypeDef *ADC_InitStruct)
     /* Set ALIGN bit according to ADC_DataAlign value */
     /* Set EXTSEL bits according to ADC_ExternalTrigConv value */
     /* Set CONT bit according to ADC_ContinuousConvMode value */
-    tmpreg1 |= (uint32_t)(ADC_InitStruct->ADC_DataAlign | ADC_InitStruct->ADC_ExternalTrigConv
-                          | ((uint32_t)ADC_InitStruct->ADC_ContinuousConvMode << 1));
+    tmpreg1 |= (uint32_t)(ADC_InitStruct->ADC_DataAlign | ADC_InitStruct->ADC_ExternalTrigConv | ((uint32_t)ADC_InitStruct->ADC_ContinuousConvMode << 1));
     /* Write to ADCx CR2 */
     ADCx->CR2 = tmpreg1;
 

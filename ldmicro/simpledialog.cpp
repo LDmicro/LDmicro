@@ -1638,7 +1638,7 @@ void ShowPullUpDialog()
         }
     }
     labels[n] = (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
-    labels[n + 1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
+    labels[n + 1] = (char *)_("*PIC only: if PORT RB value is not 0, Weak Pull-ups will be enabled for all port B pins via RBPU."); /// To translate (modified)
 
     if(ShowSimpleDialog(_("Set Pull-up input resistors"), n + 2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
         int port = 0;

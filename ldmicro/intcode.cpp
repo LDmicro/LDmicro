@@ -2742,12 +2742,14 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             break;
         }
         {
+        // clang-format off
         int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  deg=DEGREE7;  len=LEN7SEG;  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  deg=DEGREE9;  len=LEN9SEG;  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); deg=DEGREE14; len=LEN14SEG; goto xseg;
         case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); deg=DEGREE16; len=LEN16SEG; goto xseg;
         xseg :
+                    // clang-format on
             #ifdef TABLE_IN_FLASH
             if(IsNumber(leaf->d.segments.dest)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."),

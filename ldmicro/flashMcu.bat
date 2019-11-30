@@ -366,6 +366,7 @@ REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 pause
+goto exit
 
 ::::::
 :PIC18
@@ -393,17 +394,17 @@ REM copy source code for compiling
 if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 
 
-REM picc18.exe --pass1 AdcLib.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+REM picc18.exe --pass1 AdcLib.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s"
 
 for %%F in (HTC\lib\*.c) do  picc18.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-REM picc18.exe --pass1 test_adc2.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+REM picc18.exe --pass1 test_adc2.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s"
 
 picc18.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 REM Linkage of objects
 
-REM picc18.exe -oMplab.cof -mMplab.map --summary=default --output=default UsrLib.p1 test_adc2.p1 AdcLib.p1 --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+REM picc18.exe -oMplab.cof -mMplab.map --summary=default --output=default UsrLib.p1 test_adc2.p1 AdcLib.p1 --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s"
 
 picc18.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
@@ -421,10 +422,10 @@ goto exit
 @echo on
 REM Compilation with arm-gcc
 
-     SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem      SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 @rem SET GCC_PATH=C:\yagarto-20121222
 @rem SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major
-@rem SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
+SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
 
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
 

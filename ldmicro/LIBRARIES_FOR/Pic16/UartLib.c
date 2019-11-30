@@ -17,7 +17,7 @@ void UART_Transmit(unsigned char data)
     // Wait for empty transmit buffer
     //while(TRMT == 0) // 0 = Transmit Shift Register full
     while(TXIF == 0) // 0 = The USART transmit buffer is full
-        ; // Put data into buffer, sends the data
+        ;            // Put data into buffer, sends the data
     TXREG = data;
 }
 

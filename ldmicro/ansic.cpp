@@ -519,7 +519,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
-            
+
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]); // infos on pin used by this PWM
             if(!iop)
@@ -661,7 +661,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "}\n");
             fprintf(f, "\n");
         }
-        
+
         else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
             MuxForAdcVariable(&str[3]); // to check pin assignment
 
@@ -801,10 +801,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
         ADDR_T      addr, addr2;
         int         bit, bit2;
         const char *bitVar1 = nullptr, *bitVar2 = nullptr;
-        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr, *intVar4 = nullptr; ///// intVar4 added by JG for I2C
+        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr, *intVar4 = nullptr;
         //const char *adcVar1 = nullptr;
         const char *strVar1 = nullptr;
-        int         sov1 = 0, sov2 = 0, sov3 = 0, sov4 = 0; ///// sov4 added by JG for I2C
+        int         sov1 = 0, sov2 = 0, sov3 = 0, sov4 = 0;
 
         int bitVar1set1 = 0;
 
@@ -905,19 +905,19 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_SPI_WRITE:                     
+            case INT_SPI_WRITE:
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= spi name
                 //  intVar2 = IntCode[i].name2.c_str();     // don't create var name2= spi send var
                 break;
 
             case INT_SPI:
                 intVar1 = IntCode[i].name1.c_str();     // create var name1= spi name
-                if(!IsNumber(IntCode[i].name2))         
+                if(!IsNumber(IntCode[i].name2))
                     intVar2 = IntCode[i].name2.c_str(); // create var name2= spi send var if not a number
-                intVar3 = IntCode[i].name3.c_str();     // create var name3= spi recv var       
+                intVar3 = IntCode[i].name3.c_str();     // create var name3= spi recv var
                 break;
 
-            case INT_I2C_READ:                      
+            case INT_I2C_READ:
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
                 intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c recv var
                 if(!IsNumber(IntCode[i].name3))
@@ -926,7 +926,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
                 break;
 
-            case INT_I2C_WRITE:                     
+            case INT_I2C_WRITE:
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
                 if(!IsNumber(IntCode[i].name2))
                     intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c send var if not a number
@@ -1347,7 +1347,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_VARIABLE_SET_BIT:
-                fprintf(f, "%s |= (1 << %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT)); ///// () added by JG
+                fprintf(f, "%s |= (1 << %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_VARIABLE_CLEAR_BIT:
@@ -1463,7 +1463,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SPI:
-                
+
                 if(mcu_ISA == ISA_ARM) {
                     int u = atoi(MapSym(IntCode[i].name1, ASINT) + 6); // name1= "Ui_SPIn"
                     if((SPI_Used != -1) && (SPI_Used != u))
@@ -1480,7 +1480,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-            
+
             case INT_SPI_WRITE:
                 if(mcu_ISA == ISA_ARM) {
                     int u = atoi(MapSym(IntCode[i].name1, ASINT) + 6); // name1= "Ui_SPIn"
@@ -1640,7 +1640,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             }
             case INT_READ_ADC:
-                
+
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this ADC
                     if(!iop)
@@ -1661,7 +1661,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_PWM_OFF:
-                
+
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name1.c_str()); // infos on pin used by this PWM
                     if(!iop)
@@ -1733,7 +1733,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_PWM:
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                
+
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     McuIoPinInfo *iop = PinInfoForName(IntCode[i].name3.c_str()); // infos on pin used by this PWM
                     if(!iop)
@@ -1854,7 +1854,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "return;\n");
                 break;
             case INT_SLEEP:
-                
+
                 if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
                     THROW_COMPILER_EXCEPTION(_("SLEEP not available in this mode"));
                 } else
@@ -2180,9 +2180,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "/* Comment out USE_MACRO in next line, if you want to use functions instead of macros. */\n"
                 "#define USE_MACRO\n"
                 "\n",
-                //            CurrentLdName,
-                //          CurrentLdName,
-                //        CurrentLdName,
                 CurrentLdName);
     }
 
@@ -2214,7 +2211,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
-    
+
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
 
         if(StringFunctionUsed()) {
@@ -2485,6 +2482,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "\n");
     }
     if(UartFunctionUsed()) {
+/*
         if((compiler_variant != MNU_COMPILE_HI_TECH_C) && (compiler_variant != MNU_COMPILE_AVRGCC)) {
             fprintf(fh,
                     "void UART_Init(void);\n"
@@ -2494,8 +2492,9 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "ldBOOL UART_Transmit_Ready(void);\n"
                     "\n");
         }
+*/
     }
-    
+
     if(SpiFunctionUsed()) {
         if(mcu_ISA == ISA_ARM)
             fprintf(fh,
@@ -2541,7 +2540,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
         SetExt(arduinoDest, outFile, ".cpp");
         f.open(arduinoDest, "w");
     } else {
-        f.open(outFile, "w"); /// BUG ?
+        f.open(outFile, "w");
     }
 
     if(!f) {
@@ -2578,15 +2577,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "   See the generated source code (below) for function names. */\n"
                 "\n");
     }
-    /*
-    int    divisor = 0;
-    double actual = 0;
-    double percentErr = 0;
-    if(UartFunctionUsed()) {
-        calcAvrUsart(&divisor, &actual, &percentErr);
-        testAvrUsart(divisor, actual, percentErr);
-    }
-*/
     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
         fprintf(f,
                 "#define CCS_PIC_C // CCS C Compiler, Custom Computer Services, Inc.\n"
@@ -2619,14 +2609,14 @@ bool CompileAnsiC(const char *outFile, int MNU)
         fprintf(f, "#endif\n");
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         if(mcu_ISA == ISA_PIC16) {
-        fprintf(f,
-                "#include <htc.h>\n"
-                "__CONFIG(0x%X);\n",
-                (WORD)Prog.configurationWord & 0xFFFF);
-        if(Prog.configurationWord & 0xFFFF0000) {
-            fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
-        }
-        if(mcu_ISA == ISA_PIC18) { // Beware that __PROG_CONFIG may not work (HITECH-C 18 release notes)
+            fprintf(f,
+                    "#include <htc.h>\n"
+                    "__CONFIG(0x%X);\n",
+                    (WORD)Prog.configurationWord & 0xFFFF);
+            if(Prog.configurationWord & 0xFFFF0000) {
+                fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+            }
+        } else if(mcu_ISA == ISA_PIC18) { // Beware that __PROG_CONFIG may not work (HITECH-C 18 release notes)
             fprintf(f,
                     "#include <htc.h>\n\n"
                     "//#define _XTAL_FREQ %d\n"
@@ -2737,7 +2727,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 #define RXEN BIT4
 #define TXEN BIT3
             fprintf(f,
-                    "\n" 
+                    "\n"
                     "void UART_Init(void) {\n"
                     "  UBRRH = %d; \n"
                     "  UBRRL = %d; \n"
@@ -2776,7 +2766,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "\n");
         } //// } Mising: added by JG
         */
-        
+
         if(SpiFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_AVRGCC) {
                 fprintf(f,
@@ -2932,6 +2922,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n"
                         "\n");
             } else {
+/*              // moved to LIBRARIES_FOR\Pic16\UartLib.c 
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"
@@ -2959,6 +2950,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "  return RCIF;\n"
                         "}\n"
                         "\n");
+*/
             }
         }
         if(SpiFunctionUsed()) {
@@ -3083,7 +3075,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     GenerateAnsiC(f, 0, IntCode.size() - 1);
     fprintf(f, "}\n");
     //---------------------------------------------------------------------------
-
+/*
     if(compiler_variant == MNU_COMPILE_ARMGCC) {
         // PlcDelay() function
         fprintf(f,
@@ -3106,6 +3098,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "}\n"
                 "\n");
     }
+*/
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(f,
                 "\n"
@@ -3218,6 +3211,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                                 256 - plcTmr.tmr + 1);
                     }
                 }
+            } else if(mcu_ISA == ISA_PIC18) {
             } else if(mcu_ISA == ISA_AVR) {
                 CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
                 if(plcTmr.softDivisor > 1) {
@@ -3305,7 +3299,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 }
             }
         }
-        
+
         if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
             // no watchdog
         } else {
@@ -3406,23 +3400,35 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 }
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 if(Prog.cycleTimer == 0) {
-                    fprintf(f,
-                            "    #ifdef USE_WDT\n"
-                            "      CLRWDT();\n"
-                            "    #endif\n"
-                            "    TMR0 = %d;\n"
-                            "    PSA = %d;\n"
-                            "    T0CS = 0;\n"
-                            "    OPTION_REGbits.PS = %d;\n",
-                            256 - plcTmr.tmr + 1,
-                            plcTmr.prescaler == 1 ? 1 : 0,
-                            plcTmr.PS);
-                    if(plcTmr.softDivisor > 1) {
+                    if(mcu_ISA == ISA_PIC16) {
                         fprintf(f,
-                                "    GIE = 1;\n"
-                                "    T0IE = 1;\n");
+                                "    #ifdef USE_WDT\n"
+                                "      CLRWDT();\n"
+                                "    #endif\n"
+                                "    TMR0 = %d;\n"
+                                "    PSA = %d;\n"
+                                "    T0CS = 0;\n"
+                                "    OPTION_REGbits.PS = %d;\n",
+                                256 - plcTmr.tmr + 1,
+                                plcTmr.prescaler == 1 ? 1 : 0,
+                                plcTmr.PS);
+                        if(plcTmr.softDivisor > 1) {
+                            fprintf(f,
+                                    "    GIE = 1;\n"
+                                    "    T0IE = 1;\n");
+                        }
+                    } else { // PIC18
+                        fprintf(f,
+                                "    #ifdef USE_WDT\n"
+                                "    CLRWDT();\n"
+                                "    #endif\n"
+                                "    T0CON = 0x%X;\n"
+                                "    TMR0H = 0;\n"
+                                "    TMR0L = %ld;\n",
+                                0xC0 | (plcTmr.PS + 2),
+                                255 - (5 * plcTmr.tmr / 4) + 1); /// A VOIR
                     }
-                } else {
+                } else { // Timer 1
                     fprintf(f,
                             "    #ifdef USE_WDT\n"
                             "      CLRWDT(); // Clear WDT and prescaler\n"
@@ -3442,6 +3448,24 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         fprintf(f, "    TMR1GE = 1;\n");
                     }
                 }
+            } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+                // compute timer frequency according to desired Cycle time
+                // real Cycle time can be adjusted by modifying declared frequency F
+                double fperiod = (double)(Prog.mcuClock) / 4000000;
+                fperiod = (fperiod * Prog.cycleTime) / 1000;
+                unsigned long period = (unsigned long)fperiod;
+                if(period == 0)
+                    period = 1;
+                if(period > 65535)
+                    period = 65535; // securities
+                fprintf(f,
+                        "\n"
+                        "    // init Timer 3 and activate interrupts\n"
+                        "    LibTimer_Init(TIM3, 1000, %lu);\n" // f= (F/4)/[(prediv)*(period)]
+                        "    LibTimer_Interrupts(TIM3, ENABLE);\n"
+                        "\n",
+                        period);
+
             } else if(mcu_ISA == ISA_AVR) {
                 if(Prog.cycleTimer == 0) {
                     int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
@@ -3513,7 +3537,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
             }
         }
         if(AdcFunctionUsed()) {
-            ///// added by JG
             if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 int usedadc = 0;
 
@@ -3560,7 +3583,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 fprintf(f, "    ADC_Init();\n");
         }
         if(PwmFunctionUsed()) {
-            
+
             if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 int usedpwm = 0;
 
@@ -3610,7 +3633,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     THROW_COMPILER_EXCEPTION(_("PWM Internal error")); // error in PWM config
                 }
             } else
-                /////
                 fprintf(f, "    PWM_Init();\n");
         }
 
@@ -3662,7 +3684,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "\n"
                 "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
                 "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n");
-        ///// added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC) {
             fprintf(f, "    SystemInit();  // initialize system clock at 100 MHz (F4) or 72 Mhz (F1)\n");
         }

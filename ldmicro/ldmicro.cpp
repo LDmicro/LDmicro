@@ -315,7 +315,7 @@ char *GetIsaName(int ISA)
         // clang-format off
         case ISA_AVR          : return (char *)stringer( ISA_AVR          ) + 4;
         case ISA_PIC16        : return (char *)stringer( ISA_PIC16        ) + 4;
-		case ISA_PIC18        : return (char *)stringer( ISA_PIC18        ) + 4;
+        case ISA_PIC18        : return (char *)stringer( ISA_PIC18        ) + 4;
       //case ISA_ANSIC        : return (char *)stringer( ISA_ANSIC        ) + 4;
         case ISA_INTERPRETED  : return (char *)stringer( ISA_INTERPRETED  ) + 4;
         case ISA_XINTERPRETED : return (char *)stringer( ISA_XINTERPRETED ) + 4;
@@ -323,7 +323,7 @@ char *GetIsaName(int ISA)
         case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
-        case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;      
+        case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;
         default               : oops(); // return nullptr;
             // clang-format on
     }
@@ -338,8 +338,8 @@ const char *GetMnuCompilerName(int MNU)
         case MNU_COMPILE_HI_TECH_C     : return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
         case MNU_COMPILE_CCS_PIC_C     : return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
         case MNU_COMPILE_GNUC          : return (char *)stringer(MNU_COMPILE_GNUC) + 12;
-        case MNU_COMPILE_AVRGCC        : return (char *)stringer(MNU_COMPILE_AVRGCC) + 12;       
-        case MNU_COMPILE_ARMGCC        : return (char *)stringer(MNU_COMPILE_ARMGCC) + 12;        
+        case MNU_COMPILE_AVRGCC        : return (char *)stringer(MNU_COMPILE_AVRGCC) + 12;
+        case MNU_COMPILE_ARMGCC        : return (char *)stringer(MNU_COMPILE_ARMGCC) + 12;
         case MNU_COMPILE_CODEVISIONAVR : return (char *)stringer(MNU_COMPILE_CODEVISIONAVR) + 12;
         case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
         case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
@@ -363,10 +363,10 @@ int GetMnu(char *MNU_name)
     if(strstr("MNU_COMPILE_HI_TECH_C",     MNU_name)) return MNU_COMPILE_HI_TECH_C;
     if(strstr("MNU_COMPILE_CCS_PIC_C",     MNU_name)) return MNU_COMPILE_CCS_PIC_C;
     if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
-    if(strstr("MNU_COMPILE_AVRGCC",        MNU_name)) return MNU_COMPILE_AVRGCC;          
+    if(strstr("MNU_COMPILE_AVRGCC",        MNU_name)) return MNU_COMPILE_AVRGCC;
     if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
     if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
-    if(strstr("MNU_COMPILE_ARMGCC",        MNU_name)) return MNU_COMPILE_ARMGCC;          
+    if(strstr("MNU_COMPILE_ARMGCC",        MNU_name)) return MNU_COMPILE_ARMGCC;
     if(strstr("MNU_COMPILE_PASCAL",        MNU_name)) return MNU_COMPILE_PASCAL;
     // clang-format on
     return -1;
@@ -557,7 +557,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_CCS_PIC_C) {
-        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16) && (Prog.mcu()->whichIsa != ISA_PIC18)) {
             int msgboxID = MessageBox(NULL, _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"), _("MCU type warning"), MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;

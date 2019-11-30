@@ -33,8 +33,7 @@ void LibSPI_Init(SPI_TypeDef *SPIx, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI
   * @param  SPI_FirstBit = SPI_FirstBit_MSB or SPI_FirstBit_LSB
   * @retval None
   */
-void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_BaudRatePrescaler,
-                     LibSPI_DataSize_t SPI_DataSize, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
+void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_BaudRatePrescaler, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
     SPI_InitTypeDef  SPI_InitStruct;

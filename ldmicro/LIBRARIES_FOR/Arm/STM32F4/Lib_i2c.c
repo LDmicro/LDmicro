@@ -263,42 +263,29 @@ void LibI2C_INT_InitPins(I2C_TypeDef *I2Cx, LibI2C_PinsPack_t pinspack)
 {
     if(I2Cx == I2C1) {
         if(pinspack == LibI2C_PinsPack_1)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_8 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_8 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
         if(pinspack == LibI2C_PinsPack_3)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_6 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_6 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
     }
 
     if(I2Cx == I2C2) {
         if(pinspack == LibI2C_PinsPack_1)
-            LibGPIO_InitAlternate(GPIOB,
-                                  GPIO_PIN_10 | GPIO_PIN_11,
-                                  LibGPIO_OType_OD,
-                                  LibGPIO_PuPd_UP,
-                                  LibGPIO_Speed_Medium,
-                                  GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_10 | GPIO_PIN_11, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOF, GPIO_PIN_0 | GPIO_PIN_1, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOF, GPIO_PIN_0 | GPIO_PIN_1, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
         if(pinspack == LibI2C_PinsPack_3)
-            LibGPIO_InitAlternate(
-                GPIOH, GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOH, GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
     }
 
     if(I2Cx == I2C3) {
         if(pinspack == LibI2C_PinsPack_1) {
-            LibGPIO_InitAlternate(
-                GPIOA, GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
-            LibGPIO_InitAlternate(
-                GPIOC, GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOA, GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOC, GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
         }
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOH, GPIO_PIN_7 | GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOH, GPIO_PIN_7 | GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
     }
 }
 

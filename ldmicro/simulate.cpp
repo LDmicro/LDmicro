@@ -2883,8 +2883,7 @@ void DestroySimulationWindow(HWND SimulationWindow) ///// Modified by JG
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
 static int32_t bPrev = 0;
-static void    AppendToSimulationTextControl(BYTE b,
-                                             HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
+static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
 
