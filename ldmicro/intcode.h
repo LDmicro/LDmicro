@@ -30,7 +30,7 @@
 
 #include "compilercommon.hpp"
 
-#define NEW_CMP // (C) LDmicro.GitHub@gmail.com
+#define NEW_CMP        // (C) LDmicro.GitHub@gmail.com
 #define TABLE_IN_FLASH // (C) LDmicro.GitHub@gmail.com
 #ifdef TABLE_IN_FLASH
 //#define TABLE_IN_FLASH_LINEAR // (C) LDmicro.GitHub@gmail.com
@@ -54,8 +54,10 @@
 //#define INT_VARIABLE_CLEAR_BITS                  3007
 #endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
-#define INT_SET_VARIABLE_INDIRECT                4001
+//#define INT_SET_VARIABLE_INDIRECT                4001
 #define INT_SET_VARIABLE_TO_VARIABLE             5
+#define INT_STRING_INIT                          5013 // store literal string in flash
+#define INT_SET_VARIABLE_INDEXED                 5014 // read literal string[index] from flash
 #if NEW_INT > 0
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
@@ -76,23 +78,24 @@
 #define INT_XOR_VAR_BIT_TO_VAR_BIT              1023
 #endif
 #ifdef TABLE_IN_FLASH
-#define INT_FLASH_INIT                          1003
-#define INT_FLASH_READ                          1004
+#define INT_FLASH_INIT                          1003 // store table in flash
+#define INT_FLASH_READ                          1004 // read table[index] from flash
 #define INT_RAM_READ                            1005
 #endif
 
 #define INT_SLEEP                               1099
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
-#define INT_UART_SEND                           13
+//#define INT_UART_SEND                           13   // obsolete
 #define INT_UART_SEND1                          1301
-#define INT_UART_SENDn                          1302
+//#define INT_UART_SENDn                          1302 // impasse
 #define INT_UART_SEND_READY                     1303
 #define INT_UART_SEND_BUSY                      1304
-#define INT_UART_RECV                           14
+#define INT_UART_WR                             1310
+//#define INT_UART_RECV                           14   // obsolete
 #define INT_UART_RECV1                          1400
-#define INT_UART_RECVn                          1401
-#define INT_UART_RECVnn                         1402
+//#define INT_UART_RECVn                          1401 // impasse
+//#define INT_UART_RECVnn                         1402 // impasse
 #define INT_UART_RECV_AVAIL                     1403
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
@@ -115,11 +118,9 @@
 #define INT_I2C_WRITE                           1952
 
 #define INT_WRITE_STRING                        21 // netzer
-#define INT_SPRINTF_STRING                      22 // sprintf()
-#define INT_CPRINTF                             2201
-#ifdef NEW_FEATURE
-#define INT_PRINTF_STRING                       23 // printf() out to console
-#endif
+#define INT_STRING                              22 // sprintf(), strcpy(), or "literal string"
+//#define INT_CPRINTF                             2201
+//#define INT_PRINTF_STRING                       23 // printf() out to console
 
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31
@@ -230,7 +231,7 @@
 // clang-format on
 
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
-struct ElemLeaf;
+struct SeriesNode;
 struct IntOp {
     int           op;
     NameArray     name1;
@@ -241,23 +242,22 @@ struct IntOp {
     NameArray     name6;
     int32_t       literal1;
     int32_t       literal2;
-    int32_t       literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
-    int32_t      *data;        // for INT_FLASH_INIT
-    bool         *poweredAfter;
-    bool         *workingNow;
-    int           rung;        //= rungNow  //this IntOp located in rung,
-    int           which;       //= whichNow //this IntOp refers to the ELEM_<which>
-    ElemLeaf     *leaf;        //= leafNow  //
-    FileNameArray fileName;    //in .c source file name
-    int           fileLine;    //and line in file
+    int32_t       literal3; // side effect: internaly used in simulation of INT_FLASH_READ
+    const int32_t * data;     // for INT_FLASH_INIT
+    bool *        poweredAfter;
+    bool *        workingNow;
+    int           rung;     //= rungNow  //this IntOp located in rung,
+    SeriesNode *  node;     //= nodeNow  //
+    FileNameArray fileName; //in .c source file name
+    int           fileLine; //and line in file
     bool          simulated;
 
     IntOp();
 };
 
-#define MAX_INT_OPS     (1024*24)
+#define MAX_INT_OPS (1024 * 24)
 extern std::vector<IntOp> IntCode;
-extern int ProgWriteP;
+extern int                ProgWriteP;
 #endif // !defined(INTCODE_H_CONSTANTS_ONLY)
 
 #endif //__INTCODE_H

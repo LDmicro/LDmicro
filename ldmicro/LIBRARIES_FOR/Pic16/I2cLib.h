@@ -1,11 +1,9 @@
 #include <htc.h>
 
-
 #ifndef LCD_I2C_ADR
-    #define LCD_I2C_ADR     0       // a adapter selon afficheur (si utile)
+  #define LCD_I2C_ADR 0 // a adapter selon afficheur (si utile)
 #endif
-#define LCD_I2C_REG         255     // a adapter selon preferences
-
+#define LCD_I2C_REG 255 // a adapter selon preferences
 
 // Initialisation avec calcul des predivision I2C
 // fcpu : frequence du microcontroleur
@@ -47,12 +45,12 @@ char I2C_MasterReadLast(void);
 
 // Fonction à usage interne
 // Definie comme macro pour reduire stack depth
-#define I2C_MasterWait()    while ((SSPCON2 & 0x1F) || (SSPSTAT & 0x04));
+#define I2C_MasterWait()                        \
+    while((SSPCON2 & 0x1F) || (SSPSTAT & 0x04)) \
+        ;
 
 // Lecture d'une valeur dans registre (reg) sur peripherique (addr)
 char I2C_MasterGetReg(char addr, char reg);
 
 // Ecriture d'une valeur dans registre (reg) sur peripherique (addr)
 void I2C_MasterSetReg(char addr, char reg, char val);
-
-

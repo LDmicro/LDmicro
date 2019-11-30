@@ -63,14 +63,14 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
     }
 
-    WNDPROC w = NULL;
+    WNDPROC w = nullptr;
     for(int i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
         if(hwnd == ValuesTextbox[i]) {
             w = (WNDPROC)PrevValuesProc[i];
             break;
         }
     }
-    if(w == NULL)
+    if(w == nullptr)
         oops();
 
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
@@ -108,7 +108,8 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         w = (WNDPROC)PrevNameProc;
     } else if(hwnd == IndexTextbox) {
         w = (WNDPROC)PrevIndexProc;
-    } else oops();
+    } else
+        oops();
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
 }
 
@@ -120,88 +121,22 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 //-----------------------------------------------------------------------------
 static void MakeFixedControls(bool forPwl)
 {
-    Labels[0] = CreateWindowEx(0,
-                               WC_STATIC,
-                               _("Destination:"),
-                               WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                               0,
-                               10,
-                               78 + 20,
-                               21,
-                               LutDialog,
-                               nullptr,
-                               Instance,
-                               nullptr);
+    Labels[0] = CreateWindowEx(0, WC_STATIC, _("Destination:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 0, 10, 78 + 20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[0]);
 
-    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 85 + 20,
-                                 10,
-                                 120,
-                                 21,
-                                 LutDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 85 + 20, 10, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(DestTextbox);
 
-    Labels[1] = CreateWindowEx(0,
-                               WC_STATIC,
-                               _("Name:"),
-                               WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                               0,
-                               40,
-                               78 + 20,
-                               21,
-                               LutDialog,
-                               nullptr,
-                               Instance,
-                               nullptr);
+    Labels[1] = CreateWindowEx(0, WC_STATIC, _("Name:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 0, 40, 78 + 20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[1]);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 85 + 20,
-                                 40,
-                                 120,
-                                 21,
-                                 LutDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 85 + 20, 40, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(NameTextbox);
 
-    Labels[2] = CreateWindowEx(0,
-                               WC_STATIC,
-                               _("Index:"),
-                               WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                               10,
-                               70,
-                               68 + 20,
-                               21,
-                               LutDialog,
-                               nullptr,
-                               Instance,
-                               nullptr);
+    Labels[2] = CreateWindowEx(0, WC_STATIC, _("Index:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 10, 70, 68 + 20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[2]);
 
-    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  85 + 20,
-                                  40 + 30,
-                                  120,
-                                  21,
-                                  LutDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 85 + 20, 40 + 30, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(IndexTextbox);
 
     const char *txt1 = forPwl ? _("Points:") : _("Table size:");
@@ -212,27 +147,16 @@ static void MakeFixedControls(bool forPwl)
                                txt,
                                WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
                                0,
-                               70 + 22,             /////
+                               70 + 22, /////
                                78 + 20,
-                               42,                  ///// Modified by JG
+                               42, ///// Modified by JG
                                LutDialog,
                                nullptr,
                                Instance,
                                nullptr);
     NiceFont(Labels[3]);
 
-    CountTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  85 + 20,
-                                  70 + 30,
-                                  120,
-                                  21,
-                                  LutDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CountTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 85 + 20, 70 + 30, 120, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(CountTextbox);
 
     if(!forPwl) {
@@ -241,7 +165,7 @@ static void MakeFixedControls(bool forPwl)
                                           _("Edit table of ASCII values like a string"),
                                           WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
                                           10,
-                                          100+30,       ///// Modified by JG
+                                          100 + 30, ///// Modified by JG
                                           300,
                                           21,
                                           LutDialog,
@@ -251,32 +175,10 @@ static void MakeFixedControls(bool forPwl)
         NiceFont(AsStringCheckbox);
     }
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              231 + 20,
-                              10,
-                              70,
-                              23,
-                              LutDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 231 + 20, 10, 70, 23, LutDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  231 + 20,
-                                  40,
-                                  70,
-                                  23,
-                                  LutDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 231 + 20, 40, 70, 23, LutDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, (LONG_PTR)MyNameProc);
@@ -297,8 +199,7 @@ static void DestroyLutControls()
         // specified string, because we might as well do that when we
         // calculate the length.
     } else {
-        int i;
-        for(i = 0; i < WasCount; i++) {
+        for(int i = 0; i < WasCount; i++) {
             char buf[20];
             SendMessage(ValuesTextbox[i], WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
             ValuesCache[i] = hobatoi(buf);
@@ -307,8 +208,7 @@ static void DestroyLutControls()
 
     DestroyWindow(StringTextbox);
 
-    int i;
-    for(i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
+    for(int i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
         DestroyWindow(ValuesTextbox[i]);
         DestroyWindow(ValuesLabel[i]);
     }
@@ -358,30 +258,18 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
             }
         }
         str[j++] = '\0';
-        StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                       WC_EDIT,
-                                       str,
-                                       WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                       10,
-                                       130 + 30,
-                                       294,
-                                       21,
-                                       LutDialog,
-                                       nullptr,
-                                       Instance,
-                                       nullptr);
+        StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, str, WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 10, 130 + 30, 294, 21, LutDialog, nullptr, Instance, nullptr);
         FixedFont(StringTextbox);
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) true, 0);
         MoveWindow(LutDialog, 100, 30, 320 + 20, 185 + 30, true);
     } else {
-        int i;
         int base;
         if(forPwl) {
-            base = 100 + 40;        ///// Modified by JG
+            base = 100 + 40; ///// Modified by JG
         } else {
-            base = 140 + 25;        /////
+            base = 140 + 25; /////
         }
-        for(i = 0; i < count; i++) {
+        for(int i = 0; i < count; i++) {
             int x, y;
 
             if(i < 16) {
@@ -397,18 +285,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
 
             char buf[20];
             sprintf(buf, "%d", ValuesCache[i]);
-            ValuesTextbox[i] = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                              WC_EDIT,
-                                              buf,
-                                              WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                              x + 30,
-                                              y,
-                                              80,
-                                              21,
-                                              LutDialog,
-                                              nullptr,
-                                              Instance,
-                                              nullptr);
+            ValuesTextbox[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, buf, WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, x + 30, y, 80, 21, LutDialog, nullptr, Instance, nullptr);
             NiceFont(ValuesTextbox[i]);
 
             if(forPwl) {
@@ -416,18 +293,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
             } else {
                 sprintf(buf, "%2d:", i);
             }
-            ValuesLabel[i] = CreateWindowEx(0,
-                                            WC_STATIC,
-                                            buf,
-                                            WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                            x,
-                                            y + 3,
-                                            100,
-                                            21,
-                                            LutDialog,
-                                            nullptr,
-                                            Instance,
-                                            nullptr);
+            ValuesLabel[i] = CreateWindowEx(0, WC_STATIC, buf, WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, x, y + 3, 100, 21, LutDialog, nullptr, Instance, nullptr);
             FixedFont(ValuesLabel[i]);
 
             PrevValuesProc[i] = SetWindowLongPtr(ValuesTextbox[i], GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
@@ -436,8 +302,8 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
             count = MAX_LOOK_UP_TABLE_LEN;
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) false, 0);
 
-        MoveWindow(
-            LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 60 + std::min(count, 16) * 30, true);      ///// Modified by JG
+        MoveWindow(LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 60 + std::min(count, 16) * 30,
+                   true); ///// Modified by JG
     }
 }
 
@@ -510,7 +376,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
                                    100,
                                    100,
                                    320,
-                                   405,             //// Modified by JG
+                                   405, //// Modified by JG
                                    nullptr,
                                    nullptr,
                                    Instance,
@@ -539,7 +405,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     char PrevTableAsString[1024] = "";
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
@@ -605,8 +471,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         DestroyLutControls();
         // The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there (whichever mode we were in before).
-        int i;
-        for(i = 0; i < count; i++) {
+        for(int i = 0; i < count; i++) {
             t->vals[i] = ValuesCache[i];
         }
         t->count = count;
@@ -638,18 +503,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
 
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
-    LutDialog = CreateWindowClient(0,
-                                   "LDmicroDialog",
-                                   _("Piecewise Linear Table"),
-                                   WS_OVERLAPPED | WS_SYSMENU,
-                                   100,
-                                   100,
-                                   320,
-                                   375,
-                                   nullptr,
-                                   nullptr,
-                                   Instance,
-                                   nullptr);
+    LutDialog = CreateWindowClient(0, "LDmicroDialog", _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 320, 375, nullptr, nullptr, Instance, nullptr);
     MakeFixedControls(true);
     MakeLutControls(false, count * 2, true);
 
@@ -669,7 +523,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
-    MSG   msg;
+    MSG msg;
     DialogDone = false;
     DialogCancel = false;
     while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {

@@ -152,8 +152,7 @@ static void SetSysClock(void)
         RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV4;
 
         /* Select HSE as PLL source */
-        RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) - 1) << 16) | (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24)
-                       | (PLL_R << 28);
+        RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) - 1) << 16) | (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24) | (PLL_R << 28);
 
         /* Enable PLL */
         RCC->CR |= ((uint32_t)RCC_CR_PLLON);

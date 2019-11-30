@@ -597,8 +597,7 @@ static void SetSysClockTo24(void)
         /* PLL2 configuration: PLL2CLK = (HSE / 5) * 8 = 40 MHz */
         /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 10 = 4 MHz */
         RCC->CFGR2 &= (uint32_t) ~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL | RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2
-                                 | RCC_CFGR2_PREDIV1_DIV10);
+        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV10);
 
         /* Enable PLL2 */
         RCC->CR |= RCC_CR_PLL2ON;
@@ -689,8 +688,7 @@ static void SetSysClockTo36(void)
         /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 10 = 4 MHz */
 
         RCC->CFGR2 &= (uint32_t) ~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL | RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2
-                                 | RCC_CFGR2_PREDIV1_DIV10);
+        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV10);
 
         /* Enable PLL2 */
         RCC->CR |= RCC_CR_PLL2ON;
@@ -773,8 +771,7 @@ static void SetSysClockTo48(void)
         /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 5 = 8 MHz */
 
         RCC->CFGR2 &= (uint32_t) ~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL | RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2
-                                 | RCC_CFGR2_PREDIV1_DIV5);
+        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
         /* Enable PLL2 */
         RCC->CR |= RCC_CR_PLL2ON;
@@ -861,8 +858,7 @@ static void SetSysClockTo56(void)
         /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 5 = 8 MHz */
 
         RCC->CFGR2 &= (uint32_t) ~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL | RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2
-                                 | RCC_CFGR2_PREDIV1_DIV5);
+        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
         /* Enable PLL2 */
         RCC->CR |= RCC_CR_PLL2ON;
@@ -950,8 +946,7 @@ static void SetSysClockTo72(void)
         /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 5 = 8 MHz */
 
         RCC->CFGR2 &= (uint32_t) ~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL | RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
-        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2
-                                 | RCC_CFGR2_PREDIV1_DIV5);
+        RCC->CFGR2 |= (uint32_t)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 | RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5);
 
         /* Enable PLL2 */
         RCC->CR |= RCC_CR_PLL2ON;

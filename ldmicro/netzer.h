@@ -19,57 +19,52 @@
 
 #include <stdint.h>
 
-#define CURRENT_FORMAT_VERSION   (1u)
-#define MAX_PROJECTNAME_LENGTH   (16u)
+#define CURRENT_FORMAT_VERSION (1u)
+#define MAX_PROJECTNAME_LENGTH (16u)
 
-#define PROJECT_ID_IO            (0xFFu)
+#define PROJECT_ID_IO (0xFFu)
 
-#define START_TAG_BYTE1          (0x00)
-#define START_TAG_BYTE2          (0xEF)
-#define START_TAG_BYTE3          (0xF4)
-#define START_TAG_BYTE4          (0xF0)
+#define START_TAG_BYTE1 (0x00)
+#define START_TAG_BYTE2 (0xEF)
+#define START_TAG_BYTE3 (0xF4)
+#define START_TAG_BYTE4 (0xF0)
 
-# pragma pack (1)
+#pragma pack(1)
 
-typedef struct MetaFlagsTag
-{
+typedef struct MetaFlagsTag {
     uint8_t FormatVersion : 4;
     uint8_t IsCompiled : 1;
     uint8_t Reserved;
 } MetaFlags;
 
-typedef struct NetzerMetaInformationTag
-{
-    uint8_t    StartTag[4];
-    uint16_t   ImageCRC;
-    uint16_t   ImageLength;
-    MetaFlags  Flags;
-    uint8_t    ProjectID; /// Dedicated for given project.
-    uint16_t   Opcodes;
-    uint32_t   CycleTime;
-    uint32_t   TimeStamp;
-    uint8_t    ProjectnameLength;
-//  BYTE    Projectname[];
+typedef struct NetzerMetaInformationTag {
+    uint8_t   StartTag[4];
+    uint16_t  ImageCRC;
+    uint16_t  ImageLength;
+    MetaFlags Flags;
+    uint8_t   ProjectID; /// Dedicated for given project.
+    uint16_t  Opcodes;
+    uint32_t  CycleTime;
+    uint32_t  TimeStamp;
+    uint8_t   ProjectnameLength;
+    //  BYTE    Projectname[];
 } NetzerMetaInformation_t;
 
-typedef enum
-{
+typedef enum {
     MTT_END_OF_HEADER = 0xFF,
     MTT_LOCAL_VARIABLE = 0x00,
     MTT_LOCAL_RELAY = 0x01,
 } MetaTagType_t;
 
-typedef struct
-{
+typedef struct {
     MetaTagType_t Type;
-    uint8_t Length;  // For header close tags (MTT_END_OF_HEADER) this one is omitted.
-//  BYTE TagData[];
+    uint8_t       Length; // For header close tags (MTT_END_OF_HEADER) this one is omitted.
+    //  BYTE TagData[];
 } ProcessMetaTag;
 
-# pragma pack ()
+#pragma pack()
 
-typedef enum NetzerIntCodesTag
-{
+typedef enum NetzerIntCodesTag {
     OP_END_OF_PROGRAM = 0x00,
     OP_BIT_SET = 0x04,
     OP_BIT_SET_IO = 0x08,
@@ -93,7 +88,7 @@ typedef enum NetzerIntCodesTag
     OP_DECREMENT_VARIABLE = 0x45,
     OP_DECREMENT_VARIABLE_IO = 0x45,
     OP_SET_VARIABLE_AND = 0x45,
-    OP_SET_VARIABLE_OR  = 0x45,
+    OP_SET_VARIABLE_OR = 0x45,
     OP_SET_VARIABLE_XOR = 0x45,
     OP_SET_VARIABLE_NOT = 0x45,
     OP_SET_VARIABLE_NEG = 0x45,
@@ -135,9 +130,7 @@ typedef enum NetzerIntCodesTag
     OP_WRITE_STRING_IO = 0x80
 } NetzerIntCodes;
 
-
-typedef struct OpcodeMetaTag
-{
+typedef struct OpcodeMetaTag {
     int Opcodes;
     int BytesConsumed;
 } OpcodeMeta;

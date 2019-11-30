@@ -12,7 +12,6 @@ static ElemSubcktSeries *AllocEmptyRung()
     s->contents[0].which = ELEM_PLACEHOLDER;
     ElemLeaf *l = AllocLeaf();
     s->contents[0].data.leaf = l;
-
     return s;
 }
 
@@ -38,20 +37,21 @@ PlcProgram::PlcProgram()
     WDTPSA = 0;
     OPTION = 0;
     for(int i = 0; i <= MAX_RUNGS; i++) {
-		rungPowered[i] = 0; 
-		rungSimulated[i] = 0;
-		rungSelected[i] = 0;
-		OpsInRung[i] = 0;
-		HexInRung[i] = 0;
-	}
+        rungPowered[i] = 0;
+        rungSimulated[i] = 0;
+        rungSelected[i] = 0;
+        OpsInRung[i] = 0;
+        HexInRung[i] = 0;
+    }
+    compiler = 0;
 }
 
-PlcProgram::PlcProgram(const PlcProgram& other)
+PlcProgram::PlcProgram(const PlcProgram &other)
 {
     *this = other;
 }
 
-PlcProgram& PlcProgram::operator=(const PlcProgram& other)
+PlcProgram &PlcProgram::operator=(const PlcProgram &other)
 {
     this->reset();
 
@@ -90,19 +90,19 @@ PlcProgram::~PlcProgram()
 }
 
 void LoadWritePcPorts();
-void PlcProgram::setMcu(McuIoInfo* m)
+void PlcProgram::setMcu(McuIoInfo *mcu)
 {
-    mcu_ = m;
+    mcu_ = mcu;
     if(!mcu_)
         return;
 
     // configurationWord = 0; Don't resets configurationWord when select other MCU !!!
 
-    auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
-            const char* sa = strlen(a.pinName) > 0 ? a.pinName : "";
-            const char* sb = strlen(b.pinName) > 0 ? b.pinName : "";
-            return (strcmp(sa, sb) < 0);
-        };
+    auto comparePinInfo = [](const McuIoPinInfo &a, const McuIoPinInfo &b) -> bool {
+        const char *sa = strlen(a.pinName) > 0 ? a.pinName : "";
+        const char *sb = strlen(b.pinName) > 0 ? b.pinName : "";
+        return (strcmp(sa, sb) < 0);
+    };
 
     if(mcu_ && (mcu_->core != PC_LPT_COM))
         std::sort(mcu_->pinInfo, mcu_->pinInfo + mcu_->pinCount, comparePinInfo);
@@ -119,35 +119,33 @@ int PlcProgram::mcuPWM() const
         for(uint32_t i = 0; i < mcu_->pwmCount; i++) {
             if(mcu_->pwmInfo[i].pin)
                 if(mcu_->pwmInfo[i].pin != prevPin)
-                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->pwmInfo[i].timer != cycleTimer))
+                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->whichIsa == ISA_PIC18) || (mcu_->pwmInfo[i].timer != cycleTimer))
                         n++;
             prevPin = mcu_->pwmInfo[i].pin;
         }
-    } else if(mcu_->pwmNeedsPin) {
-        n = 1;
     }
     return n;
 }
 
 int PlcProgram::mcuADC() const
 {
-    return mcu_ ? mcu_->adcCount : 0 ;
+    return mcu_ ? mcu_->adcCount : 0;
 }
 
 int PlcProgram::mcuSPI() const
 {
-    return mcu_ ? mcu_->spiCount : 0 ;
+    return mcu_ ? mcu_->spiCount : 0;
 }
 
 int PlcProgram::mcuI2C() const
 {
-    return mcu_ ? mcu_->i2cCount : 0 ;
+    return mcu_ ? mcu_->i2cCount : 0;
 }
 
 int PlcProgram::mcuROM() const
 {
     return 1000000; //TODO: fix ROM hardcode
-/*
+    /*
     if(!mcu_)
         return 0;
 
@@ -218,7 +216,7 @@ void PlcProgram::insertEmptyRung(uint32_t idx)
     numRungs++;
 }
 
-void* PlcProgram::deepCopy(int which, const void* any) const
+void *PlcProgram::deepCopy(int which, const void *any) const
 {
     switch(which) {
         CASE_LEAF

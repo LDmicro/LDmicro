@@ -43,4 +43,3 @@ int PWM_Prediv(long fmcu, long fpwm);
 void PWM_Set(int canal, unsigned percent, int resol);
 
 void PWM_Stop(int canal);
-

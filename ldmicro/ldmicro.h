@@ -165,11 +165,13 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-#define MNU_INSERT_UART_SENDn        0x3301
+//#define MNU_INSERT_UART_SENDn        0x3301 // impasse
 #define MNU_INSERT_UART_SEND_READY   0x3302
 #define MNU_INSERT_UART_RECV         0x34
-#define MNU_INSERT_UART_RECVn        0x3401
+//#define MNU_INSERT_UART_RECVn        0x3401 // impasse
 #define MNU_INSERT_UART_RECV_AVAIL   0x3402
+#define MNU_INSERT_FMTD_STRING       0x3410 // "Insert Formatted String Over &UART"
+#define MNU_INSERT_UART_WRITE        0x3420 // "Insert String Over UART"
 #define MNU_INSERT_EQU          0x35
 #define MNU_INSERT_NEQ          0x36
 #define MNU_INSERT_GRT          0x37
@@ -194,7 +196,7 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_RETURN       0x3d25
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
-#define MNU_INSERT_FMTD_STRING  0x40
+//#define MNU_INSERT_FMTD_STRING  0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -274,9 +276,9 @@ typedef uint32_t ADDR_T;
 
 #define MNU_COMPILE_ARDUINO         0x7400          // Arduino
 
-#define MNU_COMPILE_IHEX            0x7500
+#define MNU_COMPILE_IHEX            0x7500          // HEX->ASM
 #define MNU_COMPILE_IHEXDONE        0x7510
-#define MNU_COMPILE_ASM             0x7600
+#define MNU_COMPILE_ASM             0x7600          // ASM->HEX
 #define MNU_COMPILE_PASCAL          0x7700
 #define MNU_COMPILE_INT             0x7800          // Interpreter
 #define MNU_COMPILE_XINT            0x7810          // Extended interpreter
@@ -297,7 +299,7 @@ typedef uint32_t ADDR_T;
 #define MNU_RELEASE             0x82
 
 #define MNU_SCHEME_BLACK        0x9000 // Must be a first
-#define NUM_SUPPORTED_SCHEMES   6      // ...
+#define NUM_SUPPORTED_SCHEMES   7      // ...
 #define MNU_SCHEME_USER         (MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1) // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 
@@ -373,6 +375,14 @@ extern DWORD scheme;
 #define IS_MCU_REG(i) ((Prog.mcu()) && (Prog.mcu()->inputRegs[i]) && (Prog.mcu()->outputRegs[i]) && (Prog.mcu()->dirRegs[i]))
 
 //-----------------------------------------------
+typedef enum FRMTTag { //
+    FRMT_COMMENT,      //
+    FRMT_01,           //
+    FRMT_x20,          // convert space char ' ' to hex code \x20
+    FRMT_SPACE,        //
+} FRMT;                //
+
+//-----------------------------------------------
 // Function prototypes
 
 // ldmicro.cpp
@@ -441,7 +451,7 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/);
+bool DrawElement(int which, void *any, int *cx, int *cy, bool poweredBefore/*, int cols*/);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern bool SelectionActive;
@@ -452,7 +462,7 @@ void SetSyntaxHighlightingColours();                            ///// Prototype 
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow();
-BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime, int mode);     ///// prototype modified by JG
+BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode);
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
@@ -519,6 +529,11 @@ ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+char *FrmStrToStr(char *dest);
+const char *ChrToFrmtStr(const char src, FRMT frmt);
+const char *ChrToFrmtStr(const char src);
+char *StrToFrmStr(char *dest, const char *src, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 void LoadWritePcPorts();
 
 // iolist.cpp
@@ -556,6 +571,7 @@ void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+void ShowWrDialog(int which, ElemLeaf *l);
 void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(void *e);
 void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
@@ -612,10 +628,10 @@ extern bool DialogCancel;
 #ifdef OOPS_AS_THROW
 #define ooops(FMT, ...) do { \
     dbp("rungNow=%d\n", rungNow); \
-    char __message[1024];\
-    sprintf(__message, (FMT),  __VA_ARGS__); \
-    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __message); \
-    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", __message, rungNow); \
+    char ooops__message[1024];\
+    sprintf(ooops__message, (FMT),  __VA_ARGS__); \
+    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, ooops__message); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.",ooops__message, rungNow); \
 } while(0)
 #define oops() do { \
     dbp("rungNow=%d\n", rungNow); \
@@ -714,6 +730,8 @@ extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 bool IsNumber(const char *str);
 bool IsNumber(const NameArray& name);
+bool IsString(const char *str);
+bool IsString(const NameArray &name);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -751,6 +769,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList);
 int32_t GetSimulationVariable(const char *name);
 int32_t GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(const char *name, const char *val);
+char *GetSimulationStr(const char *name, bool forIoList);
 char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);
@@ -981,7 +1000,7 @@ void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const NameArray& name, int sizeOfVar);
 int SizeOfVar(const NameArray& name);
 int AllocOfVar(const NameArray& name);
-int TestByteNeeded(int count, int32_t *vals);
+int TestByteNeeded(int count, const int32_t* vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FileTracker& f);
 bool LoadVarListFromFile(FileTracker& f);
@@ -1008,8 +1027,8 @@ extern int int_comment_level;
 extern int asm_comment_level;
 extern int asm_discover_names;
 extern int rungNow;
-void IntDumpListing(char *outFile);
-int32_t TestTimerPeriod(char *name, int32_t delay, int adjust); // delay in us
+void IntDumpListing(const char *outFile);
+int32_t TestTimerPeriod(const char* name, int32_t delay, int adjust); // delay in us
 bool GenerateIntermediateCode();
 bool CheckLeafElem(int which, void *elem);
 extern ADDR_T addrRUartRecvErrorFlag;

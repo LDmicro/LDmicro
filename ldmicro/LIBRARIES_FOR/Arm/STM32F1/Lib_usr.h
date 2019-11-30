@@ -12,15 +12,14 @@
 // standard functions to implement in C
 
 uint16_t swap(uint16_t var);
-int16_t opposite(int16_t var);
-
+int16_t  opposite(int16_t var);
 
 uint8_t bcd2bin(uint8_t var);
 uint8_t bin2bcd(uint8_t var);
 
+extern volatile uint16_t usSysTick;
 
 void delay_us(uint16_t us);
 void delay_ms(uint16_t ms);
-
 
 #endif

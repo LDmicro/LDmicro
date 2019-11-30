@@ -24,11 +24,10 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_adc.h"
 
+void LibADC_Init(ADC_TypeDef *ADCx, uint8_t channel);
 
-void LibADC_Init(ADC_TypeDef* ADCx, uint8_t channel);
+uint16_t LibADC_Read(ADC_TypeDef *ADCx, uint8_t channel);
 
-uint16_t LibADC_Read(ADC_TypeDef* ADCx, uint8_t channel);
-
-void LibADC_Stop(ADC_TypeDef* ADCx);
+void LibADC_Stop(ADC_TypeDef *ADCx);
 
 #endif

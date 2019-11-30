@@ -43,6 +43,12 @@ static HMENU InstructionMenu;
 static HMENU CourseMenu;
 static HMENU FormatStrMenu;
 static HMENU ProcessorMenu;
+static HMENU ProcAvrMenu; /// JG3
+static HMENU ProcPic16Menu;
+static HMENU ProcPic18Menu;
+static HMENU ProcEspMenu;
+static HMENU ProcArmMenu;
+static HMENU ProcOthersMenu; /// JG3
 static HMENU ProcessorMenu2;
 static HMENU SimulateMenu;
 static HMENU TopMenu;
@@ -54,8 +60,8 @@ static HMENU TmpMenu;
 static HMENU CntMenu;
 static HMENU EdgMenu;
 static HMENU UrtMenu;
-static HMENU SpiMenu;                   ///// JG
-static HMENU I2cMenu;                   ///// JG
+static HMENU SpiMenu;
+static HMENU I2cMenu;
 static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
@@ -74,9 +80,9 @@ int         IoListTop;
 // whether the simulation is running in real time
 static bool RealTimeSimulationRunning;
 
-extern HWND     UartSimulationWindow;       ///// Added by JG
-extern HWND     SpiSimulationWindow;        ///// Added by JG
-extern HWND     I2cSimulationWindow;        ///// Added by JG
+extern HWND UartSimulationWindow;
+extern HWND SpiSimulationWindow;
+extern HWND I2cSimulationWindow;
 
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
@@ -96,19 +102,8 @@ void MakeMainWindowControls()
         ListView_InsertColumn(hWnd, i, &lvc); \
     } while(0)
     // create child window for IO list
-    IoList = CreateWindowEx(WS_EX_CLIENTEDGE,
-                            WC_LISTVIEW,
-                            "",
-                            WS_CHILD | LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP | LVS_SINGLESEL
-                                | WS_CLIPSIBLINGS,
-                            12,
-                            25,
-                            300,
-                            300,
-                            MainWindow,
-                            nullptr,
-                            Instance,
-                            nullptr);
+    IoList = CreateWindowEx(
+        WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD | LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP | LVS_SINGLESEL | WS_CLIPSIBLINGS, 12, 25, 300, 300, MainWindow, nullptr, Instance, nullptr);
     ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
 
     int typeWidth = 110;
@@ -127,31 +122,9 @@ void MakeMainWindowControls()
     LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60, _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS, modbusWidth, _("Modbus addr"));
     // IO list horizontal scroll bar
-    HorizScrollBar = CreateWindowEx(0,
-                                    WC_SCROLLBAR,
-                                    "",
-                                    WS_CHILD | SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
-                                    100,
-                                    100,
-                                    100,
-                                    100,
-                                    MainWindow,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD | SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 100, 100, 100, 100, MainWindow, nullptr, Instance, nullptr);
     // IO list Verticle scroll bar
-    VertScrollBar = CreateWindowEx(0,
-                                   WC_SCROLLBAR,
-                                   "",
-                                   WS_CHILD | SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
-                                   200,
-                                   100,
-                                   100,
-                                   100,
-                                   MainWindow,
-                                   nullptr,
-                                   Instance,
-                                   nullptr);
+    VertScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD | SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 200, 100, 100, 100, MainWindow, nullptr, Instance, nullptr);
     RECT scroll;
     GetWindowRect(HorizScrollBar, &scroll);
     ScrollHeight = scroll.bottom - scroll.top;
@@ -195,11 +168,10 @@ void UpdateMainWindowTitleBar()
 // Set the enabled state of the logic menu items to reflect where we are on
 // the schematic (e.g. can't insert two coils in series).
 //-----------------------------------------------------------------------------
-void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool canSetOnly, bool canDelete,
-                     bool canInsertEnd, bool canInsertOther, bool canPushDown, bool canPushUp, bool canInsertComment)
+void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool canSetOnly, bool canDelete, bool canInsertEnd, bool canInsertOther, bool canPushRungDown, bool canPushRungUp, bool canInsertComment)
 {
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP, canPushUp ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN, canPushDown ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP, canPushRungUp ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN, canPushRungDown ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(EditMenu, MNU_DELETE_RUNG, (Prog.numRungs > 1) ? MF_ENABLED : MF_GRAYED);
 
     EnableMenuItem(InstructionMenu, MNU_NEGATE, canNegate ? MF_ENABLED : MF_GRAYED);
@@ -298,12 +270,16 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_ENDSUB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
+    /*
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECVn, t);
+*/
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
+    /*
     EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_SPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_FPRINTF, t);
@@ -311,6 +287,7 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, ELEM_I2C_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF, t);
     EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF, t);
+*/
 
 #ifdef USE_SFR
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
@@ -322,10 +299,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);       ///// Added by JG
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);
 
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);        ///// Added by JG
-    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);       /////
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -335,6 +312,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 
     t = Prog.mcu() ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(settings, MNU_PULL_UP_RESISTORS, t);
+    /*
+    t = Prog.mcu() && (Prog.mcu()->core > ARMcores) && (Prog.mcu()->core < ARMcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(settings, MNU_COMPILE_ARMGCC, t);
+*/
 }
 
 //-----------------------------------------------------------------------------
@@ -441,10 +422,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
-    AppendMenu(InstructionMenu,
-               MF_STRING | MF_POPUP,
-               (UINT_PTR)CourseMenu,
-               _("Operations that change the course of the program"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu, _("Operations that change the course of the program"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     ConMenu = CreatePopupMenu();
@@ -465,7 +443,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConMenu, _("Contacts and Coils / Relays"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    ///// Submenu created by JG
+
     EdgMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSR, _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
@@ -482,7 +460,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu, _("Pulse generators"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    ///// Submenu created by JG
+
     TmpMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TON, _("Insert T&ON (Delayed Turn On)\tO"));
@@ -495,7 +473,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)TmpMenu, _("Temporization"));
 
-    ///// Submenu created by JG
     CntMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTU, _("Insert CT&U (Count Up)\tU"));
@@ -574,8 +551,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE, _("Insert OPPOSITE"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT, _("Insert Set Bit #"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("Insert Clear Bit #"));
-    AppendMenu(
-        InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu, _("Bitwise variable operations (Unsigned)"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu, _("Bitwise variable operations (Unsigned)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG, _("Insert Shift Register"));
@@ -586,20 +562,19 @@ HMENU MakeMainWindowMenus()
 
     FormatStrMenu = CreatePopupMenu();
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string"));
 
-    ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
+    // AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
-//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
-//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
+    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
+    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
 
-    ///// Submenus created by JG
     SpiMenu = CreatePopupMenu();
     AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI, _("Insert SPI Send/Receive"));
     AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI_WRITE, _("Insert SPI Write"));
@@ -609,25 +584,23 @@ HMENU MakeMainWindowMenus()
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_READ, _("Insert I2C Read"));
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_WRITE, _("Insert I2C Write"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)I2cMenu, _("I2C functions"));
-    /////
 
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM, _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST, _("Insert Make Persistent"));
 
-    AppendMenu(
-        InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT, _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT, _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("Insert QUADRATURE ENCODER"));
     DisplayMenu = CreatePopupMenu();
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("Insert BIN2BCD converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("SIMUL: Insert BUS tracer"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("Insert BCD2BIN converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("Insert BUS tracer"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("Insert 7-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("SIMUL: Insert 9-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG, _("SIMUL: Insert 14-SEGMENT FONT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG, _("SIMUL: Insert 16-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("Insert 9-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG, _("Insert 14-SEGMENT FONT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG, _("Insert 16-SEGMENT FONT converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu, _("Displays"));
 
 #ifdef USE_SFR
@@ -642,14 +615,46 @@ HMENU MakeMainWindowMenus()
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("Insert Test If Bit Set in SFR"));
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("Insert Test If Bit Clear in SFR"));
 
-    AppendMenu(
-        InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("Special Function for AVR (Obsolete)"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("Special Function for AVR (Obsolete)"));
 #endif
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
+
     ProcessorMenu = CreatePopupMenu();
+    /// Modified by JG3
+    ProcAvrMenu = CreatePopupMenu();
+    ProcPic16Menu = CreatePopupMenu();
+    ProcPic18Menu = CreatePopupMenu();
+    ProcEspMenu = CreatePopupMenu();
+    ProcArmMenu = CreatePopupMenu();
+    ProcOthersMenu = CreatePopupMenu();
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
+        Core core = supportedMcus()[i].core;
+        if((core > AVRcores) && (core < PICcores))
+            AppendMenu(ProcAvrMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > PICcores) && (core < ESPcores))
+            if(core == PIC18HighEndCore16bit)
+                AppendMenu(ProcPic18Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+            else
+                AppendMenu(ProcPic16Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > ESPcores) && (core < ARMcores))
+            AppendMenu(ProcEspMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if((core > ARMcores) && (core < PCcores))
+            AppendMenu(ProcArmMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        if(core > PCcores)
+            AppendMenu(ProcOthersMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+    }
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcAvrMenu, _("Atmel AVR MCUs"));            /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic16Menu, _("Microchip Pic10-16 MCUs")); /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic18Menu, _("Microchip Pic18 MCUs"));    /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcArmMenu, _("ARM MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcOthersMenu, _("Other MCUs"));             /// To translate
+                                                                                                            ///
+
+    /*
     Core core = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(core != supportedMcus()[i].core) {
@@ -658,6 +663,8 @@ HMENU MakeMainWindowMenus()
         }
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
+*/
+
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
@@ -700,8 +707,8 @@ HMENU MakeMainWindowMenus()
     compile = CreatePopupMenu();
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
-    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX, _("Compile HEX->ASM"));
+    //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX, _("Compile ASM->HEX"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC, _("Compile ANSIC"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -714,7 +721,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("Compile Sketch for ARDUINO"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM"));            // Added by JG
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -728,7 +735,7 @@ HMENU MakeMainWindowMenus()
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
-    SetSyntaxHighlightingColours();                     ///// Added by JG for translation
+    SetSyntaxHighlightingColours();
     for(int i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
         AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK + i, Schemes[i].sName);
     }
@@ -781,19 +788,9 @@ void RefreshScrollbars()
     } else {
         ShowWindow(HorizScrollBar, SW_HIDE);
     }
-    MoveWindow(VertScrollBar,
-               main.right - ScrollWidth - 2,
-               1,
-               ScrollWidth,
-               NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3),
-               true);
+    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth, NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), true);
 
-    MoveWindow(VertScrollBar,
-               main.right - ScrollWidth - 2,
-               1,
-               ScrollWidth,
-               NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3),
-               true);
+    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth, NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), true);
 
     InvalidateRect(MainWindow, nullptr, false);
 }
@@ -926,25 +923,13 @@ void RefreshStatusBar()
     double TN = SIprefix(1.0 * Prog.cycleTime * CyclesCount / 1000000, TNunits);
 
     if(Prog.cycleTime > 0) {
-        sprintf(buf,
-                "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%u T=%.6g %ss",
-                T,
-                Tunits,
-                F,
-                Funits,
-                F2,
-                F2units,
-                CyclesCount,
-                TN,
-                TNunits);
+        sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%u T=%.6g %ss", T, Tunits, F, Funits, F2, F2units, CyclesCount, TN, TNunits);
     } else {
         sprintf(buf, "Tcycle=%.6g %ss Ncycle=%u T=%.6g %ss", T, Tunits, CyclesCount, TN, TNunits);
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
-    if(Prog.mcu()
-       && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_INTERPRETED
-           || Prog.mcu()->whichIsa == ISA_XINTERPRETED)) {
+    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_INTERPRETED || Prog.mcu()->whichIsa == ISA_XINTERPRETED)) {
         strcpy(buf, "");
     } else {
         sprintf(buf, _("processor clock %.9g MHz"), (double)Prog.mcuClock / 1000000.0);
@@ -1024,10 +1009,9 @@ void RefreshControlsToSettings()
 //-----------------------------------------------------------------------------
 void GenerateIoListDontLoseSelection()
 {
-    int i;
     int SaveIoListSelectionPoint = IoListSelectionPoint;
     IoListSelectionPoint = -1;
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
             IoListSelectionPoint = i;
             break;
@@ -1085,7 +1069,7 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
-/*
+    /*
     ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
     if (!Prog.mcu())
     {
@@ -1118,7 +1102,6 @@ void ToggleSimulationMode(bool doSimulateOneRung)
         if(ClearSimulationData()) {
             // Recheck InSimulationMode, because there could have been a compile
             // error, which would have kicked us out of simulation mode.
-            ///// Modified by JG
             if(UartFunctionUsed() && InSimulationMode)
                 ShowSimulationWindow(SIM_UART);
             if(SpiFunctionUsed() && InSimulationMode)
@@ -1152,14 +1135,12 @@ void ToggleSimulationMode(bool doSimulateOneRung)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_UNCHECKED);
 
-        ///// Modified by JG
         if(UartFunctionUsed())
             DestroySimulationWindow(UartSimulationWindow);
         if(SpiFunctionUsed())
             DestroySimulationWindow(SpiSimulationWindow);
         if(I2cFunctionUsed())
             DestroySimulationWindow(I2cSimulationWindow);
-        /////
     }
 
     UpdateMainWindowTitleBar();
@@ -1188,14 +1169,12 @@ void StartSimulation()
 
     UpdateMainWindowTitleBar();
 
-    ///// Added by JG
     if(UartFunctionUsed())
         ShowWindow(UartSimulationWindow, true);
     if(SpiFunctionUsed())
         ShowWindow(SpiSimulationWindow, true);
     if(I2cFunctionUsed())
         ShowWindow(I2cSimulationWindow, true);
-    /////
 }
 
 //-----------------------------------------------------------------------------

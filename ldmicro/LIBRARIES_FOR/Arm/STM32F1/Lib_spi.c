@@ -33,8 +33,7 @@ void LibSPI_Init(SPI_TypeDef *SPIx, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI
   * @param  SPI_FirstBit = SPI_FirstBit_MSB or SPI_FirstBit_LSB
   * @retval None
   */
-void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_BaudRatePrescaler,
-                     LibSPI_DataSize_t SPI_DataSize, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
+void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_BaudRatePrescaler, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
     SPI_InitTypeDef  SPI_InitStruct;
@@ -81,7 +80,6 @@ void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_Mode_t SPI_Mode, uint16_t SPI_Bau
         // Confugure MISO pin as Input Floating
         GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14;
         GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        ;
 
         GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
@@ -251,7 +249,7 @@ void LibSPI_ReadMulti(SPI_TypeDef *SPIx, uint8_t *dataIn, uint8_t dummy, uint32_
   * @param  SPIx = SPI1 or SPI2
   * @retval None
   */
-uint16_t LibSPI_Stop(SPI_TypeDef *SPIx)
+void LibSPI_Stop(SPI_TypeDef *SPIx)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 

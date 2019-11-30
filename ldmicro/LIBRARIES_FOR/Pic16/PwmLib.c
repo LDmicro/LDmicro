@@ -63,8 +63,7 @@ void PWM_Init(int canal, long fmcu, long fpwm, int resol)
             TRISBbits.TRISB3 = 0; // PWM output on RB3
 #endif
 
-#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) \
-    || defined(LDTARGET_pic16f887)
+#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) || defined(LDTARGET_pic16f887)
         TRISCbits.TRISC2 = 0; // configure RC2 as output(RC2= PWM1 output)
 #endif
 
@@ -77,8 +76,7 @@ void PWM_Init(int canal, long fmcu, long fpwm, int resol)
         TMR2ON = 1;       // start Timer 2 for PWM generation
     }
 
-#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) \
-    || defined(LDTARGET_pic16f887)
+#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) || defined(LDTARGET_pic16f887)
     if(canal == 2) {
         TRISCbits.TRISC1 = 0; // configure RC1 as output(RC1= PWM2 output)
 
@@ -103,8 +101,7 @@ void PWM_Set(int canal, unsigned percent, int resol)
         CCP1CON = ((value & 0x0003) << 4) + 0x0C;
         TMR2ON = 1;
     }
-#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) \
-    || defined(LDTARGET_pic16f887)
+#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) || defined(LDTARGET_pic16f887)
     if(canal == 2) {
         TMR2ON = 0;
         CCPR2L = value >> 2;
@@ -123,8 +120,7 @@ void PWM_Stop(int canal)
         PR2 = 0;
         TMR2ON = 0; // stop Timer 2 and PWM generation
     }
-#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) \
-    || defined(LDTARGET_pic16f887)
+#if defined(LDTARGET_pic16f876) || defined(LDTARGET_pic16f877) || defined(LDTARGET_pic16f886) || defined(LDTARGET_pic16f887)
     if(canal == 2) {
         CCP2CON = 0;
         CCPR2L = 0;

@@ -12,8 +12,8 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-typedef unsigned char  BYTE;  // 8-bit unsigned
-typedef unsigned short WORD;  // 16-bit unsigned
+typedef unsigned char  BYTE; // 8-bit unsigned
+typedef unsigned short WORD; // 16-bit unsigned
 
 #define INTCODE_H_CONSTANTS_ONLY
 
@@ -44,7 +44,7 @@ typedef unsigned short WORD;  // 16-bit unsigned
 uint32_t Program[MAX_OPS];
 
 int32_t Integers[MAX_VARIABLES];
-BYTE  Bits[MAX_VARIABLES];
+BYTE    Bits[MAX_VARIABLES];
 
 #define READ_BIT(addr) Bits[addr]
 #define WRITE_BIT(addr, value) Bits[addr] = (value)
@@ -82,13 +82,12 @@ int HexDigit(int c)
 int LoadProgram(char *fileName)
 {
     int pc;
-    int i;
 
     FILE *f = fopen(fileName, "r");
     char  line[80];
 
     line_number = 0;
-    for(i = 0; i < MAX_VARIABLES; i++) {
+    for(int i = 0; i < MAX_VARIABLES; i++) {
         sprintf(Symbols[i], "%d", i);
     }
 
@@ -107,7 +106,7 @@ int LoadProgram(char *fileName)
 
     while(fgets(line, sizeof(line), f)) {
         int  addr;
-        char name[40+1];
+        char name[40 + 1];
         int  type;
         int  pin;
         int  modbus_slave;
@@ -214,11 +213,7 @@ void Disassemble()
                 c = '%';
                 goto arith;
             arith:
-                printf("int16s[%s] := int16s[%s] %c int16s[%s]",
-                       Symbols[Program[pc]],
-                       Symbols[Program[pc + 2]],
-                       c,
-                       Symbols[Program[pc + 3]]);
+                printf("int16s[%s] := int16s[%s] %c int16s[%s]", Symbols[Program[pc]], Symbols[Program[pc + 2]], c, Symbols[Program[pc + 3]]);
                 pc += 4;
                 break;
 
@@ -394,7 +389,6 @@ void InterpretOneCycle()
 
 int main(int argc, char **argv)
 {
-    int i;
     int rc;
 
     if(argc != 2) {
@@ -411,7 +405,7 @@ int main(int argc, char **argv)
         exit(rc);
 
     // 1000 cycles times 10 ms gives 10 seconds execution
-    for(i = 0; i < 1000; i++) {
+    for(int i = 0; i < 1000; i++) {
         InterpretOneCycle();
         Sleep(10);
     }

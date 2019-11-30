@@ -50,4 +50,3 @@ char I2C_MasterGetReg(char addr, char reg);
 
 // Ecriture d'une valeur dans registre (reg) sur peripherique (addr)
 void I2C_MasterSetReg(char addr, char reg, char val);
-

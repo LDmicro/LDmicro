@@ -20,8 +20,8 @@ void LCD_I2C_MoveCursor(int x, int y){};
 void LCD_I2C_SendChar(char x){};
 void LCD_I2C_BackLight(char stat){};
 
-#define LCD_I2C_ADR		0		// a adapter selon afficheur
-#define LCD_I2C_REG		255		// a adapter selon preferences
+#define LCD_I2C_ADR 0   // a adapter selon afficheur
+#define LCD_I2C_REG 255 // a adapter selon preferences
 
 uint32_t LibI2C_Timeout;
 
@@ -263,42 +263,29 @@ void LibI2C_INT_InitPins(I2C_TypeDef *I2Cx, LibI2C_PinsPack_t pinspack)
 {
     if(I2Cx == I2C1) {
         if(pinspack == LibI2C_PinsPack_1)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_8 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_8 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
         if(pinspack == LibI2C_PinsPack_3)
-            LibGPIO_InitAlternate(
-                GPIOB, GPIO_PIN_6 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_6 | GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C1);
     }
 
     if(I2Cx == I2C2) {
         if(pinspack == LibI2C_PinsPack_1)
-            LibGPIO_InitAlternate(GPIOB,
-                                  GPIO_PIN_10 | GPIO_PIN_11,
-                                  LibGPIO_OType_OD,
-                                  LibGPIO_PuPd_UP,
-                                  LibGPIO_Speed_Medium,
-                                  GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOB, GPIO_PIN_10 | GPIO_PIN_11, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOF, GPIO_PIN_0 | GPIO_PIN_1, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOF, GPIO_PIN_0 | GPIO_PIN_1, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
         if(pinspack == LibI2C_PinsPack_3)
-            LibGPIO_InitAlternate(
-                GPIOH, GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
+            LibGPIO_InitAlternate(GPIOH, GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C2);
     }
 
     if(I2Cx == I2C3) {
         if(pinspack == LibI2C_PinsPack_1) {
-            LibGPIO_InitAlternate(
-                GPIOA, GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
-            LibGPIO_InitAlternate(
-                GPIOC, GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOA, GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOC, GPIO_PIN_9, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
         }
         if(pinspack == LibI2C_PinsPack_2)
-            LibGPIO_InitAlternate(
-                GPIOH, GPIO_PIN_7 | GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
+            LibGPIO_InitAlternate(GPIOH, GPIO_PIN_7 | GPIO_PIN_8, LibGPIO_OType_OD, LibGPIO_PuPd_UP, LibGPIO_Speed_Medium, GPIO_AF_I2C3);
     }
 }
 
@@ -375,22 +362,22 @@ void LibI2C_SetReg(I2C_TypeDef *I2Cx, uint8_t address, uint8_t reg, uint8_t data
         if(data <= 0x10) // commandes diverses
         {
             if(data == 0x00)
-                LCD_I2C_Erase();		// effacement ecran
+                LCD_I2C_Erase(); // effacement ecran
             if(data == 0x01)
-                LCD_I2C_Home();			// retour en haut a gauche
+                LCD_I2C_Home(); // retour en haut a gauche
             if(data == 0x02)
                 LCD_I2C_Config(1, 0, 1); // clignotement active
             if(data == 0x03)
                 LCD_I2C_Config(1, 0, 0); // clignotement desactive
-			// ...
-			if(data == 0x0F)			
-				LCD_I2C_BackLight(0);	// backlight off (si disponible)
-			if(data == 0x10)			
-				LCD_I2C_BackLight(1);	// backlight on (si disponible)
-        } else if(data >= 0x80) {        // commandes move(y,x)
-            x = (data & 0x1F) + 1;       // x sur 5 bits => 0 < x < 33 colonnes
-            y = ((data & 60) >> 5) + 1;  // y sur 2 bits => 0 < y < 5 lignes
-            LCD_I2C_MoveCursor(y, x);    // val= 1yyxxxxx en binaire
+            // ...
+            if(data == 0x0F)
+                LCD_I2C_BackLight(0); // backlight off (si disponible)
+            if(data == 0x10)
+                LCD_I2C_BackLight(1);   // backlight on (si disponible)
+        } else if(data >= 0x80) {       // commandes move(y,x)
+            x = (data & 0x1F) + 1;      // x sur 5 bits => 0 < x < 33 colonnes
+            y = ((data & 60) >> 5) + 1; // y sur 2 bits => 0 < y < 5 lignes
+            LCD_I2C_MoveCursor(y, x);   // val= 1yyxxxxx en binaire
         } else {
             LCD_I2C_SendChar(data);
         }

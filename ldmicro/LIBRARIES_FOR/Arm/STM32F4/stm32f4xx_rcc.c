@@ -1215,8 +1215,7 @@ void RCC_RTCCLKConfig(uint32_t RCC_RTCCLKSource)
     /* Check the parameters */
     assert_param(IS_RCC_RTCCLK_SOURCE(RCC_RTCCLKSource));
 
-    if((RCC_RTCCLKSource & 0x00000300)
-       == 0x00000300) { /* If HSE is selected as RTC clock source, configure HSE division factor for RTC clock */
+    if((RCC_RTCCLKSource & 0x00000300) == 0x00000300) { /* If HSE is selected as RTC clock source, configure HSE division factor for RTC clock */
         tmpreg = RCC->CFGR;
 
         /* Clear RTCPRE[4:0] bits */

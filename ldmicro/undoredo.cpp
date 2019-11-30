@@ -27,7 +27,6 @@
 #include "ldmicro.h"
 #include "undoredo.hpp"
 
-
 //-----------------------------------------------------------------------------
 // Push a copy of the PLC program onto the undo history, replacing (and
 // freeing) the oldest one if necessary.
@@ -111,7 +110,6 @@ bool CanUndo()
     return (Undo::undoSize() > 0);
 }
 
-
 //-----------------------------------------------------------------------------
 // Push the current program onto a program stack. Can either make a deep or
 // a shallow copy of the linked data structures.
@@ -119,7 +117,7 @@ bool CanUndo()
 void ProgramStack::push()
 {
     if(count == MAX_LEVELS_UNDO)
-        undo[write].reset() ;
+        undo[write].reset();
     else
         count++;
 
@@ -159,14 +157,13 @@ void ProgramStack::pop()
     undo[write].reset();
 }
 
-
 //-----------------------------------------------------------------------------
 // Empty out a ProgramStack data structure, either .undo or .redo: set the
 // count to zero and free all the program copies in it.
 //-----------------------------------------------------------------------------
 void ProgramStack::empty()
 {
-    while( count > 0) {
+    while(count > 0) {
         int a = write - 1;
         if(a < 0)
             a += MAX_LEVELS_UNDO;
@@ -177,19 +174,20 @@ void ProgramStack::empty()
     }
 }
 
-void UndoStruct::reset() {
-    if(prog){
+void UndoStruct::reset()
+{
+    if(prog) {
         delete prog;
         prog = nullptr;
     }
-    gx = -1; gy = -1;
+    gx = -1;
+    gy = -1;
 }
 
 Undo Undo::instance_;
 
 Undo::Undo()
 {
-
 }
 
 Undo::~Undo()

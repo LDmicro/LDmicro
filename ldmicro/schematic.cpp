@@ -299,16 +299,7 @@ void WhatCanWeDoFromCursorAndTopology()
 */
         CanInsertComment = false;
     }
-    SetMenusEnabled(canNegate,
-                    canNormal,
-                    canResetOnly,
-                    canSetOnly,
-                    canDelete,
-                    CanInsertEnd,
-                    CanInsertOther,
-                    canPushDown,
-                    canPushUp,
-                    CanInsertComment);
+    SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete, CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);
 }
 
 //-----------------------------------------------------------------------------
@@ -520,11 +511,13 @@ static bool doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_CTC: newWhich = ELEM_CTR; break;
         case ELEM_CTR: newWhich = ELEM_CTU; break;
         //
+/*
         case ELEM_UART_RECV:  newWhich = ELEM_UART_RECVn; break;
         case ELEM_UART_RECVn: newWhich = ELEM_UART_RECV;  break;
         //
         case ELEM_UART_SEND:  newWhich = ELEM_UART_SENDn; break;
         case ELEM_UART_SENDn: newWhich = ELEM_UART_SEND;  break;
+*/
         //
         #ifdef USE_SFR
         case ELEM_RSFR: newWhich = ELEM_WSFR; break;
@@ -658,16 +651,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_CONTACTS:
-            ShowContactsDialog(
-                &(Selected.leaf()->d.contacts.negated), &(Selected.leaf()->d.contacts.set1), Selected.leaf()->d.contacts.name);
+            ShowContactsDialog(&(Selected.leaf()->d.contacts.negated), &(Selected.leaf()->d.contacts.set1), Selected.leaf()->d.contacts.name);
             break;
 
         case ELEM_COIL:
-            ShowCoilDialog(&(Selected.leaf()->d.coil.negated),
-                           &(Selected.leaf()->d.coil.setOnly),
-                           &(Selected.leaf()->d.coil.resetOnly),
-                           &(Selected.leaf()->d.coil.ttrigger),
-                           Selected.leaf()->d.coil.name);
+            ShowCoilDialog(&(Selected.leaf()->d.coil.negated), &(Selected.leaf()->d.coil.setOnly), &(Selected.leaf()->d.coil.resetOnly), &(Selected.leaf()->d.coil.ttrigger), Selected.leaf()->d.coil.name);
             break;
 
         case ELEM_TIME2DELAY:
@@ -749,16 +737,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_PULSER:
-            ShowPulserDialog(Selected.leaf()->d.pulser.P1,
-                             Selected.leaf()->d.pulser.P0,
-                             Selected.leaf()->d.pulser.accel,
-                             Selected.leaf()->d.pulser.counter,
-                             Selected.leaf()->d.pulser.busy);
+            ShowPulserDialog(Selected.leaf()->d.pulser.P1, Selected.leaf()->d.pulser.P0, Selected.leaf()->d.pulser.accel, Selected.leaf()->d.pulser.counter, Selected.leaf()->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
-            ShowNPulseDialog(
-                Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
+            ShowNPulseDialog(Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
@@ -777,11 +760,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_SPI:
-        case ELEM_SPI_WR:                   ///// Added by JG
+        case ELEM_SPI_WR: ///// Added by JG
             ShowSpiDialog(Selected.leaf());
             break;
 
-        case ELEM_I2C_RD:                   ///// Added by JG
+        case ELEM_I2C_RD: ///// Added by JG
         case ELEM_I2C_WR:
             ShowI2cDialog(Selected.leaf());
             break;
@@ -821,11 +804,15 @@ void EditSelectedElement()
 
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
-        case ELEM_UART_RECVn:
-        case ELEM_UART_SENDn:
+            //      case ELEM_UART_RECVn:
+            //      case ELEM_UART_SENDn:
             ShowUartDialog(Selected.which, Selected.leaf());
             break;
-
+            /*
+        case ELEM_UART_WR:
+            ShowWrDialog(Selected.which, Selected.leaf());
+            break;
+*/
         case ELEM_PERSIST:
             ShowPersistDialog(Selected.leaf()->d.persist.var);
             break;

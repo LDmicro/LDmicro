@@ -57,4 +57,3 @@
 extern boolean setPwmFrequency(int pin, int divisor);
 
 #endif
-

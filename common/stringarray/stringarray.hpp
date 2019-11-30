@@ -11,8 +11,8 @@
 #define TO_STR(V) __TO_STR(V)
 
 #define STRINGARRAY_VER_MAJOR 0
-#define STRINGARRAY_VER_MINOR 1
-#define STRINGARRAY_VER_PATCH 2
+#define STRINGARRAY_VER_MINOR 2
+#define STRINGARRAY_VER_PATCH 0
 #define STRINGARRAY_VER_TWEAK 0
 
 #define STRINGARRAY_VER_STR TO_STR(STRINGARRAY_VER_MAJOR) "." TO_STR(STRINGARRAY_VER_MINOR) "."\
@@ -29,19 +29,16 @@ template <size_t _Size>
 class StringArray
 {
 public:
-    typedef StringArray<_Size>                      _Myt;
-    typedef std::array<char, _Size>                 _array;
-    typedef char                                    value_type;
-    typedef size_t                                  size_type;
-    typedef ptrdiff_t                               difference_type;
-    typedef value_type*                             pointer;
-    typedef const value_type*                       const_pointer;
-    typedef value_type&                             reference;
-    typedef const value_type&                       const_reference;
-    typedef typename _array::iterator               iterator;
-    typedef typename _array::const_iterator         const_iterator;
-    typedef typename _array::reverse_iterator       reverse_iterator;
-    typedef typename _array::const_reverse_iterator const_reverse_iterator;
+    typedef StringArray<_Size>           _Myt;
+    typedef char                         value_type;
+    typedef size_t                       size_type;
+    typedef ptrdiff_t                    difference_type;
+    typedef value_type*                  pointer;
+    typedef const value_type*            const_pointer;
+    typedef value_type&                  reference;
+    typedef const value_type&            const_reference;
+    typedef typename _Myt::pointer       iterator;
+    typedef typename _Myt::const_pointer const_iterator;
 
 public:
     void swap(_Myt& _Other)
@@ -56,42 +53,22 @@ public:
 
     iterator begin()
     { // return iterator for beginning of mutable sequence
-        return data_.begin();
+        return &data_[0];
     }
 
     const_iterator begin() const
     { // return iterator for beginning of nonmutable sequence
-        return data_.begin();
+        return &data_[0];
     }
 
     iterator end()
     { // return iterator for end of mutable sequence
-        return (data_.begin() + size());
+        return (begin() + size());
     }
 
     const_iterator end() const
     { // return iterator for beginning of nonmutable sequence
-        return data_.end();
-    }
-
-    reverse_iterator rbegin()
-    { // return iterator for beginning of reversed mutable sequence
-        return (reverse_iterator(end()));
-    }
-
-    const_reverse_iterator rbegin() const
-    { // return iterator for beginning of reversed nonmutable sequence
-        return (const_reverse_iterator(end()));
-    }
-
-    reverse_iterator rend()
-    { // return iterator for end of reversed mutable sequence
-        return (reverse_iterator(begin()));
-    }
-
-    const_reverse_iterator rend() const
-    { // return iterator for end of reversed nonmutable sequence
-        return (const_reverse_iterator(begin()));
+        return (begin() + size());
     }
 
     const_iterator cbegin() const
@@ -104,23 +81,13 @@ public:
         return (((const _Myt*)this)->end());
     }
 
-    const_reverse_iterator crbegin() const
-    { // return iterator for beginning of reversed nonmutable sequence
-        return (((const _Myt*)this)->rbegin());
-    }
-
-    const_reverse_iterator crend() const
-    { // return iterator for ebd of reversed nonmutable sequence
-        return (((const _Myt*)this)->rend());
-    }
-
     size_type size() const
     { // return length of sequence
         size_type zero_pos = 0;
-        for(;zero_pos < data_.size(); ++zero_pos)
+        for(;zero_pos < _Size; ++zero_pos)
             if(data_[zero_pos] == 0)
                 break;
-        if (zero_pos == data_.size())
+        if (zero_pos == _Size)
             {
                 throw std::logic_error("Can't find terminating NULL in StringArray<N>");
             }
@@ -208,12 +175,12 @@ public:
 
     value_type* data()
     { // return pointer to mutable data array
-        return (data_.data());
+        return &data_[0];
     }
 
     const value_type* data() const
     { // return pointer to nonmutable data array
-        return (data_.data());
+        return &data_[0];
     }
 
     const value_type* c_str() const
@@ -255,7 +222,7 @@ public:
         auto _end = size() + sz;
         if(_end > max_size())
             throw std::length_error("StringArray<N>: addition not fit.");
-        strcat(data_.data(), data);
+        strncat(data_, data, sz);
 
         return *this;
     }
@@ -293,7 +260,7 @@ public:
     StringArray(const StringArray<K>& str_arr);
 
 private:
-    _array data_;
+    char data_[_Size];
 };
 
 template <size_t _Size>
@@ -301,8 +268,8 @@ template <size_t K>
 StringArray<_Size>::StringArray(const StringArray<K>& str_arr)
 {
     auto sz = std::min(str_arr.size(), capacity()-1);
-    memcpy(data_.data(), str_arr.data(), sz);
-    data_.data()[sz] = 0;
+    memcpy(data_, str_arr.data(), sz);
+    data_[sz] = 0;
 }
 
 template <size_t _Size>
@@ -311,8 +278,8 @@ StringArray<_Size>::StringArray(const char* str)
     if (str)
         {
             auto sz = std::min(strlen(str), capacity()-1);
-            memcpy(data_.data(), str, sz);
-            data_.data()[sz] = 0;
+            memcpy(data_, str, sz);
+            data_[sz] = 0;
         }
     else
         {

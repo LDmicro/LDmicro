@@ -95,8 +95,8 @@ int LdMsg(UINT uType, const char *str, va_list f)
         strcpy(msg, "\n");
         WriteFile(h, msg, strlen(str), &written, nullptr);
     } else {
-        HWND h = GetForegroundWindow();
-        char buf2[1024];
+        HWND        h = GetForegroundWindow();
+        char        buf2[1024];
         const char *s = "";
         if((uType & MB_ICONINFORMATION) == MB_ICONINFORMATION) {
             s = _("LDmicro Information");
@@ -116,7 +116,7 @@ int LdMsg(UINT uType, const char *str, va_list f)
 
 int LdMsg(UINT uType, const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(uType, str, f);
@@ -124,9 +124,9 @@ int LdMsg(UINT uType, const char *str, ...)
     return ret;
 }
 
-int Error(const char* str, ...)
+int Error(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONERROR, str, f);
@@ -134,9 +134,9 @@ int Error(const char* str, ...)
     return ret;
 }
 
-int Warning(const char* str, ...)
+int Warning(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONWARNING, str, f);
@@ -144,9 +144,9 @@ int Warning(const char* str, ...)
     return ret;
 }
 
-int Info(const char* str, ...)
+int Info(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONINFORMATION, str, f);
@@ -154,9 +154,9 @@ int Info(const char* str, ...)
     return ret;
 }
 
-int Question(const char* str, ...)
+int Question(const char *str, ...)
 {
-    int ret = 0;
+    int     ret = 0;
     va_list f;
     va_start(f, str);
     ret = LdMsg(MB_ICONQUESTION, str, f);
@@ -229,8 +229,7 @@ void FinishIhex(FILE *f)
 //-----------------------------------------------------------------------------
 // Create a window with a given client area.
 //-----------------------------------------------------------------------------
-HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName, DWORD style, int x, int y,
-                        int width, int height, HWND parent, HMENU menu, HINSTANCE instance, void *param)
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, void *param)
 {
     HWND h = CreateWindowEx(exStyle, className, windowName, style, x, y, width, height, parent, menu, instance, param);
 
@@ -316,37 +315,11 @@ void MakeDialogBoxClass()
 
     RegisterClassEx(&wc);
 
-    MyNiceFont = CreateFont(16,
-                            0,
-                            0,
-                            0,
-                            FW_REGULAR,
-                            false,
-                            false,
-                            false,
-                            ANSI_CHARSET,
-                            OUT_DEFAULT_PRECIS,
-                            CLIP_DEFAULT_PRECIS,
-                            DEFAULT_QUALITY,
-                            FF_DONTCARE,
-                            "Tahoma");
+    MyNiceFont = CreateFont(16, 0, 0, 0, FW_REGULAR, false, false, false, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, "Tahoma");
     if(!MyNiceFont)
         MyNiceFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
-    MyFixedFont = CreateFont(14,
-                             0,
-                             0,
-                             0,
-                             FW_REGULAR,
-                             false,
-                             false,
-                             false,
-                             ANSI_CHARSET,
-                             OUT_DEFAULT_PRECIS,
-                             CLIP_DEFAULT_PRECIS,
-                             DEFAULT_QUALITY,
-                             FF_DONTCARE,
-                             "Lucida Console");
+    MyFixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, false, false, false, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, "Lucida Console");
     if(!MyFixedFont)
         MyFixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 }
@@ -372,8 +345,8 @@ const char *IoTypeToString(int ioType)
         case IO_TYPE_SPI_MISO:          return _("SPI MISO");
         case IO_TYPE_SPI_SCK:           return _("SPI SCK");
         case IO_TYPE_SPI__SS:           return _("SPI _SS");
-        case IO_TYPE_I2C_SCL:           return _("I2C SCL");                ///// Added by JG
-        case IO_TYPE_I2C_SDA:           return _("I2C SDA");                /////
+        case IO_TYPE_I2C_SCL:           return _("I2C SCL");             
+        case IO_TYPE_I2C_SDA:           return _("I2C SDA");             
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
         case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
@@ -430,8 +403,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
        || type == IO_TYPE_SPI_MISO   //
        || type == IO_TYPE_SPI_SCK    //
        || type == IO_TYPE_SPI__SS    //
-       || type == IO_TYPE_I2C_SCL    //         ///// Added by JG
-       || type == IO_TYPE_I2C_SDA    //         /////
+       || type == IO_TYPE_I2C_SCL    //       
+       || type == IO_TYPE_I2C_SDA    //     
        || type == IO_TYPE_READ_ADC)  //
     {
         if(pin == NO_PIN_ASSIGNED) {
@@ -445,12 +418,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         return;
                     }
                 }
-                if(PwmFunctionUsed() && Prog.mcu()) {
+                /*
+				if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(portName, _("<PWM needs!>"));
                         return;
                     }
                 }
+*/
                 /*
                 if(QuadEncodFunctionUsed() && Prog.mcu()) {
                     if((Prog.mcu()->IntNeeds.int0 == pin)
@@ -474,12 +449,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         return;
                     }
                 }
-                if(PwmFunctionUsed() && Prog.mcu()) {
+                /*
+				if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(pinName, _("<PWM needs!>"));
                         return;
                     }
                 }
+*/
                 /*
                 if(QuadEncodFunctionUsed() && Prog.mcu()) {
                     if((Prog.mcu()->IntNeeds.int0 == pin)
@@ -552,10 +529,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
         if(!Prog.mcuPWM()) {
             strcpy(dest, _("<no PWM!>"));
         } else {
-            if(pin == 0) {
+            /*
+			if(pin == 0) {
                 pin = Prog.mcu()->pwmNeedsPin;
                 io->pin = pin;
             }
+*/
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
             if(iop) {
@@ -712,7 +691,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->pwmCount; i++)
             if(Prog.mcu()->pwmInfo[i].pin == pin)
-                if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->pwmInfo[i].timer != Prog.cycleTimer))
+                if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18) || (Prog.mcu()->pwmInfo[i].timer != Prog.cycleTimer))
                     return &(Prog.mcu()->pwmInfo[i]);
     return nullptr;
     (void)timer;
@@ -722,14 +701,13 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->pwmCount; i++)
-            if((Prog.mcu()->pwmInfo[i].pin == pin) && (Prog.mcu()->pwmInfo[i].timer != timer)
-               && (Prog.mcu()->pwmInfo[i].resolution == resolution))
+            if((Prog.mcu()->pwmInfo[i].pin == pin) && (Prog.mcu()->pwmInfo[i].timer != timer) && (Prog.mcu()->pwmInfo[i].resolution == resolution))
                 return &(Prog.mcu()->pwmInfo[i]);
     return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-McuSpiInfo *GetMcuSpiInfo(const char* name)
+McuSpiInfo *GetMcuSpiInfo(const char *name)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->spiCount; i++)
@@ -739,7 +717,7 @@ McuSpiInfo *GetMcuSpiInfo(const char* name)
 }
 
 //-----------------------------------------------------------------------------
-McuI2cInfo *GetMcuI2cInfo(const char *name)                       ///// Added by JG
+McuI2cInfo *GetMcuI2cInfo(const char *name)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->i2cCount; i++)
@@ -783,12 +761,12 @@ McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution) //
 ///// Added by JG : to get max Pwm resolution
 McuPwmPinInfo *PwmMaxInfoForName(const char *name, int timer) // !=timer !!!
 {
-    McuPwmPinInfo *mppi= nullptr;
+    McuPwmPinInfo *mppi = nullptr;
 
-    for(int r = 32; r >= 8; r--)
-    {
-        mppi= PwmPinInfoForName(name, timer, r);
-        if (mppi) return mppi;
+    for(int r = 32; r >= 8; r--) {
+        mppi = PwmPinInfoForName(name, timer, r);
+        if(mppi)
+            return mppi;
     }
 
     return nullptr;

@@ -27,18 +27,10 @@ unsigned char bin2bcd(unsigned char var);
 
 void setPortDigitalIO();
 
-#if 0
-void delay_us(const unsigned ud);       // ud must be constant
-void delay_ms(const unsigned md);       // md must be constant
+#define delay_us(us)         __delay_us(us) // us must be constant
+#define delay_ms(ms)         __delay_ms(ms) // ms must be constant
+#define delay_cycles(cycles) _delay(cycles)
+
+#ifndef T0IF
+    #define T0IF TMR0IF
 #endif
-
-#define delay_us(ud)    \
-    {   \
-    __delay_us(ud);     \
-    }
-
-
-#define delay_ms(md)    \
-    {   \
-    __delay_ms(md);     \
-    }

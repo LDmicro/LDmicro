@@ -50,15 +50,13 @@ int PlcIos_AppendAndGet(const char *name)
 static int CheckRange(int value, const char *name)
 {
     if(value < 0 || value > 255) {
-        char msg[80];
-        sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-        THROW_COMPILER_EXCEPTION(msg);
+        THROW_COMPILER_EXCEPTION_FMT(_("%s=%d: out of range for 8bits target"), name, value);
     }
 
     return value;
 }
 
-static BYTE GetArduinoPinNumber(int pin)
+static int GetArduinoPinNumber(int pin)
 {
     if(Prog.mcu())
         for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
@@ -68,14 +66,14 @@ static BYTE GetArduinoPinNumber(int pin)
     return 0;
 }
 
-static BYTE AddrForBit(const char *name)
+static uint8_t AddrForBit(const char *name)
 {
-    return CheckRange(PlcIos_AppendAndGet(name), name);
+    return static_cast<uint8_t>(CheckRange(PlcIos_AppendAndGet(name), name));
 }
 
-static BYTE AddrForVariable(const char *name)
+static uint8_t AddrForVariable(const char *name)
 {
-    return CheckRange(PlcIos_AppendAndGet(name), name);
+    return static_cast<uint8_t>(CheckRange(PlcIos_AppendAndGet(name), name));
 }
 
 void CompileXInterpreted(const char *outFile)
@@ -92,8 +90,8 @@ void CompileXInterpreted(const char *outFile)
     for(int i = 0; i < Prog.io.count; i++) {
         PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
     }
-        // Convert the if/else structures in the intermediate code to absolute
-        // conditional jumps, to make life a bit easier for the interpreter.
+    // Convert the if/else structures in the intermediate code to absolute
+    // conditional jumps, to make life a bit easier for the interpreter.
 #define MAX_IF_NESTING 32
     int ifDepth = 0;
     // PC for the if(...) instruction, which we will complete with the
@@ -227,20 +225,20 @@ void CompileXInterpreted(const char *outFile)
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_SPI:
-            case INT_SPI_WRITE:         ///// Added by JG
-            case INT_I2C_READ:          /////
-            case INT_I2C_WRITE:         /////
-            case INT_UART_SEND:
+            case INT_SPI_WRITE: ///// Added by JG
+            case INT_I2C_READ:  /////
+            case INT_I2C_WRITE: /////
+                                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-            case INT_UART_SENDn:
-            case INT_UART_RECV:
+                //            case INT_UART_SENDn:
+                //            case INT_UART_RECV:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
+            case INT_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT(
-                    _("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
                 return;
         }
     }
@@ -253,18 +251,11 @@ void CompileXInterpreted(const char *outFile)
 
     for(int i = 0; i < Prog.io.count; i++) {
         PlcProgramSingleIo io = Prog.io.assignment[i];
-        fprintf(f,
-                "%2d %20s %2d %2d %2d %05d\n",
-                i,
-                io.name,
-                io.type,
-                GetArduinoPinNumber(io.pin),
-                io.modbus.Slave,
-                io.modbus.Address);
+        fprintf(f, "%2d %20s %2d %2d %2d %05d\n", i, io.name, io.type, GetArduinoPinNumber(io.pin), io.modbus.Slave, io.modbus.Address);
     }
 
     // $$LDcode program_size
-    fprintf(f, "$$LDcode %lu\n", OutProg.size());
+    fprintf(f, "$$LDcode %zu\n", OutProg.size());
     for(uint32_t i = 0; i < OutProg.size(); i++) {
         fprintf(f, "%02X", OutProg[i]);
         if((i % 16) == 15 || i == OutProg.size() - 1)

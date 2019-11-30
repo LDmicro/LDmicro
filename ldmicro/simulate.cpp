@@ -37,20 +37,20 @@ static struct {
 static int SingleBitItemsCount;
 
 static struct {
-    char   name[MAX_NAME_LEN];
-    int32_t val;
-    char   valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
-    uint32_t  usedFlags;
-    int    initedRung;                 // Variable inited in rung.
-    uint32_t  initedOp;                   // Variable inited in Op number.
-    char   usedRungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
+    char     name[MAX_NAME_LEN];
+    int32_t  val;
+    char     valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
+    uint32_t usedFlags;
+    int      initedRung;                 // Variable inited in rung.
+    uint32_t initedOp;                   // Variable inited in Op number.
+    char     usedRungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
 } Variables[MAX_IO];
 static int VariableCount;
 
 uint32_t CyclesCount = 0; // Simulated
 
 static struct {
-    char  name[MAX_NAME_LEN];
+    char    name[MAX_NAME_LEN];
     int32_t val;
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
@@ -103,25 +103,25 @@ static int CyclesPerTimerTick;
 static uint32_t IntPc;
 
 static FILE *fUART;
-static FILE *fSPI;      ///// Added by JG
-static FILE *fI2C;      ///// Added by JG
+static FILE *fSPI; ///// Added by JG
+static FILE *fI2C; ///// Added by JG
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-HWND     UartSimulationWindow = nullptr;            ///// Modified by JG
+HWND            UartSimulationWindow = nullptr; ///// Modified by JG
 static HWND     UartSimulationTextControl;
-static LONG_PTR PrevUartTextProc;                   ///// Modified by JG
+static LONG_PTR PrevUartTextProc; ///// Modified by JG
 
 ///// Added by JG
 // A window to allow simulation with the SPI stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-HWND     SpiSimulationWindow = nullptr;
+HWND            SpiSimulationWindow = nullptr;
 static HWND     SpiSimulationTextControl;
 static LONG_PTR PrevSpiTextProc;
 
 // A window to allow simulation with the I2C stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-HWND     I2cSimulationWindow = nullptr;
+HWND            I2cSimulationWindow = nullptr;
 static HWND     I2cSimulationTextControl;
 static LONG_PTR PrevI2cTextProc;
 /////
@@ -139,7 +139,7 @@ static int QueuedI2cCharacter = -1;
 /////
 
 /////   static void AppendToUartSimulationTextControl(BYTE b);
-static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl);              ///// Modified by JG
+static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl); ///// Modified by JG
 
 static void        SimulateIntCode();
 static const char *MarkUsedVariable(const char *name, DWORD flag);
@@ -262,7 +262,7 @@ long OverflowToVarSize(long val, int sov)
         else if(sov == 4)
             val = (int32_t)val;
         // else
-           // val = val;
+        // val = val;
     }
     return val;
 }
@@ -373,10 +373,10 @@ static int32_t AddVariable(const NameArray &name1, const NameArray &name2, const
 {
     long long int ret = (long long int)GetSimulationVariable(name2) + (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
-    int32_t        signMask = 1 << (sov * 8 - 1);
-    int32_t        sign2 = GetSimulationVariable(name2) & signMask;
-    int32_t        sign3 = GetSimulationVariable(name3) & signMask;
-    int32_t        signr = (int32_t)(ret & signMask);
+    int32_t       signMask = 1 << (sov * 8 - 1);
+    int32_t       sign2 = GetSimulationVariable(name2) & signMask;
+    int32_t       sign3 = GetSimulationVariable(name3) & signMask;
+    int32_t       signr = (int32_t)(ret & signMask);
     if((sign2 == sign3) && (signr != sign3))
         SetSingleBit(overflow, true);
     return (int32_t)ret;
@@ -387,10 +387,10 @@ static int32_t SubVariable(const NameArray &name1, const NameArray &name2, const
 {
     long long int ret = (long long int)GetSimulationVariable(name2) - (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
-    int32_t        signMask = 1 << (sov * 8 - 1);
-    int32_t        sign2 = GetSimulationVariable(name2) & signMask;
-    int32_t        sign3 = GetSimulationVariable(name3) & signMask;
-    int32_t        signr = (int32_t)(ret & signMask);
+    int32_t       signMask = 1 << (sov * 8 - 1);
+    int32_t       sign2 = GetSimulationVariable(name2) & signMask;
+    int32_t       sign3 = GetSimulationVariable(name3) & signMask;
+    int32_t       signr = (int32_t)(ret & signMask);
     //  if((sign2 != sign3)
     //  && (signr != sign2))
     if((sign2 != sign3) && (signr == sign3))
@@ -408,8 +408,7 @@ void SetSimulationVariable(const NameArray &name, int32_t val)
 
 void SetSimulationVariable(const char *name, int32_t val)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             Variables[i].val = val;
             return;
@@ -427,8 +426,7 @@ int32_t GetSimulationVariable(const char *name, bool forIoList)
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
     }
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].val;
         }
@@ -467,15 +465,22 @@ void SetSimulationStr(const char *name, const char *val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-char *GetSimulationStr(const char *name)
+char *GetSimulationStr(const char *name, bool forIoList)
 {
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].valstr;
         }
     }
+    if(forIoList)
+        return "";
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return GetSimulationStr(name);
+}
+
+char *GetSimulationStr(const char *name)
+{
+    return GetSimulationStr(name, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -503,8 +508,7 @@ void SetAdcShadow(char *name, int32_t val)
 //-----------------------------------------------------------------------------
 int32_t GetAdcShadow(const char *name)
 {
-    int i;
-    for(i = 0; i < AdcShadowsCount; i++) {
+    for(int i = 0; i < AdcShadowsCount; i++) {
         if(strcmp(AdcShadows[i].name, name) == 0) {
             return AdcShadows[i].val;
         }
@@ -535,9 +539,9 @@ int32_t MthRandom()
 
 int32_t GetRandom(const NameArray &name)
 {
-    int    sov = SizeOfVar(name);
+    int     sov = SizeOfVar(name);
     int32_t rnd_seed = MthRandom();
-    char   seedName[MAX_NAME_LEN];
+    char    seedName[MAX_NAME_LEN];
     sprintf(seedName, "$seed_%s", name.c_str());
     SetSimulationVariable(seedName, rnd_seed);
     if(sov == 1)
@@ -689,8 +693,8 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
     if(s)
         return s;
 
-//    if(Variables[i].initedRung < 0)
-  //      Variables[i].initedRung = rungNow;
+    //    if(Variables[i].initedRung < 0)
+    //      Variables[i].initedRung = rungNow;
     Variables[i].usedFlags |= flag;
     return nullptr;
 }
@@ -720,7 +724,7 @@ void MarkInitedVariable(const char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(const char *name, const char *s/*, int i*/)
+static void CheckMsg(const char *name, const char *s /*, int i*/)
 {
     if(s) {
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow + 1, name, s, rungsUsed);
@@ -735,20 +739,19 @@ static void CheckMsg(const char *name, const char *s/*, int i*/)
 static void MarkWithCheck(const char *name, int flag)
 {
     const char *s = MarkUsedVariable(name, flag);
-    CheckMsg(name, s/*, -1*/);
+    CheckMsg(name, s /*, -1*/);
 }
 //-----------------------------------------------------------------------------
-static void CheckVariableNamesCircuit(int which, void *elem)
+static void CheckVariableNamesCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-//    char *    name = nullptr;
+    ElemLeaf *l = (ElemLeaf *)any; // not for ELEM_SERIES_SUBCKT, not for ELEM_PARALLEL_SUBCKT
     DWORD     flag;
     char      str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckVariableNamesCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -757,7 +760,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckVariableNamesCircuit(p->contents[i].which, p->contents[i].data.any);
             }
@@ -893,6 +896,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_SPI:
+            if(strlen(l->d.spi.send))
+                if(!IsNumber(l->d.spi.send))
+                    MarkWithCheck(l->d.spi.send, VAR_FLAG_ANY);
+            if(strlen(l->d.spi.recv))
+                if(!IsNumber(l->d.spi.recv))
+                    MarkWithCheck(l->d.spi.recv, VAR_FLAG_ANY);
+            break;
+
             // clang-format off
         const char *s;
         case ELEM_7SEG:  s = "char7seg";  goto xseg;
@@ -951,7 +963,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_UART_RECV:
-        case ELEM_UART_RECVn:
+            //        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -965,6 +977,14 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
+            MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
+            break;
+            /*
+        case ELEM_UART_SEND:
+            MarkWithCheck("$scratch", VAR_FLAG_ANY);
+            break;
+*/
+            //      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;
         }
@@ -976,13 +996,12 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
-        case ELEM_UART_SENDn:
+            //        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
-        case ELEM_SPI:                  ///// Added by JG
-        case ELEM_SPI_WR:               ///// Added by JG
-        case ELEM_I2C_RD:               ///// Added by JG
-        case ELEM_I2C_WR:               ///// Added by JG
+        case ELEM_SPI_WR: ///// Added by JG
+        case ELEM_I2C_RD: ///// Added by JG
+        case ELEM_I2C_WR: ///// Added by JG
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -1016,8 +1035,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 //-----------------------------------------------------------------------------
 void CheckVariableNames()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1025,13 +1043,11 @@ void CheckVariableNames()
     // reCheck
     rungNow++;
 
-    for(i = 0; i < VariableCount; i++)
+    for(int i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
             if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
-                Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
-                      Variables[i].initedRung + 1,
-                      Variables[i].name,
-                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
+                Error(
+                    _("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung + 1, Variables[i].name, _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
     return;
 #ifdef _LOT_OF_EXPERIMENTS_ // Never define!
     for(i = 0; i < VariableCount; i++)
@@ -1104,15 +1120,12 @@ void CheckVariableNames()
 //-----------------------------------------------------------------------------
 // Set normal closed inputs to 1 before simulating.
 //-----------------------------------------------------------------------------
-static void CheckSingleBitNegateCircuit(int which, void *elem)
+static void CheckSingleBitNegateCircuit(int which, void *any)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-//    char *    name = nullptr;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int               i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
                 CheckSingleBitNegateCircuit(s->contents[i].which, s->contents[i].data.any);
             }
@@ -1121,13 +1134,14 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
         case ELEM_PARALLEL_SUBCKT: {
             int                 i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
                 CheckSingleBitNegateCircuit(p->contents[i].which, p->contents[i].data.any);
             }
             break;
         }
         case ELEM_CONTACTS: {
+            ElemLeaf *l = (ElemLeaf *)any;
             if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
                 SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
             break;
@@ -1139,8 +1153,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
 
 static void CheckSingleBitNegate()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
         CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
@@ -1386,9 +1399,9 @@ long shl(long val, int32_t n, int size, bool *state)
 //Binary to unpacked BCD
 int bin2bcd(int val)
 {
-    int sign = 1;
+    //int sign = 1;
     if(val < 0) {
-        sign = -1;
+        //sign = -1;
         Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
@@ -1438,8 +1451,7 @@ int packedbcd2bin(int val)
 int opposite(int val, int sov)
 {
     int ret = 0;
-    int i;
-    for(i = 0; i < sov * 8; i++) {
+    for(int i = 0; i < sov * 8; i++) {
         ret = ret << 1;
         ret |= val & 1;
         val = val >> 1;
@@ -1570,7 +1582,7 @@ static void SimulateIntCode()
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(a->name2.size())
+                if(a->name2.length())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
                         NeedRedraw = a->op;
                         *(a->workingNow) = SingleBitOn(a->name2);
@@ -1690,8 +1702,8 @@ static void SimulateIntCode()
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
                     NeedRedraw = a->op;
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 }
-                SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -1941,13 +1953,20 @@ static void SimulateIntCode()
                 }
                 break;
             }
+            case INT_UART_WR:
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-            /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
-                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
+                    if(GetVariableType(a->name1) == IO_TYPE_STRING) {
+                        static char *s = GetSimulationStr(a->name1.c_str());
+                        for(auto i = 0; i < strlen(s); i++) {
+                            AppendToSimulationTextControl(s[i], UartSimulationTextControl);
+                        }
+                    } else
+                        AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
+                /*
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
@@ -1960,6 +1979,7 @@ static void SimulateIntCode()
                     SetSingleBit(a->name2, false); // not busy
                 }
                 break;
+*/
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, true); // ready
@@ -1977,7 +1997,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_UART_RECV1:
-            case INT_UART_RECV:
+                //            case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
@@ -2040,19 +2060,36 @@ static void SimulateIntCode()
                 }
                 break;
 
-#ifdef NEW_FEATURE
-            case INT_PRINTF_STRING:
+            case INT_STRING: {
+                char buf[MAX_NAME_LEN];
+                if(a->name3.length()) {
+                    int sov = SizeOfVar(a->name3);
+                    if(sov == 1)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xff);
+                    else if(sov == 2)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xffff);
+                    else if(sov == 3)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFffff);
+                    else if(sov == 4)
+                        sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xFFFFffff);
+                    else
+                        oops();
+                } else {
+                    strcpy(buf, a->name2.c_str());
+                }
+                SetSimulationStr(a->name1.c_str(), buf);
+                NeedRedraw = a->op;
                 break;
-#endif
-
-#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+            }
+                //#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+            case INT_STRING_INIT:
             case INT_WRITE_STRING: {
                 break;
             }
 #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 if(!GetSimulationVariable(a->name1)) {
-                    SetSimulationVariable(a->name1, (int32_t) &(a->data[0]));
+                    SetSimulationVariable(a->name1, (int32_t) & (a->data[0]));
                 }
                 break;
 
@@ -2067,7 +2104,7 @@ static void SimulateIntCode()
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal1 <= index)) {
-                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal1-1);
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal1 - 1);
                     index = a->literal1;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -2078,7 +2115,18 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+                break;
+            }
+            case INT_SET_VARIABLE_INDEXED: {
+                int index = GetSimulationVariable(a->name3);
+                //int32_t d = a->name2[index];
+                char d = GetSimulationStr(a->name4.c_str())[index];
+                if(GetSimulationVariable(a->name1) != d) {
+                    SetSimulationVariable(a->name1, d);
+                    NeedRedraw = a->op;
+                }
+                break;
+            }
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
@@ -2087,13 +2135,13 @@ static void SimulateIntCode()
                     index = a->literal1;
                     StopSimulation();
                 }
-                //dbps(GetSimulationStr(a->name1.c_str()))
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+                break;
+            }
 #endif
 
             case INT_DELAY:
@@ -2103,34 +2151,29 @@ static void SimulateIntCode()
             case INT_PWM_OFF:
                 break;
 
-            ///// Added by JG
             case INT_SPI:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), SpiSimulationTextControl);
-                if(QueuedSpiCharacter >= 0)
-                {
+                if(QueuedSpiCharacter >= 0) {
                     SetSimulationVariable(a->name3, (int32_t)QueuedSpiCharacter);
                     QueuedSpiCharacter = -1;
                 }
                 break;
 
             case INT_SPI_WRITE:
-                for (unsigned int i= 0 ; i < a->name2.size() ; i++)              // send text to terminal window
+                for(unsigned int i = 0; i < a->name2.length(); i++) // send text to terminal window
                     AppendToSimulationTextControl(a->name2[i], SpiSimulationTextControl);
                 break;
 
             case INT_I2C_READ:
-                if(QueuedI2cCharacter >= 0)
-                {
+                if(QueuedI2cCharacter >= 0) {
                     SetSimulationVariable(a->name2, (int32_t)QueuedI2cCharacter);
                     QueuedI2cCharacter = -1;
                 }
                 break;
-
             case INT_I2C_WRITE:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), I2cSimulationTextControl);
 
                 break;
-                /////
 
             default:
                 ooops("op=%d", a->op);
@@ -2255,8 +2298,7 @@ void StartSimulationTimer()
 void ClrSimulationData()
 {
     seed = 1;
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         Variables[i].val = 0;
         Variables[i].usedFlags = 0;
         Variables[i].initedRung = -2;
@@ -2314,8 +2356,8 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_SPI_MISO:
         case IO_TYPE_SPI_SCK:
         case IO_TYPE_SPI__SS:
-        case IO_TYPE_I2C_SCL:           ///// Added by JG
-        case IO_TYPE_I2C_SDA:           /////
+        case IO_TYPE_I2C_SCL: ///// Added by JG
+        case IO_TYPE_I2C_SDA: /////
             break;
 
         case IO_TYPE_PWM_OUTPUT:
@@ -2325,7 +2367,7 @@ void DescribeForIoList(const char *name, int type, char *out)
             break;
 
         case IO_TYPE_STRING:
-            sprintf(out, "\"%s\"", GetSimulationStr(name));
+            sprintf(out, "\"%s\"", GetSimulationStr(name, true));
             break;
 
         case IO_TYPE_VAL_IN_FLASH:
@@ -2340,8 +2382,8 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
             int32_t v = GetSimulationVariable(name, true);
-            double dtms = v * (Prog.cycleTime / 1000.0);
-            int    sov = SizeOfVar(name);
+            double  dtms = v * (Prog.cycleTime / 1000.0);
+            int     sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
             if(dtms < 1000) {
                 if(sov == 1)
@@ -2370,7 +2412,7 @@ void DescribeForIoList(const char *name, int type, char *out)
         }
         default: {
             int32_t v = GetSimulationVariable(name, true);
-            int  sov = SizeOfVar(name);
+            int     sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
             if(sov == 1)
                 sprintf(out, "0x%02X = %d = '%c'", v & 0xff, v, v);
@@ -2396,26 +2438,26 @@ void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
     if((name[0] == 'X') || (name[0] == 'Y')) {
-      McuIoPinInfo *iop = PinInfoForName(name);
-      if(iop) {
-        ADDR_T addr = INVALID_ADDR;
-        int   bit = -1;
-        MemForSingleBit(name, true, &addr, &bit);
+        McuIoPinInfo *iop = PinInfoForName(name);
+        if(iop) {
+            ADDR_T addr = INVALID_ADDR;
+            int    bit = -1;
+            MemForSingleBit(name, true, &addr, &bit);
 
-        if((addr != INVALID_ADDR) && (bit != -1)) {
-            char s[MAX_NAME_LEN];
-            if(name[0] == 'X')
-                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
-            else
-                sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-            int32_t v = GetSimulationVariable(s);
-            if(SingleBitOn(name))
-                v |= 1<<bit;
-            else
-                v &= ~(1<<bit);
-            SetSimulationVariable(s, v);
+            if((addr != INVALID_ADDR) && (bit != -1)) {
+                char s[MAX_NAME_LEN];
+                if(name[0] == 'X')
+                    sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+                else
+                    sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+                int32_t v = GetSimulationVariable(s);
+                if(SingleBitOn(name))
+                    v |= 1 << bit;
+                else
+                    v &= ~(1 << bit);
+                SetSimulationVariable(s, v);
+            }
         }
-      }
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
@@ -2427,7 +2469,7 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, L
 {
     switch(msg) {
         case WM_DESTROY:
-            DestroySimulationWindow(UartSimulationWindow);      ///// Modified by JG
+            DestroySimulationWindow(UartSimulationWindow); ///// Modified by JG
             break;
 
         case WM_CLOSE:
@@ -2511,7 +2553,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 // Intercept WM_CHAR messages that to the terminal simulation window so that
 // we can redirect them to the PLC program.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)       //// Modified by JG
+static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) //// Modified by JG
 {
     switch(msg) {
         case WM_KEYDOWN:
@@ -2553,22 +2595,22 @@ static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
     if(msg == WM_CHAR) {
         ///// Modified by JG
-        if (hwnd == UartSimulationTextControl)
+        if(hwnd == UartSimulationTextControl)
             QueuedUartCharacter = (BYTE)wParam;
-        if (hwnd == SpiSimulationTextControl)
+        if(hwnd == SpiSimulationTextControl)
             QueuedSpiCharacter = (BYTE)wParam;
-        if (hwnd == I2cSimulationTextControl)
+        if(hwnd == I2cSimulationTextControl)
             QueuedI2cCharacter = (BYTE)wParam;
         /////
         return 0;
     }
 
     ///// Modified by JG
-    if (hwnd == UartSimulationTextControl)
+    if(hwnd == UartSimulationTextControl)
         return CallWindowProc((WNDPROC)PrevUartTextProc, hwnd, msg, wParam, lParam);
-    if (hwnd == SpiSimulationTextControl)
+    if(hwnd == SpiSimulationTextControl)
         return CallWindowProc((WNDPROC)PrevSpiTextProc, hwnd, msg, wParam, lParam);
-    if (hwnd == I2cSimulationTextControl)
+    if(hwnd == I2cSimulationTextControl)
         return CallWindowProc((WNDPROC)PrevI2cTextProc, hwnd, msg, wParam, lParam);
     /////
     return 0;
@@ -2582,10 +2624,10 @@ static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, L
 #define MAX_SCROLLBACK 0x10000 //256 // 0x10000
 static char buf[MAX_SCROLLBACK] = "";
 
-void ShowSimulationWindow(int sim)          ///// Modified by JG
+void ShowSimulationWindow(int sim) ///// Modified by JG
 {
-    HWND SimHwnd= nullptr;                  ///// Added by JG
-    HWND SimCtrl= nullptr;
+    HWND SimHwnd = nullptr; ///// Added by JG
+    HWND SimCtrl = nullptr;
 
     ///// Modified by JG
     if((sim == SIM_UART) && (UartSimulationWindow != nullptr))
@@ -2602,16 +2644,16 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
 
     wc.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC | CS_DBLCLKS;
     ///// Modified by JG
-    if (sim == SIM_UART)
+    if(sim == SIM_UART)
         wc.lpfnWndProc = (WNDPROC)UartSimulationProc;
-    if (sim == SIM_SPI)
+    if(sim == SIM_SPI)
         wc.lpfnWndProc = (WNDPROC)SpiSimulationProc;
-    if (sim == SIM_I2C)
+    if(sim == SIM_I2C)
         wc.lpfnWndProc = (WNDPROC)I2cSimulationProc;
     /////
     wc.hInstance = Instance;
     wc.hbrBackground = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName = "LDmicroSimulationWindow";       ///// Modified by JG
+    wc.lpszClassName = "LDmicroSimulationWindow"; ///// Modified by JG
     wc.lpszMenuName = nullptr;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
@@ -2620,27 +2662,36 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
     ///// Modified by JG
     DWORD TerminalX = 100, TerminalY = 100, TerminalW = 800, TerminalH = 800;
 
-    if (sim == SIM_UART) {
-        ThawDWORD(TerminalX1);      // Restore window size from Windows Registry (if saved by Freeze)
+    if(sim == SIM_UART) {
+        ThawDWORD(TerminalX1); // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY1);
         ThawDWORD(TerminalW1);
         ThawDWORD(TerminalH1);
 
-        TerminalX = TerminalX1; TerminalY = TerminalY1; TerminalW = TerminalW1; TerminalH = TerminalH1;
-    } else if (sim == SIM_SPI) {
-        ThawDWORD(TerminalX2);      // Restore window size from Windows Registry (if saved by Freeze)
+        TerminalX = TerminalX1;
+        TerminalY = TerminalY1;
+        TerminalW = TerminalW1;
+        TerminalH = TerminalH1;
+    } else if(sim == SIM_SPI) {
+        ThawDWORD(TerminalX2); // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY2);
         ThawDWORD(TerminalW2);
         ThawDWORD(TerminalH2);
 
-        TerminalX = TerminalX2; TerminalY = TerminalY2; TerminalW = TerminalW2; TerminalH = TerminalH2;
-    } else if (sim == SIM_I2C) {
-        ThawDWORD(TerminalX3);      // Restore window size from Windows Registry (if saved by Freeze)
+        TerminalX = TerminalX2;
+        TerminalY = TerminalY2;
+        TerminalW = TerminalW2;
+        TerminalH = TerminalH2;
+    } else if(sim == SIM_I2C) {
+        ThawDWORD(TerminalX3); // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY3);
         ThawDWORD(TerminalW3);
         ThawDWORD(TerminalH3);
 
-        TerminalX = TerminalX3; TerminalY = TerminalY3; TerminalW = TerminalW3; TerminalH = TerminalH3;
+        TerminalX = TerminalX3;
+        TerminalY = TerminalY3;
+        TerminalW = TerminalW3;
+        TerminalH = TerminalH3;
     } else {
         oops();
     }
@@ -2660,46 +2711,43 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
 
     ///// Modified by JG
     char WndName[100];
-    if (sim == SIM_UART)
-        {
+    if(sim == SIM_UART) {
         fUART = fopen("uart.log", "w");
         strcpy(WndName, _("UART Simulation (Terminal)"));
-        }
-    if (sim == SIM_SPI)
-        {
+    }
+    if(sim == SIM_SPI) {
         fSPI = fopen("spi.log", "w");
         strcpy(WndName, _("SPI Simulation (Terminal)"));
-        }
-    if (sim == SIM_I2C)
-        {
+    }
+    if(sim == SIM_I2C) {
         fI2C = fopen("i2c.log", "w");
         strcpy(WndName, _("I2C Simulation (Terminal)"));
-        }
+    }
     /////
 
-    SimHwnd = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,            ///// Modified by JG
-                                              "LDmicroSimulationWindow",            ///// Common Class name
-                                              WndName,                              ///// Window name modified by JG
-                                              WS_VISIBLE | WS_SIZEBOX | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
-                                              TerminalX,
-                                              TerminalY,
-                                              TerminalW,
-                                              TerminalH,
-                                              nullptr,
-                                              nullptr,
-                                              Instance,
-                                              nullptr);
+    SimHwnd = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, ///// Modified by JG
+                                 "LDmicroSimulationWindow",          ///// Common Class name
+                                 WndName,                            ///// Window name modified by JG
+                                 WS_VISIBLE | WS_SIZEBOX | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
+                                 TerminalX,
+                                 TerminalY,
+                                 TerminalW,
+                                 TerminalH,
+                                 nullptr,
+                                 nullptr,
+                                 Instance,
+                                 nullptr);
 
     ///// Modified by JG
-    if (sim == SIM_UART)
+    if(sim == SIM_UART)
         UartSimulationWindow = SimHwnd;
-    if (sim == SIM_SPI)
+    if(sim == SIM_SPI)
         SpiSimulationWindow = SimHwnd;
-    if (sim == SIM_I2C)
+    if(sim == SIM_I2C)
         I2cSimulationWindow = SimHwnd;
     /////
 
-    SimCtrl =                           ///// Modified by JG
+    SimCtrl = ///// Modified by JG
         CreateWindowEx(0,
                        WC_EDIT,
                        "",
@@ -2708,63 +2756,47 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
                        0,
                        TerminalW,
                        TerminalH,
-                       SimHwnd,                 ///// Modified by JG
+                       SimHwnd, ///// Modified by JG
                        nullptr,
                        Instance,
                        nullptr);
 
     ///// Modified by JG
-    if (sim == SIM_UART)
+    if(sim == SIM_UART)
         UartSimulationTextControl = SimCtrl;
-    if (sim == SIM_SPI)
+    if(sim == SIM_SPI)
         SpiSimulationTextControl = SimCtrl;
-    if (sim == SIM_I2C)
+    if(sim == SIM_I2C)
         I2cSimulationTextControl = SimCtrl;
     /////
 
-    HFONT fixedFont = CreateFont(14,
-                                 0,
-                                 0,
-                                 0,
-                                 FW_REGULAR,
-                                 false,
-                                 false,
-                                 false,
-                                 ANSI_CHARSET,
-                                 OUT_DEFAULT_PRECIS,
-                                 CLIP_DEFAULT_PRECIS,
-                                 DEFAULT_QUALITY,
-                                 FF_DONTCARE,
-                                 "Lucida Console");
+    HFONT fixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, false, false, false, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, "Lucida Console");
     if(!fixedFont)
         fixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
     ///// Modified by JG
     strcpy(buf, "");
-    if (sim == SIM_UART)
-        {
+    if(sim == SIM_UART) {
         SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
         PrevUartTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(UartSimulationWindow, true);
-        }
-    if (sim == SIM_SPI)
-        {
+    }
+    if(sim == SIM_SPI) {
         SendMessage((HWND)SpiSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevSpiTextProc = SetWindowLongPtr(SpiSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc);   ///// Modified by JG
+        PrevSpiTextProc = SetWindowLongPtr(SpiSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(SpiSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(SpiSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(SpiSimulationWindow, true);
-        }
-    if (sim == SIM_I2C)
-        {
+    }
+    if(sim == SIM_I2C) {
         SendMessage((HWND)I2cSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevI2cTextProc = SetWindowLongPtr(I2cSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc);   ///// Modified by JG
+        PrevI2cTextProc = SetWindowLongPtr(I2cSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(I2cSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(I2cSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(I2cSimulationWindow, true);
-        }
+    }
 
     SetFocus(MainWindow); // Removed by JG to show simulation windows // Restored: access to the F7, F8, F9 and Space keys after show the window.
 }
@@ -2772,7 +2804,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
 //-----------------------------------------------------------------------------
 // Get rid of the simulation terminal-type window.
 //-----------------------------------------------------------------------------
-void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
+void DestroySimulationWindow(HWND SimulationWindow) ///// Modified by JG
 {
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the
@@ -2780,11 +2812,11 @@ void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
     //if(SimulationWindow == nullptr) return;
     if(SimulationWindow != nullptr) {
 
-        if((SimulationWindow == UartSimulationWindow) && (fUART))   ///// Modified by JG
+        if((SimulationWindow == UartSimulationWindow) && (fUART)) ///// Modified by JG
             fclose(fUART);
-        if((SimulationWindow == SpiSimulationWindow) && (fSPI))     ///// Added by JG
+        if((SimulationWindow == SpiSimulationWindow) && (fSPI)) ///// Added by JG
             fclose(fSPI);
-        if((SimulationWindow == I2cSimulationWindow) && (fI2C))     ///// Added by JG
+        if((SimulationWindow == I2cSimulationWindow) && (fI2C)) ///// Added by JG
             fclose(fI2C);
 
         DWORD TerminalX, TerminalY, TerminalW, TerminalH;
@@ -2799,38 +2831,35 @@ void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
         TerminalY = r.top;
 
         ///// Modified by JG
-        if(SimulationWindow == UartSimulationWindow)
-        {
+        if(SimulationWindow == UartSimulationWindow) {
             TerminalX1 = TerminalX;
             TerminalY1 = TerminalY;
             TerminalW1 = TerminalW;
             TerminalH1 = TerminalH;
 
-            FreezeDWORD(TerminalX1);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalX1); // Save window size to Windows Registry
             FreezeDWORD(TerminalY1);
             FreezeDWORD(TerminalW1);
             FreezeDWORD(TerminalH1);
         }
-        if(SimulationWindow == SpiSimulationWindow)
-        {
+        if(SimulationWindow == SpiSimulationWindow) {
             TerminalX2 = TerminalX;
             TerminalY2 = TerminalY;
             TerminalW2 = TerminalW;
             TerminalH2 = TerminalH;
 
-            FreezeDWORD(TerminalX2);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalX2); // Save window size to Windows Registry
             FreezeDWORD(TerminalY2);
             FreezeDWORD(TerminalW2);
             FreezeDWORD(TerminalH2);
         }
-        if(SimulationWindow == I2cSimulationWindow)
-        {
+        if(SimulationWindow == I2cSimulationWindow) {
             TerminalX3 = TerminalX;
             TerminalY3 = TerminalY;
             TerminalW3 = TerminalW;
             TerminalH3 = TerminalH;
 
-            FreezeDWORD(TerminalX3);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalX3); // Save window size to Windows Registry
             FreezeDWORD(TerminalY3);
             FreezeDWORD(TerminalW3);
             FreezeDWORD(TerminalH3);
@@ -2854,13 +2883,11 @@ void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
 static int32_t bPrev = 0;
-static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)     ///// Modifief by JG to fit UART / SPI / I2C
+static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
 
-    if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) || b == '\r' || b == '\n' || b == '\b' || b == '\f'
-        || b == '\t' || b == '\v' || b == '\a')
-       && b != '\0') {
+    if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) || b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0') {
         append[0] = (char)b;
         append[1] = '\0';
     } else {
