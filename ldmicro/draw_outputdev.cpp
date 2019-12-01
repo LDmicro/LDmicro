@@ -342,7 +342,7 @@ void PaintWindow()
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
-    sprintf(str, "%4lz", IntCode.size());
+    sprintf(str, "%4" PRIu32, IntCode.size());
     TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str, "%4d", ProgWriteP);
