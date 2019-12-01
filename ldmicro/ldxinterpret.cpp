@@ -213,11 +213,7 @@ void Disassemble()
                 c = '%';
                 goto arith;
             arith:
-                printf("int16s[%s] := int16s[%s] %c int16s[%s]",
-                       Symbols[Program[pc]],
-                       Symbols[Program[pc + 2]],
-                       c,
-                       Symbols[Program[pc + 3]]);
+                printf("int16s[%s] := int16s[%s] %c int16s[%s]", Symbols[Program[pc]], Symbols[Program[pc + 2]], c, Symbols[Program[pc + 3]]);
                 pc += 4;
                 break;
 

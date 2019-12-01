@@ -37,7 +37,6 @@
 @SET PROGECT=D:\LDs\encoder2\encoder2.ld
 @SET PROGECT=D:\LDs\ASM_DEMO_PIC16F1516\asm_demo.ld
 @SET PROGECT=D:\LDs\pintest\pintest.ld
-@SET PROGECT=D:\LDs\ASM_DEMO_PIC16F886\asm_demo.ld
 @SET PROGECT=D:\xLogic\Projects\RUBKA\pwm
 @SET PROGECT=D:\LDs\ASM_DEMO_ATmega328\asm_demo_28pin.ld
 @SET PROGECT=D:\LDs\ASM_DEMO_ATmega8\asm_demo.ld
@@ -391,7 +390,10 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=d:\lds\PIC16F877\bits.ld
 @SET PROGECT=D:\LDs\frm\frm.ld
 
-@SET PROGECT=c:\lds\FormattedStr\FormattedStr.ld
+@SET PROGECT=C:\LDs\asm_demo_PIC16F886\asm_demo.ld
+@SET PROGECT=C:\LDs\Buttonnombre\Buttonnombre.ld
+
+@SET PROGECT=D:\lds\FormattedStr\FormattedStr.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

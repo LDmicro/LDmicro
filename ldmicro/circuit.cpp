@@ -234,8 +234,7 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
                 memcpy(series->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
-                series->contents[i].leaf()->selectedState =
-                    EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
+                series->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem.leaf());
                 series->contents[i].which = newElem.which;
                 selected.which = newElem.which;
@@ -247,17 +246,13 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_LEFT:
-                    memmove(&series->contents[i + 1],
-                            &series->contents[i],
-                            (series->count - i) * sizeof(series->contents[0]));
+                    memmove(&series->contents[i + 1], &series->contents[i], (series->count - i) * sizeof(series->contents[0]));
                     series->contents[i] = newElem;
                     (series->count)++;
                     break;
 
                 case SELECTED_RIGHT:
-                    memmove(&series->contents[i + 2],
-                            &series->contents[i + 1],
-                            (series->count - i - 1) * sizeof(series->contents[0]));
+                    memmove(&series->contents[i + 2], &series->contents[i + 1], (series->count - i - 1) * sizeof(series->contents[0]));
                     series->contents[i + 1] = newElem;
                     (series->count)++;
                     break;
@@ -303,17 +298,13 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_ABOVE:
-                    memmove(&parallel->contents[i + 1],
-                            &parallel->contents[i],
-                            (parallel->count - i) * sizeof(parallel->contents[0]));
+                    memmove(&parallel->contents[i + 1], &parallel->contents[i], (parallel->count - i) * sizeof(parallel->contents[0]));
                     parallel->contents[i] = newElem;
                     (parallel->count)++;
                     break;
 
                 case SELECTED_BELOW:
-                    memmove(&parallel->contents[i + 2],
-                            &parallel->contents[i + 1],
-                            (parallel->count - i - 1) * sizeof(parallel->contents[0]));
+                    memmove(&parallel->contents[i + 2], &parallel->contents[i + 1], (parallel->count - i - 1) * sizeof(parallel->contents[0]));
                     parallel->contents[i + 1] = newElem;
                     (parallel->count)++;
                     break;
@@ -344,24 +335,21 @@ static bool AddLeafWorker(SeriesNode &any, SeriesNode &selected, SeriesNode newE
     return false;
 }
 
-bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
+bool AddLeafToParent(SeriesNode selected, const SeriesNode newNode)
 {
     if(selected.parent()->which == ELEM_SERIES_SUBCKT) {
-        auto sn = std::find_if(selected.parent()->series()->contents,
-                               selected.parent()->series()->contents + selected.parent()->series()->count,
-                               [selected](SeriesNode a) -> bool { return (a.any() == selected.any()); });
+        auto sn = std::find_if(selected.parent()->series()->contents, selected.parent()->series()->contents + selected.parent()->series()->count, [selected](SeriesNode a) -> bool { return (a.any() == selected.any()); });
         auto pos = std::distance(selected.parent()->series()->contents, sn);
         if(selected.leaf()->selectedState == SELECTED_LEFT) {
             ElemSubcktSeries *s = const_cast<ElemSubcktSeries *>(selected.parent()->series());
             auto              i = pos;
             memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
-            s->contents[i] = newLeaf;
+            s->contents[i] = newNode;
             s->contents[i].parent_ = const_cast<SeriesNode *>(selected.parent());
             (s->count)++;
         } else if(selected.leaf()->selectedState == SELECTED_RIGHT) {
 
-        } else if(selected.leaf()->selectedState == SELECTED_BELOW
-                  || selected.leaf()->selectedState == SELECTED_ABOVE) {
+        } else if(selected.leaf()->selectedState == SELECTED_BELOW || selected.leaf()->selectedState == SELECTED_ABOVE) {
         }
     } else if(selected.parent()->which == ELEM_PARALLEL_SUBCKT) {
     }
@@ -388,7 +376,7 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
     return false;
 }
 
-static bool AddLeaf(SeriesNode newElem)
+static bool AddLeaf(const SeriesNode newElem)
 {
     if((!Selected.leaf()) || (Selected.leaf()->selectedState == SELECTED_NONE))
         return false;
@@ -1024,9 +1012,7 @@ bool CollapseUnnecessarySubckts(int which, void *any)
                             // merge the two series subcircuits
                             ElemSubcktSeries *s2 = p->contents[0].data.series;
                             int               makeSpaces = s2->count - 1;
-                            memmove(&s->contents[i + makeSpaces + 1],
-                                    &s->contents[i + 1],
-                                    (s->count - i - 1) * sizeof(s->contents[0]));
+                            memmove(&s->contents[i + makeSpaces + 1], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
                             memcpy(&s->contents[i], &s2->contents[0], (s2->count) * sizeof(s->contents[0]));
                             s->count += makeSpaces;
                             CheckFree(s2);
@@ -1050,9 +1036,7 @@ bool CollapseUnnecessarySubckts(int which, void *any)
                     // move up level
                     ElemSubcktSeries *s2 = s->contents[i].data.series;
                     if((s->count + s2->count) < MAX_ELEMENTS_IN_SUBCKT) {
-                        memmove(&s->contents[i + s2->count],
-                                &s->contents[i + 1],
-                                (s->count - i - 1) * sizeof(s->contents[0]));
+                        memmove(&s->contents[i + s2->count], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
                         memcpy(&s->contents[i], &s2->contents[0], (s2->count) * sizeof(s->contents[0]));
                         s->count += s2->count - 1;
                         CheckFree(s2);
@@ -1074,9 +1058,7 @@ bool CollapseUnnecessarySubckts(int which, void *any)
                             // merge the two parallel subcircuits
                             ElemSubcktParallel *p2 = s->contents[0].data.parallel;
                             int                 makeSpaces = p2->count - 1;
-                            memmove(&p->contents[i + makeSpaces + 1],
-                                    &p->contents[i + 1],
-                                    (p->count - i - 1) * sizeof(p->contents[0]));
+                            memmove(&p->contents[i + makeSpaces + 1], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
                             memcpy(&p->contents[i], &p2->contents[0], (p2->count) * sizeof(p->contents[0]));
                             p->count += makeSpaces;
                             CheckFree(p2);
@@ -1174,16 +1156,14 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             for(i = (s->count - 1); i >= 0; i--)
-                DeleteAnyFromSubckt(
-                    ELEM_SERIES_SUBCKT, anyToDelete, s->contents[i].which, s->contents[i].data.any, IsEnd);
+                DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, anyToDelete, s->contents[i].which, s->contents[i].data.any, IsEnd);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int                 i;
             for(i = (p->count - 1); i >= 0; i--)
-                DeleteAnyFromSubckt(
-                    ELEM_PARALLEL_SUBCKT, anyToDelete, p->contents[i].which, p->contents[i].data.any, IsEnd);
+                DeleteAnyFromSubckt(ELEM_PARALLEL_SUBCKT, anyToDelete, p->contents[i].which, p->contents[i].data.any, IsEnd);
             break;
         }
         default:
@@ -1510,7 +1490,6 @@ void NewProgram()
 {
     UndoFlush();
     FreeEntireProgram();
-
     Prog.appendEmptyRung();
 }
 
@@ -1521,7 +1500,7 @@ void NewProgram()
 // position of a series subcircuit that may be in a parallel subcircuit that
 // etc.)
 //-----------------------------------------------------------------------------
-static void LastInCircuit(const SeriesNode* node, const ElemLeaf *seek, bool *found, bool *andItemAfter)
+static void LastInCircuit(const SeriesNode *node, const ElemLeaf *seek, bool *found, bool *andItemAfter)
 {
     switch(node->which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1787,10 +1766,9 @@ bool DelayUsed()
 bool TablesUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(
-               ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-//         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
+           //         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
@@ -2024,31 +2002,20 @@ void PasteRung(int PasteInTo)
                     bool doCollapse = false;
                     if(Selected.data.leaf && (Selected.data.leaf->selectedState != SELECTED_NONE)) {
                         if(!EndOfRungElem(Selected.which) || (Selected.data.leaf->selectedState == SELECTED_LEFT))
-                            if(!ItemIsLastInCircuit(Selected.data.leaf)
-                               || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
+                            if(!ItemIsLastInCircuit(Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
                                 for(int i = temp->count - 1; i >= 0; i--) {
-                                    if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
-                                                           temp,
-                                                           temp->contents[i].which,
-                                                           temp->contents[i].data.any,
-                                                           true))
+                                    if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp, temp->contents[i].which, temp->contents[i].data.any, true))
                                         doCollapse = true;
                                 }
                                 if(doCollapse)
                                     while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp))
                                         ;
                             }
-                        if(EndOfRungElem(Selected.which) && CanInsertEnd
-                           && ((Selected.data.leaf->selectedState == SELECTED_BELOW)
-                               || (Selected.data.leaf->selectedState == SELECTED_ABOVE))) {
+                        if(EndOfRungElem(Selected.which) && CanInsertEnd && ((Selected.data.leaf->selectedState == SELECTED_BELOW) || (Selected.data.leaf->selectedState == SELECTED_ABOVE))) {
                             doCollapse = false;
                             for(int i = temp->count - 1; i >= 0; i--) {
-                                if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
-                                                       temp,
-                                                       temp->contents[i].which,
-                                                       temp->contents[i].data.any,
-                                                       false))
+                                if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp, temp->contents[i].which, temp->contents[i].data.any, false))
                                     doCollapse = true;
                             }
                             if(doCollapse)

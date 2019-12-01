@@ -228,18 +228,17 @@ void CompileXInterpreted(const char *outFile)
             case INT_SPI_WRITE: ///// Added by JG
             case INT_I2C_READ:  /////
             case INT_I2C_WRITE: /////
-//            case INT_UART_SEND:
+                                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
-//            case INT_UART_RECV:
+                //            case INT_UART_SENDn:
+                //            case INT_UART_RECV:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             case INT_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"),
-                                             IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
                 return;
         }
     }
@@ -252,18 +251,11 @@ void CompileXInterpreted(const char *outFile)
 
     for(int i = 0; i < Prog.io.count; i++) {
         PlcProgramSingleIo io = Prog.io.assignment[i];
-        fprintf(f,
-                "%2d %20s %2d %2d %2d %05d\n",
-                i,
-                io.name,
-                io.type,
-                GetArduinoPinNumber(io.pin),
-                io.modbus.Slave,
-                io.modbus.Address);
+        fprintf(f, "%2d %20s %2d %2d %2d %05d\n", i, io.name, io.type, GetArduinoPinNumber(io.pin), io.modbus.Slave, io.modbus.Address);
     }
 
     // $$LDcode program_size
-    fprintf(f, "$$LDcode %lu\n", OutProg.size());
+    fprintf(f, "$$LDcode %zu\n", OutProg.size());
     for(uint32_t i = 0; i < OutProg.size(); i++) {
         fprintf(f, "%02X", OutProg[i]);
         if((i % 16) == 15 || i == OutProg.size() - 1)

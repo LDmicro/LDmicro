@@ -55,200 +55,46 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 static void MakeControls()
 {
-    HWND grouper = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Type"),
-                                  WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
-                                  7,
-                                  3,
-                                  120,
-                                  125,
-                                  CoilDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"), WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP, 7, 3, 120, 125, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(grouper);
 
-    NormalRadio = CreateWindowEx(0,
-                                 WC_BUTTON,
-                                 _("( ) Normal"),
-                                 WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP,
-                                 16,
-                                 21,
-                                 100,
-                                 20,
-                                 CoilDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    NormalRadio = CreateWindowEx(0, WC_BUTTON, _("( ) Normal"), WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP, 16, 21, 100, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(NormalRadio);
 
-    NegatedRadio = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("(/) Negated"),
-                                  WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-                                  16,
-                                  41,
-                                  100,
-                                  20,
-                                  CoilDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    NegatedRadio = CreateWindowEx(0, WC_BUTTON, _("(/) Negated"), WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE, 16, 41, 100, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(NegatedRadio);
 
-    SetOnlyRadio = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("(S) Set-Only"),
-                                  WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-                                  16,
-                                  61,
-                                  100,
-                                  20,
-                                  CoilDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    SetOnlyRadio = CreateWindowEx(0, WC_BUTTON, _("(S) Set-Only"), WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE, 16, 61, 100, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(SetOnlyRadio);
 
-    ResetOnlyRadio = CreateWindowEx(0,
-                                    WC_BUTTON,
-                                    _("(R) Reset-Only"),
-                                    WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-                                    16,
-                                    81,
-                                    105,
-                                    20,
-                                    CoilDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    ResetOnlyRadio = CreateWindowEx(0, WC_BUTTON, _("(R) Reset-Only"), WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE, 16, 81, 105, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(ResetOnlyRadio);
 
-    TtriggerRadio = CreateWindowEx(0,
-                                   WC_BUTTON,
-                                   _("(T) T-trigger"),
-                                   WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-                                   16,
-                                   101,
-                                   105,
-                                   20,
-                                   CoilDialog,
-                                   nullptr,
-                                   Instance,
-                                   nullptr);
+    TtriggerRadio = CreateWindowEx(0, WC_BUTTON, _("(T) T-trigger"), WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE, 16, 101, 105, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(TtriggerRadio);
 
-    HWND grouper2 = CreateWindowEx(0,
-                                   WC_BUTTON,
-                                   _("Source"),
-                                   WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-                                   135,
-                                   3,
-                                   150,
-                                   85,
-                                   CoilDialog,
-                                   nullptr,
-                                   Instance,
-                                   nullptr);
+    HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Source"), WS_CHILD | BS_GROUPBOX | WS_VISIBLE, 135, 3, 150, 85, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(grouper2);
 
-    SourceInternalRelayRadio = CreateWindowEx(0,
-                                              WC_BUTTON,
-                                              _("Internal Relay"),
-                                              WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
-                                              144,
-                                              21,
-                                              125,
-                                              20,
-                                              CoilDialog,
-                                              nullptr,
-                                              Instance,
-                                              nullptr);
+    SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"), WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP, 144, 21, 125, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(SourceInternalRelayRadio);
 
-    SourceMcuPinRadio = CreateWindowEx(0,
-                                       WC_BUTTON,
-                                       _("Output Pin on MCU"),
-                                       WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-                                       144,
-                                       41,
-                                       125,
-                                       20,
-                                       CoilDialog,
-                                       nullptr,
-                                       Instance,
-                                       nullptr);
+    SourceMcuPinRadio = CreateWindowEx(0, WC_BUTTON, _("Output Pin on MCU"), WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP, 144, 41, 125, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(SourceMcuPinRadio);
 
-    SourceModbusRadio = CreateWindowEx(0,
-                                       WC_BUTTON,
-                                       _("Modbus"),
-                                       WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-                                       144,
-                                       61,
-                                       125,
-                                       20,
-                                       CoilDialog,
-                                       nullptr,
-                                       Instance,
-                                       nullptr);
+    SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"), WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP, 144, 61, 125, 20, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(SourceModbusRadio);
 
-    HWND textLabel = CreateWindowEx(0,
-                                    WC_STATIC,
-                                    _("Name:"),
-                                    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                    135,
-                                    90,
-                                    50,
-                                    21,
-                                    CoilDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 135, 90, 50, 21, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 190,
-                                 90,
-                                 175,
-                                 21,
-                                 CoilDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 190, 90, 175, 21, CoilDialog, nullptr, Instance, nullptr);
     FixedFont(NameTextbox);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              295,
-                              10,
-                              70,
-                              23,
-                              CoilDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 295, 10, 70, 23, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  295,
-                                  40,
-                                  70,
-                                  23,
-                                  CoilDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 295, 40, 70, 23, CoilDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, (LONG_PTR)MyNameProc);
@@ -259,18 +105,7 @@ void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigge
     char nameSave[MAX_NAME_LEN];
     strcpy(nameSave, name);
 
-    CoilDialog = CreateWindowClient(0,
-                                    "LDmicroDialog",
-                                    _("Coil"),
-                                    WS_OVERLAPPED | WS_SYSMENU,
-                                    100,
-                                    100,
-                                    375,
-                                    135,
-                                    nullptr,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    CoilDialog = CreateWindowClient(0, "LDmicroDialog", _("Coil"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 375, 135, nullptr, nullptr, Instance, nullptr);
     RECT r;
     GetClientRect(CoilDialog, &r);
 

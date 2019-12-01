@@ -133,10 +133,7 @@ static void ResetAndRegister(FILE *fr, FILE *fv, const char *str, char *_str)
             if(InCount < strlen(line2))
                 fprintf(fv, "  InArr[InCount].KeyCode := kb_line2[InCount+1]; {'%c'}\n", line2[InCount]);
             else if(InCount < (strlen(line2) + strlen(line3)))
-                fprintf(fv,
-                        "  InArr[InCount].KeyCode := kb_line3[InCount-%d+1]; {'%c'}\n",
-                        strlen(line2),
-                        line3[InCount - strlen(line2)]);
+                fprintf(fv, "  InArr[InCount].KeyCode := kb_line3[InCount-%d+1]; {'%c'}\n", strlen(line2), line3[InCount - strlen(line2)]);
             //          fprintf(fv, "  InArr[InCount].NPP := InCount;\n");
             fprintf(fv, "  {$endif}\n");
             fprintf(fv, "  inc(InCount);\n\n");
@@ -165,10 +162,7 @@ static void ResetAndRegister(FILE *fr, FILE *fv, const char *str, char *_str)
             if(RelayCount < strlen(line4))
                 fprintf(fv, "  RelayArr[RelayCount].KeyCode := kb_line4[RelayCount+1]; {'%c'}\n", line4[RelayCount]);
             else if(RelayCount < (strlen(line4) + strlen(line5)))
-                fprintf(fv,
-                        "  RelayArr[RelayCount].KeyCode := kb_line5[RelayCount-%d+1]; {'%c'}\n",
-                        strlen(line4),
-                        line5[RelayCount - strlen(line4)]);
+                fprintf(fv, "  RelayArr[RelayCount].KeyCode := kb_line5[RelayCount-%d+1]; {'%c'}\n", strlen(line4), line5[RelayCount - strlen(line4)]);
             //          fprintf(fv, "  RelayArr[RelayCount].NPP := RelayCount;\n");
             fprintf(fv, "  {$endif}\n");
 
@@ -239,16 +233,7 @@ static void PortX(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "  Read_%s:=a%s[%d].Gate[%d]^.Buf and $%x <> 0;\n", str, prt, portN, Reg, Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "  {$ifdef PortDirectIn}\n");
-    fprintf(fu,
-            "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n",
-            str,
-            prt,
-            portN,
-            Reg,
-            prt,
-            portN,
-            Reg,
-            Mask);
+    fprintf(fu, "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, prt, portN, Reg, prt, portN, Reg, Mask);
     //  fprintf(fu, "  Read_%s:=(in_portb($%x)                 xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, Addr, prt, portN, Reg, Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
@@ -270,11 +255,9 @@ static void PortX(FILE *fi, FILE *fu, const char *str)
 
     fprintf(fu, "  {$ifdef PortBufferedIn}\n");
     fprintf(fu, "  if b then begin\n");
-    fprintf(
-        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end else begin\n");
-    fprintf(
-        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end;\n");
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
@@ -307,16 +290,7 @@ static void PortY(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "  {$endif}\n");
 
     fprintf(fu, "  {$ifdef PortDirectIn}\n");
-    fprintf(fu,
-            "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n",
-            str,
-            prt,
-            portN,
-            Reg,
-            prt,
-            portN,
-            Reg,
-            Mask);
+    fprintf(fu, "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
     fprintf(fu, "\n");
@@ -332,25 +306,13 @@ static void PortY(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "    RunError(204);\n");
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "  if b then begin\n");
-    fprintf(
-        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end else begin\n");
-    fprintf(
-        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end;\n");
 
     fprintf(fu, "  {$ifdef PortDirectOut}\n");
-    fprintf(fu,
-            "  out_portb(a%s[%d].BaseAddr+%d, a%s[%d].Gate[%d]^.Buf xor a%s[%d].Gate[%d]^.XorMask);\n",
-            prt,
-            portN,
-            Reg,
-            prt,
-            portN,
-            Reg,
-            prt,
-            portN,
-            Reg);
+    fprintf(fu, "  out_portb(a%s[%d].BaseAddr+%d, a%s[%d].Gate[%d]^.Buf xor a%s[%d].Gate[%d]^.XorMask);\n", prt, portN, Reg, prt, portN, Reg, prt, portN, Reg);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
     fprintf(fu, "\n");
@@ -447,10 +409,10 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 intVar1 = IntCode[i].name1.c_str();
                 break;
 
-//            case INT_UART_RECV:
-//            case INT_UART_SEND:
+                //            case INT_UART_RECV:
+                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
+                //            case INT_UART_SENDn:
                 intVar1 = IntCode[i].name1.c_str();
                 bitVar1 = IntCode[i].name2.c_str();
                 break;
@@ -588,11 +550,7 @@ static void Generate_flash_eeprom(FILE *f)
                     ooops("sovElement=%d", sovElement);
                 }
 
-                fprintf(f,
-                        "const %s: array [0..%d] of %s = (",
-                        MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal1 - 1,
-                        sovs);
+                fprintf(f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 - 1, sovs);
                 int j;
                 for(j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
@@ -678,17 +636,9 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 
             case INT_COPY_BIT_TO_BIT:
                 if(SimpleBool(IntCode[i].name1))
-                    fprintf(f,
-                            "%s:=%s%s;\n",
-                            MapSym(IntCode[i].name1, ASBIT),
-                            SimpleBool(IntCode[i].name2) ? "" : "Read_",
-                            MapSym(IntCode[i].name2, ASBIT));
+                    fprintf(f, "%s:=%s%s;\n", MapSym(IntCode[i].name1, ASBIT), SimpleBool(IntCode[i].name2) ? "" : "Read_", MapSym(IntCode[i].name2, ASBIT));
                 else
-                    fprintf(f,
-                            "Write_%s(%s%s);\n",
-                            MapSym(IntCode[i].name1, ASBIT),
-                            SimpleBool(IntCode[i].name2) ? "" : "Read_",
-                            MapSym(IntCode[i].name2, ASBIT));
+                    fprintf(f, "Write_%s(%s%s);\n", MapSym(IntCode[i].name1, ASBIT), SimpleBool(IntCode[i].name2) ? "" : "Read_", MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -773,12 +723,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                         op = "mod";
                         goto arith;
                     arith:
-                        fprintf(f,
-                                "%s := %s %s %s;\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                MapSym(IntCode[i].name2, ASINT),
-                                op,
-                                MapSym(IntCode[i].name3, ASINT));
+                        fprintf(f, "%s := %s %s %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), op, MapSym(IntCode[i].name3, ASINT));
                         break;
                 }
 
@@ -791,25 +736,18 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_IF_BIT_SET:
-                fprintf(f,
-                        "if %s%s then begin\n",
-                        SimpleBool(IntCode[i].name1) ? "" : "Read_",
-                        MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f, "if %s%s then begin\n", SimpleBool(IntCode[i].name1) ? "" : "Read_", MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                fprintf(f,
-                        "if not %s%s then begin\n",
-                        SimpleBool(IntCode[i].name1) ? "" : "Read_",
-                        MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f, "if not %s%s then begin\n", SimpleBool(IntCode[i].name1) ? "" : "Read_", MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
 #ifdef NEW_CMP
             case INT_IF_NEQ:
-                fprintf(
-                    f, "if %s <> %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "if %s <> %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 #endif
@@ -844,14 +782,12 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 
 #ifdef NEW_CMP
             case INT_IF_LEQ:
-                fprintf(
-                    f, "if %s <= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "if %s <= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 
             case INT_IF_GEQ:
-                fprintf(
-                    f, "if %s >= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "if %s >= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 #endif
@@ -871,7 +807,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_COMMENT:
-                if(IntCode[i].name1.size()) {
+                if(IntCode[i].name1.length()) {
                     fprintf(f, "{ %s }\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");
@@ -912,12 +848,11 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:
-//            case INT_UART_RECV:
-//            case INT_UART_SEND:
+                //            case INT_UART_RECV:
+                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
-                Error(_(
-                    " PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                //            case INT_UART_SENDn:
+                Error(_(" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -926,34 +861,17 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             }
             case INT_FLASH_READ: {
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f,
-                            "%s := %d; { %s[%s] }\n",
-                            MapSym(IntCode[i].name1, ASINT),
-                            IntCode[i].data[CheckMakeNumber(IntCode[i].name3.c_str())],
-                            MapSym(IntCode[i].name2, ASINT),
-                            IntCode[i].name3.c_str());
+                    fprintf(f, "%s := %d; { %s[%s] }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].data[CheckMakeNumber(IntCode[i].name3.c_str())], MapSym(IntCode[i].name2, ASINT), IntCode[i].name3.c_str());
                 } else {
-                    fprintf(f,
-                            "%s := %s[%s];\n",
-                            MapSym(IntCode[i].name1, ASINT),
-                            MapSym(IntCode[i].name2, ASINT),
-                            MapSym(IntCode[i].name3, ASINT));
+                    fprintf(f, "%s := %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), MapSym(IntCode[i].name3, ASINT));
                 }
                 break;
             }
             case INT_RAM_READ: {
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f,
-                            "%s := %s[%d]\n",
-                            MapSym(IntCode[i].name1, ASINT),
-                            MapSym(IntCode[i].name2, ASSTR),
-                            CheckMakeNumber(IntCode[i].name3.c_str()));
+                    fprintf(f, "%s := %s[%d]\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), CheckMakeNumber(IntCode[i].name3.c_str()));
                 } else {
-                    fprintf(f,
-                            "%s := %s[%s];\n",
-                            MapSym(IntCode[i].name1, ASINT),
-                            MapSym(IntCode[i].name2, ASSTR),
-                            MapSym(IntCode[i].name3, ASINT));
+                    fprintf(f, "%s := %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 }
                 break;
             }
@@ -973,15 +891,10 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f,
-                        "procedure Call_SUBPROG_%s() { // LabelRung%d\n",
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].literal1 + 1);
+                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal1 + 1);
                 int indentSave = indent;
                 indent = 1;
-                GenerateSourceCode(f,
-                                   FindOpName(INT_AllocKnownAddr, IntCode[i].name1, "SUBPROG") + 1,
-                                   FindOpNameLast(INT_RETURN, IntCode[i].name1));
+                GenerateSourceCode(f, FindOpName(INT_AllocKnownAddr, IntCode[i].name1, "SUBPROG") + 1, FindOpNameLast(INT_RETURN, IntCode[i].name1));
                 indent = indentSave;
                 fprintf(f, "}\n");
             }
@@ -1010,7 +923,7 @@ static char *GetUnitName(char *unitn, char *dest)
     return _GetUnitName(unitn);
 }
 //-----------------------------------------------------------------------------
-void CompilePascal(const char *dest)
+void CompilePascal(const char *outFile)
 {
     SeenVariablesCount = 0;
 
@@ -1030,15 +943,15 @@ void CompilePascal(const char *dest)
     char *unitr;
     char *unitv;
 
-    strcpy(destn, dest);
-    SetExt(destu, dest, "U.pas");
-    SetExt(destr, dest, "R.pas");
-    SetExt(destv, dest, "V.pas");
-    SetExt(desti, dest, "U.inc");
+    strcpy(destn, outFile);
+    SetExt(destu, outFile, "U.pas");
+    SetExt(destr, outFile, "R.pas");
+    SetExt(destv, outFile, "V.pas");
+    SetExt(desti, outFile, "U.inc");
 
-    FileTracker f(dest, "w");
+    FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%s'"), outFile);
         return;
     }
     FileTracker fu(destu, "w");
@@ -1348,7 +1261,7 @@ void CompilePascal(const char *dest)
               "This is not a complete PASCAL program. You have to provide the runtime "
               "and all the I/O routines. See the comments in the source code for "
               "information about how to do this."),
-            dest);
+            outFile);
     CompileSuccessfulMessage(str);
 }
 

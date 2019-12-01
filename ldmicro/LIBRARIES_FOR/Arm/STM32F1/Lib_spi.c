@@ -251,7 +251,7 @@ void LibSPI_ReadMulti(SPI_TypeDef *SPIx, uint8_t *dataIn, uint8_t dummy, uint32_
   * @param  SPIx = SPI1 or SPI2
   * @retval None
   */
-uint16_t LibSPI_Stop(SPI_TypeDef *SPIx)
+void LibSPI_Stop(SPI_TypeDef *SPIx)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 

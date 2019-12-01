@@ -291,7 +291,7 @@ void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask)
     };
 }
 //-----------------------------------------------------------------------------
-bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
+bool ParceVar(const char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
 {
     strcpy(prt, "???");
     *portN = 0;
@@ -307,7 +307,7 @@ bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Ad
 
     for(int i = 0; i < Prog.io.count; i++) {
         Transliterate(trans, Prog.io.assignment[i].name);
-        if(strcmp(trans, s + 3) == 0) {
+        if(strcmp(trans, str + 3) == 0) {
             pin = Prog.io.assignment[i].pin;
             break;
         };
@@ -346,15 +346,8 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
         LptDb25PinToRegMask(pinInfo->dbPin, &Reg, &Mask);
         Bit = MaskToBit(Mask);
         pinInfo->bit = Bit;
-        sprintf(pinInfo->pinName,
-                "%c%s%d%s%dPin%d",
-                pinInfo->port,
-                "pt",
-                pinInfo->portN,
-                Reg == LPT_DATA_REG ? "Data"
-                                    : Reg == LPT_STATUS_REG ? "Status" : Reg == LPT_CONTROL_REG ? "Control" : "Reg",
-                Bit,
-                pinInfo->dbPin);
+        sprintf(
+            pinInfo->pinName, "%c%s%d%s%dPin%d", pinInfo->port, "pt", pinInfo->portN, Reg == LPT_DATA_REG ? "Data" : Reg == LPT_STATUS_REG ? "Status" : Reg == LPT_CONTROL_REG ? "Control" : "Reg", Bit, pinInfo->dbPin);
     } else if((pinInfo->port == 'c') || (pinInfo->port == 'C')) {
         if(pinInfo->port == 'c')
             ComDb9PinToRegMask(pinInfo->dbPin, &Reg, &Mask);
@@ -362,14 +355,7 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
             ComDb25PinToRegMask(pinInfo->dbPin, &Reg, &Mask);
         Bit = MaskToBit(Mask);
         pinInfo->bit = Bit;
-        sprintf(pinInfo->pinName,
-                "%c%s%d%s%dPin%d",
-                pinInfo->port,
-                "om",
-                pinInfo->portN,
-                Reg == LCR ? "Lcr" : Reg == MCR ? "Mcr" : Reg == MSR ? "Msr" : "Reg",
-                Bit,
-                pinInfo->dbPin);
+        sprintf(pinInfo->pinName, "%c%s%d%s%dPin%d", pinInfo->port, "om", pinInfo->portN, Reg == LCR ? "Lcr" : Reg == MCR ? "Mcr" : Reg == MSR ? "Msr" : "Reg", Bit, pinInfo->dbPin);
     }
 }
 //-----------------------------------------------------------------------------
@@ -401,7 +387,7 @@ bool SavePcPorts(const char *filename)
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    return b != false;
+    return !b;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)
@@ -599,8 +585,7 @@ bool LoadPcPorts(const char *filename)
             if(Stype)
                 fprintf(fu, "  SetALptDir($%X,%d,1,%-7s,' %s STATUS');\n", addr + 1, portN, IoTypeToPas(Stype), pline4);
             if(Ctype)
-                fprintf(
-                    fu, "  SetALptDir($%X,%d,2,%-7s,' %s CONTROL');\n\n", addr + 2, portN, IoTypeToPas(Ctype), pline4);
+                fprintf(fu, "  SetALptDir($%X,%d,2,%-7s,' %s CONTROL');\n\n", addr + 2, portN, IoTypeToPas(Ctype), pline4);
 
         } else if((n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4)) != 0) {
             if(strlen(line4))

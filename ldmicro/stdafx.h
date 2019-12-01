@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cstddef>
 #include <cstdint>
+#include <cinttypes>
 
 #include <cctype>
 #include <ctime>

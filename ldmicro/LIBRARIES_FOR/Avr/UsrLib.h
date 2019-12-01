@@ -47,6 +47,7 @@ void us_delay2();
     us_delay1();                                            \
     }
 
+#define delay_cycles(ticks) __builtin_avr_delay_cycles(ticks)
 
 // for AtMega328
 #ifndef EEWE

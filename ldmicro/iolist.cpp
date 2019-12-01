@@ -207,7 +207,7 @@ static void AppendIoAutoType(char *name, int default_type)
 static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-    char str[MAX_NAME_LEN];
+    char      str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -623,20 +623,20 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);
             }
             break;
-/*
+            /*
         case ELEM_UART_WR:
 //          if(l->d.fmtdStr.string[0] != '"') {
   //            AppendIo(l->d.fmtdStr.string, IO_TYPE_STRING);
 //          }
             break;
 */
-//        case ELEM_UART_SENDn:
+            //        case ELEM_UART_SENDn:
         case ELEM_UART_SEND:
             //AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_TX);
             break;
 
-//        case ELEM_UART_RECVn:
+            //        case ELEM_UART_RECVn:
         case ELEM_UART_RECV:
             AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_RX);
@@ -790,10 +790,7 @@ int GenerateIoList(int prevSel)
 
     // remember the pin assignments
     for(i = 0; i < Prog.io.count; i++) {
-        AppendIoSeenPreviously(Prog.io.assignment[i].name,
-                               Prog.io.assignment[i].type,
-                               Prog.io.assignment[i].pin,
-                               Prog.io.assignment[i].modbus);
+        AppendIoSeenPreviously(Prog.io.assignment[i].name, Prog.io.assignment[i].type, Prog.io.assignment[i].pin, Prog.io.assignment[i].modbus);
     }
     // wipe the list
     Prog.io.count = 0;
@@ -969,12 +966,7 @@ void SaveIoListToFile(FileTracker &f)
             if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
             else
-                fprintf(f,
-                        "    %s at %d %d %d\n",
-                        Prog.io.assignment[i].name,
-                        Prog.io.assignment[i].pin,
-                        Prog.io.assignment[i].modbus.Slave,
-                        Prog.io.assignment[i].modbus.Address);
+                fprintf(f, "    %s at %d %d %d\n", Prog.io.assignment[i].name, Prog.io.assignment[i].pin, Prog.io.assignment[i].modbus.Slave, Prog.io.assignment[i].modbus.Address);
         }
     }
     if(j1 != j2) {
@@ -1050,32 +1042,10 @@ void ShowAnalogSliderPopup(char *name)
     if(top < 0)
         top = 0;
 
-    AnalogSliderMain = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-                                          "LDmicroAnalogSlider",
-                                          "ADC Pin",
-                                          WS_CAPTION | WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-                                          left,
-                                          top,
-                                          30 + 15,
-                                          100 + 28,
-                                          nullptr,
-                                          nullptr,
-                                          Instance,
-                                          nullptr);
+    AnalogSliderMain =
+        CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, "LDmicroAnalogSlider", "ADC Pin", WS_CAPTION | WS_VISIBLE | WS_POPUP | WS_DLGFRAME, left, top, 30 + 15, 100 + 28, nullptr, nullptr, Instance, nullptr);
 
-    AnalogSliderTrackbar =
-        CreateWindowEx(0,
-                       TRACKBAR_CLASS,
-                       "",
-                       WS_CHILD | TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
-                       0,
-                       0,
-                       30 + 15,
-                       100 + 28,
-                       AnalogSliderMain,
-                       nullptr,
-                       Instance,
-                       nullptr);
+    AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD | TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 0, 0, 30 + 15, 100 + 28, AnalogSliderMain, nullptr, Instance, nullptr);
     SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, false, MAKELONG(0, maxVal));
     SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1) / 8, 0);
     SendMessage(AnalogSliderTrackbar, TBM_SETPOS, true, currentVal);
@@ -1183,63 +1153,27 @@ static ATOM MakeWindowClass()
 #define AddY 50
 static void MakeControls()
 {
-    HWND textLabel =
-        CreateWindowEx(0,
-                       WC_STATIC,
-                       ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_AVR))
-                           ? _("Pin#:   MCU pin name:                                       Arduino pin name:")
-                           : _("Pin#:   MCU pin name:"),
-                       WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                       6,
-                       1,
-                       400,
-                       17,
-                       IoDialog,
-                       nullptr,
-                       Instance,
-                       nullptr);
+    HWND textLabel = CreateWindowEx(0,
+                                    WC_STATIC,
+                                    ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_AVR)) ? _("Pin#:   MCU pin name:                                       Arduino pin name:") : _("Pin#:   MCU pin name:"),
+                                    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+                                    6,
+                                    1,
+                                    400,
+                                    17,
+                                    IoDialog,
+                                    nullptr,
+                                    Instance,
+                                    nullptr);
     NiceFont(textLabel);
 
-    PinList = CreateWindowEx(WS_EX_CLIENTEDGE,
-                             WC_LISTBOX,
-                             "",
-                             WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY,
-                             6,
-                             18,
-                             95 + AddX,
-                             320 + AddY,
-                             IoDialog,
-                             nullptr,
-                             Instance,
-                             nullptr);
+    PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "", WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY, 6, 18, 95 + AddX, 320 + AddY, IoDialog, nullptr, Instance, nullptr);
     FixedFont(PinList);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              6,
-                              325 + AddY + 4,
-                              95,
-                              23,
-                              IoDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 6, 325 + AddY + 4, 95, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  6,
-                                  356 + AddY + 2,
-                                  95,
-                                  23,
-                                  IoDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 6, 356 + AddY + 2, 95, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -1313,8 +1247,7 @@ void ShowIoDialog(int item)
     }
     */
     if(Prog.mcu()->whichIsa == ISA_INTERPRETED) {
-        Error(_(
-            "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."));
+        Error(_("Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."));
         return;
     }
 
@@ -1367,18 +1300,7 @@ void ShowIoDialog(int item)
     // a minimum width greater than our current width. And without the
     // APPWINDOW style, it becomes impossible to get the window back (by
     // Alt+Tab or taskbar).
-    IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-                                  "LDmicroIo",
-                                  _("I/O Pin"),
-                                  WS_OVERLAPPED | WS_SYSMENU,
-                                  100,
-                                  100,
-                                  106 + AddX,
-                                  387 + AddY,
-                                  nullptr,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, "LDmicroIo", _("I/O Pin"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 106 + AddX, 387 + AddY, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 
@@ -1478,9 +1400,7 @@ void ShowIoDialog(int item)
                 goto cant_use_this_io;
         }
 
-        if(UartFunctionUsed() && Prog.mcu()
-           && ((Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.rxPin)
-               || (Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.txPin))) {
+        if(UartFunctionUsed() && Prog.mcu() && ((Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.rxPin) || (Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.txPin))) {
             goto cant_use_this_io;
         }
 
@@ -1508,7 +1428,7 @@ void ShowIoDialog(int item)
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu()->pinInfo[i].pin, Prog.cycleTimer);
                 if(!iop)
                     goto cant_use_this_io;
-/*
+                /*
                 if(iop->timer == Prog.cycleTimer)
                     goto cant_use_this_io;
 */
@@ -1610,88 +1530,22 @@ void ShowIoDialog(int item)
 //-----------------------------------------------------------------------------
 static void MakeModbusControls()
 {
-    HWND textLabel2 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("Slave ID:"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     6,
-                                     1,
-                                     70,
-                                     21,
-                                     IoDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 6, 1, 70, 21, IoDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2);
 
-    ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 80,
-                                 1,
-                                 30,
-                                 21,
-                                 IoDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 80, 1, 30, 21, IoDialog, nullptr, Instance, nullptr);
     FixedFont(ModbusSlave);
 
-    HWND textLabel3 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("Register:"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     6,
-                                     24,
-                                     70,
-                                     21,
-                                     IoDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Register:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 6, 24, 70, 21, IoDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel3);
 
-    ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                    WC_EDIT,
-                                    "",
-                                    WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                    80,
-                                    24,
-                                    80,
-                                    21,
-                                    IoDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 80, 24, 80, 21, IoDialog, nullptr, Instance, nullptr);
     FixedFont(ModbusRegister);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              6,
-                              48,
-                              50,
-                              23,
-                              IoDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 6, 48, 50, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  56,
-                                  48,
-                                  50,
-                                  23,
-                                  IoDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 56, 48, 50, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -1699,18 +1553,7 @@ void ShowModbusDialog(int item)
 {
     MakeWindowClass();
 
-    IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-                                  "LDmicroIo",
-                                  _("Modbus Address"),
-                                  WS_OVERLAPPED | WS_SYSMENU,
-                                  100,
-                                  100,
-                                  170,
-                                  80,
-                                  nullptr,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, "LDmicroIo", _("Modbus Address"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 170, 80, nullptr, nullptr, Instance, nullptr);
 
     MakeModbusControls();
 
@@ -1806,9 +1649,7 @@ void IoListProc(NMHDR *h)
                         break;
                     // Don't confuse people by displaying bogus pin assignments
                     // for the target.
-                    if(Prog.mcu()
-                       && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_XINTERPRETED
-                           || Prog.mcu()->whichIsa == ISA_INTERPRETED)) {
+                    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_XINTERPRETED || Prog.mcu()->whichIsa == ISA_INTERPRETED)) {
                         strcpy(i->item.pszText, "");
                         break;
                     }
@@ -1836,10 +1677,7 @@ void IoListProc(NMHDR *h)
                     if(Prog.io.assignment[item].modbus.Slave == 0) {
                         sprintf(i->item.pszText, _("(not assigned)"));
                     } else {
-                        sprintf(i->item.pszText,
-                                "%d:%05d",
-                                Prog.io.assignment[item].modbus.Slave,
-                                Prog.io.assignment[item].modbus.Address);
+                        sprintf(i->item.pszText, "%d:%05d", Prog.io.assignment[item].modbus.Slave, Prog.io.assignment[item].modbus.Address);
                     }
                     break;
                 }

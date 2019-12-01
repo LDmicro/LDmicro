@@ -243,102 +243,25 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 //-----------------------------------------------------------------------------
 static void MakeControls()
 {
-    ColorList = CreateWindowEx(WS_EX_CLIENTEDGE,
-                               WC_LISTBOX,
-                               "",
-                               WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY,
-                               10,
-                               10,
-                               455,
-                               245,
-                               ColorDialog,
-                               nullptr,
-                               Instance,
-                               nullptr);
+    ColorList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "", WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY, 10, 10, 455, 245, ColorDialog, nullptr, Instance, nullptr);
     FixedFont(ColorList);
 
-    ChooseButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Choose a color"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                                  480,
-                                  10,
-                                  160,
-                                  23,
-                                  ColorDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    ChooseButton = CreateWindowEx(0, WC_BUTTON, _("Choose a color"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 480, 10, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(ChooseButton);
 
-    UnChooseButton = CreateWindowEx(0,
-                                    WC_BUTTON,
-                                    _("Un-choose a color"),
-                                    WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                    480,
-                                    40,
-                                    160,
-                                    23,
-                                    ColorDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    UnChooseButton = CreateWindowEx(0, WC_BUTTON, _("Un-choose a color"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 480, 40, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(UnChooseButton);
 
-    AgainButton = CreateWindowEx(0,
-                                 WC_BUTTON,
-                                 _("Try again a color"),
-                                 WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 480,
-                                 70,
-                                 160,
-                                 23,
-                                 ColorDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    AgainButton = CreateWindowEx(0, WC_BUTTON, _("Try again a color"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 480, 70, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(AgainButton);
 
-    RevertButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Revert a color"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  480,
-                                  100,
-                                  160,
-                                  23,
-                                  ColorDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    RevertButton = CreateWindowEx(0, WC_BUTTON, _("Revert a color"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 480, 100, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(RevertButton);
 
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("Apply user color scheme"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              480,
-                              160,
-                              160,
-                              23,
-                              ColorDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("Apply user color scheme"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 480, 160, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Revert color scheme"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  480,
-                                  190,
-                                  160,
-                                  23,
-                                  ColorDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Revert color scheme"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 480, 190, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -357,18 +280,7 @@ void ShowColorDialog()
     memcpy(&OrigSchemeSave, &HighlightColours, sizeof(HighlightColours));
     memcpy(&SchemeSave, &HighlightColours, sizeof(HighlightColours));
 
-    ColorDialog = CreateWindowClient(0,
-                                     "LDmicroDialog",
-                                     _("Select color for user scheme:"),
-                                     WS_OVERLAPPED | WS_SYSMENU,
-                                     100,
-                                     100,
-                                     650,
-                                     265,
-                                     nullptr,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
+    ColorDialog = CreateWindowClient(0, "LDmicroDialog", _("Select color for user scheme:"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 650, 265, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 

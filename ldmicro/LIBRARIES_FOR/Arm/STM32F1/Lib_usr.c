@@ -39,7 +39,9 @@ uint8_t bin2bcd(uint8_t var)
     return res;
 }
 
-// delays in +/- µs
+#define DELAY_VARIANT 2 // 0,1,2 - are the correct variants.
+#if DELAY_VARIANT == 0
+// delays in +/- us
 void delay_us(uint16_t us)
 {
     uint32_t d = 7 * us / 2;
@@ -56,6 +58,55 @@ void delay_ms(uint16_t ms)
     for(; d > 0; d--)
         ;
 }
+
+#elif DELAY_VARIANT == 1
+
+volatile uint16_t usSysTick = 0;
+
+void SysTick_Handler() {
+    usSysTick++;
+}
+
+// delays in +/- us
+void delay_us(uint16_t us)
+{
+    //NVIC_DisableIRQ(SysTick_IRQn);
+    //__disable_irq();
+    us += usSysTick;
+    //NVIC_EnableIRQ(SysTick_IRQn);
+    //__enable_irq();
+    //while(us > usSysTick)
+    while(us != usSysTick)
+        ;
+}
+
+// delays in +/- ms
+void delay_ms(uint16_t ms)
+{
+    for(; ms > 0; ms--)
+        delay_us(1000);
+}
+
+#elif DELAY_VARIANT == 2
+
+// delays in +/- us
+void delay_us(uint16_t us)
+{
+    SysTick_Conf(SystemCoreClock / 1000000 * us); // 72 * us
+    while(SysTick_COUNTFLAG() == 0)
+        ;
+    SysTick_Off();
+}
+
+// delays in +/- ms
+void delay_ms(uint16_t ms)
+{
+    for(; ms > 0; ms--)
+        delay_us(1000);
+}
+#else
+  #error Choose the correct variant.
+#endif
 
 void _sbrk()
 {

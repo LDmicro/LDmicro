@@ -745,8 +745,8 @@ static void MarkWithCheck(const char *name, int flag)
 static void CheckVariableNamesCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any; // not for ELEM_SERIES_SUBCKT, not for ELEM_PARALLEL_SUBCKT
-    DWORD flag;
-    char  str[MAX_NAME_LEN];
+    DWORD     flag;
+    char      str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -898,11 +898,11 @@ static void CheckVariableNamesCircuit(int which, void *any)
 
         case ELEM_SPI:
             if(strlen(l->d.spi.send))
-              if(!IsNumber(l->d.spi.send))
-                MarkWithCheck(l->d.spi.send, VAR_FLAG_ANY);
+                if(!IsNumber(l->d.spi.send))
+                    MarkWithCheck(l->d.spi.send, VAR_FLAG_ANY);
             if(strlen(l->d.spi.recv))
-              if(!IsNumber(l->d.spi.recv))
-                MarkWithCheck(l->d.spi.recv, VAR_FLAG_ANY);
+                if(!IsNumber(l->d.spi.recv))
+                    MarkWithCheck(l->d.spi.recv, VAR_FLAG_ANY);
             break;
 
             // clang-format off
@@ -963,7 +963,7 @@ static void CheckVariableNamesCircuit(int which, void *any)
             break;
 
         case ELEM_UART_RECV:
-//        case ELEM_UART_RECVn:
+            //        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -979,8 +979,12 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_STRING:
             MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
             break;
-
-//      case ELEM_UART_WR:
+            /*
+        case ELEM_UART_SEND:
+            MarkWithCheck("$scratch", VAR_FLAG_ANY);
+            break;
+*/
+            //      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING: {
             break;
         }
@@ -992,7 +996,7 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
-//        case ELEM_UART_SENDn:
+            //        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_SPI_WR: ///// Added by JG
@@ -1042,10 +1046,8 @@ void CheckVariableNames()
     for(int i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
             if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
-                Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
-                      Variables[i].initedRung + 1,
-                      Variables[i].name,
-                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
+                Error(
+                    _("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung + 1, Variables[i].name, _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
     return;
 #ifdef _LOT_OF_EXPERIMENTS_ // Never define!
     for(i = 0; i < VariableCount; i++)
@@ -1397,9 +1399,9 @@ long shl(long val, int32_t n, int size, bool *state)
 //Binary to unpacked BCD
 int bin2bcd(int val)
 {
-    int sign = 1;
+    //int sign = 1;
     if(val < 0) {
-        sign = -1;
+        //sign = -1;
         Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
@@ -1580,7 +1582,7 @@ static void SimulateIntCode()
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(a->name2.size())
+                if(a->name2.length())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
                         NeedRedraw = a->op;
                         *(a->workingNow) = SingleBitOn(a->name2);
@@ -1964,7 +1966,7 @@ static void SimulateIntCode()
                         AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
-/*
+                /*
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
@@ -1995,7 +1997,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_UART_RECV1:
-//            case INT_UART_RECV:
+                //            case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
@@ -2061,7 +2063,7 @@ static void SimulateIntCode()
             case INT_STRING: {
                 char buf[MAX_NAME_LEN];
                 if(a->name3.length()) {
-                    int  sov = SizeOfVar(a->name3);
+                    int sov = SizeOfVar(a->name3);
                     if(sov == 1)
                         sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xff);
                     else if(sov == 2)
@@ -2079,7 +2081,7 @@ static void SimulateIntCode()
                 NeedRedraw = a->op;
                 break;
             }
-//#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
+                //#define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
             case INT_STRING_INIT:
             case INT_WRITE_STRING: {
                 break;
@@ -2113,7 +2115,18 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+                break;
+            }
+            case INT_SET_VARIABLE_INDEXED: {
+                int index = GetSimulationVariable(a->name3);
+                //int32_t d = a->name2[index];
+                char d = GetSimulationStr(a->name4.c_str())[index];
+                if(GetSimulationVariable(a->name1) != d) {
+                    SetSimulationVariable(a->name1, d);
+                    NeedRedraw = a->op;
+                }
+                break;
+            }
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
@@ -2127,7 +2140,8 @@ static void SimulateIntCode()
                     SetSimulationVariable(a->name2, d);
                     NeedRedraw = a->op;
                 }
-            } break;
+                break;
+            }
 #endif
 
             case INT_DELAY:
@@ -2137,7 +2151,6 @@ static void SimulateIntCode()
             case INT_PWM_OFF:
                 break;
 
-            ///// Added by JG
             case INT_SPI:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), SpiSimulationTextControl);
                 if(QueuedSpiCharacter >= 0) {
@@ -2147,7 +2160,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_SPI_WRITE:
-                for(unsigned int i = 0; i < a->name2.size(); i++) // send text to terminal window
+                for(unsigned int i = 0; i < a->name2.length(); i++) // send text to terminal window
                     AppendToSimulationTextControl(a->name2[i], SpiSimulationTextControl);
                 break;
 
@@ -2157,12 +2170,10 @@ static void SimulateIntCode()
                     QueuedI2cCharacter = -1;
                 }
                 break;
-
             case INT_I2C_WRITE:
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), I2cSimulationTextControl);
 
                 break;
-                /////
 
             default:
                 ooops("op=%d", a->op);
@@ -2759,20 +2770,7 @@ void ShowSimulationWindow(int sim) ///// Modified by JG
         I2cSimulationTextControl = SimCtrl;
     /////
 
-    HFONT fixedFont = CreateFont(14,
-                                 0,
-                                 0,
-                                 0,
-                                 FW_REGULAR,
-                                 false,
-                                 false,
-                                 false,
-                                 ANSI_CHARSET,
-                                 OUT_DEFAULT_PRECIS,
-                                 CLIP_DEFAULT_PRECIS,
-                                 DEFAULT_QUALITY,
-                                 FF_DONTCARE,
-                                 "Lucida Console");
+    HFONT fixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, false, false, false, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, "Lucida Console");
     if(!fixedFont)
         fixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
@@ -2780,31 +2778,27 @@ void ShowSimulationWindow(int sim) ///// Modified by JG
     strcpy(buf, "");
     if(sim == SIM_UART) {
         SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevUartTextProc = SetWindowLongPtr(
-            UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
+        PrevUartTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(UartSimulationWindow, true);
     }
     if(sim == SIM_SPI) {
         SendMessage((HWND)SpiSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevSpiTextProc =
-            SetWindowLongPtr(SpiSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
+        PrevSpiTextProc = SetWindowLongPtr(SpiSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(SpiSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(SpiSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(SpiSimulationWindow, true);
     }
     if(sim == SIM_I2C) {
         SendMessage((HWND)I2cSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevI2cTextProc =
-            SetWindowLongPtr(I2cSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
+        PrevI2cTextProc = SetWindowLongPtr(I2cSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
         SendMessage(I2cSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(I2cSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(I2cSimulationWindow, true);
     }
 
-    SetFocus(
-        MainWindow); // Removed by JG to show simulation windows // Restored: access to the F7, F8, F9 and Space keys after show the window.
+    SetFocus(MainWindow); // Removed by JG to show simulation windows // Restored: access to the F7, F8, F9 and Space keys after show the window.
 }
 
 //-----------------------------------------------------------------------------
@@ -2894,9 +2888,7 @@ static void    AppendToSimulationTextControl(BYTE b,
 {
     char append[50];
 
-    if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) || b == '\r' || b == '\n' || b == '\b' || b == '\f'
-        || b == '\t' || b == '\v' || b == '\a')
-       && b != '\0') {
+    if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) || b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0') {
         append[0] = (char)b;
         append[1] = '\0';
     } else {

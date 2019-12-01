@@ -378,8 +378,7 @@ static void WipeMemory()
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2,
-                         const char *comment)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2, const char *comment)
 {
     static PicAvrInstruction instruction;
     static AvrOp             prevOp = OP_VACANT;
@@ -573,13 +572,7 @@ static void AddrCheckForErrorsPostCompile()
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
             if(AvrProg[i].arg1 & FWD(0)) {
-                THROW_COMPILER_EXCEPTION_FMT(
-                    _("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"),
-                    i,
-                    AvrProg[i].opAvr,
-                    AvrProg[i].arg1,
-                    AvrProg[i].arg2,
-                    AvrProg[i].rung + 1);
+                THROW_COMPILER_EXCEPTION_FMT(_("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"), i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, AvrProg[i].rung + 1);
             }
         }
     }
@@ -604,19 +597,11 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
-#define CHECK(v, bits)                                                                            \
-    do {                                                                                          \
-        if((v) != ((v) & ((1 << (bits)) - 1)))                                                    \
-            THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
-                                         intOp->rung + 1,                                         \
-                                         v,                                                       \
-                                         bits,                                                    \
-                                         ((1 << (bits)) - 1),                                     \
-                                         AvrInstr->l,                                             \
-                                         AvrInstr->f,                                             \
-                                         intOp->name1.c_str(),                                    \
-                                         intOp->fileLine,                                         \
-                                         intOp->fileName.c_str());                                \
+#define CHECK(v, bits)                                                                                                                                                                                             \
+    do {                                                                                                                                                                                                           \
+        if((v) != ((v) & ((1 << (bits)) - 1)))                                                                                                                                                                     \
+            THROW_COMPILER_EXCEPTION_FMT(                                                                                                                                                                          \
+                "rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", intOp->rung + 1, v, bits, ((1 << (bits)) - 1), AvrInstr->l, AvrInstr->f, intOp->name1.c_str(), intOp->fileLine, intOp->fileName.c_str()); \
     } while(0)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)                                 \
     do {                                                                                    \
@@ -1253,7 +1238,21 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
             CHECK2(BYTE(arg1), 0, 255);
             CHECK2(BYTE(arg2), 0, 255);
             //      CHECK2(arg1, -128, 127); CHECK2(arg2, -128, 127);
-            sprintf(sAsm, ".db  \t 0x%02X, \t 0x%02X", BYTE(arg1), BYTE(arg2));
+            sprintf(sAsm, ".db  \t 0x%02X, \t 0x%02X ", BYTE(arg1), BYTE(arg2));
+
+            char s[20];
+            if((arg1 >= ' ') && (arg1 < 127))
+                sprintf(s, "; '%c'", arg1);
+            else
+                sprintf(s, "; '\\x%02X'", arg1);
+            strcat(sAsm, s);
+
+            if((arg2 >= ' ') && (arg2 < 127))
+                sprintf(s, " '%c'", arg2);
+            else
+                sprintf(s, " '\\x%02X'", arg2);
+            strcat(sAsm, s);
+
             return (BYTE(arg2) << 8) | BYTE(arg1);
 
         case OP_DW:
@@ -1350,10 +1349,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].node->which);
                     }
                     if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].fileLine)) {
-                        fprintf(fAsm,
-                                " ; line %d in %s",
-                                IntCode[AvrProg[i].IntPc].fileLine,
-                                IntCode[AvrProg[i].IntPc].fileName.c_str());
+                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].fileLine, IntCode[AvrProg[i].IntPc].fileName.c_str());
                         prevIntPcL = IntCode[AvrProg[i].IntPc].fileLine;
                     }
                 }
@@ -1374,11 +1370,11 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             //if(i == 0x8000) {
             //    fprintf(f, ":020000021000EC\n"); // TT->Record Type -> 02 is Extended Segment Address 0x10000 + 0xffff
             ExtendedSegmentAddress = (i & ~0x7fff);
-            StartIhex(f);    // ':'->Colon
-            WriteIhex(f, 2); // LL->Record Length
-            WriteIhex(f, 0); // AA->Address as big endian values HI()
-            WriteIhex(f, 0); // AA->Address as big endian values LO()
-            WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
+            StartIhex(f);                                               // ':'->Colon
+            WriteIhex(f, 2);                                            // LL->Record Length
+            WriteIhex(f, 0);                                            // AA->Address as big endian values HI()
+            WriteIhex(f, 0);                                            // AA->Address as big endian values LO()
+            WriteIhex(f, 2);                                            // TT->Record Type -> 02 is Extended Segment Address
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
             FinishIhex(f);                                              // CC->Checksum
@@ -1405,10 +1401,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu()->flashWords) && (AvrProg.size() >= Prog.mcu()->flashWords)) {
-        Warning(_("Flash program memory size %d is exceed limit %d words\nfor %s."),
-                AvrProg.size(),
-                Prog.mcu()->flashWords,
-                Prog.mcu()->mcuName);
+        Warning(_("Flash program memory size %d is exceed limit %d words\nfor %s."), AvrProg.size(), Prog.mcu()->flashWords, Prog.mcu()->mcuName);
     }
 }
 
@@ -1734,13 +1727,11 @@ static void LOAD(int reg, ADDR_T addr)
 //-----------------------------------------------------------------------------
 #define WriteMemory(...) _WriteMemory(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
-static void _WriteMemory(int l, const char *f, const char *args, ADDR_T addr, BYTE val, const char *name,
-                         int32_t literal)
+static void _WriteMemory(int l, const char *f, const char *args, ADDR_T addr, BYTE val, const char *name, int32_t literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(
-            _("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -2298,8 +2289,7 @@ static void PulseBit(ADDR_T addr, int bit)
 //-----------------------------------------------------------------------------
 // Calc AVR 8-bit Timer0
 // or   AVR 16-bit Timer1 to do the timing for NPulse generator.
-static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int *bestDivider, int *bestError,
-                               double *bestTarget)
+static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int *bestDivider, int *bestError, double *bestTarget)
 {
     int max_tmr;
     if(Prog.cycleTimer == 0)
@@ -2535,7 +2525,6 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
 {
-    //  uint32_t saveAvrProgWriteP = AvrProgWriteP;
     ADDR_T addrOfTable = 0;
     MemOfVar(a->name1, &addrOfTable);
 
@@ -2551,17 +2540,14 @@ static void InitTable(IntOp *a)
         //sovElement = 1;
         if(sovElement == 2) {
             for(int i = 0; i < a->literal1; i++) {
-                //dbp("i=%d %d",i,a->data[i]);
                 Instruction(OP_DW, a->data[i]);
             }
         } else if(sovElement == 1) {
             for(int i = 0; i < a->literal1; i = i + 2) {
-                //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
                 Instruction(OP_DB2, a->data[i], i + 1 < a->literal1 ? a->data[i + 1] : 0);
             }
             /*
             for(i=0; i < a->literal; i++){
-              //dbp("i=%d %d", i, a->data[i]);
               Instruction(OP_DB, a->data[i]); // BAD! Hi byte of flash word is 0!
             }
             */
@@ -2580,8 +2566,31 @@ static void InitTable(IntOp *a)
             oops();
         Comment("TABLE %s END", a->name1.c_str());
     }
+}
 
-    //  if((saveAvrProgWriteP >> 11) != (AvrProgWriteP >> 11)) oops();
+static void InitTableString(IntOp *a)
+{
+    ADDR_T addrOfTable = 0;
+    MemOfVar(a->name1, &addrOfTable);
+    char str[MAX_NAME_LEN];
+    FrmStrToStr(str, a->name2.c_str());
+
+    if(addrOfTable == 0) {
+        Comment("TABLE %s", a->name1.c_str());
+        if(AvrProg.size() % 2)
+            Instruction(OP_NOP);
+        addrOfTable = AvrProg.size(); // << 1; //see LPM // data stored in flash
+
+        SetMemForVariable(a->name1, addrOfTable, 1);
+
+        Comment("DATA's size is 1");
+        for(int i = 0; i < strlen(str); i += 2) {
+            Instruction(OP_DB2, str[i], str[i + 1]);
+        }
+        if(strlen(str) % 2 == 0)
+            Instruction(OP_DW, 0, 0); // string final '\0' is included
+        Comment("TABLE %s END", a->name1.c_str());
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -2594,6 +2603,9 @@ static void InitTables()
         switch(a->op) {
             case INT_FLASH_INIT:
                 InitTable(a);
+                break;
+            case INT_STRING_INIT:
+                InitTableString(a);
                 break;
             default:
                 break;
@@ -3150,8 +3162,7 @@ static void   WriteRuntime()
     if(plcTmr.softDivisor > 1) { // RAM used, after zero out // 5
         Comment("Configure PLC Timer softDivisor");
         MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
-        WriteLiteralToMemory(
-            plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+        WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
     }
 
     Comment("Set up I/O pins"); // 6
@@ -3231,8 +3242,7 @@ static void   WriteRuntime()
     } else if(Prog.cycleTimer < 0) {
         ;
     } else
-        THROW_COMPILER_EXCEPTION(_(
-            "Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
+        THROW_COMPILER_EXCEPTION(_("Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
 
     Comment("Watchdog reset");
     Instruction(OP_WDR);
@@ -3241,8 +3251,7 @@ static void   WriteRuntime()
     if(plcTmr.softDivisor > 1) {
         Decrement(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor));
         Instruction(OP_BRNE, BeginOfPLCCycle);
-        WriteLiteralToMemory(
-            plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+        WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
     }
 #endif
 
@@ -3368,12 +3377,7 @@ static void CompileFromIntermediate()
                 Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
-                CopyBit(addr1 + a->literal1 / 8,
-                        a->literal1 % 8,
-                        addr2 + a->literal2 / 8,
-                        a->literal2 % 8,
-                        a->name1.c_str(),
-                        a->name2.c_str());
+                CopyBit(addr1 + a->literal1 / 8, a->literal1 % 8, addr2 + a->literal2 / 8, a->literal2 % 8, a->name1.c_str(), a->name2.c_str());
                 break;
 
             case INT_SET_BCD2BIN:
@@ -4341,9 +4345,7 @@ static void CompileFromIntermediate()
                         Instruction(OP_COM, 22, 0);
                     if(sov >= 4)
                         Instruction(OP_COM, 23, 0);
-                } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR)
-                          || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR)
-                          || (a->op == INT_SET_VARIABLE_ROL)) {
+                } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR) || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR) || (a->op == INT_SET_VARIABLE_ROL)) {
                     uint32_t Loop = AvrProg.size();
                     Instruction(OP_DEC, r16);
                     uint32_t Skip = AllocFwdAddr();
@@ -4565,8 +4567,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment(
-                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4686,10 +4687,7 @@ static void CompileFromIntermediate()
                 if(((double)bestError) / target > 0.05) {
                     char str1[1024];
                     char str2[1024];
-                    sprintf(str1,
-                            _("Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."),
-                            (int)target,
-                            (int)bestFreq);
+                    sprintf(str1, _("Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."), (int)target, (int)bestFreq);
                     //need duble %
                     char *c = strchr(str1, '%');
                     char *s = str1 + strlen(str1) + 1;
@@ -4810,24 +4808,17 @@ static void CompileFromIntermediate()
                     if(iop->COMnx1) {
                         WriteMemory(iop->REG_TCCRnB, iop->WGMb | cs);
                         AndMemory(iop->REG_TCCRnA, ~(iop->WGMa | (1 << iop->COMnx1) | (1 << iop->COMnx0)));
-                        OrMemory(iop->REG_TCCRnA,
-                                 iop->WGMa | (1 << iop->COMnx1) | (a->name2[0] == '/' ? (1 << iop->COMnx0) : 0));
+                        OrMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0] == '/' ? (1 << iop->COMnx0) : 0));
                     } else {
                         WriteMemory(REG_TCCR2B, cs);
-                        WriteMemory(REG_TCCR2,
-                                    (1 << WGM20) | (1 << WGM21) | (1 << COM21)
-                                        | (a->name2[0] == '/' ? (1 << COM20) : 0));
+                        WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0] == '/' ? (1 << COM20) : 0));
                     }
                 } else {
                     //TODO: test registers and bits define's
                     if(iop->COMnx1) {
-                        WriteMemory(iop->REG_TCCRnA,
-                                    iop->WGMa | (1 << iop->COMnx1) | (a->name2[0] == '/' ? (1 << iop->COMnx0) : 0)
-                                        | cs);
+                        WriteMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0] == '/' ? (1 << iop->COMnx0) : 0) | cs);
                     } else {
-                        WriteMemory(REG_TCCR2,
-                                    (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0] == '/' ? (1 << COM20) : 0)
-                                        | cs);
+                        WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0] == '/' ? (1 << COM20) : 0) | cs);
                     }
                 }
                 FwdAddrIsNow(endInit);
@@ -5023,14 +5014,13 @@ static void CompileFromIntermediate()
                 BYTE refs = a->literal1 & 0x3;
                 if(mux > 0x0F)
                     THROW_COMPILER_EXCEPTION_FMT("mux=0x%x", mux);
-                WriteMemory(
-                    REG_ADMUX,
-                    // (0 << 7) | //
-                    // (0 << 6) | // AREF, Internal Vref turned off.
-                    // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
-                    (refs << 6) |  //
-                        (0 << 5) | // result is right adjusted.
-                        mux & 0x07);
+                WriteMemory(REG_ADMUX,
+                            // (0 << 7) | //
+                            // (0 << 6) | // AREF, Internal Vref turned off.
+                            // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                            (refs << 6) |  //
+                                (0 << 5) | // result is right adjusted.
+                                mux & 0x07);
 
                 if(REG_ADCSRB) {
                     WriteMemory(REG_ADCSRB, 0 << ACME);
@@ -5089,7 +5079,7 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
-/*
+                /*
             case INT_UART_SEND: {
                 // Attention! Busy flag is not checked!!!
                 // Caller should check the busy flag!!!
@@ -5138,7 +5128,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_ST_X, r16);
                 break;
             }
-/*
+                /*
             case INT_UART_RECV: {
                 //Receive one char/byte in a single PLC cycle.
                 MemForVariable(a->name1, &addr1);
@@ -5198,7 +5188,7 @@ static void CompileFromIntermediate()
                 return;
 
             case INT_STRING:
-                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_STRING' for target, skipped."));
+                //THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_STRING' for target, skipped."));
                 break;
 
             case INT_WRITE_STRING:
@@ -5251,6 +5241,7 @@ static void CompileFromIntermediate()
                 break;
             }
 #ifdef TABLE_IN_FLASH
+            case INT_STRING_INIT: // Inited by InitTableString()
             case INT_FLASH_INIT: {
                 // Inited by InitTables()
                 /*
@@ -5264,6 +5255,50 @@ static void CompileFromIntermediate()
                     FwdAddrIsNow(SkipData);
                 }
                 */
+                break;
+            }
+            case INT_SET_VARIABLE_INDEXED: {
+                Comment("INT_SET_VARIABLE_INDEXED");
+                //int sovElement = a->literal1;
+                int sovElement = 1;
+                //Comment("Index in r16:r17");
+                CopyArgToReg(r16, 2, a->name3);
+
+                if(sovElement == 3) {
+                    Instruction(OP_MOV, r14, r16);
+                    Instruction(OP_MOV, r15, r17); // Save Index
+                }
+                if(sovElement >= 2) {
+                    Instruction(OP_LSL, r16);
+                    Instruction(OP_ROL, r17); // Index := Index * 2
+                }
+                if(sovElement == 3) {
+                    Instruction(OP_ADD, r16, r14);
+                    Instruction(OP_ADC, r17, r15); // Index := Index * 3
+                }
+                if(sovElement == 4) {
+                    Instruction(OP_LSL, r16);
+                    Instruction(OP_ROL, r17); // Index := Index * 4
+                }
+
+                ADDR_T addrOfTable = 0;
+                MemOfVar(a->name4, &addrOfTable);
+
+                CopyLitToReg(ZL, 2, addrOfTable << 1, "addrOfTable"); // see LPM // data stored in flash
+                //Comment(" Z == DataAddr");
+
+                Instruction(OP_ADD, ZL, r16);
+                Instruction(OP_ADC, ZH, r17); // Z = DataAddr + Index
+                //Comment(" Z == DataAddr + Index");
+
+                Instruction(OP_LPM_ZP, r20);
+                if(sovElement >= 2)
+                    Instruction(OP_LPM_ZP, r21);
+                if(sovElement >= 3)
+                    Instruction(OP_LPM_ZP, r22);
+                if(sovElement >= 4)
+                    Instruction(OP_LPM_ZP, r23);
+                CopyRegToVar(a->name1, r20, sovElement);
                 break;
             }
             case INT_FLASH_READ: {
@@ -6986,8 +7021,7 @@ void CompileAvr(const char *outFile)
 //      REG_UCSRC   = 0x9d;
     */
     } else
-        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."),
-                                     Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
+        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 
     rungNow = -90;
@@ -7095,18 +7129,10 @@ void CompileAvr(const char *outFile)
             outFile);
 
     char str2[MAX_PATH + 500];
-    sprintf(str2,
-            _("Used %d/%d words of program flash (chip %d%% full)."),
-            AvrProg.size(),
-            Prog.mcu()->flashWords,
-            (100 * AvrProg.size()) / Prog.mcu()->flashWords);
+    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."), AvrProg.size(), Prog.mcu()->flashWords, (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
-    sprintf(str3,
-            _("Used %d/%d byte of RAM (chip %d%% full)."),
-            UsedRAM(),
-            Prog.mcuRAM(),
-            (100 * UsedRAM()) / Prog.mcuRAM());
+    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), Prog.mcuRAM(), (100 * UsedRAM()) / Prog.mcuRAM());
 
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);

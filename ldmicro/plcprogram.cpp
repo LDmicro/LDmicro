@@ -12,7 +12,6 @@ static ElemSubcktSeries *AllocEmptyRung()
     s->contents[0].which = ELEM_PLACEHOLDER;
     ElemLeaf *l = AllocLeaf();
     s->contents[0].data.leaf = l;
-
     return s;
 }
 
@@ -44,6 +43,7 @@ PlcProgram::PlcProgram()
         OpsInRung[i] = 0;
         HexInRung[i] = 0;
     }
+    compiler = 0;
 }
 
 PlcProgram::PlcProgram(const PlcProgram &other)
@@ -90,9 +90,9 @@ PlcProgram::~PlcProgram()
 }
 
 void LoadWritePcPorts();
-void PlcProgram::setMcu(McuIoInfo *m)
+void PlcProgram::setMcu(McuIoInfo *mcu)
 {
-    mcu_ = m;
+    mcu_ = mcu;
     if(!mcu_)
         return;
 
@@ -119,7 +119,7 @@ int PlcProgram::mcuPWM() const
         for(uint32_t i = 0; i < mcu_->pwmCount; i++) {
             if(mcu_->pwmInfo[i].pin)
                 if(mcu_->pwmInfo[i].pin != prevPin)
-                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->pwmInfo[i].timer != cycleTimer))
+                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->whichIsa == ISA_PIC18) || (mcu_->pwmInfo[i].timer != cycleTimer))
                         n++;
             prevPin = mcu_->pwmInfo[i].pin;
         }

@@ -224,18 +224,17 @@ void CompileInterpreted(const char *outFile)
             case INT_SPI_WRITE: ///// Added by JG
             case INT_I2C_READ:  /////
             case INT_I2C_WRITE: /////
-//            case INT_UART_SEND:
+                                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-//            case INT_UART_SENDn:
-//            case INT_UART_RECV:
+                //            case INT_UART_SENDn:
+                //            case INT_UART_RECV:
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             case INT_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT(
-                    "%s INT_%d", _("Unsupported op (Peripheral) for interpretable target."), IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT("%s INT_%d", _("Unsupported op (Peripheral) for interpretable target."), IntCode[ipc].op);
                 return;
         }
 
@@ -266,9 +265,6 @@ void CompileInterpreted(const char *outFile)
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
     char str[MAX_PATH + 500];
-    sprintf(
-        str,
-        _("Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."),
-        outFile);
+    sprintf(str, _("Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."), outFile);
     CompileSuccessfulMessage(str);
 }

@@ -34,15 +34,15 @@ static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
 static HWND BaudTextbox;
-static HWND RateTextbox;  ///// Added by JG
-static HWND SpeedTextbox; ///// Added by JG
+static HWND RateTextbox;          
+static HWND SpeedTextbox;       
 
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
-static LONG_PTR PrevRateProc;  ///// Added by JG
-static LONG_PTR PrevSpeedProc; ///// Added by JG
+static LONG_PTR PrevRateProc;    
+static LONG_PTR PrevSpeedProc;   
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -66,10 +66,10 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
         t = PrevBaudProc;
-    else if(hwnd == RateTextbox)  ///// Added by JG
-        t = PrevRateProc;         /////
-    else if(hwnd == SpeedTextbox) ///// Added by JG
-        t = PrevSpeedProc;        /////
+    else if(hwnd == RateTextbox)  
+        t = PrevRateProc;       
+    else if(hwnd == SpeedTextbox)
+        t = PrevSpeedProc;       
 
     else
         oops();
@@ -79,221 +79,55 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 static void MakeControls()
 {
-    HWND textLabel = CreateWindowEx(0,
-                                    WC_STATIC,
-                                    _("PLC Cycle Time (ms):"),
-                                    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                    1,
-                                    13,
-                                    180,
-                                    21,
-                                    ConfDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("PLC Cycle Time (ms):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 1, 13, 180, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel);
 
-    CycleTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  185,
-                                  12,
-                                  75,
-                                  21,
-                                  ConfDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CycleTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 185, 12, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CycleTextbox);
 
-    HWND textLabel2 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("MCU Crystal Frequency (MHz):"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     1,
-                                     43,
-                                     180,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("MCU Crystal Frequency (MHz):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 1, 43, 180, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2);
 
-    CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                    WC_EDIT,
-                                    "",
-                                    WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                    185,
-                                    42,
-                                    75,
-                                    21,
-                                    ConfDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 185, 42, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CrystalTextbox);
 
-    HWND textLabel3 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("UART Baud Rate (bps):"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     1,
-                                     73,
-                                     180,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
-    NiceFont(textLabel3);
-
-    BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 185,
-                                 72,
-                                 75,
-                                 21,
-                                 ConfDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
-    NiceFont(BaudTextbox);
-
-    ///// SPI rate parameter added by JG
-    HWND textLabel5 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("SPI Rate (Hz):"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     10,
-                                     103,
-                                     150,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
-    NiceFont(textLabel5);
-
-    RateTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                 WC_EDIT,
-                                 "",
-                                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                 165,
-                                 102,
-                                 95,
-                                 21,
-                                 ConfDialog,
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
-    NiceFont(RateTextbox);
-    /////
-
-    ///// I2C speed parameter added by JG
-    HWND textLabel6 = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("I2C Rate (Hz):"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     245,
-                                     103,
-                                     150,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
-    NiceFont(textLabel6);
-
-    SpeedTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  400,
-                                  102,
-                                  100,
-                                  21,
-                                  ConfDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
-    NiceFont(SpeedTextbox);
-    /////
-
-    HWND TimerLabel = CreateWindowEx(0,
-                                     WC_STATIC,
-                                     _("Timer0|1:"),
-                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-                                     255,
-                                     13,
-                                     70,
-                                     21,
-                                     ConfDialog,
-                                     nullptr,
-                                     Instance,
-                                     nullptr);
+    HWND TimerLabel = CreateWindowEx(0, WC_STATIC, _("Timer0|1:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 255, 13, 70, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(TimerLabel);
 
-    TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                  WC_EDIT,
-                                  "",
-                                  WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  330,
-                                  12,
-                                  25,
-                                  21,
-                                  ConfDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 330, 12, 25, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(TimerTextbox);
 
-    YPlcCycleDutyCheckbox = CreateWindowEx(0,
-                                           WC_BUTTON,
-                                           "YPlcCycleDuty",
-                                           WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-                                           370,
-                                           13,
-                                           100,
-                                           20,
-                                           ConfDialog,
-                                           nullptr,
-                                           Instance,
-                                           nullptr);
+    YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, "YPlcCycleDuty", WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE, 370, 13, 100, 20, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(YPlcCycleDutyCheckbox);
 
-    HWND textLabel2_ = CreateWindowEx(0,
-                                      WC_STATIC,
-                                      _("PIC Configuration Bits:"),
-                                      WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-                                      267,
-                                      73,
-                                      130,
-                                      21,
-                                      ConfDialog,
-                                      nullptr,
-                                      Instance,
-                                      nullptr);
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 1, 73, 180, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(textLabel3);
+
+    BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 185, 72, 75, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(BaudTextbox);
+
+    HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("SPI Rate (Hz):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 10, 103, 150, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(textLabel5);
+
+    RateTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 165, 102, 95, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(RateTextbox);
+
+    HWND textLabel6 = CreateWindowEx(0, WC_STATIC, _("I2C Rate (Hz):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 245, 103, 150, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(textLabel6);
+
+    SpeedTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 102, 100, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(SpeedTextbox);
+
+    HWND textLabel2_ = CreateWindowEx(0, WC_STATIC, _("PIC Configuration Bits:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT, 267, 73, 130, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2_);
 
-    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                       WC_EDIT,
-                                       "",
-                                       WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                       400,
-                                       72,
-                                       85,
-                                       21,
-                                       ConfDialog,
-                                       nullptr,
-                                       Instance,
-                                       nullptr);
+    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 72, 85, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(ConfigBitsTextbox);
 
-    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16)) {
+    if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
+        EnableWindow(ConfigBitsTextbox, true);
+        EnableWindow(textLabel2_, true);
+    } else {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
     }
@@ -302,7 +136,6 @@ static void MakeControls()
         EnableWindow(BaudTextbox, false);
         EnableWindow(textLabel3, false);
     }
-    ///// Added by JG
     if(!SpiFunctionUsed()) {
         EnableWindow(RateTextbox, false);
         EnableWindow(textLabel5, false);
@@ -311,7 +144,7 @@ static void MakeControls()
         EnableWindow(SpeedTextbox, false);
         EnableWindow(textLabel6, false);
     }
-    /////
+
     // clang-format off
     if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_INTERPRETED ||
                       Prog.mcu()->whichIsa == ISA_XINTERPRETED ||
@@ -322,37 +155,14 @@ static void MakeControls()
     }
     // clang-format on
 
-    ///// Added by JG
     if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_ARM)) {
         EnableWindow(TimerTextbox, false);
     }
-    /////
-    OkButton = CreateWindowEx(0,
-                              WC_BUTTON,
-                              _("OK"),
-                              WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              268 + 215,
-                              11,
-                              70,
-                              23,
-                              ConfDialog,
-                              nullptr,
-                              Instance,
-                              nullptr);
+
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON, 268 + 215, 11, 70, 23, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0,
-                                  WC_BUTTON,
-                                  _("Cancel"),
-                                  WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  268 + 215,
-                                  41,
-                                  70,
-                                  23,
-                                  ConfDialog,
-                                  nullptr,
-                                  Instance,
-                                  nullptr);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 268 + 215, 41, 70, 23, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 
     char txt[1024 * 4] = "";
@@ -362,46 +172,25 @@ static void MakeControls()
     if(Prog.mcu() && Prog.cycleTime) {
         if(Prog.mcu()->whichIsa == ISA_AVR) {
             b = CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
-        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+        } else if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
             b = CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen); // && PicProgLdLen;
         }
         char   s1[100];
         char   s2[100];
         double _cycleTimeMin = SIprefix(1.0 * plcTmr.cycleTimeMin / 1e6, s1);
         double _cycleTimeMax = SIprefix(1.0 * plcTmr.cycleTimeMax / 1e6, s2);
-        sprintf(txt,
-                _("Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"),
-                _cycleTimeMin,
-                s1,
-                plcTmr.cycleTimeMax / 1000,
-                _cycleTimeMax,
-                s2);
+        sprintf(txt, _("Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"), _cycleTimeMin, s1, plcTmr.cycleTimeMax / 1000, _cycleTimeMax, s2);
         strcat(explanation, txt);
         if(b) {
-            sprintf(txt,
-                    _("MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n"),
-                    Prog.cycleTimer,
-                    Prog.cycleTimer,
-                    plcTmr.tmr,
-                    plcTmr.prescaler,
-                    plcTmr.softDivisor);
+            sprintf(txt, _("MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n"), Prog.cycleTimer, Prog.cycleTimer, plcTmr.tmr, plcTmr.prescaler, plcTmr.softDivisor);
             strcat(explanation, txt);
 
-            sprintf(txt,
-                    _("%030lld=TicksPerCycle\n%030lld=In fact\n"),
-                    plcTmr.ticksPerCycle,
-                    (long long int)plcTmr.prescaler * (long long int)plcTmr.softDivisor * (long long int)plcTmr.tmr);
+            sprintf(txt, _("%030lld=TicksPerCycle\n%030lld=In fact\n"), plcTmr.ticksPerCycle, (long long int)plcTmr.prescaler * (long long int)plcTmr.softDivisor * (long long int)plcTmr.tmr);
             strcat(explanation, txt);
 
             double _TCycle = SIprefix(1.0 * plcTmr.TCycle, s1);
             double _Fcycle = SIprefix(1.0 * plcTmr.Fcycle, s2);
-            sprintf(txt,
-                    _("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"),
-                    _TCycle,
-                    s1,
-                    _Fcycle,
-                    s2,
-                    1e2 * (1e6 * plcTmr.TCycle - Prog.cycleTime) / Prog.cycleTime);
+            sprintf(txt, _("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, s1, _Fcycle, s2, 1e2 * (1e6 * plcTmr.TCycle - Prog.cycleTime) / Prog.cycleTime);
             strcat(explanation, txt);
         }
         sprintf(txt, "\n");
@@ -430,19 +219,14 @@ static void MakeControls()
     }
     if(UartFunctionUsed()) {
         if(Prog.mcu() && Prog.mcu()->uartNeeds.rxPin != 0) {
-            sprintf(txt,
-                    _("Serial (UART) will use pins %d(RX) and %d(TX).\r\n"),
-                    Prog.mcu()->uartNeeds.rxPin,
-                    Prog.mcu()->uartNeeds.txPin);
+            sprintf(txt, _("Serial (UART) will use pins %d(RX) and %d(TX).\r\n"), Prog.mcu()->uartNeeds.rxPin, Prog.mcu()->uartNeeds.txPin);
             strcat(explanation, txt);
             strcat(explanation, _("Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n\r\n"));
         } else {
             strcat(explanation, _("Please select a micro with a UART.\r\n\r\n"));
         }
     } else {
-        strcat(
-            explanation,
-            _("No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"));
+        strcat(explanation, _("No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"));
     }
 
     strcat(explanation,
@@ -491,25 +275,14 @@ static void MakeControls()
     PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevConfigBitsProc = SetWindowLongPtr(ConfigBitsTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
-    PrevRateProc = SetWindowLongPtr(RateTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);   ///// Added by JG
-    PrevSpeedProc = SetWindowLongPtr(SpeedTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc); ///// Added by JG
+    PrevRateProc = SetWindowLongPtr(RateTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
+    PrevSpeedProc = SetWindowLongPtr(SpeedTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
 }
 
 void ShowConfDialog()
 {
     // The window's height will be resized later, to fit the explanation text.
-    ConfDialog = CreateWindowClient(0,
-                                    "LDmicroDialog",
-                                    _("PLC Configuration"),
-                                    WS_OVERLAPPED | WS_SYSMENU,
-                                    100,
-                                    100,
-                                    0,
-                                    0,
-                                    nullptr,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"), WS_OVERLAPPED | WS_SYSMENU, 100, 100, 0, 0, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 
@@ -544,7 +317,6 @@ void ShowConfDialog()
     sprintf(buf, "%d", Prog.baudRate);
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    ///// Added by JG
     sprintf(buf, "%d", Prog.spiRate);
     SendMessage(RateTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -556,7 +328,6 @@ void ShowConfDialog()
         sprintf(buf, "%d", 3);
         SendMessage(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
     }
-    /////
 
     EnableWindow(MainWindow, false);
     ShowWindow(ConfDialog, true);
@@ -598,11 +369,9 @@ void ShowConfDialog()
         else
             Prog.cycleTimer = 1;
 
-        ///// Added by JG2
         if((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
             Prog.cycleTimer = 3; //  ARM uses Timer 3
         }
-        /////
 
         if(SendMessage(YPlcCycleDutyCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             Prog.cycleDuty = 1;
@@ -619,7 +388,7 @@ void ShowConfDialog()
 
         SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 
-        if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
             Prog.configurationWord = hobatoi(buf);
             if(!Prog.configurationWord) {
                 Error(_("Zero Configuration Word(s) not valid."));
@@ -630,13 +399,11 @@ void ShowConfDialog()
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 
-        ///// Added by JG
         SendMessage(RateTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.spiRate = atol(buf);
 
         SendMessage(SpeedTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.i2cRate = atol(buf);
-        /////
 
         if(Prog.mcuClock <= 0) {
             Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));
@@ -646,7 +413,7 @@ void ShowConfDialog()
         if(Prog.mcu() && (ProgCycleTime > 0)) {
             if(Prog.mcu()->whichIsa == ISA_AVR) {
                 CalcAvrPlcCycle(ProgCycleTime, AvrProgLdLen);
-            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+            } else if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
                 CalcPicPlcCycle(ProgCycleTime, PicProgLdLen);
             }
         }

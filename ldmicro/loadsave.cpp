@@ -188,37 +188,13 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_TLO;
         l->d.timer.adjust = 0;
 
-    } else if((sscanf(line,
-                      "CTR %s %s %s %c",
-                      l->d.counter.name,
-                      l->d.counter.max,
-                      l->d.counter.init,
-                      &l->d.counter.inputKind)
-               == 4)) {
+    } else if((sscanf(line, "CTR %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
         *which = ELEM_CTR;
-    } else if((sscanf(line,
-                      "CTC %s %s %s %c",
-                      l->d.counter.name,
-                      l->d.counter.max,
-                      l->d.counter.init,
-                      &l->d.counter.inputKind)
-               == 4)) {
+    } else if((sscanf(line, "CTC %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
         *which = ELEM_CTC;
-    } else if((sscanf(line,
-                      "CTU %s %s %s %c",
-                      l->d.counter.name,
-                      l->d.counter.max,
-                      l->d.counter.init,
-                      &l->d.counter.inputKind)
-               == 4)) {
+    } else if((sscanf(line, "CTU %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
         *which = ELEM_CTU;
-    } else if((sscanf(line,
-                      "CTD %s %s %s %c",
-                      l->d.counter.name,
-                      l->d.counter.max,
-                      l->d.counter.init,
-                      &l->d.counter.inputKind)
-               == 4)) {
+    } else if((sscanf(line, "CTD %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
         *which = ELEM_CTD;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
@@ -280,60 +256,20 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
               == (2 + 8)) {
         *which = ELEM_BUS;
 
-    } else if(sscanf(line,
-                     "SPI_WR %s %s %s %s %s %s %s %s",
-                     l->d.spi.name,
-                     l->d.spi.send,
-                     l->d.spi.recv,
-                     l->d.spi.mode,
-                     l->d.spi.modes,
-                     l->d.spi.size,
-                     l->d.spi.first,
-                     l->d.spi.bitrate)
-              == 8) {
+    } else if(sscanf(line, "SPI_WR %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate) == 8) {
         l->d.spi.which = ELEM_SPI_WR;
         *which = ELEM_SPI_WR;
 
-    } else if(sscanf(line,
-                     "SPI %s %s %s %s %s %s %s %s",
-                     l->d.spi.name,
-                     l->d.spi.send,
-                     l->d.spi.recv,
-                     l->d.spi.mode,
-                     l->d.spi.modes,
-                     l->d.spi.size,
-                     l->d.spi.first,
-                     l->d.spi.bitrate)
-              == 8) {
+    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate) == 8) {
         l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
     }
     ///// Added by JG
-    else if(sscanf(line,
-                   "I2C_RD %s %s %s %s %s %s %s %s",
-                   l->d.i2c.name,
-                   l->d.i2c.send,
-                   l->d.i2c.recv,
-                   l->d.i2c.mode,
-                   l->d.i2c.address,
-                   l->d.i2c.registr,
-                   l->d.i2c.first,
-                   l->d.i2c.bitrate)
-            == 8) {
+    else if(sscanf(line, "I2C_RD %s %s %s %s %s %s %s %s", l->d.i2c.name, l->d.i2c.send, l->d.i2c.recv, l->d.i2c.mode, l->d.i2c.address, l->d.i2c.registr, l->d.i2c.first, l->d.i2c.bitrate) == 8) {
         l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
-    } else if(sscanf(line,
-                     "I2C_WR %s %s %s %s %s %s %s %s",
-                     l->d.i2c.name,
-                     l->d.i2c.send,
-                     l->d.i2c.recv,
-                     l->d.i2c.mode,
-                     l->d.i2c.address,
-                     l->d.i2c.registr,
-                     l->d.i2c.first,
-                     l->d.i2c.bitrate)
-              == 8) {
+    } else if(sscanf(line, "I2C_WR %s %s %s %s %s %s %s %s", l->d.i2c.name, l->d.i2c.send, l->d.i2c.recv, l->d.i2c.mode, l->d.i2c.address, l->d.i2c.registr, l->d.i2c.first, l->d.i2c.bitrate) == 8) {
         l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
     }
@@ -355,24 +291,9 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.segments.which = ELEM_16SEG;
         *which = ELEM_16SEG;
 
-    } else if(sscanf(line,
-                     "STEPPER %s %s %s %d %d %s",
-                     l->d.stepper.name,
-                     l->d.stepper.max,
-                     l->d.stepper.P,
-                     &l->d.stepper.nSize,
-                     &l->d.stepper.graph,
-                     l->d.stepper.coil)
-              == 6) {
+    } else if(sscanf(line, "STEPPER %s %s %s %d %d %s", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, &l->d.stepper.nSize, &l->d.stepper.graph, l->d.stepper.coil) == 6) {
         *which = ELEM_STEPPER;
-    } else if(sscanf(line,
-                     "PULSER %s %s %s %s %s",
-                     l->d.pulser.P1,
-                     l->d.pulser.P0,
-                     l->d.pulser.accel,
-                     l->d.pulser.counter,
-                     l->d.pulser.busy)
-              == 5) {
+    } else if(sscanf(line, "PULSER %s %s %s %s %s", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy) == 5) {
         *which = ELEM_PULSER;
     } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil) == 3) {
         *which = ELEM_NPULSE;
@@ -467,13 +388,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_RANDOM;
     } else if(sscanf(line, "SEED_RANDOM %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SEED_RANDOM;
-    } else if(sscanf(line,
-                     "SET_PWM %s %s %s %s",
-                     l->d.setPwm.duty_cycle,
-                     l->d.setPwm.targetFreq,
-                     l->d.setPwm.name,
-                     l->d.setPwm.resolution)
-              == 4) {
+    } else if(sscanf(line, "SET_PWM %s %s %s %s", l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution) == 4) {
         *which = ELEM_SET_PWM;
     } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name) == 3) {
         *which = ELEM_SET_PWM;
@@ -487,7 +402,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
-/*
+        /*
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
@@ -503,7 +418,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.uart.bytes = 1;
         l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
-/*
+        /*
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
@@ -547,14 +462,14 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-//  } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
+        //  } else if(sscanf(line, "UART_WR %d %s", &l->d.fmtdStr.wait, l->d.fmtdStr.string) == 2) {
         /*
         int i = strlen("UART_WR") + 1;
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
         */
-//      FrmStrToStr(l->d.fmtdStr.string);
+        //      FrmStrToStr(l->d.fmtdStr.string);
         /*
         //DelFramingDoubleQuotes(l->d.fmtdStr.string);
         DelNL(l->d.fmtdStr.string);
@@ -562,7 +477,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         */
-//      *which = ELEM_UART_WR;
+        //      *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
@@ -575,7 +490,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_FORMATTED_STRING;
-/*
+        /*
     } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
         if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
             strcpy(l->d.fmtdStr.dest, "");
@@ -622,12 +537,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_STRING;
     } else if([&]() -> int {
                   int editAsString;
-                  int res = sscanf(line,
-                                   "LOOK_UP_TABLE %s %s %d %d",
-                                   l->d.lookUpTable.dest,
-                                   l->d.lookUpTable.index,
-                                   &(l->d.lookUpTable.count),
-                                   &editAsString);
+                  int res = sscanf(line, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest, l->d.lookUpTable.index, &(l->d.lookUpTable.count), &editAsString);
                   l->d.lookUpTable.editAsString = editAsString != 0;
                   return res;
               }() == 4) {
@@ -652,12 +562,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         if(!strlen(l->d.lookUpTable.name))
             sprintf(l->d.lookUpTable.name, "%s%d", l->d.lookUpTable.dest, l->d.lookUpTable.count);
         *which = ELEM_LOOK_UP_TABLE;
-    } else if(sscanf(line,
-                     "PIECEWISE_LINEAR %s %s %d",
-                     l->d.piecewiseLinear.dest,
-                     l->d.piecewiseLinear.index,
-                     &(l->d.piecewiseLinear.count))
-              == 3) {
+    } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d", l->d.piecewiseLinear.dest, l->d.piecewiseLinear.index, &(l->d.piecewiseLinear.count)) == 3) {
         char *p = line;
         int   i;
         // First skip over the parts that we already sscanf'd.
@@ -873,8 +778,7 @@ bool LoadPullUpListFromFile(FileTracker &f)
             }
         }
         if(!Ok) {
-            THROW_COMPILER_EXCEPTION_FMT(
-                _("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
         }
     }
     return false;
@@ -926,13 +830,7 @@ bool LoadProjectFromFile(const char *filename)
                 Prog.LDversion = "0.2";
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
-        } else if(sscanf(line,
-                         "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx",
-                         &cycle,
-                         &cycleTimer,
-                         &cycleDuty,
-                         &configWord)
-                  == 4) {
+        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx", &cycle, &cycleTimer, &cycleDuty, &configWord) == 4) {
             Prog.cycleTime = cycle;
             if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
                 cycleTimer = 1;
@@ -941,13 +839,7 @@ bool LoadProjectFromFile(const char *filename)
             Prog.configurationWord = configWord;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line,
-                         "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d",
-                         &cycle,
-                         &cycleTimer,
-                         &cycleDuty,
-                         &wdte)
-                  == 4) {
+        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d", &cycle, &cycleTimer, &cycleDuty, &wdte) == 4) {
             Prog.cycleTime = cycle;
             if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
                 cycleTimer = 1;
@@ -969,8 +861,7 @@ bool LoadProjectFromFile(const char *filename)
             Prog.cycleDuty = 0;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed)
-                  == 3) { ///// RATE + SPEED created by JG for SPI & I2C
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) { ///// RATE + SPEED created by JG for SPI & I2C
             Prog.baudRate = baud;
             Prog.spiRate = rate;
             Prog.i2cRate = speed;
@@ -994,9 +885,7 @@ bool LoadProjectFromFile(const char *filename)
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
                 auto &mcus = supportedMcus();
-                auto  mcu = std::find_if(std::begin(mcus), std::end(mcus), [&line](const McuIoInfo &info) {
-                    return (strcmp(info.mcuName, line + 6) == 0);
-                });
+                auto  mcu = std::find_if(std::begin(mcus), std::end(mcus), [&line](const McuIoInfo &info) { return (strcmp(info.mcuName, line + 6) == 0); });
                 if(mcu != std::end(mcus)) {
                     Prog.setMcu(&(*mcu));
                     LoadWritePcPorts();
@@ -1077,7 +966,7 @@ static void Indent(FileTracker &f, int depth)
 //-----------------------------------------------------------------------------
 void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 {
-    ElemLeaf* leaf = (ElemLeaf *)any;
+    ElemLeaf *  leaf = (ElemLeaf *)any;
     const char *s;
     char        str1[1024];
     char        str2[1024];
@@ -1160,13 +1049,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_COIL:
-            fprintf(f,
-                    "COIL %s %d %d %d %d\n",
-                    leaf->d.coil.name,
-                    leaf->d.coil.negated,
-                    leaf->d.coil.setOnly,
-                    leaf->d.coil.resetOnly,
-                    leaf->d.coil.ttrigger);
+            fprintf(f, "COIL %s %d %d %d %d\n", leaf->d.coil.name, leaf->d.coil.negated, leaf->d.coil.setOnly, leaf->d.coil.resetOnly, leaf->d.coil.ttrigger);
             break;
 
         // clang-format off
@@ -1188,34 +1071,15 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_CTR: s = "CTR"; goto counter;
         // clang-format on
         counter:
-            fprintf(f,
-                    "%s %s %s %s %c\n",
-                    s,
-                    leaf->d.counter.name,
-                    leaf->d.counter.max,
-                    leaf->d.counter.init,
-                    leaf->d.counter.inputKind);
+            fprintf(f, "%s %s %s %s %c\n", s, leaf->d.counter.name, leaf->d.counter.max, leaf->d.counter.init, leaf->d.counter.inputKind);
             break;
 
         case ELEM_STEPPER:
-            fprintf(f,
-                    "STEPPER %s %s %s %d %d %s\n",
-                    leaf->d.stepper.name,
-                    leaf->d.stepper.max,
-                    leaf->d.stepper.P,
-                    leaf->d.stepper.nSize,
-                    leaf->d.stepper.graph,
-                    leaf->d.stepper.coil);
+            fprintf(f, "STEPPER %s %s %s %d %d %s\n", leaf->d.stepper.name, leaf->d.stepper.max, leaf->d.stepper.P, leaf->d.stepper.nSize, leaf->d.stepper.graph, leaf->d.stepper.coil);
             break;
 
         case ELEM_PULSER:
-            fprintf(f,
-                    "PULSER %s %s %s %s %s\n",
-                    leaf->d.pulser.P1,
-                    leaf->d.pulser.P0,
-                    leaf->d.pulser.accel,
-                    leaf->d.pulser.counter,
-                    leaf->d.pulser.busy);
+            fprintf(f, "PULSER %s %s %s %s %s\n", leaf->d.pulser.P1, leaf->d.pulser.P0, leaf->d.pulser.accel, leaf->d.pulser.counter, leaf->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
@@ -1265,58 +1129,22 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         ///// Added by JG
         case ELEM_SPI_WR:
-            fprintf(f,
-                    "SPI_WR %s %s %s %s %s %s %s %s\n",
-                    leaf->d.spi.name,
-                    leaf->d.spi.send,
-                    leaf->d.spi.recv,
-                    leaf->d.spi.mode,
-                    leaf->d.spi.modes,
-                    leaf->d.spi.size,
-                    leaf->d.spi.first,
-                    leaf->d.spi.bitrate);
+            fprintf(f, "SPI_WR %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate);
             break;
             /////
 
         case ELEM_SPI: {
-            fprintf(f,
-                    "SPI %s %s %s %s %s %s %s %s\n",
-                    leaf->d.spi.name,
-                    leaf->d.spi.send,
-                    leaf->d.spi.recv,
-                    leaf->d.spi.mode,
-                    leaf->d.spi.modes,
-                    leaf->d.spi.size,
-                    leaf->d.spi.first,
-                    leaf->d.spi.bitrate);
+            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate);
             break;
         }
 
         ///// Added by JG
         case ELEM_I2C_RD:
-            fprintf(f,
-                    "I2C_RD %s %s %s %s %s %s %s %s\n",
-                    leaf->d.i2c.name,
-                    leaf->d.i2c.send,
-                    leaf->d.i2c.recv,
-                    leaf->d.i2c.mode,
-                    leaf->d.i2c.address,
-                    leaf->d.i2c.registr,
-                    leaf->d.i2c.first,
-                    leaf->d.i2c.bitrate);
+            fprintf(f, "I2C_RD %s %s %s %s %s %s %s %s\n", leaf->d.i2c.name, leaf->d.i2c.send, leaf->d.i2c.recv, leaf->d.i2c.mode, leaf->d.i2c.address, leaf->d.i2c.registr, leaf->d.i2c.first, leaf->d.i2c.bitrate);
             break;
 
         case ELEM_I2C_WR:
-            fprintf(f,
-                    "I2C_WR %s %s %s %s %s %s %s %s\n",
-                    leaf->d.i2c.name,
-                    leaf->d.i2c.send,
-                    leaf->d.i2c.recv,
-                    leaf->d.i2c.mode,
-                    leaf->d.i2c.address,
-                    leaf->d.i2c.registr,
-                    leaf->d.i2c.first,
-                    leaf->d.i2c.bitrate);
+            fprintf(f, "I2C_WR %s %s %s %s %s %s %s %s\n", leaf->d.i2c.name, leaf->d.i2c.send, leaf->d.i2c.recv, leaf->d.i2c.mode, leaf->d.i2c.address, leaf->d.i2c.registr, leaf->d.i2c.first, leaf->d.i2c.bitrate);
             break;
 
             /////
@@ -1444,12 +1272,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SET_PWM:
-            fprintf(f,
-                    "SET_PWM %s %s %s %s\n",
-                    leaf->d.setPwm.duty_cycle,
-                    leaf->d.setPwm.targetFreq,
-                    leaf->d.setPwm.name,
-                    leaf->d.setPwm.resolution);
+            fprintf(f, "SET_PWM %s %s %s %s\n", leaf->d.setPwm.duty_cycle, leaf->d.setPwm.targetFreq, leaf->d.setPwm.name, leaf->d.setPwm.resolution);
             break;
 
         case ELEM_UART_RECV:
@@ -1459,7 +1282,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_UART_SEND:
             fprintf(f, "UART_SEND %s %d %d\n", leaf->d.uart.name, leaf->d.uart.bytes, leaf->d.uart.wait);
             break;
-/*
+            /*
         case ELEM_UART_RECVn:
             fprintf(f, "UART_RECVn %s\n", l->d.uart.name);
             break;
@@ -1479,7 +1302,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_PERSIST:
             fprintf(f, "PERSIST %s\n", leaf->d.persist.var);
             break;
-/*
+            /*
         case ELEM_CPRINTF:
             s = "CPRINTF";
             goto cprintf;
@@ -1553,7 +1376,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             break;
         }
-/*
+            /*
         case ELEM_UART_WR: {
             fprintf(f, "UART_WR %d ", leaf->d.fmtdStr.wait);
             if(*(leaf->d.fmtdStr.string)) {
@@ -1596,12 +1419,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
-            fprintf(f,
-                    "LOOK_UP_TABLE %s %s %d %d",
-                    leaf->d.lookUpTable.dest,
-                    leaf->d.lookUpTable.index,
-                    leaf->d.lookUpTable.count,
-                    leaf->d.lookUpTable.editAsString);
+            fprintf(f, "LOOK_UP_TABLE %s %s %d %d", leaf->d.lookUpTable.dest, leaf->d.lookUpTable.index, leaf->d.lookUpTable.count, leaf->d.lookUpTable.editAsString);
             for(int i = 0; i < leaf->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", leaf->d.lookUpTable.vals[i]);
             }
@@ -1610,11 +1428,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
         }
         case ELEM_PIECEWISE_LINEAR: {
-            fprintf(f,
-                    "PIECEWISE_LINEAR %s %s %d",
-                    leaf->d.piecewiseLinear.dest,
-                    leaf->d.piecewiseLinear.index,
-                    leaf->d.piecewiseLinear.count);
+            fprintf(f, "PIECEWISE_LINEAR %s %s %d", leaf->d.piecewiseLinear.dest, leaf->d.piecewiseLinear.index, leaf->d.piecewiseLinear.count);
             for(int i = 0; i < leaf->d.piecewiseLinear.count * 2; i++) {
                 fprintf(f, " %d", leaf->d.piecewiseLinear.vals[i]);
             }
@@ -1680,12 +1494,7 @@ bool SaveProjectToFile(char *filename, int code)
     if(Prog.mcu()) {
         fprintf(f, "MICRO=%s\n", Prog.mcu()->mcuName);
     }
-    fprintf(f,
-            "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n",
-            Prog.cycleTime,
-            Prog.cycleTimer,
-            Prog.cycleDuty,
-            Prog.configurationWord);
+    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d Hz, RATE=%d Hz, SPEED=%d Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
@@ -1739,24 +1548,24 @@ const char *ChrToFrmtStr(const char src, FRMT frmt)
         //     strcat(dest, "\\\"");
         // } else if(src == '\?') {
         //     strcat(dest, "\\\?");
-    } else if(src == '\\') { //
-        strcat(dest, "\\\\");   //
-    } else if(src == 0x07) { //(alert) Produces an audible or visible alert
-        strcat(dest, "\\a");    //  without changing the active position.
-    } else if(src == '\b') { //(backspace) Moves the active position
-        strcat(dest, "\\b");    //  to the previous position on the current line.
-    } else if(src == 0x1B) { //Escape character
-        strcat(dest, "\\e");    //
-    } else if(src == '\f') { //(form feed) Moves the active position to the initial position at the start
-        strcat(dest, "\\f");    //  of the next logical page.
-    } else if(src == '\n') { //(new line) Moves the active position to the initial position
-        strcat(dest, "\\n");    //  of the next line.
-    } else if(src == '\r') { //(carriage return) Moves the active position
-        strcat(dest, "\\r");    //  to the initial position of the current line.
-    } else if(src == '\t') { //(horizontal tab) Moves the active position
-        strcat(dest, "\\t");    //  to the next horizontal tabulation position on the current line.
-    } else if(src == '\v') { //(vertical tab) Moves the active position to the initial position
-        strcat(dest, "\\v");    //  of the next vertical tabulation position.
+    } else if(src == '\\') {  //
+        strcat(dest, "\\\\"); //
+    } else if(src == 0x07) {  //(alert) Produces an audible or visible alert
+        strcat(dest, "\\a");  //  without changing the active position.
+    } else if(src == '\b') {  //(backspace) Moves the active position
+        strcat(dest, "\\b");  //  to the previous position on the current line.
+    } else if(src == 0x1B) {  //Escape character
+        strcat(dest, "\\e");  //
+    } else if(src == '\f') {  //(form feed) Moves the active position to the initial position at the start
+        strcat(dest, "\\f");  //  of the next logical page.
+    } else if(src == '\n') {  //(new line) Moves the active position to the initial position
+        strcat(dest, "\\n");  //  of the next line.
+    } else if(src == '\r') {  //(carriage return) Moves the active position
+        strcat(dest, "\\r");  //  to the initial position of the current line.
+    } else if(src == '\t') {  //(horizontal tab) Moves the active position
+        strcat(dest, "\\t");  //  to the next horizontal tabulation position on the current line.
+    } else if(src == '\v') {  //(vertical tab) Moves the active position to the initial position
+        strcat(dest, "\\v");  //  of the next vertical tabulation position.
     } else if((src < ' ') || (src >= 127)) {
         sprintf(dest, "\\x%X", src);
     } else {
@@ -1898,8 +1707,8 @@ char *DelLastNL(char *str)
 char *DelFramingDoubleQuotes(char *str)
 {
     if(strlen(str) > 2) {
-        if((str[0] == '"') && (str[strlen(str)-1] == '"')) {
-            str[strlen(str)-1] = '\0';
+        if((str[0] == '"') && (str[strlen(str) - 1] == '"')) {
+            str[strlen(str) - 1] = '\0';
             char *dest = str;
             char *src = &str[1];
             while(*dest++ = *src++)

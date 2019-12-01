@@ -108,7 +108,6 @@ typedef struct McuSpiInfoTag {
     //  bool    isUsed;
 } McuSpiInfo;
 
-///// Added by JG
 typedef struct McuI2cInfoTag {
     char     name[MAX_NAME_LEN];
     uint32_t REG_CTRL;
@@ -119,7 +118,6 @@ typedef struct McuI2cInfoTag {
     int      SDA;
     //  bool    isUsed;
 } McuI2cInfo;
-/////
 
 typedef struct McuPwmPinInfoTag {
     int pin;
@@ -183,8 +181,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo *spiInfo;
     uint32_t    spiCount;
 
-    McuI2cInfo *i2cInfo;  ///// Added by JG
-    uint32_t    i2cCount; /////
+    McuI2cInfo       *i2cInfo;              
+    uint32_t          i2cCount;           
 
     struct {
         uint32_t start;

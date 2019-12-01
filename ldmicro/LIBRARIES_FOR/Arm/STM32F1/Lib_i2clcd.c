@@ -9,41 +9,14 @@
 
 static unsigned char port = 0;        // adaptation pour IO-Expander I2C
 static int           lcd_i2c_adr = 0; // adaptation pour IO-Expander I2C
-
+/*
 void LCD_I2C_SendCommand(char);
 void LCD_I2C_SendChar(char);
 void LCD_I2C_Send(char, int);
 void LCD_I2C_Send4msb(char);
 void LCD_I2C_Enable(void);
 void LCD_I2C_BackLight(char stat);
-
-// Envoi commande
-void LCD_I2C_SendCommand(char commande)
-{
-    LCD_I2C_Send(commande, 0);
-}
-
-// Envoi caractere
-void LCD_I2C_SendChar(char caractere)
-{
-    LCD_I2C_Send(caractere, 1);
-}
-
-// Gère l'écriture d'un octet vers le LCD
-void LCD_I2C_Send(char donnee, int type)
-{
-    // Activation de RS si type = 1 (donnee)
-    PORT_LCD(|= (type << BIT_LCD_RS))
-    // Ecriture des 4 MSB
-    LCD_I2C_Send4msb(donnee);
-    // Ecriture des 4 LSB
-    LCD_I2C_Send4msb(donnee << 4);
-    // Desactivation RS
-    PORT_LCD(&= ~(1 << BIT_LCD_RS))
-    // Attente execution
-    delay_ms(6);
-}
-
+*/
 // Gère l'enable du LCD
 void LCD_I2C_Enable(void)
 {
@@ -74,6 +47,33 @@ void LCD_I2C_Send4msb(char donnee)
     }
     // Validation donnee par basculement de l'enable
     LCD_I2C_Enable();
+}
+
+// Gère l'écriture d'un octet vers le LCD
+void LCD_I2C_Send(char donnee, int type)
+{
+    // Activation de RS si type = 1 (donnee)
+    PORT_LCD(|= (type << BIT_LCD_RS))
+    // Ecriture des 4 MSB
+    LCD_I2C_Send4msb(donnee);
+    // Ecriture des 4 LSB
+    LCD_I2C_Send4msb(donnee << 4);
+    // Desactivation RS
+    PORT_LCD(&= ~(1 << BIT_LCD_RS))
+    // Attente execution
+    delay_ms(6);
+}
+
+// Envoi commande
+void LCD_I2C_SendCommand(char commande)
+{
+    LCD_I2C_Send(commande, 0);
+}
+
+// Envoi caractere
+void LCD_I2C_SendChar(char caractere)
+{
+    LCD_I2C_Send(caractere, 1);
 }
 
 // Initialisation du LCD

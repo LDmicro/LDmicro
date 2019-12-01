@@ -164,18 +164,7 @@ static void MakeControls(int a)
     if(!re)
         oops();
 
-    RichEdit[a] = CreateWindowEx(0,
-                                 RICHEDIT_CLASS,
-                                 "",
-                                 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY | ES_MULTILINE | WS_VSCROLL,
-                                 0,
-                                 0,
-                                 100,
-                                 100,
-                                 HelpDialog[a],
-                                 nullptr,
-                                 Instance,
-                                 nullptr);
+    RichEdit[a] = CreateWindowEx(0, RICHEDIT_CLASS, "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY | ES_MULTILINE | WS_VSCROLL, 0, 0, 100, 100, HelpDialog[a], nullptr, Instance, nullptr);
 
     SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, true);
     SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
@@ -309,19 +298,18 @@ void ShowHelpDialog(bool about)
     MakeClass();
 
     const char *s = about ? _("About LDmicro") : _("LDmicro Help");
-    HelpDialog[a] =
-        CreateWindowEx(0,
-                       "LDmicroHelp",
-                       s,
-                       WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX,
-                       100,
-                       100,
-                       650 + 50,
-                       (about ? 120 : 300) + 300 + 10 * FONT_HEIGHT,
-                       nullptr,
-                       nullptr,
-                       Instance,
-                       nullptr);
+    HelpDialog[a] = CreateWindowEx(0,
+                                   "LDmicroHelp",
+                                   s,
+                                   WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX,
+                                   100,
+                                   100,
+                                   650 + 50,
+                                   (about ? 120 : 300) + 300 + 10 * FONT_HEIGHT,
+                                   nullptr,
+                                   nullptr,
+                                   Instance,
+                                   nullptr);
     MakeControls(a);
 
     ShowWindow(HelpDialog[a], true);

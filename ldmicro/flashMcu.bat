@@ -151,12 +151,12 @@ goto exit
 @echo on
 REM Compilation with avr-gcc
 
-@rem SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
+     SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
 @rem SET GCC_PATH=c:\WinAVR-20100110
-     SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
 @rem SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
+@rem SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
 
      SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE
@@ -195,12 +195,9 @@ avr-gcc.exe -o AVRGCC\bin\%~nx2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%~nx2.map
 REM Convert Elf to Hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~nx2.elf AVRGCC\bin\%~nx2.hex
 
-REM Transfer of the program with AvrDude
-avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
-
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS1
 REM Copy source code for debugging in Proteus
 copy AVRGCC\lib\*.h PROTEUS > nul
 copy AVRGCC\lib\*.c PROTEUS > nul
@@ -208,6 +205,11 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy AVRGCC\BIN\*.hex PROTEUS > nul
 copy AVRGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS1
+@echo on
+
+REM Transfer of the program with AvrDude
+avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
 pause
 goto exit
@@ -303,11 +305,18 @@ goto exit
 @echo on
 REM Compilation with HI-TECH C (picc.exe)
 
-     SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
-@rem SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+if "%1" == "PIC16" goto PIC16
+if "%1" == "PIC18" goto PIC18
 
-@rem SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
-     SET PICKIT_PATH=c:\Program Files (x86)\Microchip\MPLABX\v5.20\mplab_platform\mplab_ipe
+::::::
+:PIC16
+::::::
+
+     SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+@rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
+
+     SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+@rem SET PICKIT_PATH=c:\Program Files (x86)\Microchip\MPLABX\v5.20\mplab_platform\mplab_ipe
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
 
@@ -341,7 +350,7 @@ picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=defa
 
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS2
 REM Copy source code for debugging in Proteus
 copy HTC\lib\*.h PROTEUS > nul
 copy HTC\lib\*.c PROTEUS > nul
@@ -349,12 +358,60 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
+copy HTC\OBJ\startup.as PROTEUS > nul
+:skipPROTEUS2
 @echo on
 
 REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 pause
+
+::::::
+:PIC18
+::::::
+
+SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC-18\9.80
+
+SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+
+SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC18
+
+path %path%;%PCC_PATH%\bin;%PICKIT_PATH%
+
+%~d2
+chdir %~p2
+
+REM Compilation of sources
+rmdir HTC\obj /s /q
+rmdir HTC\bin /s /q
+mkdir HTC\obj
+mkdir HTC\bin
+mkdir HTC\lib
+
+REM copy source code for compiling
+if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+
+
+REM picc18.exe --pass1 AdcLib.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+
+for %%F in (HTC\lib\*.c) do  picc18.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+
+REM picc18.exe --pass1 test_adc2.c -q --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+
+picc18.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
+
+REM Linkage of objects
+
+REM picc18.exe -oMplab.cof -mMplab.map --summary=default --output=default UsrLib.p1 test_adc2.p1 AdcLib.p1 --chip=18F4520 -P --runtime=default --opt=default -D__DEBUG=1 -g --asmlist "--errformat=Error   [%n] %f; %l.%c %s" "--msgformat=Advisory[%n] %s" "--warnformat=Warning [%n] %f; %l.%c %s" 
+
+picc18.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
+
+REM Transfer of the program with Pickit3
+PK3CMD.exe -P%4 -FHTC\bin\%~nx2.hex -E -M -Y
+
+pause
+
 goto exit
 
 
@@ -364,12 +421,15 @@ goto exit
 @echo on
 REM Compilation with arm-gcc
 
-@rem SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
-@rem SET GCC_PATH=C:\yagarto-20121222\bin
-     SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major\bin
+     SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\yagarto-20121222
+@rem SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major
+@rem SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
 
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
-SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
+
+     SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
+@rem SET STL_PATH=C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
 if "%4" == "stm32f40x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F4
 if "%4" == "stm32f10x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F1
@@ -387,6 +447,10 @@ mkdir ARMGCC\bin
 mkdir ARMGCC\lib
 
 if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
+
+if exist PROTEUS del PROTEUS\*.hex  > nul
+if exist PROTEUS del PROTEUS\*.elf  > nul
+if exist PROTEUS del PROTEUS\*.cof  > nul
 
 if "%4" == "stm32f10x" goto STM32F1
 
@@ -422,29 +486,27 @@ goto exit
 
 :STM32F1
 
-arm-none-eabi-g++.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o
+arm-none-eabi-g++.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o
 
 CD ARMGCC\lib
-for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+for %%F in (*.c) do arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
 CD ..\..
 
-pause
+:pause
 
-arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
+arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
 
 REM Linkage of objects
 arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
 
+:pause
+
 REM Convert Elf to Hex
 arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 
-REM Transfer of the program with ST-Link CLI
-
-ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
-
 @echo off
 :mkdir PROTEUS
-if not exist PROTEUS goto exit
+if not exist PROTEUS goto skipPROTEUS3
 REM Copy source code for debugging in Proteus
 copy ARMGCC\lib\*.h PROTEUS > nul
 copy ARMGCC\lib\*.c PROTEUS > nul
@@ -452,6 +514,11 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy ARMGCC\BIN\*.hex PROTEUS > nul
 copy ARMGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS3
+@echo on
+
+REM Transfer of the program with ST-Link CLI
+ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
 pause
 goto exit

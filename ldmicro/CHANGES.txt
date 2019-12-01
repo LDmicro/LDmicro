@@ -1,4 +1,4 @@
-== Release 5.4.0.0 String type support
+== Release 5.4.0.1 String type support
 
     * Added
         "Atmel AVR ATmega32U4 44-Pin packages",
@@ -23,8 +23,13 @@
 
     * Added "BUS tracer" support
 
-    * Added STRING type support in generated C code ???
+    * Added STRING type support in generated C code
         Tested ATmega2560,
+
+    * Added Blue color scheme by Jose GILLES
+
+    * Added by Jose GILLES
+        "Microchip PIC18F4520 40-PDIP"
 
 == Release 5.3.1.0
 

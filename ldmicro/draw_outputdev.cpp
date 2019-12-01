@@ -152,10 +152,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             }
             if(*str == ']' || *str == '}')
                 inBrace--;
-        } else if(((isdigit(*str)
-                    && (firstTime || isspace(str[-1]) || str[-1] == ':' || str[-1] == '{' || str[-1] == '['))
-                   || (*str == '-' && isdigit(str[1])))
-                  && hiOk && !inComment) {
+        } else if(((isdigit(*str) && (firstTime || isspace(str[-1]) || str[-1] == ':' || str[-1] == '{' || str[-1] == '[')) || (*str == '-' && isdigit(str[1]))) && hiOk && !inComment) {
             prev = GetTextColor(Hdc);
             SetTextColor(Hdc, HighlightColours.lit);
             TextOut(Hdc, x, y, str, 1);
@@ -297,8 +294,7 @@ void PaintWindow()
         // we still must draw a bit above and below so that the DisplayMatrix
         // is filled in enough to make it possible to reselect using the
         // cursor keys.
-        if(((cy + thisHeight) >= (ScrollYOffset - 8) * POS_HEIGHT)
-           && (cy < (ScrollYOffset + rowsAvailable + 8) * POS_HEIGHT)) {
+        if(((cy + thisHeight) >= (ScrollYOffset - 8) * POS_HEIGHT) && (cy < (ScrollYOffset + rowsAvailable + 8) * POS_HEIGHT)) {
             SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
             SetTextColor(Hdc, InSimulationMode ? HighlightColours.simRungNum : HighlightColours.rungNum);
             SelectObject(Hdc, FixedWidthFont);
@@ -346,7 +342,7 @@ void PaintWindow()
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
-    sprintf(str, "%4lu", IntCode.size());
+    sprintf(str, "%4" PRIu32, IntCode.size());
     TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str, "%4d", ProgWriteP);
@@ -404,128 +400,147 @@ void PaintWindow()
 // Set up the syntax highlighting colours, according to the currently selected
 // scheme.
 //-----------------------------------------------------------------------------
-SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES] = {
-    {
-        "Original black color scheme\tJonathan",
-        RGB(0, 0, 0),       // bg
-        RGB(255, 255, 225), // def
-        RGB(255, 110, 90),  // selected
-        RGB(255, 150, 90),  // op
-        RGB(255, 255, 100), // punct
-        RGB(255, 160, 160), // lit
-        RGB(120, 255, 130), // name
-        RGB(130, 130, 130), // rungNum
-        RGB(130, 130, 245), // comment
-        RGB(255, 255, 255), // bus
+SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES] = {{
+                                                                "Original black color scheme\tJonathan",
+                                                                RGB(0, 0, 0),       // bg
+                                                                RGB(255, 255, 225), // def
+                                                                RGB(255, 110, 90),  // selected
+                                                                RGB(255, 150, 90),  // op
+                                                                RGB(255, 255, 100), // punct
+                                                                RGB(255, 160, 160), // lit
+                                                                RGB(120, 255, 130), // name
+                                                                RGB(130, 130, 130), // rungNum
+                                                                RGB(130, 130, 245), // comment
+                                                                RGB(255, 255, 255), // bus
 
-        RGB(0, 0, 0),       // simBg
-        RGB(130, 130, 130), // simRungNum
-        RGB(100, 130, 130), // simOff
-        RGB(255, 150, 150), // simOn
-        RGB(255, 150, 150), // simBusLeft
-        RGB(150, 150, 255), // simBusRight
-    },
-    {
-        "Modified black color scheme\tIhor",
-        RGB(16, 16, 16),    // (0, 0, 0)       // bg
-        RGB(255, 255, 225), // (255, 255, 225) // def
-        RGB(255, 128, 128), // (255, 110,  90) // selected
-        RGB(255, 153, 85),  // (255, 150,  90) // op
-        RGB(255, 221, 85),  // (255, 255, 100) // punct
-        RGB(255, 170, 170), // (255, 160, 160) // lit
-        RGB(96, 255, 96),   // (120, 255, 130) // name
-        RGB(160, 160, 160), // (130, 130, 130) // rungNum
-        RGB(128, 128, 255), // (130, 130, 245) // comment
-        RGB(255, 255, 255), // (255, 255, 255) // bus
+                                                                RGB(0, 0, 0),       // simBg
+                                                                RGB(130, 130, 130), // simRungNum
+                                                                RGB(100, 130, 130), // simOff
+                                                                RGB(255, 150, 150), // simOn
+                                                                RGB(255, 150, 150), // simBusLeft
+                                                                RGB(150, 150, 255), // simBusRight
+                                                            },
+                                                            {
+                                                                "Modified black color scheme\tIhor",
+                                                                RGB(16, 16, 16),    // (0, 0, 0)       // bg
+                                                                RGB(255, 255, 225), // (255, 255, 225) // def
+                                                                RGB(255, 128, 128), // (255, 110,  90) // selected
+                                                                RGB(255, 153, 85),  // (255, 150,  90) // op
+                                                                RGB(255, 221, 85),  // (255, 255, 100) // punct
+                                                                RGB(255, 170, 170), // (255, 160, 160) // lit
+                                                                RGB(96, 255, 96),   // (120, 255, 130) // name
+                                                                RGB(160, 160, 160), // (130, 130, 130) // rungNum
+                                                                RGB(128, 128, 255), // (130, 130, 245) // comment
+                                                                RGB(255, 255, 255), // (255, 255, 255) // bus
 
-        RGB(32, 32, 32),    // (0, 0, 0)       // simBg
-        RGB(128, 128, 128), // (130, 130, 130) // simRungNum
-        RGB(96, 128, 128),  // (100, 130, 130) // simOff
-        RGB(255, 128, 128), // (255, 150, 150) // simOn
-        RGB(255, 128, 128), // (255, 150, 150) // simBusLeft
-        RGB(128, 128, 255), // (150, 150, 255) // simBusRight
-    },
-    {
-        "White color scheme\tIhor",
-        RGB(255, 255, 255), // background
-        RGB(0, 0, 0),       // default foreground
-        RGB(192, 0, 48),    // selected element
-        RGB(153, 48, 0),    // 'op code' (like OSR, OSF, ADD, ...)
-        RGB(0, 0, 0),       // punctuation, like square or curly braces
-        RGB(160, 20, 20),   // a literal number
-        RGB(0, 128, 0),     // the name of an item
-        RGB(128, 128, 128), // rung numbers
-        RGB(102, 102, 102), // user-written comment text
-        RGB(128, 128, 128), // the 'bus' at the right and left of screen
+                                                                RGB(32, 32, 32),    // (0, 0, 0)       // simBg
+                                                                RGB(128, 128, 128), // (130, 130, 130) // simRungNum
+                                                                RGB(96, 128, 128),  // (100, 130, 130) // simOff
+                                                                RGB(255, 128, 128), // (255, 150, 150) // simOn
+                                                                RGB(255, 128, 128), // (255, 150, 150) // simBusLeft
+                                                                RGB(128, 128, 255), // (150, 150, 255) // simBusRight
+                                                            },
+                                                            {
+                                                                "White color scheme\tIhor",
+                                                                RGB(255, 255, 255), // background
+                                                                RGB(0, 0, 0),       // default foreground
+                                                                RGB(192, 0, 48),    // selected element
+                                                                RGB(153, 48, 0),    // 'op code' (like OSR, OSF, ADD, ...)
+                                                                RGB(0, 0, 0),       // punctuation, like square or curly braces
+                                                                RGB(160, 20, 20),   // a literal number
+                                                                RGB(0, 128, 0),     // the name of an item
+                                                                RGB(128, 128, 128), // rung numbers
+                                                                RGB(102, 102, 102), // user-written comment text
+                                                                RGB(128, 128, 128), // the 'bus' at the right and left of screen
 
-        RGB(255, 255, 255), // background, simulation mode
-        RGB(128, 128, 128), // rung number, simulation mode
-        RGB(48, 140, 48),   // de-energized element, simulation mode
-        RGB(255, 0, 192),   // energized element, simulation mode
-        RGB(255, 153, 153), // the 'bus,' can be different colours for
-        RGB(153, 153, 255), // right and left of the screen
-    },
-    {
-        "White color scheme\tMark",
-        RGB(0xe8, 0xeb, 0xec), // bg
-        RGB(0x00, 0x00, 0x00), // def
-        RGB(0x33, 0x99, 0xff), // selected
-        RGB(0x99, 0xb4, 0xd1), // op
-        RGB(0x00, 0x00, 0x00), // punct
-        RGB(0xb9, 0xd1, 0xea), // lit
-        RGB(0x99, 0xb4, 0xd1), // name
-        RGB(0x6d, 0x6d, 0x6d), // rungNum
-        RGB(0x6d, 0x6d, 0x6d), // comment
-        RGB(0xbf, 0xcd, 0xdb), // bus
+                                                                RGB(255, 255, 255), // background, simulation mode
+                                                                RGB(128, 128, 128), // rung number, simulation mode
+                                                                RGB(48, 140, 48),   // de-energized element, simulation mode
+                                                                RGB(255, 0, 192),   // energized element, simulation mode
+                                                                RGB(255, 153, 153), // the 'bus,' can be different colours for
+                                                                RGB(153, 153, 255), // right and left of the screen
+                                                            },
+                                                            {
+                                                                "Blue color scheme\tJose",
+                                                                RGB(0, 0, 160),     // bg
+                                                                RGB(255, 255, 225), // def
+                                                                RGB(255, 0, 0),     // selected
+                                                                RGB(255, 128, 0),   // op
+                                                                RGB(255, 255, 100), // punct
+                                                                RGB(255, 255, 0),   // lit
+                                                                RGB(130, 255, 130), // name
+                                                                RGB(130, 130, 130), // rungNum
+                                                                RGB(130, 130, 200), // comment
+                                                                RGB(255, 255, 0),   // bus
 
-        RGB(0xff, 0xff, 0xff), // simBg
-        RGB(0x6d, 0x6d, 0x6d), // simRungNum
-        RGB(0xbf, 0xcd, 0xdb), // simOff
-        RGB(0x99, 0xb4, 0xd1), // simOn
-        RGB(0x99, 0xb4, 0xd1), // simBusLeft
-        RGB(0xbf, 0xcd, 0xdb), // simBusRight
-    },
-    {
-        "System Colors GetSysColor() in color scheme\tWindows",
-        GetSysColor(COLOR_WINDOW),                // background
-        GetSysColor(COLOR_WINDOWTEXT),            // default foreground
-        GetSysColor(COLOR_HIGHLIGHT),             // selected element
-        GetSysColor(COLOR_ACTIVECAPTION),         // 'op code' (like OSR, OSF, ADD, ...)
-        GetSysColor(COLOR_INFOTEXT),              // punctuation, like square or curly braces
-        GetSysColor(COLOR_GRADIENTACTIVECAPTION), // a literal number
-        GetSysColor(COLOR_ACTIVECAPTION),         // the name of an item
-        GetSysColor(COLOR_GRAYTEXT),              // rung numbers
-        GetSysColor(COLOR_GRAYTEXT),              // user-written comment text
-        GetSysColor(COLOR_INACTIVECAPTION),       // the 'bus' at the right and left of screen
+                                                                RGB(0, 0, 0),       // simBg
+                                                                RGB(130, 130, 130), // simRungNum
+                                                                RGB(100, 130, 130), // simOff
+                                                                RGB(255, 150, 150), // simOn
+                                                                RGB(255, 150, 150), // simBusLeft
+                                                                RGB(150, 150, 255), // simBusRight
+                                                            },
+                                                            {
+                                                                "White color scheme\tMark",
+                                                                RGB(0xe8, 0xeb, 0xec), // bg
+                                                                RGB(0x00, 0x00, 0x00), // def
+                                                                RGB(0x33, 0x99, 0xff), // selected
+                                                                RGB(0x99, 0xb4, 0xd1), // op
+                                                                RGB(0x00, 0x00, 0x00), // punct
+                                                                RGB(0xb9, 0xd1, 0xea), // lit
+                                                                RGB(0x99, 0xb4, 0xd1), // name
+                                                                RGB(0x6d, 0x6d, 0x6d), // rungNum
+                                                                RGB(0x6d, 0x6d, 0x6d), // comment
+                                                                RGB(0xbf, 0xcd, 0xdb), // bus
 
-        GetSysColor(COLOR_WINDOW),          // background, simulation mode
-        GetSysColor(COLOR_GRAYTEXT),        // rung number, simulation mode
-        GetSysColor(COLOR_INACTIVECAPTION), // de-energized element, simulation mode
-        GetSysColor(COLOR_ACTIVECAPTION),   // energized element, simulation mode COLOR_WINDOWFRAME
-        GetSysColor(COLOR_ACTIVECAPTION),   // the 'bus,' can be different colours for
-        GetSysColor(COLOR_INACTIVECAPTION), // right and left of the screen
-    },
-    {
-        // User uses Black as default color scheme
-        "User redefined color scheme\tYou",
-        RGB(0, 0, 0),       // bg
-        RGB(255, 255, 225), // def
-        RGB(255, 110, 90),  // selected
-        RGB(255, 150, 90),  // op
-        RGB(255, 220, 50),  // punct // 255, 255, 100
-        RGB(255, 160, 160), // lit
-        RGB(120, 255, 130), // name
-        RGB(130, 130, 130), // rungNum
-        RGB(130, 130, 245), // comment
-        RGB(255, 255, 255), // bus
+                                                                RGB(0xff, 0xff, 0xff), // simBg
+                                                                RGB(0x6d, 0x6d, 0x6d), // simRungNum
+                                                                RGB(0xbf, 0xcd, 0xdb), // simOff
+                                                                RGB(0x99, 0xb4, 0xd1), // simOn
+                                                                RGB(0x99, 0xb4, 0xd1), // simBusLeft
+                                                                RGB(0xbf, 0xcd, 0xdb), // simBusRight
+                                                            },
+                                                            {
+                                                                "System Colors GetSysColor() in color scheme\tWindows",
+                                                                GetSysColor(COLOR_WINDOW),                // background
+                                                                GetSysColor(COLOR_WINDOWTEXT),            // default foreground
+                                                                GetSysColor(COLOR_HIGHLIGHT),             // selected element
+                                                                GetSysColor(COLOR_ACTIVECAPTION),         // 'op code' (like OSR, OSF, ADD, ...)
+                                                                GetSysColor(COLOR_INFOTEXT),              // punctuation, like square or curly braces
+                                                                GetSysColor(COLOR_GRADIENTACTIVECAPTION), // a literal number
+                                                                GetSysColor(COLOR_ACTIVECAPTION),         // the name of an item
+                                                                GetSysColor(COLOR_GRAYTEXT),              // rung numbers
+                                                                GetSysColor(COLOR_GRAYTEXT),              // user-written comment text
+                                                                GetSysColor(COLOR_INACTIVECAPTION),       // the 'bus' at the right and left of screen
 
-        RGB(0, 0, 0),       // simBg
-        RGB(130, 130, 130), // simRungNum
-        RGB(100, 130, 130), // simOff
-        RGB(255, 150, 150), // simOn
-        RGB(255, 150, 150), // simBusLeft
-        RGB(130, 130, 245), // simBusRight // 150, 150, 255
-    }};
+                                                                GetSysColor(COLOR_WINDOW),          // background, simulation mode
+                                                                GetSysColor(COLOR_GRAYTEXT),        // rung number, simulation mode
+                                                                GetSysColor(COLOR_INACTIVECAPTION), // de-energized element, simulation mode
+                                                                GetSysColor(COLOR_ACTIVECAPTION),   // energized element, simulation mode COLOR_WINDOWFRAME
+                                                                GetSysColor(COLOR_ACTIVECAPTION),   // the 'bus,' can be different colours for
+                                                                GetSysColor(COLOR_INACTIVECAPTION), // right and left of the screen
+                                                            },
+                                                            {
+                                                                // User uses Black as default color scheme
+                                                                "User redefined color scheme\tYou",
+                                                                RGB(0, 0, 0),       // bg
+                                                                RGB(255, 255, 225), // def
+                                                                RGB(255, 110, 90),  // selected
+                                                                RGB(255, 150, 90),  // op
+                                                                RGB(255, 220, 50),  // punct // 255, 255, 100
+                                                                RGB(255, 160, 160), // lit
+                                                                RGB(120, 255, 130), // name
+                                                                RGB(130, 130, 130), // rungNum
+                                                                RGB(130, 130, 245), // comment
+                                                                RGB(255, 255, 255), // bus
+
+                                                                RGB(0, 0, 0),       // simBg
+                                                                RGB(130, 130, 130), // simRungNum
+                                                                RGB(100, 130, 130), // simOff
+                                                                RGB(255, 150, 150), // simOn
+                                                                RGB(255, 150, 150), // simBusLeft
+                                                                RGB(130, 130, 245), // simBusRight // 150, 150, 255
+                                                            }};
 
 void SetSyntaxHighlightingColours()
 {
@@ -544,9 +559,10 @@ void SetSyntaxHighlightingColours()
     strcpy(Schemes[0].sName, _("Original black color scheme\tJonathan"));
     strcpy(Schemes[1].sName, _("Modified black color scheme\tIhor"));
     strcpy(Schemes[2].sName, _("White color scheme\tIhor"));
-    strcpy(Schemes[3].sName, _("White color scheme\tMark"));
-    strcpy(Schemes[4].sName, _("System Colors GetSysColor() in color scheme\tWindows"));
-    strcpy(Schemes[5].sName, _("User redefined color scheme\tYou"));
+    strcpy(Schemes[3].sName, _("Blue color scheme\tJose")); /// To tranlate
+    strcpy(Schemes[4].sName, _("White color scheme\tMark"));
+    strcpy(Schemes[5].sName, _("System Colors GetSysColor() in color scheme\tWindows"));
+    strcpy(Schemes[6].sName, _("User redefined color scheme\tYou"));
     /////
     memcpy(&HighlightColours, &Schemes[scheme], sizeof(HighlightColours));
 }
@@ -635,8 +651,7 @@ BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode)
     FILETIME ftCreate, ftAccess;
     char     msg[MAX_NAME_LEN] = ""; ///// Added by JG for language translation
 
-    HANDLE hFile =
-        CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE hFile = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
         ///// modified by JG
@@ -673,13 +688,7 @@ bool GetLastWriteTime(HANDLE hFile, char *lpszString)
     SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
 
     // Composes a string with the date and time.
-    sprintf(lpszString,
-            "%02d/%02d/%d %02d:%02d:%02d",
-            stLocal.wDay,
-            stLocal.wMonth,
-            stLocal.wYear,
-            stLocal.wHour,
-            stLocal.wMinute,
+    sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d", stLocal.wDay, stLocal.wMonth, stLocal.wYear, stLocal.wHour, stLocal.wMinute,
             stLocal.wSecond); // wMilliseconds
 
     return true;
@@ -691,8 +700,7 @@ bool sGetLastWriteTime(char *FileName, char *sFileTime)
     sFileTime[0] = 0;
     char msg[MAX_NAME_LEN] = ""; ///// Added by JG for language translation
 
-    HANDLE hFile =
-        CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE hFile = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
         sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError()); // modified by JG
@@ -772,7 +780,7 @@ void ExportDrawingAsText(char *file)
     strncpy(ExportBuffer[cy + 1], str, 4);
 
     if(IntCode.size()) {
-        sprintf(str, "%4lu", IntCode.size());
+        sprintf(str, "%4" PRIu32, IntCode.size());
         strncpy(ExportBuffer[cy + 2], str, 4);
     }
 
@@ -795,14 +803,9 @@ void ExportDrawingAsText(char *file)
     if(Prog.mcu() && (Prog.mcu()->core == PC_LPT_COM))
         fprintf(f, "for '%s', %.3f ms cycle time\n", Prog.mcu()->mcuName, Prog.cycleTime / 1e3);
     else if(Prog.mcu()) {
-        fprintf(f,
-                "for '%s', %.9g MHz crystal, %.3f ms cycle time\n",
-                Prog.mcu()->mcuName,
-                Prog.mcuClock / 1e6,
-                Prog.cycleTime / 1e3);
+        fprintf(f, "for '%s', %.9g MHz crystal, %.3f ms cycle time\n", Prog.mcu()->mcuName, Prog.mcuClock / 1e6, Prog.cycleTime / 1e3);
     } else {
-        fprintf(
-            f, "no MCU assigned, %.9g MHz crystal, %.3f ms cycle time\n", Prog.mcuClock / 1e6, Prog.cycleTime / 1e3);
+        fprintf(f, "no MCU assigned, %.9g MHz crystal, %.3f ms cycle time\n", Prog.mcuClock / 1e6, Prog.cycleTime / 1e3);
     }
 
     fprintf(f, "%s", "\nLADDER DIAGRAM:\n");
