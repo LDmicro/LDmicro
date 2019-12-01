@@ -780,7 +780,7 @@ void ExportDrawingAsText(char *file)
     strncpy(ExportBuffer[cy + 1], str, 4);
 
     if(IntCode.size()) {
-        sprintf(str, "%4lz", IntCode.size());
+        sprintf(str, "%4" PRIu32, IntCode.size());
         strncpy(ExportBuffer[cy + 2], str, 4);
     }
 
