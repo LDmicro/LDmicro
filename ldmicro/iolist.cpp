@@ -909,7 +909,8 @@ bool LoadIoListFromFile(FileTracker &f)
                     type = IO_TYPE_MODBUS_HREG;
                     break;
                 default:
-                    oops();
+                    Warning(_("Line\n'%s'\nis skipped in IO LIST section from '%s'"), strspace(line), f.name());
+                    continue;
             }
         }
         char *s = strstr(line, " at ");

@@ -97,6 +97,11 @@ public:
             }
         return *this;
     }
+    std::string name()
+    {
+        return name_;
+    }
+
 private:
     mutable FILE* file_;
     std::string name_;
