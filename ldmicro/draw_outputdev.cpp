@@ -342,7 +342,7 @@ void PaintWindow()
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
-    sprintf(str, "%4" PRIu32, IntCode.size());
+    sprintf(str, "%4zu", IntCode.size());
     TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str, "%4d", ProgWriteP);
@@ -780,7 +780,7 @@ void ExportDrawingAsText(char *file)
     strncpy(ExportBuffer[cy + 1], str, 4);
 
     if(IntCode.size()) {
-        sprintf(str, "%4" PRIu32, IntCode.size());
+        sprintf(str, "%4zu", IntCode.size());
         strncpy(ExportBuffer[cy + 2], str, 4);
     }
 
