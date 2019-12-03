@@ -27,6 +27,8 @@
 #define LCD_CMD_SET_DDRAM     0x80   // Commande d'affectation de l'adresse DDRAM
 #define LCD_LIGNE_1           0x00   // Adresse ligne 1
 #define LCD_LIGNE_2           0x40   // Adresse ligne 2
+#define LCD_LIGNE_3           0x14   // Adresse ligne 3
+#define LCD_LIGNE_4           0x54   // Adresse ligne 4
 #define LCD_CMD_SET_CGRAM     0x40   // Commande d'affectation de l'adresse CGRAM
 
 

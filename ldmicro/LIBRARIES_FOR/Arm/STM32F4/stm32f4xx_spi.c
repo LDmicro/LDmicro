@@ -444,11 +444,7 @@ void I2S_Init(SPI_TypeDef *SPIx, I2S_InitTypeDef *I2S_InitStruct)
     SPIx->I2SPR = (uint16_t)((uint16_t)i2sdiv | (uint16_t)(i2sodd | (uint16_t)I2S_InitStruct->I2S_MCLKOutput));
 
     /* Configure the I2S with the SPI_InitStruct values */
-    tmpreg |= (uint16_t)(
-        (uint16_t)SPI_I2SCFGR_I2SMOD
-        | (uint16_t)(I2S_InitStruct->I2S_Mode
-                     | (uint16_t)(I2S_InitStruct->I2S_Standard
-                                  | (uint16_t)(I2S_InitStruct->I2S_DataFormat | (uint16_t)I2S_InitStruct->I2S_CPOL))));
+    tmpreg |= (uint16_t)((uint16_t)SPI_I2SCFGR_I2SMOD | (uint16_t)(I2S_InitStruct->I2S_Mode | (uint16_t)(I2S_InitStruct->I2S_Standard | (uint16_t)(I2S_InitStruct->I2S_DataFormat | (uint16_t)I2S_InitStruct->I2S_CPOL))));
 
     /* Write to SPIx I2SCFGR */
     SPIx->I2SCFGR = tmpreg;
@@ -717,11 +713,7 @@ void I2S_FullDuplexConfig(SPI_TypeDef *I2Sxext, I2S_InitTypeDef *I2S_InitStruct)
     }
 
     /* Configure the I2S with the SPI_InitStruct values */
-    tmpreg |= (uint16_t)(
-        (uint16_t)SPI_I2SCFGR_I2SMOD
-        | (uint16_t)(tmp
-                     | (uint16_t)(I2S_InitStruct->I2S_Standard
-                                  | (uint16_t)(I2S_InitStruct->I2S_DataFormat | (uint16_t)I2S_InitStruct->I2S_CPOL))));
+    tmpreg |= (uint16_t)((uint16_t)SPI_I2SCFGR_I2SMOD | (uint16_t)(tmp | (uint16_t)(I2S_InitStruct->I2S_Standard | (uint16_t)(I2S_InitStruct->I2S_DataFormat | (uint16_t)I2S_InitStruct->I2S_CPOL))));
 
     /* Write to SPIx I2SCFGR */
     I2Sxext->I2SCFGR = tmpreg;

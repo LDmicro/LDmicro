@@ -11,11 +11,9 @@ static uint16_t GPIO_UsedPins[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 /* Private functions */
 void LibGPIO_INT_EnableClock(GPIO_TypeDef *GPIOx);
 void LibGPIO_INT_DisableClock(GPIO_TypeDef *GPIOx);
-void LibGPIO_INT_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType,
-                      LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed);
+void LibGPIO_INT_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType, LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed);
 
-void LibGPIO_Conf(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_Type,
-                  LibGPIO_Speed_t GPIO_Speed)
+void LibGPIO_Conf(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_Type, LibGPIO_Speed_t GPIO_Speed)
 {
     GPIO_InitTypeDef gpioInit; // structure de configuration des ports
 
@@ -49,8 +47,7 @@ void LibGPIO_Conf(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mo
     GPIO_Init(GPIOx, &gpioInit); /// configuration Port
 }
 
-void LibGPIO_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType,
-                  LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed)
+void LibGPIO_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType, LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed)
 {
     /* Check input */
     if(GPIO_Pin == 0x00)
@@ -63,8 +60,7 @@ void LibGPIO_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mo
     LibGPIO_INT_Init(GPIOx, GPIO_Pin, GPIO_Mode, GPIO_OType, GPIO_PuPd, GPIO_Speed);
 }
 
-void LibGPIO_InitAlternate(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_OType_t GPIO_OType, LibGPIO_PuPd_t GPIO_PuPd,
-                           LibGPIO_Speed_t GPIO_Speed, uint8_t Alternate)
+void LibGPIO_InitAlternate(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_OType_t GPIO_OType, LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed, uint8_t Alternate)
 {
     uint32_t pinpos;
 
@@ -82,8 +78,7 @@ void LibGPIO_InitAlternate(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_OType
             continue;
 
         /* Set alternate function */
-        GPIOx->AFR[pinpos >> 0x03] =
-            (GPIOx->AFR[pinpos >> 0x03] & ~(0x0F << (4 * (pinpos & 0x07)))) | (Alternate << (4 * (pinpos & 0x07)));
+        GPIOx->AFR[pinpos >> 0x03] = (GPIOx->AFR[pinpos >> 0x03] & ~(0x0F << (4 * (pinpos & 0x07)))) | (Alternate << (4 * (pinpos & 0x07)));
     }
 
     /* Do initialization */
@@ -230,8 +225,7 @@ void LibGPIO_INT_DisableClock(GPIO_TypeDef *GPIOx)
     RCC->AHB1ENR &= ~(1 << LibGPIO_GetPortSource(GPIOx));
 }
 
-void LibGPIO_INT_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType,
-                      LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed)
+void LibGPIO_INT_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPIO_Mode, LibGPIO_OType_t GPIO_OType, LibGPIO_PuPd_t GPIO_PuPd, LibGPIO_Speed_t GPIO_Speed)
 {
     uint8_t pinpos;
     uint8_t ptr = LibGPIO_GetPortSource(GPIOx);
@@ -257,8 +251,7 @@ void LibGPIO_INT_Init(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, LibGPIO_Mode_t GPI
             GPIOx->OTYPER = (GPIOx->OTYPER & ~(uint16_t)(0x01 << pinpos)) | ((uint16_t)(GPIO_OType << pinpos));
 
             /* Set GPIO OSPEED register */
-            GPIOx->OSPEEDR =
-                (GPIOx->OSPEEDR & ~((uint32_t)(0x03 << (2 * pinpos)))) | ((uint32_t)(GPIO_Speed << (2 * pinpos)));
+            GPIOx->OSPEEDR = (GPIOx->OSPEEDR & ~((uint32_t)(0x03 << (2 * pinpos)))) | ((uint32_t)(GPIO_Speed << (2 * pinpos)));
         }
     }
 }

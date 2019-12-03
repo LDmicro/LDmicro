@@ -63,7 +63,8 @@ void delay_ms(uint16_t ms)
 
 volatile uint16_t usSysTick = 0;
 
-void SysTick_Handler() {
+void SysTick_Handler()
+{
     usSysTick++;
 }
 
@@ -105,7 +106,7 @@ void delay_ms(uint16_t ms)
         delay_us(1000);
 }
 #else
-  #error Choose the correct variant.
+#error Choose the correct variant.
 #endif
 
 void _sbrk()

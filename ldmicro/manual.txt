@@ -933,7 +933,21 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     false. These are mostly useful for debugging, temporary short the
     circuit or break an electrical circuit.
 
-    See https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+    See more https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+    Note: Be aware.
+   || ; The side effect demonstration.                                   ||
+   ||                                                          Y1        ||
+   ||----------------------------------------------------------( )-------||
+   || ; Y1 is 1.                                                         ||
+   ||                                                                    ||
+   ||                                                          Y1        ||
+   ||----+      +----------------------------------------------( )-------||
+   || ; COIL element always set output according to it input.            ||
+   || ; Y1 is 0 now.                                                     ||
+   ||                                                                    ||
+   ||                                                          Y1        ||
+   ||----------------------------------------------------------( )-------||
+   || ; Y1 is 1 again.                                                   ||
 
 
 > MASTER CONTROL RELAY

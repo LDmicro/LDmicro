@@ -261,8 +261,7 @@ void PWM_Stop(int canal)
 }
 #endif
 
-#if defined(LDTARGET_atmega48) || defined(LDTARGET_atmega88) || defined(LDTARGET_atmega168) \
-    || defined(LDTARGET_atmega328)
+#if defined(LDTARGET_atmega48) || defined(LDTARGET_atmega88) || defined(LDTARGET_atmega168) || defined(LDTARGET_atmega328)
 // set fast PWM mode with non-inverted output
 void PWM_Init(int canal, long fmcu, long fpwm, int resol, int csmax)
 {
@@ -342,8 +341,7 @@ void PWM_Stop(int canal)
 }
 #endif
 
-#if defined(LDTARGET_atmega164) || defined(LDTARGET_atmega324) || defined(LDTARGET_atmega644) \
-    || defined(LDTARGET_atmega1284)
+#if defined(LDTARGET_atmega164) || defined(LDTARGET_atmega324) || defined(LDTARGET_atmega644) || defined(LDTARGET_atmega1284)
 // set fast PWM mode with non-inverted output
 void PWM_Init(int canal, long fmcu, long fpwm, int resol, int csmax)
 {
