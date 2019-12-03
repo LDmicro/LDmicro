@@ -1096,6 +1096,12 @@ McuI2cInfo McuI2cInfoPic16F877[] = {                                            
 //  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
+McuI2cInfo McuI2cInfoPic16F887_44[] = {                                            // For PIC16F877, 887 in 44 TQFP
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C1",    0,          0,          0,          0,      37,     42 },       // I2C = RC3 + RC4
+//  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
+};
+
 McuI2cInfo McuI2cInfoPic18F4520[] = {                                            // For PIC18F4520
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
     { "I2C",    0,          0,          0,          0,      18,     23 },       // I2C = RC3 + RC4
@@ -1124,6 +1130,14 @@ McuSpiInfo McuSpiInfoPic16F877[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
     { "SPI1",       0,       0,       0,     23,   24,  18,   7 },
+};
+/////
+
+// Pic16F887 in 44-TQFP
+McuSpiInfo McuSpiInfoPic16F887_44[] = {
+//     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
+//                                         PB3   PB2  PB1  PB0
+    { "SPI1",       0,       0,      0,     42,   43,  37,  24 },
 };
 /////
 
@@ -3252,7 +3266,7 @@ McuIoInfo SupportedMcus_[] = {
         Pic16F887AdcPinInfo44TQFP,
         arraylen(Pic16F887AdcPinInfo44TQFP),
         1023,
-        { 26, 25 },
+        { 1, 44 }, // rxPin; txPin;
 //        16,
         ISA_PIC16,
         MidrangeCore14bit,
@@ -3274,10 +3288,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo44),
         PicExtIntPinInfo44,
         arraylen(PicExtIntPinInfo44),
-        McuSpiInfoPic16F877,
-        arraylen(McuSpiInfoPic16F877),
-        McuI2cInfoPic16F877,
-        arraylen(McuI2cInfoPic16F877),
+        McuSpiInfoPic16F887_44,
+        arraylen(McuSpiInfoPic16F887_44),
+        McuI2cInfoPic16F887_44,
+        arraylen(McuI2cInfoPic16F887_44),
         {{0,0}}
     },
     {
