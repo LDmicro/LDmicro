@@ -4,6 +4,9 @@
 
     * Fixed Quad Encoder Output Dir pin name
 
+    * Fixed Spanish locale. Thank you very much, Paulino Cano.
+      lang-es.txt, manual-es.txt updated.
+
 
 == Release 5.4.0.1 String type support
 
