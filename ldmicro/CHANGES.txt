@@ -1,8 +1,10 @@
 == Release 5.4.0.2
 
-    * Fixed Microchip PIC16F887 44-TQFP UART, ISP,I2C pins
+    * Fixed Microchip PIC16F887 44-TQFP UART, ISP,I2C pins.
 
-    * Fixed Quad Encoder Output Dir pin name
+    * Fixed Quad Encoder Output Dir pin name.
+
+    * Fixed Atmel AVR ATmega32U4 pins mapping for Arduino.
 
     * Fixed Spanish locale. Thank you very much, Paulino Cano.
       lang-es.txt, manual-es.txt updated.
