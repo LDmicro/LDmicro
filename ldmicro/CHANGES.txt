@@ -2,7 +2,7 @@
 
     * Fixed Microchip PIC16F887 44-TQFP UART, ISP,I2C pins.
 
-    * Fixed Quad Encoder Output Dir pin name.
+    * Fixed Quad Encoder Output dialog Dir pin name.
 
     * Fixed Atmel AVR ATmega32U4 pins mapping for Arduino.
 
