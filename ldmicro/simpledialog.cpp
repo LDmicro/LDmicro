@@ -1440,10 +1440,12 @@ void ShowQuadEncodDialog(ElemLeaf *l)
         else
             inputZ[0] = '\0';
         if(strlen(dir)) {
-            if((dir[0] != 'Y') && (dir[0] != 'R'))
-                dir[0] = 'Y';
-        } else {
-            dir[0] = '\0';
+            if((dir[0] != 'Y') && (dir[0] != 'R')) {
+                Warning(_("Only 'Y-Outpur Pin' or 'R-Inrenal Relay' are allowed for Output Dir parameter '%s'"), dir);
+                char s[MAX_NAME_LEN] = "Y";
+                strcat(s, dir);
+                strcpy(dir, s);
+            }
         }
         //TODO: check the available range
         int32_t val;

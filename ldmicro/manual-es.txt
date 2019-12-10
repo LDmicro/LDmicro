@@ -307,45 +307,45 @@ Normalmente, esta instrucción produce un false. Si la entrada de la instrucción 
                            --[_/ OSR_/ \_]--
 
                                      ^
-                                     this is  output signal
+                                     Esta es la señal de salida
                                      v
                               _       _
                            --[ \_OSF_/ \_]--
 
                                ^
-                               this is  input signal
+                               Esta es la señal de entrada
 
 
 
-                     logic level
-                          ^  The duration of the input pulse is five cycles
+                     nivel lógico
+                          ^  La duración del pulso de entrada es de cinco ciclos.
                   OSR, OSF|     _________
-                  input   | ___/         \_______
+                  Entrada | ___/         \_______
                           |
                   OSR     |     _
-                  output  | ___/ \_______________
+                  Salida  | ___/ \_______________
                           |
                   OSF     |               _
-                  output  | _____________/ \_____
-                        --+---------------------------> time
+                  Salida  | _____________/ \_____
+                        --+---------------------------> Tiempo
                           |
-       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+       Tiempo de ciclo del PLC ritmo N + 0 1 2 3 4 5 6 7 8
 
 
-                     logic
-                     level
-                          ^      Single-cycle input pulse
+                      nivel lógico
+
+                          ^      Pulso de entrada de ciclo único
                   OSR, OSF|     _
-                  input   | ___/ \_______
+                  Entrada | ___/ \_______
                           |
                   OSR     |     _
-                  output  | ___/ \_______
+                  Salida  | ___/ \_______
                           |
                   OSF     |       _
-                  output  | _____/ \_____
-                        --+------------------> time
+                  Salida  | _____/ \_____
+                        --+------------------> Tiempo
                           |
-       PLC cycle time beat N+ 0 1 2 3 4 5 6
+       Tiempo de ciclo del PLC N+ 0 1 2 3 4 5 6
 
 
 > OSCILADOR                      _   _
@@ -358,7 +358,7 @@ Normalmente, esta instrucción produce un false. Si la entrada de la instrucción 
 Si la señal de entrada es verdadera, esta instrucción produce un meandro con   (Tiempo de ciclo de 2 * PLC). Si la señal entra en la instrucción es falsa, entonces la señal de salida es falsa.
 
 
-> CORTO CIRCUITO, CIRCUITO ABIERTO
+> CORTO CIRCUITO Circuito Cerrado, CIRCUITO ABIERTO
 
                            ----+----+----      ----+     +----
 
@@ -395,10 +395,10 @@ Cuando la entrada a esta instrucción es verdadera, Variable de destino igual a l
     Ejemplo de divisoón 7 % 3 = 1
     https://en.wikipedia.org/wiki/Modulo_operation
 
-  NEGATIVE                 {NEG     dest:=}
+  NEGATIVO                 {NEG     dest:=}
                           -{         - src}-
 
-    Negative -{NEG a:= -a}- es el equivalente optimizado de -{SUB a:= 0 - a}-
+    Negativo -{NEG a:= -a}- es el equivalente optimizado de -{SUB a:= 0 - a}-
 
 
 > OPERACIONES EN MODO BIT    {AND  var1 :=}       {OR   Ccnt :=}
@@ -441,14 +441,14 @@ Cuando la entrada a esta instrucción es verdadera, variable de destino igual a l
 'Bit' significa número de bit, no máscara de bit. Por ejemplo, para establecer el bit número 4 en la variable 'var'
 
                       v
-     Bit numbers:  76543210
+     Bit numeros:  76543210
      'var'      :  xxx1xxxx
                       ^
-    you must write    ^
+    debes escribir   ^
          {          var}               {             var}
-        -{SetBit      4}-        not  -{SetBit      0x10}-
+        -{SetBit      4}-         no  -{SetBit      0x10}-
 
-    and it is equivalent to
+    y es equivalente a
          {OR     var :=}
         -{   var | 0x10}-
 
@@ -472,8 +472,8 @@ Si la entrada a esta instrucción es falsa entonces la salida es falsa. Si la ent
 
 'Bit' significa número de bit, no máscara de bit.
 
-Operación - {IfBitSet var, 0} - es la condición equivalente 'If var is odd'.
-Operación - {IfBitClr var, 0} - es la condición equivalente 'If var is an even'.
+Operación - {IfBitSet var, 0} - es la condición equivalente 'Si var es impar'.
+Operación - {IfBitClr var, 0} - es la condición equivalente 'Si var es par'.
 
 
 > CONTADOR                      Cname          Cname
@@ -603,7 +603,7 @@ No se tiene en cuenta la condición de entrada.
 La salida es 1 cuando hay datos no leídos en el búfer de recepción.
 
 
-> FORMATEA STRING OVER UART                var
+> FORMATEAR UNA CADENA SOBRE UART               var
                                    -{"Pressure: \3\r\n"}-
 
 LDmicro puede generar código para usar los UART incorporados a ciertas microcontroladores. En AVRS con UARTs múltiples sólo UART1 (no UART0). Configure la velocidad en baudios utilizando Ajustes -> MCU parámetros. Ciertas velocidades de transmisión en baudios pueden no ser frecuencias cristalinas; LDmicro le avisará si este es el caso.
@@ -618,19 +618,19 @@ También es posible usar esta instrucción para dar salida a una cadena fija, sin 
 
 Utilice `\\ 'para una barra invertida literal. Además de la secuencia de escape para interpolar una variable entera, el siguiente control caracteres disponibles:
 
-        * \r   -- CR carriage return
-        * \n   -- NL new line
-        * \f   -- FF form feed
-        * \b   -- BS backspace
-        * \t   -- TAB horizontal tab
-        * \v   -- VTAB vertical tab
-        * \a   -- alert
-        * \xAB -- character with ASCII value 0xAB (hex)
+        * \r   -- CR retorno de carro
+        * \n   -- NL nueva línea
+        * \f   -- FF salto de página
+        * \b   -- BS retroceso
+        * \t   -- TAB pestaña horizontal
+        * \v   -- VTAB pestaña vertical
+        * \a   -- alerta
+        * \xAB -- carácter con valor ASCII 0xAB (hexadecimal)
 
 La condición rung-out de esta instrucción es verdadera mientras que es transmitir datos, sino falsos. Esta instrucción consume gran cantidad de memoria del programa, por lo que debe utilizarse con moderación. La implementación actual no es eficiente, pero para una mejor serían necesarias modificaciones a todos los back-ends.
 
 
-> FORMATEAR STRING                          dest
+> FORMATEAR CADENA                        dest
                                       -{"string", var}-
 
 Para objetivos como Netzer con implementaciones de printf ya existentes esta instrucción puede ser usada.
@@ -644,10 +644,10 @@ Dest es un registro donde se escribe el resultado. Esto debería ser la entrada s
 
 La condición rung-out de esta instrucción es siempre verdadera.
 
-> CPRINTF FORMATTED STRING    _        ->Enanle{ CHAR dest:=}Error->        ______
+> CADENA FORMATEADA CPRINTF    _        ->Enanle{ CHAR dest:=}Error->        ______
                             _/       ----{"string",       varsList}----  __/      \___
                              ^                                              ^
-                             start condition                                busy(working)
+                             condición de inicio                          ocupado trabajando)
 
 
 Cuando la condición de entrada para esta instrucción va de falsa a True, comienza a procesar la cadena como sprintf y escribe el resultado char a la variable de destino char evry si sygnal  enable es true.

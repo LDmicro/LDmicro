@@ -45,6 +45,9 @@
 import os,sys
 from os import listdir
 
+import locale
+locale.setlocale(locale.LC_ALL, '')
+
 if not os.path.exists('./lang-sort'):
     os.mkdir('./lang-sort')
 

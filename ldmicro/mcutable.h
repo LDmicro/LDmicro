@@ -450,32 +450,32 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo44[] = {
 McuIoPinInfo AvrAtmega16U4or32U4IoPinInfo44[] = {
 //   port bit pin  pinName                  ArduinoPin  ArduinoName
 //                                                   X  Leonardo
-    { 'B',  0,  8, "PB0 (PCINT0/SS)"              ,  8, ""  , 0, 0, 0, 0 },
-    { 'B',  1,  9, "PB1 (PCINT1/SCL)"             ,  9, ""  , 0, 0, 0, 0 },
-    { 'B',  2, 10, "PB2 (PCINT2/PDI/MOSI)"        , 10, ""  , 0, 0, 0, 0 },
-    { 'B',  3, 11, "PB3 (PCINT3/PDO/MISO)"        , 11, ""  , 0, 0, 0, 0 },
-    { 'B',  4, 28, "PB4 (PCINT4/ADC11)"           , 28, "8" , 0, 0, 0, 0 },
-    { 'B',  5, 29, "PB5 (PCINT5/OC1A/OC4B/ADC12)" , 29, "9" , 0, 0, 0, 0 },
-    { 'B',  6, 30, "PB6 (PCINT6/OC1B/_OC4B/ADC13)", 30, "10", 0, 0, 0, 0 },
-    { 'B',  7, 12, "PB7 (PCINT7/OC1C/OC0A/_RTS)"  , 12, "11", 0, 0, 0, 0 },
-    { 'D',  0, 18, "PD0 (INT0/OC0B/SCL)"          , 18, "3" , 0, 0, 0, 0 },
-    { 'D',  1, 19, "PD1 (INT1/SDA)"               , 19, "2" , 0, 0, 0, 0 },
-    { 'D',  2, 20, "PD2 (INT2/RXD1)"              , 20, "0" , 0, 0, 0, 0 },
-    { 'D',  3, 21, "PD3 (INT3/TXD1)"              , 21, "1" , 0, 0, 0, 0 },
-    { 'D',  4, 25, "PD4 (ICP1/ADC8)"              , 25, "4" , 0, 0, 0, 0 },
-    { 'D',  5, 22, "PD5 (XCK1/_CTS)"              , 22, ""  , 0, 0, 0, 0 },
-    { 'D',  6, 26, "PD6 (T1/_OC4D/ADC9)"          , 26, "12", 0, 0, 0, 0 },
-    { 'D',  7, 27, "PD7 (T0/OC4D/ADC10)"          , 27, "6" , 0, 0, 0, 0 },
-    { 'C',  6, 31, "PC6 (OC3A/_OC4A)"             , 31, "5" , 0, 0, 0, 0 },
-    { 'C',  7, 32, "PC7 (ICP3/CLK0/OC4A)"         , 32, "13", 0, 0, 0, 0 },
-    { 'F',  0, 41, "PF0 (ADC0)"                   , 41, "A0", 0, 0, 0, 0 },
-    { 'F',  1, 40, "PF1 (ADC1)"                   , 40, "A1", 0, 0, 0, 0 },
-    { 'F',  4, 39, "PF4 (ADC4/TCK)"               , 39, "A4", 0, 0, 0, 0 },
-    { 'F',  5, 38, "PF5 (ADC5/TMS)"               , 38, "A5", 0, 0, 0, 0 },
-    { 'F',  6, 37, "PF6 (ADC6/TDO)"               , 37, "A6", 0, 0, 0, 0 },
-    { 'F',  7, 36, "PF7 (ADC7/TDI)"               , 36, "A7", 0, 0, 0, 0 },
-    { 'E',  2, 33, "PE2 (_HWB)"                   , 33, ""  , 0, 0, 0, 0 },
-    { 'E',  6,  1, "PE6 (INT6/AIN0)"              ,  1, "7" , 0, 0, 0, 0 },
+    { 'B',  0,  8, "PB0 (PCINT0/SS)"              ,  8, "17; //RXLED"     , 0, 0, 0, 0 },
+    { 'B',  1,  9, "PB1 (PCINT1/SCL)"             ,  9, ""                , 0, 0, 0, 0 },
+    { 'B',  2, 10, "PB2 (PCINT2/PDI/MOSI)"        , 10, ""                , 0, 0, 0, 0 },
+    { 'B',  3, 11, "PB3 (PCINT3/PDO/MISO)"        , 11, ""                , 0, 0, 0, 0 },
+    { 'B',  4, 28, "PB4 (PCINT4/ADC11)"           , 28, "8"               , 0, 0, 0, 0 },
+    { 'B',  5, 29, "PB5 (PCINT5/OC1A/OC4B/ADC12)" , 29, "9; //PWM~"       , 0, 0, 0, 0 },
+    { 'B',  6, 30, "PB6 (PCINT6/OC1B/_OC4B/ADC13)", 30, "10; //PWM~"      , 0, 0, 0, 0 },
+    { 'B',  7, 12, "PB7 (PCINT7/OC1C/OC0A/_RTS)"  , 12, "11; //PWM~"      , 0, 0, 0, 0 },
+    { 'D',  0, 18, "PD0 (INT0/OC0B/SCL)"          , 18, "3; //PWM~"       , 0, 0, 0, 0 },
+    { 'D',  1, 19, "PD1 (INT1/SDA)"               , 19, "2"               , 0, 0, 0, 0 },
+    { 'D',  2, 20, "PD2 (INT2/RXD1)"              , 20, "0"               , 0, 0, 0, 0 },
+    { 'D',  3, 21, "PD3 (INT3/TXD1)"              , 21, "1"               , 0, 0, 0, 0 },
+    { 'D',  4, 25, "PD4 (ICP1/ADC8)"              , 25, "4"               , 0, 0, 0, 0 },
+    { 'D',  5, 22, "PD5 (XCK1/_CTS)"              , 22, "30; //TXLED"     , 0, 0, 0, 0 },
+    { 'D',  6, 26, "PD6 (T1/_OC4D/ADC9)"          , 26, "12"              , 0, 0, 0, 0 },
+    { 'D',  7, 27, "PD7 (T0/OC4D/ADC10)"          , 27, "6; //PWM~"       , 0, 0, 0, 0 },
+    { 'C',  6, 31, "PC6 (OC3A/_OC4A)"             , 31, "5; //PWM~"       , 0, 0, 0, 0 },
+    { 'C',  7, 32, "PC7 (ICP3/CLK0/OC4A)"         , 32, "13; //PWM~ //LED", 0, 0, 0, 0 },
+    { 'F',  0, 41, "PF0 (ADC0)"                   , 41, "A0"              , 0, 0, 0, 0 },
+    { 'F',  1, 40, "PF1 (ADC1)"                   , 40, "A1"              , 0, 0, 0, 0 },
+    { 'F',  4, 39, "PF4 (ADC4/TCK)"               , 39, "A4"              , 0, 0, 0, 0 },
+    { 'F',  5, 38, "PF5 (ADC5/TMS)"               , 38, "A5"              , 0, 0, 0, 0 },
+    { 'F',  6, 37, "PF6 (ADC6/TDO)"               , 37, "A6"              , 0, 0, 0, 0 },
+    { 'F',  7, 36, "PF7 (ADC7/TDI)"               , 36, "A7"              , 0, 0, 0, 0 },
+    { 'E',  2, 33, "PE2 (_HWB)"                   , 33, ""                , 0, 0, 0, 0 },
+    { 'E',  6,  1, "PE6 (INT6/AIN0)"              ,  1, "7"               , 0, 0, 0, 0 },
 };
 
 McuAdcPinInfo AvrAtmega16U4or32U4AdcPinInfo44[] = {
@@ -1096,6 +1096,12 @@ McuI2cInfo McuI2cInfoPic16F877[] = {                                            
 //  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
+McuI2cInfo McuI2cInfoPic16F887_44[] = {                                            // For PIC16F877, 887 in 44 TQFP
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C1",    0,          0,          0,          0,      37,     42 },       // I2C = RC3 + RC4
+//  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
+};
+
 McuI2cInfo McuI2cInfoPic18F4520[] = {                                            // For PIC18F4520
 //      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
     { "I2C",    0,          0,          0,          0,      18,     23 },       // I2C = RC3 + RC4
@@ -1124,6 +1130,14 @@ McuSpiInfo McuSpiInfoPic16F877[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
     { "SPI1",       0,       0,       0,     23,   24,  18,   7 },
+};
+/////
+
+// Pic16F887 in 44-TQFP
+McuSpiInfo McuSpiInfoPic16F887_44[] = {
+//     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
+//                                         PB3   PB2  PB1  PB0
+    { "SPI1",       0,       0,      0,     42,   43,  37,  24 },
 };
 /////
 
@@ -3252,7 +3266,7 @@ McuIoInfo SupportedMcus_[] = {
         Pic16F887AdcPinInfo44TQFP,
         arraylen(Pic16F887AdcPinInfo44TQFP),
         1023,
-        { 26, 25 },
+        { 1, 44 }, // rxPin; txPin;
 //        16,
         ISA_PIC16,
         MidrangeCore14bit,
@@ -3274,10 +3288,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo44),
         PicExtIntPinInfo44,
         arraylen(PicExtIntPinInfo44),
-        McuSpiInfoPic16F877,
-        arraylen(McuSpiInfoPic16F877),
-        McuI2cInfoPic16F877,
-        arraylen(McuI2cInfoPic16F877),
+        McuSpiInfoPic16F887_44,
+        arraylen(McuSpiInfoPic16F887_44),
+        McuI2cInfoPic16F887_44,
+        arraylen(McuI2cInfoPic16F887_44),
         {{0,0}}
     },
     {
