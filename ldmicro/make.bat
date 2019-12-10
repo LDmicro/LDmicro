@@ -9,6 +9,7 @@ rem @SET PROGECT=
 @rem @nmake clean
 @rem @nmake LDLANG=LDLANG_RU %*
 @rem @nmake LDLANG=LDLANG_TR %*
+@rem @nmake LDLANG=LDLANG_ES %*
 @nmake LDLANG=LDLANG_EN %*
 
 @if exist ldmicro.exe start ldmicro.exe %PROGECT%
