@@ -7,4 +7,4 @@
 lang-make.pl lang.txt > lang.txt
 @rem
 @rem lang-sort.py [NOSORT] | [NOADD]
-lang-sort.py NOSORT NOADD
+lang-sort.py

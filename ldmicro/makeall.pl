@@ -7,6 +7,7 @@ SYS("rm -rf buildXXXX");
 SYS("mkdir buildXXXX");
 
 foreach $f (qw(DE ES FR IT PT TR RU JA EN)) {
+    SYS("del ldmicro.exe");
     SYS("nmake clean");
     print $f;
     SYS("nmake LDLANG=LDLANG_$f");

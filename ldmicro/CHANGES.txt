@@ -1,3 +1,12 @@
+== Release 5.4.0.3
+
+    * Modified menu Settings
+
+    * Fixed lang-fr.txt
+
+    * Some minor hotfixes
+
+
 == Release 5.4.0.2
 
     * Fixed Microchip PIC16F887 44-TQFP UART, ISP,I2C pins.
