@@ -2,15 +2,15 @@
 INTRODUCCION
 ============
 
-LDmicro genera cÃ³digo nativo para ciertos Microchip PIC16 y Atmel AVR
-microcontroladores. Por lo general, el software para estos microcontroladores estÃ¡ escrito
-en un lenguaje de programaciÃ³n como ensamblador, C o BASIC. Un programa en uno
+LDmicro genera código nativo para ciertos Microchip PIC16 y Atmel AVR
+microcontroladores. Por lo general, el software para estos microcontroladores está escrito
+en un lenguaje de programación como ensamblador, C o BASIC. Un programa en uno
 de estos idiomas comprende una lista de declaraciones. Estos idiomas son
 potente y bien adaptado a la arquitectura del procesador, que
 ejecuta internamente una lista de instrucciones.
 
-Los PLC, por otro lado, a menudo se programan en "lÃ³gica de escalera". (A) simple
-El programa podrÃ­a verse asÃ­:
+Los PLC, por otro lado, a menudo se programan en "lógica de escalera". (A) simple
+El programa podría verse así:
 
    ||                                                                    ||
    ||    Xbutton1           Tdon           Rchatter           Yred       ||
@@ -31,28 +31,28 @@ El programa podrÃ­a verse asÃ­:
    ||                                                                    ||
 
 (TON es un retraso de encendido; TOF es un retraso de apagado. --] [-- declaraciones
-son entradas, que se comportan como los contactos en un relÃ©. los
+son entradas, que se comportan como los contactos en un relé. los
 --( )-- las declaraciones son salidas, que se comportan como la bobina de un
-relÃ©. Muchas buenas referencias para la lÃ³gica de escalera estÃ¡n disponibles en Internet.
-y en otros lugares; Los detalles especÃ­ficos de esta implementaciÃ³n se dan a continuaciÃ³n.)
+relé. Muchas buenas referencias para la lógica de escalera están disponibles en Internet.
+y en otros lugares; Los detalles específicos de esta implementación se dan a continuación.)
 
-Un nÃºmero de diferencias son evidentes:
+Un número de diferencias son evidentes:
 
-    * El programa se presenta en formato grÃ¡fico, no como una lista de texto.
-Â Â Â Â Â Â  de declaraciones. Muchas personas inicialmente encontrarÃ¡n esto mÃ¡s fÃ¡cil de
-Â Â Â Â Â Â  entender.
+    * El programa se presenta en formato gráfico, no como una lista de texto.
+       de declaraciones. Muchas personas inicialmente encontrarán esto más fácil de
+       entender.
 
-    * En el nivel mÃ¡s bÃ¡sico, los programas parecen diagramas de circuito, con
-Â Â Â Â Â Â  Contactos de relÃ© (entradas) y bobinas (salidas). Esto es intuitivo para
-Â Â Â Â Â Â  programadores con conocimientos de teorÃ­a de circuitos elÃ©ctricos.
+    * En el nivel más básico, los programas parecen diagramas de circuito, con
+       Contactos de relé (entradas) y bobinas (salidas). Esto es intuitivo para
+       programadores con conocimientos de teoría de circuitos eléctricos.
 
-    * El compilador de lÃ³gica de escalera se encarga de lo que se calcula
-Â Â Â Â Â Â  dÃ³nde. No tiene que escribir cÃ³digo para determinar cuÃ¡ndo las salidas
-Â Â Â Â Â Â  tienen que volver a calcular en funciÃ³n de un cambio en las entradas o un
-Â Â Â Â Â Â  temporizador de eventos, y no tiene que especificar el orden en que
-Â Â Â Â Â Â  estos cÃ¡lculos deben llevarse a cabo; Las herramientas PLC lo hacen por usted.
+    * El compilador de lógica de escalera se encarga de lo que se calcula
+       dónde. No tiene que escribir código para determinar cuándo las salidas
+       tienen que volver a calcular en función de un cambio en las entradas o un
+       temporizador de eventos, y no tiene que especificar el orden en que
+       estos cálculos deben llevarse a cabo; Las herramientas PLC lo hacen por usted.
 
-LDmicro compila la lÃ³gica de escalera a cÃ³digo PIC16 o AVR. El seguimiento
+LDmicro compila la lógica de escalera a código PIC16 o AVR. El seguimiento
 Los procesadores son compatibles:
     * PIC16F877
     * PIC16F628
@@ -78,27 +78,27 @@ Los procesadores son compatibles:
     * ATmega8
     * ESP8266
     * STM32
-    * "CÃ³digo PASCAL "para PC LPT y COM
-Â Â Â Â * y un montÃ³n de...
+    * "Código PASCAL "para PC LPT y COM
+    * y un montón de...
 
-SerÃ­a fÃ¡cil admitir mÃ¡s chips AVR o PIC16, pero no tengo
-alguna forma de probarlos. Si necesita uno en particular, contÃ¡cteme y
-VerÃ© que puedo hacer.
+Sería fácil admitir más chips AVR o PIC16, pero no tengo
+alguna forma de probarlos. Si necesita uno en particular, contácteme y
+Veré que puedo hacer.
 
 Con LDmicro, puede dibujar un diagrama de escalera para su programa. Usted puede
-simule la lÃ³gica en tiempo real en su PC. Entonces cuando estÃ©s convencido
+simule la lógica en tiempo real en su PC. Entonces cuando estés convencido
 que es correcto, puede asignar pines en el microcontrolador al
 programa entradas y salidas. Una vez que haya asignado los pines, puede
-compila el cÃ³digo PIC o AVR para tu programa. La salida del compilador es un .hex
+compila el código PIC o AVR para tu programa. La salida del compilador es un .hex
 archivo que puede programar en su microcontrolador usando cualquier PIC / AVR
 programador.
 
-LDmicro estÃ¡ diseÃ±ado para ser algo similar a la mayorÃ­a de los PLC comerciales
-Sistemas de programaciÃ³n. Hay algunas excepciones y muchas cosas.
-de todos modos no son estÃ¡ndar en la industria. Lea atentamente la descripciÃ³n
-de cada instrucciÃ³n, incluso si parece familiar. Este documento asume
-Conocimientos bÃ¡sicos de la lÃ³gica de escalera y de la estructura del software PLC.
-(el ciclo de ejecuciÃ³n: leer entradas, calcular, escribir salidas).
+LDmicro está diseñado para ser algo similar a la mayoría de los PLC comerciales
+Sistemas de programación. Hay algunas excepciones y muchas cosas.
+de todos modos no son estándar en la industria. Lea atentamente la descripción
+de cada instrucción, incluso si parece familiar. Este documento asume
+Conocimientos básicos de la lógica de escalera y de la estructura del software PLC.
+(el ciclo de ejecución: leer entradas, calcular, escribir salidas).
 
 PLC y seguridad
     https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
@@ -109,48 +109,48 @@ Tiempo 0 de ciclo del PLC
 OBJETIVOS ADICIONALES
 =====================
 
-TambiÃ©n es posible generar cÃ³digo ANSI C. PodrÃ­as usar esto con cualquier
+También es posible generar código ANSI C. Podrías usar esto con cualquier
 procesador para el que tiene un compilador de C, pero usted es responsable de
-suministrando el tiempo de ejecuciÃ³n. Eso significa que LDmicro solo genera fuente
-para una funciÃ³n PlcCycle (). Usted es responsable de llamar a PlcCycle
+suministrando el tiempo de ejecución. Eso significa que LDmicro solo genera fuente
+para una función PlcCycle (). Usted es responsable de llamar a PlcCycle
 cada ciclo, y usted es responsable de implementar todas las E / S
 (lectura / escritura de entrada digital, etc.) funciones a las que llama PlcCycle (). Ver
-los comentarios en la fuente generada para mÃ¡s detalles.
+los comentarios en la fuente generada para más detalles.
 
 Finalmente, LDmicro puede generar bytecode independiente del procesador para un
-MÃ¡quina virtual diseÃ±ada para ejecutar cÃ³digo de lÃ³gica de escalera. He proporcionado una
-implementaciÃ³n de muestra del intÃ©rprete/VM, escrita en bastante portÃ¡til
-C. Este objetivo funcionarÃ¡ para casi cualquier plataforma, siempre que
-puede suministrar su propia VM. Esto puede ser Ãºtil para aplicaciones donde
-desea utilizar la lÃ³gica de escalera como un 'lenguaje de script' para personalizar un
-programa. Vea los comentarios en el intÃ©rprete de muestra para mÃ¡s detalles.
+Máquina virtual diseñada para ejecutar código de lógica de escalera. He proporcionado una
+implementación de muestra del intérprete/VM, escrita en bastante portátil
+C. Este objetivo funcionará para casi cualquier plataforma, siempre que
+puede suministrar su propia VM. Esto puede ser útil para aplicaciones donde
+desea utilizar la lógica de escalera como un 'lenguaje de script' para personalizar un
+programa. Vea los comentarios en el intérprete de muestra para más detalles.
 
 Se ha agregado un nuevo objetivo "Controllino Maxi / Ext bytecode". Genera
 Archivo .xint interpretable por el software LDuino PLC. Hasta ahora solo
-Controllino Maxi PLC es compatible. Sin embargo, como el cÃ³digo de bytes es genÃ©rico,
-Se puede hacer la adaptaciÃ³n a cualquier otra placa de PLC o CPU. Ver cÃ³digo fuente LDuino
+Controllino Maxi PLC es compatible. Sin embargo, como el código de bytes es genérico,
+Se puede hacer la adaptación a cualquier otra placa de PLC o CPU. Ver código fuente LDuino
 para eso.
 
 OPCIONES DE LINEA DE COMANDO
 ============================
 
-ldmicro.exe generalmente se ejecuta sin opciones de lÃ­nea de comandos. Eso significa
+ldmicro.exe generalmente se ejecuta sin opciones de línea de comandos. Eso significa
 que puede hacer un acceso directo al programa o guardarlo en su
 escritorio y haga doble clic en el icono cuando desee ejecutarlo, y luego
 puede hacer todo desde la GUI.
 
-Si se pasa LDmicro un solo nombre de archivo en la lÃ­nea de comando
-(por ejemplo, `ldmicro.exe asd.ld '), LDmicro intentarÃ¡ abrir` asd.ld',
+Si se pasa LDmicro un solo nombre de archivo en la línea de comando
+(por ejemplo, `ldmicro.exe asd.ld '), LDmicro intentará abrir` asd.ld',
 si existiera. Se produce un error si `asd.ld 'no existe. Esta
 significa que puede asociar ldmicro.exe con archivos .ld, para que se ejecute
-automÃ¡ticamente cuando hace doble clic en un archivo .ld.
+automáticamente cuando hace doble clic en un archivo .ld.
 
-Si LDmicro se pasa argumentos de lÃ­nea de comando en el formulario
+Si LDmicro se pasa argumentos de línea de comando en el formulario
 `ldmicro.exe / c src.ld dest.hex ', luego intenta compilar` src.ld',
-y guarde la salida como 'dest.hex'. LDmicro sale despuÃ©s de compilar,
-si la compilaciÃ³n fue exitosa o no. Cualquier mensaje se imprime
-a la consola Este modo es Ãºtil solo cuando se ejecuta LDmicro desde
-lÃ­nea de comando.
+y guarde la salida como 'dest.hex'. LDmicro sale después de compilar,
+si la compilación fue exitosa o no. Cualquier mensaje se imprime
+a la consola Este modo es útil solo cuando se ejecuta LDmicro desde
+línea de comando.
 
 
 LO ESENCIAL
@@ -158,96 +158,96 @@ LO ESENCIAL
 
 Si ejecuta LDmicro sin argumentos, entonces comienza con el programa vacio. 
 Si ejecuta LDmicro con el nombre de un programa de escalera (xxx.ld)
-en la lÃ­nea de comando, entonces intentarÃ¡ cargar ese programa al inicio.
+en la línea de comando, entonces intentará cargar ese programa al inicio.
 LDmicro usa su propio formato interno para el programa; no puede importar
-lÃ³gica de cualquier otra herramienta.
+lógica de cualquier otra herramienta.
 
-Si no cargÃ³ un programa existente, se le darÃ¡ un programa
-con un peldaÃ±o vacÃ­o PodrÃ­as agregarle una instrucciÃ³n; por ejemplo
-puede agregar un conjunto de contactos (InstrucciÃ³n -> Insertar contactos) llamado
-'Xnuevo'. 'X' significa que los contactos estarÃ¡n vinculados a un pin de entrada en el
-microcontrolador Puede asignarle un pin mÃ¡s tarde, despuÃ©s de elegir un
+Si no cargó un programa existente, se le dará un programa
+con un peldaño vacío Podrías agregarle una instrucción; por ejemplo
+puede agregar un conjunto de contactos (Instrucción -> Insertar contactos) llamado
+'Xnuevo'. 'X' significa que los contactos estarán vinculados a un pin de entrada en el
+microcontrolador Puede asignarle un pin más tarde, después de elegir un
 microcontrolador y cambio de nombre de los contactos (Se tienen que cambiar los nombres es obligado). 
-La primera letra de un nombre indica quÃ© tipo de objeto es. Por ejemplo:
+La primera letra de un nombre indica qué tipo de objeto es. Por ejemplo:
 
     * Xname -- vinculado a un pin de entrada en el microcontrolador
     * Yname -- vinculado a un pin de salida en el microcontrolador
-    * Rname -- `relÃ© interno ': un bit en la memoria
+    * Rname -- `relé interno ': un bit en la memoria
     * Tname -- un temporizador retraso de encendido, retraso de apagado o retentivo
-    * Cname -- un contador, ya sea cuenta adelante o cuenta atrÃ¡s
+    * Cname -- un contador, ya sea cuenta adelante o cuenta atrás
     * Aname -- una lectura entera de un convertidor A / D
     * Pname -- vinculado a un pin de salida PWM en el microcontrolador
     * Mname -- vinculado a una salida de bobina MODBUS
     * Iname -- vinculado  a una entrada discreta MODBUS
     * Hname -- vinculado to a MODBUS Holding register
-    * name  -- una variable de propÃ³sito general (entero)
+    * name  -- una variable de propósito general (entero)
 
-   Nombre de la variable que comienza con el sÃ­mbolo. '#' como
+   Nombre de la variable que comienza con el símbolo. '#' como
     #PORTA, #PORTB, #PORTC, ... tratado como puerto de hardware de salida.
-Â Â Â Â  Nombre de la variable que comienza con el sÃ­mbolo. '#' como
+     Nombre de la variable que comienza con el símbolo. '#' como
     #PINA, #PINB, #PINC, ... tratado como puerto de entrada de hardware.
-    Nombre de la variable que comienza con el sÃ­mbolo.'#' como
-    #TRISA, #TRISB, #TRISC, ... tratado como registro de direcciÃ³n de datos de los puertos correspondientes
+    Nombre de la variable que comienza con el símbolo.'#' como
+    #TRISA, #TRISB, #TRISC, ... tratado como registro de dirección de datos de los puertos correspondientes
     #PORTA, #PORTB, #PORTC, ...
-    Nota: la direcciÃ³n PORTn y PINn son iguales para PIC's
+    Nota: la dirección PORTn y PINn son iguales para PIC's
 
-    El nombre de la variable que comienza con un carÃ¡cter '#' y luego un nÃºmero
-Â Â Â Â  (comÃºnmente un hexadecimal) tratada como la direcciÃ³n inmediata del registro de hardware.
-Â Â Â Â  Un valor como # 0xXXXX es un direccionamiento inmediato, directo y explÃ­cito.
-Â Â Â Â  Por ejemplo:
-Â Â Â Â  # 0x8E tratado como la direcciÃ³n del registro PCON de hardware
-Â Â Â Â Â Â  del microcontrolador Microchip PIC16F628.
-Â Â Â Â  # 0x136 tratado como la direcciÃ³n del registro UDR3 de hardware
-Â Â Â Â Â Â  (Registro de datos de E/S USART3) del microcontrolador Atmel ATmega2560.
+    El nombre de la variable que comienza con un carácter '#' y luego un número
+     (comúnmente un hexadecimal) tratada como la dirección inmediata del registro de hardware.
+     Un valor como # 0xXXXX es un direccionamiento inmediato, directo y explícito.
+     Por ejemplo:
+     # 0x8E tratado como la dirección del registro PCON de hardware
+       del microcontrolador Microchip PIC16F628.
+     # 0x136 tratado como la dirección del registro UDR3 de hardware
+       (Registro de datos de E/S USART3) del microcontrolador Atmel ATmega2560.
 
-    El nombre de la variable que comienza con un carÃ¡cter '#' y posterior como
-Â Â Â Â  un nombre de variable de propÃ³sito general tratado como la direcciÃ³n indirecta del registro de hardware.
-Â Â Â Â  Un valor como #VarName es la direcciÃ³n indirecta del registro de hardware (puntero de direcciÃ³n indirecta).
-Â Â Â Â  Por ejemplo:
-      {MOV  portAddr:=}    portAddr es una variable de propÃ³sito general que contiene el valor 0x05.
+    El nombre de la variable que comienza con un carácter '#' y posterior como
+     un nombre de variable de propósito general tratado como la dirección indirecta del registro de hardware.
+     Un valor como #VarName es la dirección indirecta del registro de hardware (puntero de dirección indirecta).
+     Por ejemplo:
+      {MOV  portAddr:=}    portAddr es una variable de propósito general que contiene el valor 0x05.
     --{           0x05}--
 
-      {MOV #portAddr:=}    #portAddr tratada como la direcciÃ³n indirecta del registro # 0x05 PORTA (Microchip PIC16F887).
+      {MOV #portAddr:=}    #portAddr tratada como la dirección indirecta del registro # 0x05 PORTA (Microchip PIC16F887).
     --{           0xF0}--  Los pines de salida PORTA se establecen en un valor binario de 11110000.
 
-      {ADD  portAddr:=}    La variable portAddr de propÃ³sito general ahora tiene un valor de 0x06.
+      {ADD  portAddr:=}    La variable portAddr de propósito general ahora tiene un valor de 0x06.
     --{portAddr  +   1}--
 
-      {MOV #portAddr:=}    #portAddr tratada como la direcciÃ³n indirecta del registro # 0x06 PORTB (Microchip PIC16F887).
-    --{           0x0F}--  Los pines de salida PORTB estÃ¡n configurados en un valor binario de 00001111.
+      {MOV #portAddr:=}    #portAddr tratada como la dirección indirecta del registro # 0x06 PORTB (Microchip PIC16F887).
+    --{           0x0F}--  Los pines de salida PORTB están configurados en un valor binario de 00001111.
     * Wiki: LDmicro direccionamiento indirecto
       https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
 
-    Tenga cuidado al escribir en los registros de hardware mediante el acceso inmediato a la direcciÃ³n.
-Â Â Â Â  Vea cÃ³mo acceder a SPI a travÃ©s de los registros de hardware.
-    * Wiki: SPI: Interfaz PerifÃ©rica Serial
+    Tenga cuidado al escribir en los registros de hardware mediante el acceso inmediato a la dirección.
+     Vea cómo acceder a SPI a través de los registros de hardware.
+    * Wiki: SPI: Interfaz Periférica Serial
       https://github.com/LDmicro/LDmicro/wiki/SPI:-Serial-Peripheral-Interface
 
 
 Elija el resto del nombre para que describa lo que hace el objeto,
-y para que sea Ãºnico dentro del programa. El mismo nombre siempre se refiere
-al mismo objeto dentro del programa. Por ejemplo, serÃ­a un error.
+y para que sea único dentro del programa. El mismo nombre siempre se refiere
+al mismo objeto dentro del programa. Por ejemplo, sería un error.
 tener un retraso de encendido (TON) llamado 'Tdelay' y un retraso de apagado (TOF)
 llamado 'Tdelay' en el mismo programa, ya que cada contador necesita su propio
-memoria. Por otro lado, serÃ­a correcto tener un temporizador retentivo
-(RTO) llamado `Tdelay 'y una instrucciÃ³n de reinicio (RES) asociada con
+memoria. Por otro lado, sería correcto tener un temporizador retentivo
+(RTO) llamado `Tdelay 'y una instrucción de reinicio (RES) asociada con
 'Tdelay', ya que en ese caso desea que ambas instrucciones funcionen
 El mismo temporizador.
 
-Los nombres de las variables pueden consistir en letras, nÃºmeros y guiones bajos '_'.
-Un nombre de variable no debe comenzar con un nÃºmero. Los nombres de las variables son
-distingue mayÃºsculas y minÃºsculas.
+Los nombres de las variables pueden consistir en letras, números y guiones bajos '_'.
+Un nombre de variable no debe comenzar con un número. Los nombres de las variables son
+distingue mayúsculas y minúsculas.
 
 Las instrucciones variables generales (MOV, ADD, EQU, etc.) pueden funcionar en
 variables con cualquier nombre. Esto significa que pueden acceder al temporizador y
-Contadores acumuladores. Esto a veces puede ser Ãºtil; Por ejemplo usted
-podrÃ­a verificar si la cuenta de un temporizador estÃ¡ en un rango particular.
+Contadores acumuladores. Esto a veces puede ser útil; Por ejemplo usted
+podría verificar si la cuenta de un temporizador está en un rango particular.
 
 Las variables son siempre enteros de 16 bits. Esto significa que pueden ir
 de -32768 a 32767. Las variables siempre se tratan como firmadas.
 
-ACTUALIZADO: VersiÃ³n 4.3.0
-Las variables pueden asignar 1,2,3 o 4 bytes. Puede cambiar el tamaÃ±o de la variable
+ACTUALIZADO: Versión 4.3.0
+Las variables pueden asignar 1,2,3 o 4 bytes. Puede cambiar el tamaño de la variable
 haciendo doble clic en el nombre de la variable en la lista en la parte inferior de la pantalla.
 Las variables se almacenan y procesan en forma de complemento de dos.
 Ver https://en.wikipedia.org/wiki/Two%27s_complement
@@ -261,125 +261,125 @@ Bytes    Tipos      Intervalo de                  a
 El valor cero decimal (0) se representa como todos los bits ceros 00 ... 000
 El valor decimal (-1) representado como todos 11 ... 111
 
-Las variables int8 firmadas se utilizan para hacer que el archivo hexadecimal sea mÃ¡s pequeÃ±o y mÃ¡s rÃ¡pido.
+Las variables int8 firmadas se utilizan para hacer que el archivo hexadecimal sea más pequeño y más rápido.
 Los tipos firmados int24 e int32 se utilizan para aumentar el rango de variables.
-La extensiÃ³n de signo para variables de diferentes tamaÃ±os se proporciona automÃ¡ticamente.
+La extensión de signo para variables de diferentes tamaños se proporciona automáticamente.
 Nota: Las instrucciones MUL, DIV, MOD no pueden procesar variables int32.
 
-El indicador de desbordamiento aritmÃ©tico (subflujo) se proporciona como relÃ© interno ROverflowFlagV.
+El indicador de desbordamiento aritmético (subflujo) se proporciona como relé interno ROverflowFlagV.
 https://en.wikipedia.org/wiki/Overflow_flag
 https://www.allaboutcircuits.com/textbook/digital/chpt-2/binary-overflow/
 El indicador de desbordamiento indica que el resultado del complemento a dos firmado
-No cabe en el nÃºmero de bits utilizados para la operaciÃ³n, y seÃ±ala un error.
+No cabe en el número de bits utilizados para la operación, y señala un error.
 Por ejemplo, si la variable int8 dest = 127 (0x7f) suma 1, obtenemos -128 (0x80),
-y el indicador de desbordamiento ROverflowFlagV se establecerÃ¡ en 1.
+y el indicador de desbordamiento ROverflowFlagV se establecerá en 1.
 En cambio, si la variable int16 dest = 127 (0x007f) agrega 1, obtenemos 128 (0x0080),
 y el indicador de desbordamiento ROverflowFlagV no se ve afectado.
-LDmicro restablece el ROverflowFlagV a cero durante la inicializaciÃ³n.
+LDmicro restablece el ROverflowFlagV a cero durante la inicialización.
 Nota: CTC genera un impulso de sobrellenado (carry) cuando Counter == Max.
-Â Â Â Â Â Â  El CTR genera un impulso de sobrellenado (prestado) cuando el Contador == Min.
-Â Â Â Â Â Â  Overfill no establece la bandera de desbordamiento.
+       El CTR genera un impulso de sobrellenado (prestado) cuando el Contador == Min.
+       Overfill no establece la bandera de desbordamiento.
 
-El indicador de superposiciÃ³n se proporciona como el estado de salida de las operaciones ADD, SUB.
-El indicador de superposiciÃ³n indica que se ha cambiado el signo del resultado.
-Por ejemplo, se produjo una superposiciÃ³n cuando -1 (0xf..f) agrega 1 (o sub -1), obtenemos 0 (0x0..0),
+El indicador de superposición se proporciona como el estado de salida de las operaciones ADD, SUB.
+El indicador de superposición indica que se ha cambiado el signo del resultado.
+Por ejemplo, se produjo una superposición cuando -1 (0xf..f) agrega 1 (o sub -1), obtenemos 0 (0x0..0),
 todos los 1 se cambian a todos ceros 0.
-AdemÃ¡s, se produjo una superposiciÃ³n cuando 0 (0x0..0) sub 1 (o agregar -1), obtenemos -1 (0xf..f),
+Además, se produjo una superposición cuando 0 (0x0..0) sub 1 (o agregar -1), obtenemos -1 (0xf..f),
 todos los ceros 0 se cambian a todos unos 1.
-Por ejemplo, se produjo una superposiciÃ³n cuando -10 agrega 15 (o sub -15), obtenemos 5,
+Por ejemplo, se produjo una superposición cuando -10 agrega 15 (o sub -15), obtenemos 5,
 fuente negativa se cambia a resultado positivo.
-AdemÃ¡s, se produjo una superposiciÃ³n cuando 10 sub 15 (o agregamos -15), obtenemos -5,
+Además, se produjo una superposición cuando 10 sub 15 (o agregamos -15), obtenemos -5,
 fuente positiva se cambia a resultado negativo.
-ACTUALIZACIONES FINALES: VersiÃ³n 4.3.0
+ACTUALIZACIONES FINALES: Versión 4.3.0
 
-Puede especificar literales como nÃºmeros decimales normales (10, 1234, -56).
-TambiÃ©n puede especificar valores de caracteres ASCII ('A', 'z') poniendo
-El personaje entre comillas simples. Puedes usar un cÃ³digo de caracteres ASCII
-en la mayorÃ­a de los lugares donde podrÃ­as usar un nÃºmero decimal.
-Puede usar nÃºmeros hexadecimales (0xA, 0x04D2, 0xffc8),
-nÃºmeros octales (0o12, 0o2322, 0o177710),
-nÃºmeros binarios (0b1010, 0b10011010010, 0b1111111111001000)
-en la mayorÃ­a de los lugares donde podrÃ­as usar un nÃºmero decimal.
-LDmicro usÃ³ los prefijos C:
-0x__ o 0X__ para nÃºmeros hexadecimales con dÃ­gitos 1234567890ABCDEF
-0o__ o 0O__ o 0__ nÃºmeros octales con 01234567 dÃ­gitos
-0b__ o 0B__ para nÃºmeros binarios con 01 dÃ­gitos.
-Hexadecimales, la notaciÃ³n binaria es mÃ¡s cÃ³moda para opacidades bit a bit.
+Puede especificar literales como números decimales normales (10, 1234, -56).
+También puede especificar valores de caracteres ASCII ('A', 'z') poniendo
+El personaje entre comillas simples. Puedes usar un código de caracteres ASCII
+en la mayoría de los lugares donde podrías usar un número decimal.
+Puede usar números hexadecimales (0xA, 0x04D2, 0xffc8),
+números octales (0o12, 0o2322, 0o177710),
+números binarios (0b1010, 0b10011010010, 0b1111111111001000)
+en la mayoría de los lugares donde podrías usar un número decimal.
+LDmicro usó los prefijos C:
+0x__ o 0X__ para números hexadecimales con dígitos 1234567890ABCDEF
+0o__ o 0O__ o 0__ números octales con 01234567 dígitos
+0b__ o 0B__ para números binarios con 01 dígitos.
+Hexadecimales, la notación binaria es más cómoda para opacidades bit a bit.
 
-En la parte inferior de la pantalla, verÃ¡ una lista de todos los objetos en
-el programa. Esta lista se genera automÃ¡ticamente desde el programa;
-no es necesario mantenerlo actualizado a mano. La mayorÃ­a de los objetos no
-Necesitan alguna configuraciÃ³n. Los objetos 'Xname', 'Yname' y 'Aname' deben ser
+En la parte inferior de la pantalla, verá una lista de todos los objetos en
+el programa. Esta lista se genera automáticamente desde el programa;
+no es necesario mantenerlo actualizado a mano. La mayoría de los objetos no
+Necesitan alguna configuración. Los objetos 'Xname', 'Yname' y 'Aname' deben ser
 asignado a un pin en el microcontrolador, sin embargo. Primero elige que
-microcontrolador que desee utilizar (ConfiguraciÃ³n -> Microcontrolador). Luego asignar
+microcontrolador que desee utilizar (Configuración -> Microcontrolador). Luego asignar
 sus pines de E/S haciendo doble clic en ellos en la lista.
 
 Puede modificar el programa insertando o eliminando instrucciones.
 el cursor en la pantalla del programa parpadea para indicar el seleccionado actualmente
-instrucciÃ³n y el punto de inserciÃ³n actual. Si no estÃ¡ parpadeando, entonces
-presione <Tab> o haga clic en una instrucciÃ³n. Ahora puedes eliminar el actual
-instrucciÃ³n, o puede insertar una nueva instrucciÃ³n a la derecha o izquierda
+instrucción y el punto de inserción actual. Si no está parpadeando, entonces
+presione <Tab> o haga clic en una instrucción. Ahora puedes eliminar el actual
+instrucción, o puede insertar una nueva instrucción a la derecha o izquierda
 (en serie con) o arriba o abajo (en paralelo con) el seleccionado
-instrucciÃ³n. Algunas operaciones no estÃ¡n permitidas. Por ejemplo, no hay instrucciones
+instrucción. Algunas operaciones no están permitidas. Por ejemplo, no hay instrucciones
 despues de una bobina a su derecha.
 
-El programa comienza con un solo peldaÃ±o. Puede agregar mÃ¡s peldaÃ±os seleccionando
-Inserte PeldaÃ±o Antes / DespuÃ©s en el menÃº LÃ³gica. PodrÃ­as obtener el mismo efecto
-colocando muchos subcircuitos complicados en paralelo dentro de un peldaÃ±o,
-pero se lee mejor usando mÃºltiples peldaÃ±os.
+El programa comienza con un solo peldaño. Puede agregar más peldaños seleccionando
+Inserte Peldaño Antes / Después en el menú Lógica. Podrías obtener el mismo efecto
+colocando muchos subcircuitos complicados en paralelo dentro de un peldaño,
+pero se lee mejor usando múltiples peldaños.
 
-Una vez que haya escrito un programa, puede probarlo en simulaciÃ³n y luego
+Una vez que haya escrito un programa, puede probarlo en simulación y luego
 puede compilarlo en un archivo .HEX para el microcontrolador de destino.
 
 
 SIMULACION
 ==========
 
-Para ingresar al modo de simulaciÃ³n, elija Simular -> Modo de simulaciÃ³n o presione
-<Ctrl + M>. El programa se muestra de manera diferente en el modo de simulaciÃ³n. Ahi esta
+Para ingresar al modo de simulación, elija Simular -> Modo de simulación o presione
+<Ctrl + M>. El programa se muestra de manera diferente en el modo de simulación. Ahi esta
 Ya no es un cursor. Las instrucciones que se activan aparecen brillantes
 rojo; las instrucciones que no aparecen en gris. Presione la barra espaciadora para
 ejecute el PLC un ciclo. Para realizar un ciclo continuo en tiempo real, elija
-Simular -> Iniciar simulaciÃ³n en tiempo real o presionar <Ctrl + R>. La exhibiciÃ³n de
-El programa se actualizarÃ¡ en tiempo real a medida que cambie el estado del programa.
+Simular -> Iniciar simulación en tiempo real o presionar <Ctrl + R>. La exhibición de
+El programa se actualizará en tiempo real a medida que cambie el estado del programa.
 
 Puede establecer el estado de las entradas al programa haciendo doble clic,
 en la lista en la parte inferior de la pantalla, o haciendo doble clic en una
-InstrucciÃ³n de contactos 'Xname' en el programa. Si cambia el estado de
-un pin de entrada, entonces ese cambio no se reflejarÃ¡ en cÃ³mo el programa
-se muestra hasta que el PLC realiza un ciclo; esto sucederÃ¡ automÃ¡ticamente si
-estÃ¡ ejecutando una simulaciÃ³n en tiempo real o cuando presiona la barra espaciadora.
+Instrucción de contactos 'Xname' en el programa. Si cambia el estado de
+un pin de entrada, entonces ese cambio no se reflejará en cómo el programa
+se muestra hasta que el PLC realiza un ciclo; esto sucederá automáticamente si
+está ejecutando una simulación en tiempo real o cuando presiona la barra espaciadora.
 
 
-COMPILAR CON EL CÃ“DIGO NATIVO
+COMPILAR CON EL CÓDIGO NATIVO
 =============================
 
-En Ãºltima instancia, el punto es generar un archivo .hex que pueda programar
-en su microcontrolador. Primero debe seleccionar el nÃºmero de pieza del
-microcontrolador, en el menÃº ConfiguraciÃ³n -> Microcontrolador. Entonces usted
+En última instancia, el punto es generar un archivo .hex que pueda programar
+en su microcontrolador. Primero debe seleccionar el número de pieza del
+microcontrolador, en el menú Configuración -> Microcontrolador. Entonces usted
 debe asignar un pin de E/S a cada objeto 'Xname' o 'Yname'. Haz esto 
 haciendo doble clic en el nombre del objeto en la lista en la parte inferior de la pantalla.
-AparecerÃ¡ un cuadro de diÃ¡logo donde podrÃ¡ elegir un pin no asignado de una lista.
+Aparecerá un cuadro de diálogo donde podrá elegir un pin no asignado de una lista.
 
-Luego debe elegir el tiempo de ciclo con el que correrÃ¡, y debe
-decirle al compilador a quÃ© velocidad de reloj estarÃ¡ funcionando el micro. Esto
-se configuran en el menÃº ConfiguraciÃ³n -> ParÃ¡metros MCU ... En general usted
-no deberÃ­a necesitar cambiar el tiempo del ciclo; 10 ms es un buen valor para la mayorÃ­a
-aplicaciones. Escriba la frecuencia del cristal que usarÃ¡
-con el microcontrolador (o el resonador de cerÃ¡mica, etc.) y haga clic en Aceptar.
+Luego debe elegir el tiempo de ciclo con el que correrá, y debe
+decirle al compilador a qué velocidad de reloj estará funcionando el micro. Esto
+se configuran en el menú Configuración -> Parámetros MCU ... En general usted
+no debería necesitar cambiar el tiempo del ciclo; 10 ms es un buen valor para la mayoría
+aplicaciones. Escriba la frecuencia del cristal que usará
+con el microcontrolador (o el resonador de cerámica, etc.) y haga clic en Aceptar.
 
-Ahora puede generar cÃ³digo desde su programa. Elija Compilar -> Compilar,
-o Compilar -> Compilar como ... si anteriormente compilÃ³ este programa
+Ahora puede generar código desde su programa. Elija Compilar -> Compilar,
+o Compilar -> Compilar como ... si anteriormente compiló este programa
 y desea especificar un nombre de archivo de salida diferente. Si no hay
-errores, entonces LDmicro generarÃ¡ un archivo Intel IHEX listo para
-programaciÃ³n en tu chip. Avertencia:si lla fue copilado y lo vuelve a copilar tenga en cuenta que 
+errores, entonces LDmicro generará un archivo Intel IHEX listo para
+programación en tu chip. Avertencia:si lla fue copilado y lo vuelve a copilar tenga en cuenta que 
 suscribira el programa antiguo .hex, para que no suceda es guardar como y cambiar el nombre.
 
-Use cualquier software y hardware de programaciÃ³n que tenga para cargar el hexadecimal
-archivar en el microcontrolador. Recuerde configurar los bits de configuraciÃ³n
-(fusibles)! Para los procesadores PIC16, los bits de configuraciÃ³n se incluyen en
-archivo hexadecimal, y la mayorÃ­a del software de programaciÃ³n buscarÃ¡ allÃ­ automÃ¡ticamente.
-Para los procesadores AVR, debe establecer los bits de configuraciÃ³n a mano.
+Use cualquier software y hardware de programación que tenga para cargar el hexadecimal
+archivar en el microcontrolador. Recuerde configurar los bits de configuración
+(fusibles)! Para los procesadores PIC16, los bits de configuración se incluyen en
+archivo hexadecimal, y la mayoría del software de programación buscará allí automáticamente.
+Para los procesadores AVR, debe establecer los bits de configuración a mano.
 
 
 RESISTENCIAS PULL UP
@@ -388,7 +388,7 @@ Resistencias Pulll-up  + (Hacia ariba)
 https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
 
 Todos los pines de entrada intentan establecer registros desplegables por defecto.
-Desde la versiÃ³n 5.3.0.4 se agregÃ³ el menÃº ConfiguraciÃ³n-> Establecer resistencias de entrada pull-up.
+Desde la versión 5.3.0.4 se agregó el menú Configuración-> Establecer resistencias de entrada pull-up.
 
 Deshabilitar resistencias pull up (Obsoleto pero posible)
 https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
@@ -400,132 +400,132 @@ https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
 REFERENCIA DE INSTRUCCIONES
 ===========================
 
-    TerminologÃ­a:
-Â Â Â Â  "Nivel sensible" = salida (elemento) controlado por el nivel de la entrada.
-Â Â Â Â  "Edge accionado" = la salida cambia solo en el momento
-Â Â Â Â  cuando la entrada cambia de valor a la otra. Puede ser positivo
-Â Â Â Â  activado por flanco (0 a 1), o activado por flanco negativo (1 a 0).
-Â Â Â Â  La mayorÃ­a de los elementos de LDmicro son "sensibles al nivel", algunos elementos son
-Â Â Â Â  "disparado por borde positivo".
+    Terminología:
+     "Nivel sensible" = salida (elemento) controlado por el nivel de la entrada.
+     "Edge accionado" = la salida cambia solo en el momento
+     cuando la entrada cambia de valor a la otra. Puede ser positivo
+     activado por flanco (0 a 1), o activado por flanco negativo (1 a 0).
+     La mayoría de los elementos de LDmicro son "sensibles al nivel", algunos elementos son
+     "disparado por borde positivo".
 
 > CONTACTO, NORMALMENTE ABIERTO    Xname           Rname          Yname
                                 ----] [----     ----] [----    ----] [----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es falsa, entonces la salida
-Â Â Â Â  La seÃ±al es falsa. Si la seÃ±al que entra en la instrucciÃ³n es verdadera,
-Â Â Â Â  entonces la seÃ±al de salida es verdadera si y solo si el pin de entrada dado,
-Â Â Â Â  pin de salida, o el relÃ© interno es verdadero, de lo contrario es falso. Esta
-Â Â Â Â  instrucciÃ³n puede examinar el estado de un pin de entrada, un pin de salida,
-Â Â Â Â  o un relÃ© interno.
+    Si la señal que entra en la instrucción es falsa, entonces la salida
+     La señal es falsa. Si la señal que entra en la instrucción es verdadera,
+     entonces la señal de salida es verdadera si y solo si el pin de entrada dado,
+     pin de salida, o el relé interno es verdadero, de lo contrario es falso. Esta
+     instrucción puede examinar el estado de un pin de entrada, un pin de salida,
+     o un relé interno.
 
 
 > CONTACTO, NORMALMENTE CERRADO   Xname           Rname          Yname
                                ----]/[----     ----]/[----    ----]/[----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es falsa, entonces la salida
-Â Â Â Â  La seÃ±al es falsa. Si la seÃ±al que entra en la instrucciÃ³n es verdadera,
-Â Â Â Â  entonces la seÃ±al de salida es verdadera si y solo si el pin de entrada dado,
-Â Â Â Â  pin de salida, o el relÃ© interno es falso, de lo contrario es falso. Esta
-Â Â Â Â  la instrucciÃ³n puede examinar el estado de un pin de entrada, un pin de salida,
-Â Â Â Â  o un relÃ© interno. Esto es lo contrario de un contacto normalmente abierto.
+    Si la señal que entra en la instrucción es falsa, entonces la salida
+     La señal es falsa. Si la señal que entra en la instrucción es verdadera,
+     entonces la señal de salida es verdadera si y solo si el pin de entrada dado,
+     pin de salida, o el relé interno es falso, de lo contrario es falso. Esta
+     la instrucción puede examinar el estado de un pin de entrada, un pin de salida,
+     o un relé interno. Esto es lo contrario de un contacto normalmente abierto.
 
-    CÃ“MO: Las operaciones lÃ³gicas AND, OR, XOR en las entradas de CONTACT
+    CÓMO: Las operaciones lógicas AND, OR, XOR en las entradas de CONTACT
     Ver https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-logic-operations-on-CONTACTs-inputs
 
 > BOBINA NORMAL (Abierta)       Rname           Yname
                              ----( )----     ----( )----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es falsa, entonces el
-Â Â Â Â  relÃ© interno o pin de salida se borra falso. Si la seÃ±al va
-Â Â Â Â  en esta instrucciÃ³n es verdadera, entonces el relÃ© interno o la salida dada
-Â Â Â Â  el pin se establece como verdadero. No tiene sentido asignar una variable de entrada a un
-Â Â Â Â  bobina. Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
-Â Â Â Â  Nivel sensible.
+    Si la señal que entra en la instrucción es falsa, entonces el
+     relé interno o pin de salida se borra falso. Si la señal va
+     en esta instrucción es verdadera, entonces el relé interno o la salida dada
+     el pin se establece como verdadero. No tiene sentido asignar una variable de entrada a un
+     bobina. Esta instrucción debe ser la instrucción más a la derecha en su peldaño.
+     Nivel sensible.
 
 
 > BOBINA NEGADA (Cerrada)       Rname           Yname
                              ----(/)----     ----(/)----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es verdadera, entonces el
-Â Â Â Â  relÃ© interno o pin de salida se borra falso. Si la seÃ±al va
-Â Â Â Â  en esta instrucciÃ³n es falsa, entonces el relÃ© interno o
-Â Â Â Â  el pin de salida se establece como verdadero No tiene sentido asignar una entrada
-Â Â Â Â  variable a una bobina. Esto es lo contrario de una bobina normal. Esta
-Â Â Â Â  la instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s derecha en su peldaÃ±o.
-Â Â Â Â  Nivel sensible.
+    Si la señal que entra en la instrucción es verdadera, entonces el
+     relé interno o pin de salida se borra falso. Si la señal va
+     en esta instrucción es falsa, entonces el relé interno o
+     el pin de salida se establece como verdadero No tiene sentido asignar una entrada
+     variable a una bobina. Esto es lo contrario de una bobina normal. Esta
+     la instrucción debe ser la instrucción más derecha en su peldaño.
+     Nivel sensible.
 
 
 > BOBINA, SIEMPRE ACTIVA         Rname           Yname
                               ----(S)----     ----(S)----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es verdadera, entonces 
-Â Â Â Â  El relÃ© interno o el pin de salida se establece como verdadero. De lo contrario, el interno
-Â Â Â Â  el estado del pin de salida o relÃ© no cambia. Esta instrucciÃ³n solo puede
-Â Â Â Â  cambia el estado de una bobina de falso a verdadero, por lo que normalmente es
-Â Â Â Â  usado en combinaciÃ³n con una bobina de solo reinicio --(R)--. Esta instrucciÃ³n debe
-Â Â Â Â  ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
-Â Â Â Â  Simplemente puede presentar como un disparador con la entrada sensible al nivel SET.
+    Si la señal que entra en la instrucción es verdadera, entonces 
+     El relé interno o el pin de salida se establece como verdadero. De lo contrario, el interno
+     el estado del pin de salida o relé no cambia. Esta instrucción solo puede
+     cambia el estado de una bobina de falso a verdadero, por lo que normalmente es
+     usado en combinación con una bobina de solo reinicio --(R)--. Esta instrucción debe
+     ser la instrucción más a la derecha en su peldaño.
+     Simplemente puede presentar como un disparador con la entrada sensible al nivel SET.
 
 
 > BOBINA, SOLO RESET            Rname           Yname
                              ----(R)----     ----(R)----
 
-    Si la seÃ±al que entra en la instrucciÃ³n es verdadera, entonces el
-Â Â Â Â  relÃ© interno o pin de salida se borra falso. De lo contrario el
-Â Â Â Â  el estado interno del pin de salida o el relÃ© no cambia. Esta instrucciÃ³n
-Â Â Â Â  solo puede cambiar el estado de una bobina de verdadero a falso,
-Â Â Â Â  por lo tanto, se usa tÃ­picamente en combinaciÃ³n con una bobina de solo ajuste. Esta
-Â Â Â Â  la instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
-Â Â Â Â  Simplemente puede presentar como un disparador con la entrada sensible al nivel RESET.
+    Si la señal que entra en la instrucción es verdadera, entonces el
+     relé interno o pin de salida se borra falso. De lo contrario el
+     el estado interno del pin de salida o el relé no cambia. Esta instrucción
+     solo puede cambiar el estado de una bobina de verdadero a falso,
+     por lo tanto, se usa típicamente en combinación con una bobina de solo ajuste. Esta
+     la instrucción debe ser la instrucción más a la derecha en su peldaño.
+     Simplemente puede presentar como un disparador con la entrada sensible al nivel RESET.
 
 
 > BOBINA, DISPARADOR T          Rname           Yname
                              ----(T)----     ----(T)----
 
     Un disparador en T de la bobina es un flip-flop activado por el borde (alternar, volcar, voltear).
-Â Â Â Â  Un flip-flop de bobina cada borde ascendente de la condiciÃ³n de entrada (es decir
-Â Â Â Â  cuÃ¡l es la condiciÃ³n de entrada de falso a verdadero).
-Â Â Â Â  Si se detecta un borde ascendente, si el estado de la bobina es falso, se establece como verdadero.
-Â Â Â Â  Si se detecta el siguiente flanco ascendente, si el estado de la bobina es verdadero, se establece en falso.
-Â Â Â Â  Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
-Â Â Â Â  Simplemente puede presentar como un disparador T con el positivo
-Â Â Â Â  entrada activada por el borde.
+     Un flip-flop de bobina cada borde ascendente de la condición de entrada (es decir
+     cuál es la condición de entrada de falso a verdadero).
+     Si se detecta un borde ascendente, si el estado de la bobina es falso, se establece como verdadero.
+     Si se detecta el siguiente flanco ascendente, si el estado de la bobina es verdadero, se establece en falso.
+     Esta instrucción debe ser la instrucción más a la derecha en su peldaño.
+     Simplemente puede presentar como un disparador T con el positivo
+     entrada activada por el borde.
 
 Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
-Â Â Â Â  representado como un microchip con mÃºltiples entradas y una salida.
-Â Â Â Â  La entrada normal e invertida transfiere directamente el estado de entrada (normal o
-Â Â Â Â  invertido) a la salida cada vez en cada ciclo del PLC.
-Â Â Â Â  Las entradas R, S, T bloquean (bloquean) el estado de salida.
-Â Â Â Â  La entrada T es activada por flanco positivo. Las entradas R, S son sensibles al nivel.
-Â Â Â Â  Si antes de R, S inserte el "OSR: ONE-SHOT RISING" = franco alto o
-Â Â Â Â  "OSF: ONE-SHOT FALLING" = Franco bajo obtienes un elemento "borde positivo activado".
-Â Â Â Â  Si usa solo las entradas R y S, obtiene el disparador RS clÃ¡sico.
-Â Â Â Â  Si agrega la entrada T, obtendrÃ¡ el "RST-trigger" . Puede haber varias entradas R..R,
-Â Â Â Â  o varias entradas S..S. Puede usar cualquier combinaciÃ³n de entradas para un 'YName'
-Â Â Â Â  o bobina 'RName'.
+     representado como un microchip con múltiples entradas y una salida.
+     La entrada normal e invertida transfiere directamente el estado de entrada (normal o
+     invertido) a la salida cada vez en cada ciclo del PLC.
+     Las entradas R, S, T bloquean (bloquean) el estado de salida.
+     La entrada T es activada por flanco positivo. Las entradas R, S son sensibles al nivel.
+     Si antes de R, S inserte el "OSR: ONE-SHOT RISING" = franco alto o
+     "OSF: ONE-SHOT FALLING" = Franco bajo obtienes un elemento "borde positivo activado".
+     Si usa solo las entradas R y S, obtiene el disparador RS clásico.
+     Si agrega la entrada T, obtendrá el "RST-trigger" . Puede haber varias entradas R..R,
+     o varias entradas S..S. Puede usar cualquier combinación de entradas para un 'YName'
+     o bobina 'RName'.
     https://github.com/LDmicro/LDmicro/wiki/COIL
 
 
 > RETARDO DE ENCENDIDO (tiempo en espera)      Tdon
                                           -[TON 1.000 s]-
 
-    Cuando la seÃ±al que entra en la instrucciÃ³n pasa de falso a verdadero,
-Â Â Â Â  la seÃ±al de salida permanece falsa durante 1.000 s antes de volverse verdadera. Cuando
-Â Â Â Â  la seÃ±al que entra en la instrucciÃ³n va de verdadero a falso, la salida
-Â Â Â Â  la seÃ±al se vuelve falsa de inmediato. El temporizador se reinicia cada vez que la entrada
-Â Â Â Â  se vuelve falso; la entrada debe permanecer verdadera durante 1000 milisegundos consecutivos
-Â Â Â Â  antes de que la salida se haga realidad. El retraso es configurable.
+    Cuando la señal que entra en la instrucción pasa de falso a verdadero,
+     la señal de salida permanece falsa durante 1.000 s antes de volverse verdadera. Cuando
+     la señal que entra en la instrucción va de verdadero a falso, la salida
+     la señal se vuelve falsa de inmediato. El temporizador se reinicia cada vez que la entrada
+     se vuelve falso; la entrada debe permanecer verdadera durante 1000 milisegundos consecutivos
+     antes de que la salida se haga realidad. El retraso es configurable.
 
-    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploraciÃ³n.
-Â Â Â Â  La instrucciÃ³n TON da salida a true cuando la variable del contador es mayor
-Â Â Â Â  que o igual al retraso dado. Es posible manipular el
-Â Â Â Â  Contador variable en otro lugar, por ejemplo con una instrucciÃ³n MOV.
+    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploración.
+     La instrucción TON da salida a true cuando la variable del contador es mayor
+     que o igual al retraso dado. Es posible manipular el
+     Contador variable en otro lugar, por ejemplo con una instrucción MOV.
 
 
               Nivel
               Logica
-                   ^  La duraciÃ³n del pulso de entrada.
-                   |  debe ser mÃ¡s largo que 1s
+                   ^  La duración del pulso de entrada.
+                   |  debe ser más largo que 1s
            TON     |     _________
            Entrada | ___/         \_______
                    |    |         |
@@ -542,24 +542,24 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > RETARDO DE APAGADO (tiempo en encendido)        Tdoff
                                             -[TOF 1.000 s]-
 
-    Cuando la seÃ±al que entra en la instrucciÃ³n pasa de verdadero a falso,
-Â Â Â Â  la seÃ±al de salida permanece verdadera por 1,000 s antes de volverse falsa. Cuando
-Â Â Â Â  la seÃ±al que entra en la instrucciÃ³n va de falso a verdadero,
-Â Â Â Â  la seÃ±al de salida se cumple de inmediato. El temporizador se reinicia cada
-Â Â Â Â  tiempo en que la entrada se vuelve falsa; la entrada debe permanecer falsa por 1000
-Â Â Â Â  milisegundos consecutivos antes de que la salida se vuelva falsa. El retraso
-Â Â Â Â  Es configurable.
+    Cuando la señal que entra en la instrucción pasa de verdadero a falso,
+     la señal de salida permanece verdadera por 1,000 s antes de volverse falsa. Cuando
+     la señal que entra en la instrucción va de falso a verdadero,
+     la señal de salida se cumple de inmediato. El temporizador se reinicia cada
+     tiempo en que la entrada se vuelve falsa; la entrada debe permanecer falsa por 1000
+     milisegundos consecutivos antes de que la salida se vuelva falsa. El retraso
+     Es configurable.
 
-    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploraciÃ³n. los
-Â Â Â Â  La instrucciÃ³n TON da salida a true cuando la variable del contador es mayor
-Â Â Â Â  que o igual al retraso dado. Es posible manipular el
-Â Â Â Â  Contador variable en otro lugar, por ejemplo con una instrucciÃ³n MOV.
+    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploración. los
+     La instrucción TON da salida a true cuando la variable del contador es mayor
+     que o igual al retraso dado. Es posible manipular el
+     Contador variable en otro lugar, por ejemplo con una instrucción MOV.
 
 
               Nivel
               Logico
-                   ^  La duraciÃ³n del pulso de entrada debe ser
-                   |     mÃ¡s largo que el ciclo del PLC
+                   ^  La duración del pulso de entrada debe ser
+                   |     más largo que el ciclo del PLC
            TOF     |        _
            Entrada | ______/ \_________
                    |       | |
@@ -576,16 +576,16 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > TEMPORIZADOR ALTO              Thi
                            -[THI 1.000 s]-
 
-    Cuando la seÃ±al que entra en la instrucciÃ³n pasa de falso a verdadero,
-Â Â Â Â  La seÃ±al de salida es verdadera durante 1.000 s. El retraso es configurable.
-Â Â Â Â  La seÃ±al de salida se restablece despuÃ©s de 1.000 s, el contador interno del temporizador
-Â Â Â Â  se restablece despuÃ©s de 1,000 sy si la entrada es falsa.
+    Cuando la señal que entra en la instrucción pasa de falso a verdadero,
+     La señal de salida es verdadera durante 1.000 s. El retraso es configurable.
+     La señal de salida se restablece después de 1.000 s, el contador interno del temporizador
+     se restablece después de 1,000 sy si la entrada es falsa.
 
 
                Nivel
               Logico
-                   ^  La duraciÃ³n del pulso de entrada debe ser
-                   |      El mÃ¡s largo que el ciclo del PLC
+                   ^  La duración del pulso de entrada debe ser
+                   |      El más largo que el ciclo del PLC
            THI     |     _           ________
            Entrada | ___/ \_________/        \_______
                    |    |           |
@@ -602,16 +602,16 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > TEMPORIZADOR BAJO             Tlo
                           -o[TLO 1.000 s]-
 
-    Cuando la seÃ±al que entra en la instrucciÃ³n pasa de verdadero a falso,
-Â Â Â Â  la seÃ±al de salida es falsa durante 1.000 s. El retraso es configurable.
-Â Â Â Â  La seÃ±al de salida se establece como verdadera despuÃ©s de 1.000 s, el contador interno del temporizador
-Â Â Â Â  se restablece despuÃ©s de 1,000 sy si la entrada es verdadera.
+    Cuando la señal que entra en la instrucción pasa de verdadero a falso,
+     la señal de salida es falsa durante 1.000 s. El retraso es configurable.
+     La señal de salida se establece como verdadera después de 1.000 s, el contador interno del temporizador
+     se restablece después de 1,000 sy si la entrada es verdadera.
 
 
               Nivel
               Logico
-                   ^  La duraciÃ³n del pulso de entrada debe ser
-                   |     mÃ¡s largo que el ciclo del PLC
+                   ^  La duración del pulso de entrada debe ser
+                   |     más largo que el ciclo del PLC
            TLO     | ___   _________          _______
            Entrada |    \_/         \________/
                    |    |           |
@@ -630,25 +630,25 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > TEMPORIZADOR RETENTIVO        Trto
                            -[RTO 1.000 s]-
 
-    Esta instrucciÃ³n realiza un seguimiento de cuÃ¡nto tiempo su entrada ha sido verdadera (HI=Alto).
-Â Â Â Â  Si su entrada ha sido verdadera durante al menos 1,000 s, entonces la salida es
-Â Â Â Â  cierto. De lo contrario, la salida es falsa. La entrada no necesita haber sido
-Â Â Â Â  verdadero por 1000 milisegundos consecutivos; si la entrada se cumple
-Â Â Â Â  por 0.6 s, luego falso por 2.0 s, y luego verdadero por 0.4 s, luego el
-Â Â Â Â  La salida se harÃ¡ realidad. DespuÃ©s de que la salida se vuelva verdadera, seguirÃ¡ siendo verdadera
-Â Â Â Â  incluso despuÃ©s de que la entrada sea falsa, siempre que la entrada haya sido verdadera
-Â Â Â Â  por mÃ¡s de 1.000 s. Por lo tanto, este temporizador debe restablecerse manualmente,
-Â Â Â Â  usando la instrucciÃ³n de reinicio.
+    Esta instrucción realiza un seguimiento de cuánto tiempo su entrada ha sido verdadera (HI=Alto).
+     Si su entrada ha sido verdadera durante al menos 1,000 s, entonces la salida es
+     cierto. De lo contrario, la salida es falsa. La entrada no necesita haber sido
+     verdadero por 1000 milisegundos consecutivos; si la entrada se cumple
+     por 0.6 s, luego falso por 2.0 s, y luego verdadero por 0.4 s, luego el
+     La salida se hará realidad. Después de que la salida se vuelva verdadera, seguirá siendo verdadera
+     incluso después de que la entrada sea falsa, siempre que la entrada haya sido verdadera
+     por más de 1.000 s. Por lo tanto, este temporizador debe restablecerse manualmente,
+     usando la instrucción de reinicio.
 
-    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploraciÃ³n.
-Â Â Â Â  La instrucciÃ³n TON da salida a true cuando la variable del contador es mayor
-Â Â Â Â  que o igual al retraso dado. Es posible manipular el
-Â Â Â Â  Contador variable en otro lugar, por ejemplo con una instrucciÃ³n MOV.
+    La variable 'Tname' cuenta desde cero en unidades de tiempos de exploración.
+     La instrucción TON da salida a true cuando la variable del contador es mayor
+     que o igual al retraso dado. Es posible manipular el
+     Contador variable en otro lugar, por ejemplo con una instrucción MOV.
 
 
               Nivel
               Logico
-                   ^  La duraciÃ³n total de los pulsos de entrada (Alta)es mÃ¡s de 1 s
+                   ^  La duración total de los pulsos de entrada (Alta)es más de 1 s
                    |  t1+t2+..+tn >= 1s
                    |
            RTO     |     __     _    _________
@@ -668,17 +668,17 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                              -o[RTL 1.000 s]-
 
     RTL funciona como RTO, pero captura entradas de bajo nivel.
-Â Â Â Â  Esta instrucciÃ³n realiza un seguimiento de cuÃ¡nto tiempo, su entrada ha sido falsa (BAJA).
-Â Â Â Â  Si su entrada ha sido falsa durante al menos 1,000 s, entonces la salida es
-Â Â Â Â  cierto. De lo contrario, la salida es falsa.
-Â Â Â Â  DespuÃ©s de que la salida sea verdadera, seguirÃ¡ siendo verdadera incluso despuÃ©s de la entrada
-Â Â Â Â  se hace realidad Por lo tanto, este temporizador debe restablecerse manualmente,
-Â Â Â Â  usando la instrucciÃ³n de reinicio.
+     Esta instrucción realiza un seguimiento de cuánto tiempo, su entrada ha sido falsa (BAJA).
+     Si su entrada ha sido falsa durante al menos 1,000 s, entonces la salida es
+     cierto. De lo contrario, la salida es falsa.
+     Después de que la salida sea verdadera, seguirá siendo verdadera incluso después de la entrada
+     se hace realidad Por lo tanto, este temporizador debe restablecerse manualmente,
+     usando la instrucción de reinicio.
 
 
               Nivel
               Logico
-                   ^  La duraciÃ³n total de la entrada BAJA es mÃ¡s de 1 s
+                   ^  La duración total de la entrada BAJA es más de 1 s
                    |  t1+t2+..+tn >= 1s
                    |
            RTL     | ___    ___   __           ________
@@ -694,19 +694,19 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                    |
 
 
-> CYCLIC TIMER (TEMPORIZADOR CÃCLICO)    Tmeander
+> CYCLIC TIMER (TEMPORIZADOR CÍCLICO)    Tmeander
                                       -[TCY 500 ms]-
 
-    Si la seÃ±al de entrada es verdadera, esta instrucciÃ³n produce un meandro con
-Â Â Â Â  perÃ­odo (500ms + 500ms) = 1s y frecuencia 1 Hz. Si la seÃ±al entra
-Â Â Â Â  la instrucciÃ³n es falsa, entonces la seÃ±al de salida es falsa.
+    Si la señal de entrada es verdadera, esta instrucción produce un meandro con
+     período (500ms + 500ms) = 1s y frecuencia 1 Hz. Si la señal entra
+     la instrucción es falsa, entonces la señal de salida es falsa.
 
    Si el valor de Tmeander = tiempo de ciclo del PLC, el TCY es igual a OSC.
 
 
               Nivel
               Logico
-                   ^  La duraciÃ³n del pulso de entrada es superior a 1 s.
+                   ^  La duración del pulso de entrada es superior a 1 s.
            TCY     |     ______________________
            Entrada | ___/                      \_______
                    |    |                      |
@@ -722,11 +722,11 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > TON, TOF, THI, TLO, RTO, RTL, TCY timers      Ton
                                            -[TON valor]-
 
-    Actualizado en la versiÃ³n 4.4.1.0
-Â Â Â Â  Puede usar una variable general como retraso del temporizador.
-Â Â Â Â  Debe calcular el valor correcto (correcto) de la variable de acuerdo con
-Â Â Â Â  El tiempo de ciclo del PLC.
-Â Â Â Â  Retardo del temporizador (ms) = Tplc (ms) * Valor de retardo
+    Actualizado en la versión 4.4.1.0
+     Puede usar una variable general como retraso del temporizador.
+     Debe calcular el valor correcto (correcto) de la variable de acuerdo con
+     El tiempo de ciclo del PLC.
+     Retardo del temporizador (ms) = Tplc (ms) * Valor de retardo
    ||                                                       ||
    ||                                             Adc       ||
    ||-----------------------------------------{READ ADC}----||
@@ -740,77 +740,77 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > Conversor de TIEMPO a CONTADOR       Tconst
                                    -[T2CNT 10 ms]-
 
-    La instrucciÃ³n 'Convertidor de TIEMPO a CONTADOR' obtiene el tiempo 
+    La instrucción 'Convertidor de TIEMPO a CONTADOR' obtiene el tiempo 
      constante en ms, lo convierte a los temporizadores (TON, TOF, ...) - 
-     valor especÃ­fico y lo guarda en la variable Const para usarlo en contadores mÃ¡s adelante.
+     valor específico y lo guarda en la variable Const para usarlo en contadores más adelante.
      Ver https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
 
 
 > RESET (Reinico)                Trto             Citems
                              ----{RES}----     ----{RES}----
 
-    Esta instrucciÃ³n restablece un temporizador o un contador. Los temporizadores TON y TOF.
-Â Â Â Â  se restablece automÃ¡ticamente cuando su entrada es falsa o verdadera, por lo que RES
-Â Â Â Â  No es necesario para estos temporizadores, pero es posible. Temporizadores RTO y
-Â Â Â Â  Los contadores CTU / CTD no se reinician automÃ¡ticamente, por lo que deben reiniciarse
-Â Â Â Â  a mano usando una instrucciÃ³n RES. Cuando la entrada es verdadera, el contador o
-Â Â Â Â  el temporizador se reinicia; cuando la entrada es falsa, no se toman medidas. Esta
-Â Â Â Â  la instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s correcta en su peldaÃ±o.
-Â Â Â Â  Â¡Nota! RES restablece solo el contador numÃ©rico dentro de RTO, CTU / CTD,
-Â Â Â Â  no sus salidas!
+    Esta instrucción restablece un temporizador o un contador. Los temporizadores TON y TOF.
+     se restablece automáticamente cuando su entrada es falsa o verdadera, por lo que RES
+     No es necesario para estos temporizadores, pero es posible. Temporizadores RTO y
+     Los contadores CTU / CTD no se reinician automáticamente, por lo que deben reiniciarse
+     a mano usando una instrucción RES. Cuando la entrada es verdadera, el contador o
+     el temporizador se reinicia; cuando la entrada es falsa, no se toman medidas. Esta
+     la instrucción debe ser la instrucción más correcta en su peldaño.
+     ¡Nota! RES restablece solo el contador numérico dentro de RTO, CTU / CTD,
+     no sus salidas!
 
 
 > RESET (Reinicio)                  PWM
                                ----{RES}----
 
-    Esta instrucciÃ³n deshabilita la salida PWM y la establece en nivel bajo.
-Â Â Â Â  TambiÃ©n puede establecer otra frecuencia base PWM mediante SET PWM DUTY CYCLE
-Â Â Â Â  despuÃ©s de la activaciÃ³n, RESET PWM.
+    Esta instrucción deshabilita la salida PWM y la establece en nivel bajo.
+     También puede establecer otra frecuencia base PWM mediante SET PWM DUTY CYCLE
+     después de la activación, RESET PWM.
 
-Â Â Â Â  Ver SET PWM DUTY CYCLE a continuaciÃ³n.
+     Ver SET PWM DUTY CYCLE a continuación.
 
 
 > DELAY (RETRASO)               1 us
                            ---[DELAY]---
 
-    La instrucciÃ³n DELAY causa un retraso. La instrucciÃ³n DELAY no
-Â Â Â Â  use cualquier temporizador / contador. Las instrucciones NOP y JMP (DirecciÃ³n actual + 1)
-Â Â Â Â  se usan para hacer el retraso.
+    La instrucción DELAY causa un retraso. La instrucción DELAY no
+     use cualquier temporizador / contador. Las instrucciones NOP y JMP (Dirección actual + 1)
+     se usan para hacer el retraso.
     See https://github.com/LDmicro/LDmicro/wiki/DELAY-us
 
 
 > Conversor de TIEMPO a RETRASO       Tconst
                                  -[T2DELAY 10 us]-
 
-    La instrucciÃ³n 'Convertidor de TIEMPO a RETARDO' obtiene el tiempo constante en 'nosotros',
-Â Â Â Â  lo convierte al valor especÃ­fico de DELAY y lo guarda en la variable Tconst
-Â Â Â Â  para usar como parÃ¡metro de la instrucciÃ³n DELAY mÃ¡s tarde.
+    La instrucción 'Convertidor de TIEMPO a RETARDO' obtiene el tiempo constante en 'nosotros',
+     lo convierte al valor específico de DELAY y lo guarda en la variable Tconst
+     para usar como parámetro de la instrucción DELAY más tarde.
 
 
 > ASCENDENTE DE UN SOLO DISPARO (Franco)     _     _
                                         --[_/ OSR_/ \_]--
 
-    Esta instrucciÃ³n normalmente genera falso. Si la entrada de la instrucciÃ³n
-Â Â Â Â  es cierto durante este escaneo y fue falso durante el escaneo anterior
-Â Â Â Â  entonces la salida es verdadera. Por lo tanto, genera una exploraciÃ³n de pulso uno
-Â Â Â Â  de ancho en cada borde ascendente de su seÃ±al de entrada, es decir, univibrador. Esta
-Â Â Â Â  la instrucciÃ³n es Ãºtil si desea desencadenar eventos fuera del alza
-Â Â Â Â  borde de una seÃ±al.
+    Esta instrucción normalmente genera falso. Si la entrada de la instrucción
+     es cierto durante este escaneo y fue falso durante el escaneo anterior
+     entonces la salida es verdadera. Por lo tanto, genera una exploración de pulso uno
+     de ancho en cada borde ascendente de su señal de entrada, es decir, univibrador. Esta
+     la instrucción es útil si desea desencadenar eventos fuera del alza
+     borde de una señal.
 
 
-> DESCENDENTE CAÃDA DE UN DISPARO  Franco)   _       _
+> DESCENDENTE CAÍDA DE UN DISPARO  Franco)   _       _
                                           --[ \_OSF_/ \_]--
 
-    Esta instrucciÃ³n normalmente genera falso. Si la entrada de la instrucciÃ³n
-Â Â Â Â  es falso durante este escaneo y fue cierto durante el escaneo anterior
-Â Â Â Â  entonces la salida es verdadera. Por lo tanto, genera una exploraciÃ³n de pulso uno
-Â Â Â Â  ancho en cada borde descendente de su seÃ±al de entrada, es decir, univibrador. Esta
-Â Â Â Â  la instrucciÃ³n es Ãºtil si desea activar eventos de la caÃ­da
-Â Â Â Â  borde de una seÃ±al.
+    Esta instrucción normalmente genera falso. Si la entrada de la instrucción
+     es falso durante este escaneo y fue cierto durante el escaneo anterior
+     entonces la salida es verdadera. Por lo tanto, genera una exploración de pulso uno
+     ancho en cada borde descendente de su señal de entrada, es decir, univibrador. Esta
+     la instrucción es útil si desea activar eventos de la caída
+     borde de una señal.
 
 
                               Esto es la
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  seÃ±al de entrada
+                               señal de entrada
                               v v
                                 _     _
                            --[_/ OSR_/ \_]--
@@ -821,14 +821,14 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 
                                     ^   ^
                                     esto es la
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  seÃ±al de salida
+                                     señal de salida
 
 
 
 
                      Nivel
                      Logico
-                          ^  La duraciÃ³n del pulso de entrada es de cinco ciclos.
+                          ^  La duración del pulso de entrada es de cinco ciclos.
                   OSR, OSF|     _________
                   Entrada | ___/         \_______
                           |
@@ -864,18 +864,18 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > NIVEL BAJO DE UN DISPARO (Franco)      _     _   _
                                       --[ \_OSL \_/ ]--
 
-    Esta instrucciÃ³n normalmente emite ture. Si la entrada de la instrucciÃ³n es
-Â Â Â Â  falso durante este escaneo y fue cierto durante el escaneo anterior, entonces el
-Â Â Â Â  La salida es falsa. Por lo tanto, genera un pulso de bajo nivel de un escaneo de ancho
-Â Â Â Â  en cada borde descendente de su seÃ±al de entrada, es decir, univibrador. Esta
-Â Â Â Â  la instrucciÃ³n es Ãºtil si desea desencadenar eventos fuera del lÃ­mite descendente
-Â Â Â Â  de una seÃ±al
+    Esta instrucción normalmente emite ture. Si la entrada de la instrucción es
+     falso durante este escaneo y fue cierto durante el escaneo anterior, entonces el
+     La salida es falsa. Por lo tanto, genera un pulso de bajo nivel de un escaneo de ancho
+     en cada borde descendente de su señal de entrada, es decir, univibrador. Esta
+     la instrucción es útil si desea desencadenar eventos fuera del límite descendente
+     de una señal
 
 
 
                       Nivel
                      Logico
-                          ^  La duraciÃ³n del pulso de entrada es de cinco ciclos.
+                          ^  La duración del pulso de entrada es de cinco ciclos.
                   OSL     | ___           _______
                   Entrada |    \_________/
                           |
@@ -889,7 +889,7 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 
                      Nivel
                      Logico
-                          ^     Pulso de entrada de ciclo Ãºnico
+                          ^     Pulso de entrada de ciclo único
                   OSL     | ___   _______
                   Entrada |    \_/
                           |
@@ -909,7 +909,7 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 
                      Nivel
                      Logico
-                          ^  La duraciÃ³n del pulso de entrada es de siete ciclos.
+                          ^  La duración del pulso de entrada es de siete ciclos.
                   OSC     |     ____________
                  Entrada  | ___/            \_______
                           |
@@ -921,22 +921,22 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
        Tiempo de ciclo del PLC N+ 0 1 2 3 4 5 6 7 8
 
 
-    Si la seÃ±al de entrada es verdadera, esta instrucciÃ³n produce un meandro con
-Â Â Â Â  perÃ­odo (2 * tiempo de ciclo del PLC), es decir, multivibrador. Si la seÃ±al entra
-Â Â Â Â  la instrucciÃ³n es falsa, entonces la seÃ±al de salida es falsa.
+    Si la señal de entrada es verdadera, esta instrucción produce un meandro con
+     período (2 * tiempo de ciclo del PLC), es decir, multivibrador. Si la señal entra
+     la instrucción es falsa, entonces la señal de salida es falsa.
 
 
 > CIRCUITO CERRADO, CIRCUITO ABIERTO
                            ----+----+----      ----+     +----
 
-    La condiciÃ³n de salida de un cortocircuito es siempre igual a su
-Â Â Â Â  CondiciÃ³n de entrada. La condiciÃ³n de salida de un circuito abierto es siempre
-Â Â Â Â  falso. En su mayorÃ­a son Ãºtiles para depurar, el corto temporal
-Â Â Â Â  circuito o desconectar un circuito elÃ©ctrico.
+    La condición de salida de un cortocircuito es siempre igual a su
+     Condición de entrada. La condición de salida de un circuito abierto es siempre
+     falso. En su mayoría son útiles para depurar, el corto temporal
+     circuito o desconectar un circuito eléctrico.
 
-    Ver mÃ¡s https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+    Ver más https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
     Nota: tenga en cuenta.
-   || ; La demostraciÃ³n de efectos secundarios.                          ||
+   || ; La demostración de efectos secundarios.                          ||
    ||                                                          Y1        ||
    ||----------------------------------------------------------( )-------||
    || ; Y1 es 1.                                                         ||
@@ -944,65 +944,65 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||    abierto                                               Y1        ||
    ||----+      +----------------------------------------------( )-------||
    || ; El elemento COIL (BOBINA) siempre establece la salida de acuerdo ||
-Â Â  || ; con su entrada Y1 es 0 ahora.                                    ||
+   || ; con su entrada Y1 es 0 ahora.                                    ||
    ||                                                                    ||
    ||    Cerrado                                               Y1        ||
    ||----+----+------------------------------------------------( )-------||
    || ; Y1 vuelve a ser 1 otra vez                                       ||
 
 
-> RELÃ‰ DE CONTROL MAESTRO
+> RELÉ DE CONTROL MAESTRO
                            -{MASTER RLY}-
 
-    Por defecto, la condiciÃ³n de renglÃ³n de cada renglÃ³n es verdadera. Si un maestro
-Â Â Â Â  la instrucciÃ³n de relÃ© de control se ejecuta con una condiciÃ³n de renglÃ³n de
-Â Â Â Â  falso, entonces la condiciÃ³n de renglÃ³n para todos los renglones siguientes se convierte en
-Â Â Â Â  falso. Esto continuarÃ¡ hasta el prÃ³ximo relÃ© de control maestro
-Â Â Â Â  se alcanza la instrucciÃ³n (independientemente de la condiciÃ³n de renglÃ³n de ese
-Â Â Â Â  instrucciÃ³n). Por lo tanto, estas instrucciones deben usarse en pares:
-Â Â Â Â  uno para (tal vez condicionalmente) iniciar la secciÃ³n posiblemente deshabilitada,
-Â Â Â Â  y uno para terminarlo.
-Â Â Â Â  Ver https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
+    Por defecto, la condición de renglón de cada renglón es verdadera. Si un maestro
+     la instrucción de relé de control se ejecuta con una condición de renglón de
+     falso, entonces la condición de renglón para todos los renglones siguientes se convierte en
+     falso. Esto continuará hasta el próximo relé de control maestro
+     se alcanza la instrucción (independientemente de la condición de renglón de ese
+     instrucción). Por lo tanto, estas instrucciones deben usarse en pares:
+     uno para (tal vez condicionalmente) iniciar la sección posiblemente deshabilitada,
+     y uno para terminarlo.
+     Ver https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
 
 
 > MOVE MOVER                {MOV destvar:=}      {MOV  Tret :=}
                            -{          123}-    -{      srcvar}-
 
-    Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino igual a la variable fuente dada o
-Â Â Â Â  constante. Cuando la entrada a esta instrucciÃ³n es falsa, nada
-Â Â Â Â  sucede Puede asignar a cualquier variable con la instrucciÃ³n de movimiento;
-Â Â Â Â  Esto incluye variables de estado de contador y contador, que pueden ser
-Â Â Â Â  distinguido por la principal 'T' o 'C'. Por ejemplo, una instrucciÃ³n
-Â Â Â Â  mover 0 a 'Tretentive' es equivalente a una instrucciÃ³n de reinicio (RES)
-Â Â Â Â  para ese temporizador Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha.
-Â Â Â Â  en su peldaÃ±o.
+    Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino igual a la variable fuente dada o
+     constante. Cuando la entrada a esta instrucción es falsa, nada
+     sucede Puede asignar a cualquier variable con la instrucción de movimiento;
+     Esto incluye variables de estado de contador y contador, que pueden ser
+     distinguido por la principal 'T' o 'C'. Por ejemplo, una instrucción
+     mover 0 a 'Tretentive' es equivalente a una instrucción de reinicio (RES)
+     para ese temporizador Esta instrucción debe ser la instrucción más a la derecha.
+     en su peldaño.
 
 
-> OPERACIÃ“N ARITMÃ‰TICA       {ADD  kay  :=}       {SUB  Ccnt :=}
+> OPERACIÓN ARITMÉTICA       {ADD  kay  :=}       {SUB  Ccnt :=}
                             -{ 'a' + 10   }-     -{ Ccnt - 10  }-
 
 >                            {MUL  dest :=}       {DIV    dv :=}
                             -{ var * -990 }-     -{ dv / -10000}-
 
-    Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino igual a la expresiÃ³n dada. Los operandos
-Â Â Â Â  pueden ser variables (incluidas las variables de temporizador y contador)
-Â Â Â Â  o constantes Estas instrucciones usan matemÃ¡tica firmada de 16 bits. Recuerda
-Â Â Â Â  que el resultado se evalÃºa cada ciclo cuando la condiciÃ³n de entrada
-Â Â Â Â  cierto. Si estÃ¡ aumentando o disminuyendo una variable (es decir, si
-Â Â Â Â  la variable de destino tambiÃ©n es uno de los operandos) entonces usted
-Â Â Â Â  probablemente no quiera eso; normalmente usarÃ­as un solo disparo para que
-Â Â Â Â  se evalÃºa solo en el borde ascendente o descendente de la entrada
-Â Â Â Â  condiciÃ³n. La divisiÃ³n se trunca; 7/3 = 2. Esta instrucciÃ³n debe ser
-Â Â Â Â  la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
+    Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino igual a la expresión dada. Los operandos
+     pueden ser variables (incluidas las variables de temporizador y contador)
+     o constantes Estas instrucciones usan matemática firmada de 16 bits. Recuerda
+     que el resultado se evalúa cada ciclo cuando la condición de entrada
+     cierto. Si está aumentando o disminuyendo una variable (es decir, si
+     la variable de destino también es uno de los operandos) entonces usted
+     probablemente no quiera eso; normalmente usarías un solo disparo para que
+     se evalúa solo en el borde ascendente o descendente de la entrada
+     condición. La división se trunca; 7/3 = 2. Esta instrucción debe ser
+     la instrucción más a la derecha en su peldaño.
 
 
 > MODULO                   {MOD     dest:=}
                           -{src     %    2}-
 
-    Resto de la divisiÃ³n 7% 3 = 1
-Â Â Â Â  Ver https://en.wikipedia.org/wiki/Modulo_operation
+    Resto de la división 7% 3 = 1
+     Ver https://en.wikipedia.org/wiki/Modulo_operation
 
 
 > NEGATIVO                 {NEG     dest:=}
@@ -1017,20 +1017,20 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 >                            {XOR  dest :=}       {NOT  dv :=  }
                             -{ var ^ 0xAA }-     -{ ~0b11001100}-
 
-    Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino igual a la expresiÃ³n dada. Los operandos
-Â Â Â Â  pueden ser variables (incluidas las variables de temporizador y contador)
-Â Â Â Â  o constantes Recuerde que el resultado se evalÃºa en cada ciclo.
-Â Â Â Â  cuando la condiciÃ³n de entrada es verdadera.
-Â Â Â Â  Por favor lee http://en.wikipedia.org/wiki/Bitwise_operation
+    Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino igual a la expresión dada. Los operandos
+     pueden ser variables (incluidas las variables de temporizador y contador)
+     o constantes Recuerde que el resultado se evalúa en cada ciclo.
+     cuando la condición de entrada es verdadera.
+     Por favor lee http://en.wikipedia.org/wiki/Bitwise_operation
 
 
 > INTERCAMBIAR  bit A bit    {      dest:=}
                             -{SWAP     src}-
 
-    Esta operaciÃ³n intercambia los nibbles y los bytes.
-Â Â Â Â  Ver https://en.wikipedia.org/wiki/Nibble
-    Cuando el tamaÃ±o de las variables es
+    Esta operación intercambia los nibbles y los bytes.
+     Ver https://en.wikipedia.org/wiki/Nibble
+    Cuando el tamaño de las variables es
     1 - luego, a nivel bit, intercambia los nibbles en un BYTE, es decir, 0x73 -> 0x37
 
                      MSB       bits       LSB
@@ -1077,7 +1077,7 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
              ...
           12 <->  8
 
-    4 - a continuaciÃ³n, intercambie los bytes 3 y 0 y los bytes 2 y 1 en un DWORD, es decir, 0x7755AA33 -> 0x33AA5577
+    4 - a continuación, intercambie los bytes 3 y 0 y los bytes 2 y 1 en un DWORD, es decir, 0x7755AA33 -> 0x33AA5577
 
         MSB                                          bits                                  LSB
         31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
@@ -1098,8 +1098,8 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > bit A bit OPUESTO          {      dest:=}
                             -{OPPOSITE src}-
 
-    Esta operaciÃ³n invierte la secuencia de bits al contrario.
-Â Â Â Â  El MSB se mueve al LSB, y el LSB se mueve al MSB y etc.
+    Esta operación invierte la secuencia de bits al contrario.
+     El MSB se mueve al LSB, y el LSB se mueve al MSB y etc.
 
                      MSB      bits       LSB
                       n n-1 n-2 ... 2  1  0
@@ -1110,18 +1110,18 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                       +-------------------+
 
 
-> CAMBIO ARITMÃ‰TICO: SHL, SHR.   {SHL  var1 :=}     {SHR   cnt :=}
+> CAMBIO ARITMÉTICO: SHL, SHR.   {SHL  var1 :=}     {SHR   cnt :=}
                                 -{var2 << 2   }-   -{  cnt >>  1 }-
 
     Ver https://en.wikipedia.org/wiki/Arithmetic_shift
 
-    SHL - desplazamiento aritmÃ©tico a la izquierda
+    SHL - desplazamiento aritmético a la izquierda
         MSB                    LSB
              MSB-1         1    0
     C <- x <- x <- .... <- x <- x <- 0
 
 
-    SHR - desplazamiento aritmÃ©tico a la derecha
+    SHR - desplazamiento aritmético a la derecha
         MSB                    LSB
              MSB-1         1    0
     /--> x -> x -> .... -> x -> x -> C
@@ -1129,21 +1129,21 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
      <--
 
 
-    Nota: MSB = bit mÃ¡s significativo, LSB = bit menos significativo
+    Nota: MSB = bit más significativo, LSB = bit menos significativo
 
 
-> CAMBIO LÃ“GICO A LA DERECHA SR0.  {SR0  dest :=}
+> CAMBIO LÓGICO A LA DERECHA SR0.  {SR0  dest :=}
                                   -{var  sr0  3 }-
 
     Ver https://en.wikipedia.org/wiki/Logical_shift
 
-    SR0 - desplazamiento lÃ³gico a la derecha
+    SR0 - desplazamiento lógico a la derecha
         MSB                    LSB
              MSB-1         1    0
     0 -> x -> x -> .... -> x -> x -> C
 
 
-    NOTA: El desplazamiento lÃ³gico a la izquierda es equivalente al desplazamiento aritmÃ©tico SHL a la izquierda.
+    NOTA: El desplazamiento lógico a la izquierda es equivalente al desplazamiento aritmético SHL a la izquierda.
 
 
 > CAMBIO CIRCULAR: ROL, ROR.     {ROL  dest :=}     {ROR    dv :=}
@@ -1151,7 +1151,7 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 
     Ver https://en.wikipedia.org/wiki/Circular_shift
 
-    ROL - desplazamiento circular (rotaciÃ³n bit a bit) a la izquierda
+    ROL - desplazamiento circular (rotación bit a bit) a la izquierda
         MSB                    LSB
              MSB-1         1    0
     C <- x <- x <- .... <- x <- x
@@ -1159,7 +1159,7 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
          \_________>____________/
 
 
-    ROR - desplazamiento circular (rotaciÃ³n bit a bit) derecha
+    ROR - desplazamiento circular (rotación bit a bit) derecha
         MSB                    LSB
              MSB-1         1    0
          x -> x -> .... -> x -> x -> C
@@ -1167,23 +1167,23 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
          \_________<____________/
 
   SHL, SHR, SR0, ROL, ROR:
-    Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino igual a la expresiÃ³n dada. Los operandos
-Â Â Â Â  pueden ser variables (incluidas las variables de temporizador y contador)
-Â Â Â Â  o constantes Recuerde que el resultado se evalÃºa en cada ciclo.
-Â Â Â Â  cuando la condiciÃ³n de entrada es verdadera.
+    Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino igual a la expresión dada. Los operandos
+     pueden ser variables (incluidas las variables de temporizador y contador)
+     o constantes Recuerde que el resultado se evalúa en cada ciclo.
+     cuando la condición de entrada es verdadera.
 
 
 > OPERACIONES CON UN BIT    {           var}       {           var}
                            -{SET Bit    bit}-     -{CLR Bit    bit}-
 
-    -{SET Bit var, bit}- En la variable 'var' establece el nÃºmero de bit 'bit'.
-    -{CLR Bit var, bit}- En la variable 'var', borre el nÃºmero de bit 'bit'.
+    -{SET Bit var, bit}- En la variable 'var' establece el número de bit 'bit'.
+    -{CLR Bit var, bit}- En la variable 'var', borre el número de bit 'bit'.
 
-    'Bit' significa nÃºmero de bit, no mÃ¡scara de bit. Por ejemplo,
-Â Â Â Â  configurar el bit nÃºmero 4 en la variable 'var'
+    'Bit' significa número de bit, no máscara de bit. Por ejemplo,
+     configurar el bit número 4 en la variable 'var'
                       v
-     Bit nÃºmero:  76543210
+     Bit número:  76543210
      'var'      :  xxx1xxxx
                       ^
     debe escribir    ^
@@ -1195,8 +1195,8 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
         -{   var | 0x10}-
 
 
-    Para borrar el bit nÃºmero 4 en la variable 'var'
-Â Â Â Â  debes escribir
+    Para borrar el bit número 4 en la variable 'var'
+     debes escribir
          {          var}               {             var}
         -{CLR Bit     4}-        not  -{CLR Bit     0x10}-
 
@@ -1205,12 +1205,12 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
         -{   var & 0xEF}-
 
     var debe ser una variable, no un valor literal.
-Â Â Â Â  El tamaÃ±o de var debe ser de 1 a 4 bytes.
-Â Â Â Â  El bit puede ser un nÃºmero literal o una variable.
-Â Â Â Â  el bit puede tener un valor de 0-7 si tamaÃ±o de (var) == 1 byte,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-15 si tamaÃ±o (var) == 2 bytes,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-23 si tamaÃ±o (var) == 3 bytes,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-31 si tamaÃ±o (var) == 4 bytes.
+     El tamaño de var debe ser de 1 a 4 bytes.
+     El bit puede ser un número literal o una variable.
+     el bit puede tener un valor de 0-7 si tamaño de (var) == 1 byte,
+                            0-15 si tamaño (var) == 2 bytes,
+                            0-23 si tamaño (var) == 3 bytes,
+                            0-31 si tamaño (var) == 4 bytes.
 
     Aprenda a usar SetBit (), ClearBit () para deshabilitar resistencias pull up
     vea https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
@@ -1222,74 +1222,74 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 >                       [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
-    Si la entrada a esta instrucciÃ³n es falsa, la salida es falsa. Si
-Â Â Â Â  la entrada es verdadera, entonces la salida es verdadera si y solo si
-Â Â Â Â  La condiciÃ³n es verdadera. Esta instrucciÃ³n se puede usar para comparar (igual,
-Â Â Â Â  es mayor que, es mayor o igual que, no es igual,
-Â Â Â Â  es menor que, es menor o igual que) una variable a una variable,
-Â Â Â Â  o para comparar una variable con una constante con signo de 16 bits.
+    Si la entrada a esta instrucción es falsa, la salida es falsa. Si
+     la entrada es verdadera, entonces la salida es verdadera si y solo si
+     La condición es verdadera. Esta instrucción se puede usar para comparar (igual,
+     es mayor que, es mayor o igual que, no es igual,
+     es menor que, es menor o igual que) una variable a una variable,
+     o para comparar una variable con una constante con signo de 16 bits.
 
 
 > ESTADO DE PRUEBA DE UN BIT   [             var]       [             var]
                               -[if Bit SET   bit]-     -[if Bit CLR   bit]-
 
-    Si la entrada a esta instrucciÃ³n es falsa, la salida es falsa. Si
-Â Â Â Â  la entrada es verdadera, entonces la salida es verdadera si y solo si
-Â Â Â Â  La condiciÃ³n es verdadera. Esta instrucciÃ³n se puede usar solo para verificar el estado
-Â Â Â Â  un bit de la variable
-Â Â Â Â  'Bit' significa nÃºmero de bit, no mÃ¡scara de bit. Vea arriba la operaciÃ³n del bit SET.
+    Si la entrada a esta instrucción es falsa, la salida es falsa. Si
+     la entrada es verdadera, entonces la salida es verdadera si y solo si
+     La condición es verdadera. Esta instrucción se puede usar solo para verificar el estado
+     un bit de la variable
+     'Bit' significa número de bit, no máscara de bit. Vea arriba la operación del bit SET.
 
-    La operaciÃ³n - {si Bit SET var, 0} - es una condiciÃ³n equivalente 'Si var es impar'.
-Â Â Â Â La operaciÃ³n - {si Bit CLR var, 0} - es una condiciÃ³n equivalente 'Si var es par'.
+    La operación - {si Bit SET var, 0} - es una condición equivalente 'Si var es impar'.
+    La operación - {si Bit CLR var, 0} - es una condición equivalente 'Si var es par'.
 
     var debe ser una variable, no un valor literal.
-Â Â Â Â  El tamaÃ±o de var debe ser de 1 a 4 bytes.
-Â Â Â Â  El bit puede ser un nÃºmero literal o una variable.
-Â Â Â Â  el bit puede tener un valor de 0-7 si tamaÃ±o de (var) == 1 byte,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-15 si tamaÃ±o de(var) == 2 bytes,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-23 si tamaÃ±o de(var) == 3 bytes,
-Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  0-31 si tamaÃ±o de(var) == 4 bytes.
+     El tamaño de var debe ser de 1 a 4 bytes.
+     El bit puede ser un número literal o una variable.
+     el bit puede tener un valor de 0-7 si tamaño de (var) == 1 byte,
+                            0-15 si tamaño de(var) == 2 bytes,
+                            0-23 si tamaño de(var) == 3 bytes,
+                            0-31 si tamaño de(var) == 4 bytes.
 
 
 > CONTADOR                     Cname          Cname
                            --[CTU >= 5]--  --[CTD > -5]--
 
-    Un contador aumenta (CTU, cuenta atrÃ¡s) o disminuye (CTD, cuenta
-Â Â Â Â  abajo) el recuento asociado en cada borde ascendente de la entrada de renglÃ³n
-Â Â Â Â  condiciÃ³n (es decir, la condiciÃ³n de entrada del renglÃ³n va de falso a
-Â Â Â Â  cierto). La condiciÃ³n de salida del contador es verdadera si el contador
-Â Â Â Â  variable CTU> = 5 (CTD> -5), y falso en caso contrario. los
-Â Â Â Â  la condiciÃ³n de salida del renglÃ³n puede ser verdadera incluso si la condiciÃ³n de entrada es
-Â Â Â Â  falso; solo depende de la variable del contador. Puedes tener CTU
-Â Â Â Â  y las instrucciones CTD con el mismo nombre, para incrementar y
-Â Â Â Â  disminuir el mismo contador. La instrucciÃ³n RES puede restablecer un contador,
-Â Â Â Â  o puede realizar operaciones de variables generales en la variable de conteo.
+    Un contador aumenta (CTU, cuenta atrás) o disminuye (CTD, cuenta
+     abajo) el recuento asociado en cada borde ascendente de la entrada de renglón
+     condición (es decir, la condición de entrada del renglón va de falso a
+     cierto). La condición de salida del contador es verdadera si el contador
+     variable CTU> = 5 (CTD> -5), y falso en caso contrario. los
+     la condición de salida del renglón puede ser verdadera incluso si la condición de entrada es
+     falso; solo depende de la variable del contador. Puedes tener CTU
+     y las instrucciones CTD con el mismo nombre, para incrementar y
+     disminuir el mismo contador. La instrucción RES puede restablecer un contador,
+     o puede realizar operaciones de variables generales en la variable de conteo.
 
 
 > CONTADOR CIRCULAR            Cname             Cname
                            --{CTC 0:7}--     --{CTR 7:0}--
 
     Un contador circular funciona como un contador CTU normal, excepto que
-Â Â Â Â  despuÃ©s de alcanzar su lÃ­mite superior, restablece su variable de contador
-Â Â Â Â  volver a 0. Por ejemplo, el contador que se muestra arriba contarÃ­a 0, 1,
-Â Â Â Â  2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, ... Esto es Ãºtil en
-Â Â Â Â  combinaciÃ³n con declaraciones condicionales en la variable 'Cname';
-Â Â Â Â  puedes usar esto como un secuenciador. Contadores CTC reloj en aumento
-Â Â Â Â  borde de la condiciÃ³n de condiciÃ³n de entrada de renglÃ³n.
-Â Â Â Â  Obsoleto: esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s correcta en su peldaÃ±o.
+     después de alcanzar su límite superior, restablece su variable de contador
+     volver a 0. Por ejemplo, el contador que se muestra arriba contaría 0, 1,
+     2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, ... Esto es útil en
+     combinación con declaraciones condicionales en la variable 'Cname';
+     puedes usar esto como un secuenciador. Contadores CTC reloj en aumento
+     borde de la condición de condición de entrada de renglón.
+     Obsoleto: esta instrucción debe ser la instrucción más correcta en su peldaño.
 
     CTR es contador circular reversible. igual CTC pero con decremento
-Â Â Â Â  contando por dentro. Por ejemplo, el contador que se muestra arriba contarÃ­a
-Â Â Â Â  7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, ...
+     contando por dentro. Por ejemplo, el contador que se muestra arriba contaría
+     7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, ...
 
-   Se agregÃ³ el valor 'Inicio' en los contadores CTU, CTD, CTC, CTR.
-Â Â Â Â  La CTU, el contador CTC comienzan desde 'Inicio' y cuentan hasta el valor 'MÃ¡x.'
-Â Â Â Â  CTC genera impulso de sobrellenado (carry) cuando Counter == Max.
-Â Â Â Â  Para el trabajo adecuado, el valor 'Inicio' debe ser menor que el valor 'MÃ¡x.'
+   Se agregó el valor 'Inicio' en los contadores CTU, CTD, CTC, CTR.
+     La CTU, el contador CTC comienzan desde 'Inicio' y cuentan hasta el valor 'Máx.'
+     CTC genera impulso de sobrellenado (carry) cuando Counter == Max.
+     Para el trabajo adecuado, el valor 'Inicio' debe ser menor que el valor 'Máx.'
 
-    El contador CTD, CTR comienza desde 'Inicio' y cuenta atrÃ¡s hasta el valor 'Min'.
-Â Â Â Â  El CTR genera un impulso de sobrellenado (prÃ©stamo) cuando el Contador == Min.
-Â Â Â Â  Para el trabajo adecuado, el valor 'Inicio' debe ser mayor que el valor 'MÃ­nimo'.
+    El contador CTD, CTR comienza desde 'Inicio' y cuenta atrás hasta el valor 'Min'.
+     El CTR genera un impulso de sobrellenado (préstamo) cuando el Contador == Min.
+     Para el trabajo adecuado, el valor 'Inicio' debe ser mayor que el valor 'Mínimo'.
 
    ||   Rnew      Tnew                                    Rnew      ||
    ||----] [----[TON 1 s]----------------------------------(/)------||
@@ -1299,27 +1299,27 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||----] [----[CTC 0:59]---[CTC 0:59]---[CTC 0:23]---[CTC 0:364]--||
    ||                                                               ||
 
-    Actualizado en la versiÃ³n 4.4.1.0
-Â Â Â Â  Tipo de entradas de elementos de escalera
+    Actualizado en la versión 4.4.1.0
+     Tipo de entradas de elementos de escalera
     https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
 
    ||                               ||
    ||  X1          CTU1:0      Y1   ||
-   ||--] [---+---/[CTU>=10]----( )--|| '/' Entrada dinÃ¡mica activa en 0 a 1
-Â Â  ||        |                      || transiciÃ³n para la lÃ³gica positiva.
+   ||--] [---+---/[CTU>=10]----( )--|| '/' Entrada dinámica activa en 0 a 1
+   ||        |                      || transición para la lógica positiva.
    ||        |     CTU2:0      Y2   ||
-   ||        +---\[CTU>=10]----( )--|| '\' Entrada dinÃ¡mica activa en 1 a 0
-   ||        |                      || transiciÃ³n para la lÃ³gica positiva.
+   ||        +---\[CTU>=10]----( )--|| '\' Entrada dinámica activa en 1 a 0
+   ||        |                      || transición para la lógica positiva.
    ||        |     CTU3:0      Y3   ||
-   ||        +----[CTU>=10]----( )--|| '-' Entrada lÃ³gica estÃ¡tica directa.
+   ||        +----[CTU>=10]----( )--|| '-' Entrada lógica estática directa.
    ||        |                      || Activo en el exterior 1.
    ||        |     CTU4:0      Y4   ||
-   ||        +---o[CTU>=10]----( )--|| 'o' Entrada lÃ³gica estÃ¡tica inversa.
-   ||                               || NegaciÃ³n lÃ³gica en la entrada.
+   ||        +---o[CTU>=10]----( )--|| 'o' Entrada lógica estática inversa.
+   ||                               || Negación lógica en la entrada.
    ||                               || Externo 0 produce interno 1.
 
-    Nota: Los contadores de versiones anteriores tienen la entrada dinÃ¡mica "/".
-Â Â Â Â  Estos dos peldaÃ±os son equivalentes en la nueva versiÃ³n.
+    Nota: Los contadores de versiones anteriores tienen la entrada dinámica "/".
+     Estos dos peldaños son equivalentes en la nueva versión.
    ||                                                   ||
    ||       X1               C1                         ||
    ||-------] [----------/[CTC  0:9]---                 ||
@@ -1330,34 +1330,34 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||                                                   ||
 
     '-/' es una entrada positiva activada por flanco (flanco ascendente).
-    '-\' es una entrada de activaciÃ³n por flanco negativo (flanco descendente).
-    '--' es entrada estÃ¡tica activa de alto nivel.
-    '--' es entrada estÃ¡tica, activa a un nivel alto.
-    '-o' es entrada estÃ¡tica, activa a un nivel bajo.
+    '-\' es una entrada de activación por flanco negativo (flanco descendente).
+    '--' es entrada estática activa de alto nivel.
+    '--' es entrada estática, activa a un nivel alto.
+    '-o' es entrada estática, activa a un nivel bajo.
 
 
 > REGISTRO DE DESPLAZAMIENTO      {SHIFT REG   }
                                  -{ reg0..3    }-
 
-   Un registro de desplazamiento estÃ¡ asociado con un conjunto de variables. Por ejemplo,
-Â Â Â Â  este registro de desplazamiento estÃ¡ asociado con las variables `reg0 ',` reg1',
-Â Â Â Â  `reg2 'y` reg3'. La entrada al registro de desplazamiento es 'reg0'. En
-Â Â Â Â  cada borde ascendente de la condiciÃ³n de renglÃ³n, el registro de desplazamiento
-Â Â Â Â  Desplazar a la derecha. Eso significa que asigna `reg3: = reg2 ',` reg2: =
-Â Â Â Â  reg1 '. y `reg1: = reg0 '. `reg0 'no se modifica. Un gran turno
-Â Â Â Â  registrarse puede consumir fÃ¡cilmente mucha memoria. Esta instrucciÃ³n debe
-Â Â Â Â  ser la instrucciÃ³n mÃ¡s correcta en su peldaÃ±o.
+   Un registro de desplazamiento está asociado con un conjunto de variables. Por ejemplo,
+     este registro de desplazamiento está asociado con las variables `reg0 ',` reg1',
+     `reg2 'y` reg3'. La entrada al registro de desplazamiento es 'reg0'. En
+     cada borde ascendente de la condición de renglón, el registro de desplazamiento
+     Desplazar a la derecha. Eso significa que asigna `reg3: = reg2 ',` reg2: =
+     reg1 '. y `reg1: = reg0 '. `reg0 'no se modifica. Un gran turno
+     registrarse puede consumir fácilmente mucha memoria. Esta instrucción debe
+     ser la instrucción más correcta en su peldaño.
 
-> TABLA DE BÃšSQUEDA         {dest :=     }
+> TABLA DE BÚSQUEDA         {dest :=     }
                            -{ LUT[i]     }-
 
-    Una tabla de bÃºsqueda es un conjunto ordenado de n valores. Cuando el peldaÃ±o
-Â Â Â Â  condiciÃ³n es verdadera, la variable entera 'dest' se establece igual a la
-Â Â Â Â  entrada en la tabla de bÃºsqueda correspondiente a la variable entera
-Â Â Â Â  'i'. El Ã­ndice comienza desde cero, por lo que 'i' debe estar entre 0 y
-Â Â Â Â  (n-1) El comportamiento de esta instrucciÃ³n no se define si el
-Â Â Â Â  El Ã­ndice estÃ¡ fuera de este rango. Esta instrucciÃ³n debe ser la mÃ¡s a la derecha
-Â Â Â Â  en su peldaÃ±o.
+    Una tabla de búsqueda es un conjunto ordenado de n valores. Cuando el peldaño
+     condición es verdadera, la variable entera 'dest' se establece igual a la
+     entrada en la tabla de búsqueda correspondiente a la variable entera
+     'i'. El índice comienza desde cero, por lo que 'i' debe estar entre 0 y
+     (n-1) El comportamiento de esta instrucción no se define si el
+     El índice está fuera de este rango. Esta instrucción debe ser la más a la derecha
+     en su peldaño.
 
     Ver https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
 
@@ -1365,14 +1365,14 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > TABLA LINEAL POR TRAMOS   {yvar :=     }
                            -{ PWL[xvar]  }-
 
-    Esta es una buena manera de aproximar una funciÃ³n complicada o
-Â Â Â Â  curva. PodrÃ­a, por ejemplo, ser Ãºtil si estÃ¡ intentando aplicar
-Â Â Â Â  una curva de calibraciÃ³n para convertir un voltaje de salida sin procesar de un sensor
-Â Â Â Â  en unidades mÃ¡s convenientes.
+    Esta es una buena manera de aproximar una función complicada o
+     curva. Podría, por ejemplo, ser útil si está intentando aplicar
+     una curva de calibración para convertir un voltaje de salida sin procesar de un sensor
+     en unidades más convenientes.
 
-    Suponga que estÃ¡ intentando aproximar una funciÃ³n que convierte
-Â Â Â Â  una variable de entrada entera, x, a una variable de salida entera, y. TÃº
-Â Â Â Â  Conocer la funciÃ³n en varios puntos; por ejemplo, podrÃ­as saber que
+    Suponga que está intentando aproximar una función que convierte
+     una variable de entrada entera, x, a una variable de salida entera, y. Tú
+     Conocer la función en varios puntos; por ejemplo, podrías saber que
 
         f(0)   = 2
         f(5)   = 10
@@ -1386,77 +1386,77 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
         (x2, y2)   = ( 10,  50)
         (x3, y3)   = (100, 100)
 
-    AcuÃ©state en esa curva. Puedes ingresar esos 4 puntos en una tabla
-Â Â Â Â  asociado con la instrucciÃ³n lineal por partes. El lineal por partes
-Â Â Â Â  la instrucciÃ³n analizarÃ¡ el valor de xvar y establecerÃ¡ el valor de
-Â Â Â Â  Yvar. EstablecerÃ¡ yvar de tal manera que la curva lineal por partes
-Â Â Â Â  pasarÃ¡ por todos los puntos que le des; por ejemplo,
-Â Â Â Â  si configura xvar = 10, entonces la instrucciÃ³n establecerÃ¡ yvar = 50.
+    Acuéstate en esa curva. Puedes ingresar esos 4 puntos en una tabla
+     asociado con la instrucción lineal por partes. El lineal por partes
+     la instrucción analizará el valor de xvar y establecerá el valor de
+     Yvar. Establecerá yvar de tal manera que la curva lineal por partes
+     pasará por todos los puntos que le des; por ejemplo,
+     si configura xvar = 10, entonces la instrucción establecerá yvar = 50.
 
-    Si le da a la instrucciÃ³n un valor de xvar que se encuentra entre dos
-Â Â Â Â  de los valores de x para los que le ha dado puntos, entonces el
-Â Â Â Â  la instrucciÃ³n establecerÃ¡ yvar para que (xvar, yvar) quede en la recta
-Â Â Â Â  lÃ­nea que conecta esos dos puntos en la tabla. Por ejemplo, xvar =
-Â Â Â Â  55 da una salida de yvar = 75. (Los dos puntos en la tabla son
-Â Â Â Â  (10, 50) y (100, 100). 55 estÃ¡ a medio camino entre 10 y 100, y 75
-Â Â Â Â  estÃ¡ a medio camino entre 50 y 100, entonces (55, 75) se encuentra en la lÃ­nea que
-Â Â Â Â  conecta esos dos puntos).
+    Si le da a la instrucción un valor de xvar que se encuentra entre dos
+     de los valores de x para los que le ha dado puntos, entonces el
+     la instrucción establecerá yvar para que (xvar, yvar) quede en la recta
+     línea que conecta esos dos puntos en la tabla. Por ejemplo, xvar =
+     55 da una salida de yvar = 75. (Los dos puntos en la tabla son
+     (10, 50) y (100, 100). 55 está a medio camino entre 10 y 100, y 75
+     está a medio camino entre 50 y 100, entonces (55, 75) se encuentra en la línea que
+     conecta esos dos puntos).
 
     Los puntos deben especificarse en orden ascendente por coordenada x. Eso
-Â Â Â Â  puede no ser posible realizar operaciones matemÃ¡ticas requeridas para
-Â Â Â Â  ciertas tablas de bÃºsqueda que usan matemÃ¡tica entera de 16 bits; si este es el
-Â Â Â Â  caso, entonces LDmicro te avisarÃ¡. Por ejemplo, esta tabla de consulta
-Â Â Â Â  producirÃ¡ un error:
+     puede no ser posible realizar operaciones matemáticas requeridas para
+     ciertas tablas de búsqueda que usan matemática entera de 16 bits; si este es el
+     caso, entonces LDmicro te avisará. Por ejemplo, esta tabla de consulta
+     producirá un error:
 
         (x0, y0)    = (  0,   0)
         (x1, y1)    = (300, 300)
 
     Puede corregir estos errores haciendo la distancia entre puntos en
-Â Â Â Â  La mesa mÃ¡s pequeÃ±a. Por ejemplo, esta tabla es equivalente a la tabla
-Â Â Â Â  dado anteriormente, y no produce un error:
+     La mesa más pequeña. Por ejemplo, esta tabla es equivalente a la tabla
+     dado anteriormente, y no produce un error:
 
         (x0, y0)    = (  0,   0)
         (x1, y1)    = (150, 150)
         (x2, y2)    = (300, 300)
 
-    Casi nunca deberÃ­a ser necesario usar mÃ¡s de cinco o seis
-Â Â Â Â  puntos. Agregar mÃ¡s puntos hace que su cÃ³digo sea mÃ¡s grande y mÃ¡s lento
-Â Â Â Â  ejecutar. El comportamiento si pasa un valor de 'xvar' mayor que
-Â Â Â Â  la coordenada x mÃ¡s grande en la tabla o menos que la x mÃ¡s pequeÃ±a
-Â Â Â Â  La coordenada en la tabla no estÃ¡ definida. Esta instrucciÃ³n debe ser la
-Â Â Â Â  instrucciÃ³n mÃ¡s correcta en su peldaÃ±o.
+    Casi nunca debería ser necesario usar más de cinco o seis
+     puntos. Agregar más puntos hace que su código sea más grande y más lento
+     ejecutar. El comportamiento si pasa un valor de 'xvar' mayor que
+     la coordenada x más grande en la tabla o menos que la x más pequeña
+     La coordenada en la tabla no está definida. Esta instrucción debe ser la
+     instrucción más correcta en su peldaño.
 
 
 > CONVERTIDOR A/D LEER           Aname
                            --{READ ADC}--
 
-    LDmicro puede generar cÃ³digo para usar los convertidores A / D integrados en
-Â Â Â Â  ciertos microcontroladores. Si la condiciÃ³n de entrada a esta instrucciÃ³n
-Â Â Â Â  es cierto, se adquiere una sola muestra del convertidor A / D y
-Â Â Â Â  almacenado en la variable 'Aname'. Esta variable puede ser posteriormente
-Â Â Â Â  manipulado con operaciones variables generales (menor que, mayor que,
-Â Â Â Â  aritmÃ©tica, y asÃ­ sucesivamente). Asigne un pin a la variable 'Axxx' en el
-Â Â Â Â  de la misma manera que asignarÃ­as un pin a una entrada o salida digital,
-Â Â Â Â  haciendo doble clic en la lista en la parte inferior de la pantalla. Si
-Â Â Â Â  la condiciÃ³n de entrada a este renglÃ³n es falsa, entonces la variable 'Aname'
-Â Â Â Â  se deja sin cambios.
+    LDmicro puede generar código para usar los convertidores A / D integrados en
+     ciertos microcontroladores. Si la condición de entrada a esta instrucción
+     es cierto, se adquiere una sola muestra del convertidor A / D y
+     almacenado en la variable 'Aname'. Esta variable puede ser posteriormente
+     manipulado con operaciones variables generales (menor que, mayor que,
+     aritmética, y así sucesivamente). Asigne un pin a la variable 'Axxx' en el
+     de la misma manera que asignarías un pin a una entrada o salida digital,
+     haciendo doble clic en la lista en la parte inferior de la pantalla. Si
+     la condición de entrada a este renglón es falsa, entonces la variable 'Aname'
+     se deja sin cambios.
 
     Para todos los dispositivos compatibles actualmente, la entrada de 0 voltios corresponde a
-Â Â Â Â  una lectura de ADC de 0 y una entrada igual a Vdd (la tensiÃ³n de alimentaciÃ³n)
-Â Â Â Â  corresponde a una lectura de ADC de 1023. Si estÃ¡ utilizando un AVR, entonces
-Â Â Â Â  conecta AREF a Vdd. Puede usar operaciones aritmÃ©ticas para escalar el
-Â Â Â Â  leer a las unidades mÃ¡s convenientes despuÃ©s, pero recuerde que usted
-Â Â Â Â  estÃ¡n usando matemÃ¡ticas enteras. En general, no todos los pines estarÃ¡n disponibles
-Â Â Â Â  para usar con el convertidor A/D. El software no te permitirÃ¡
-Â Â Â Â  asignar pines que no sean A/D a una entrada analÃ³gica. Esta instrucciÃ³n debe ser
-Â Â Â Â  la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
+     una lectura de ADC de 0 y una entrada igual a Vdd (la tensión de alimentación)
+     corresponde a una lectura de ADC de 1023. Si está utilizando un AVR, entonces
+     conecta AREF a Vdd. Puede usar operaciones aritméticas para escalar el
+     leer a las unidades más convenientes después, pero recuerde que usted
+     están usando matemáticas enteras. En general, no todos los pines estarán disponibles
+     para usar con el convertidor A/D. El software no te permitirá
+     asignar pines que no sean A/D a una entrada analógica. Esta instrucción debe ser
+     la instrucción más a la derecha en su peldaño.
 
     Actualizado: Referencia de voltaje ADC.
-Â Â Â Â  El voltaje de referencia para el ADC (Vref) indica la conversiÃ³n
-Â Â Â Â  gama para el ADC. Los canales de un solo extremo que excedan Vref resultarÃ¡n
-Â Â Â Â  en cÃ³digos cercanos a 0x3FF (1023). Vref se puede seleccionar como AVCC,
-Â Â Â Â  referencia interna de 2.56V, referencia interna de 1.1V o pin externo Aref.
-Â Â Â Â  El parÃ¡metro REFS = 0 es compatible con versiones anteriores de LDmicro.
+     El voltaje de referencia para el ADC (Vref) indica la conversión
+     gama para el ADC. Los canales de un solo extremo que excedan Vref resultarán
+     en códigos cercanos a 0x3FF (1023). Vref se puede seleccionar como AVCC,
+     referencia interna de 2.56V, referencia interna de 1.1V o pin externo Aref.
+     El parámetro REFS = 0 es compatible con versiones anteriores de LDmicro.
 
     Ver https://github.com/LDmicro/LDmicro/wiki/ADC-Voltage-Reference
     https://github.com/LDmicro/LDmicro/wiki/How-to-measure-battery-voltage
@@ -1466,54 +1466,54 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > CONFIGURAR EL CICLO DE TRABAJO PWM     duty_cycle  3.8 kHz
                                        -{PWM            PWM1}-
 
-    LDmicro puede generar cÃ³digo para usar el perifÃ©rico PWM integrado en
-Â Â Â Â  ciertos microcontroladores. Si la condiciÃ³n de entrada a esta instrucciÃ³n
-Â Â Â Â  es cierto, entonces el ciclo de trabajo del perifÃ©rico PWM se establece en
-Â Â Â Â  valor de la variable duty_cycle.
-Â Â Â Â  Actualizado: LDmicro v4.3.5 permite seleccionar una resoluciÃ³n PWM mÃ¡s alta:
-Â Â Â Â Â Â  0-100% (resoluciÃ³n mÃ¡xima de 6,7 bits)
-Â Â Â Â Â Â  0-256 (resoluciÃ³n mÃ¡xima 8 bits)
-Â Â Â Â Â Â  0-512 (resoluciÃ³n mÃ¡xima 9 bits)
-Â Â Â Â Â Â  0-1024 (resoluciÃ³n mÃ¡xima 10 bits)
-Â Â Â Â  El ciclo de trabajo debe ser un nÃºmero entre 0 y 100/256/512/1024;
-Â Â Â Â  0 corresponde a siempre bajo, y 100/256/512/1024 corresponde a
-Â Â Â Â  siempre alto. (Si estÃ¡ familiarizado con el funcionamiento del perifÃ©rico PWM,
-Â Â Â Â  luego observe que eso significa que LDmicro escala automÃ¡ticamente
-Â Â Â Â  ciclo de trabajo variable desde porcentaje (o valor binario) hasta perÃ­odos de reloj PWM).
+    LDmicro puede generar código para usar el periférico PWM integrado en
+     ciertos microcontroladores. Si la condición de entrada a esta instrucción
+     es cierto, entonces el ciclo de trabajo del periférico PWM se establece en
+     valor de la variable duty_cycle.
+     Actualizado: LDmicro v4.3.5 permite seleccionar una resolución PWM más alta:
+       0-100% (resolución máxima de 6,7 bits)
+       0-256 (resolución máxima 8 bits)
+       0-512 (resolución máxima 9 bits)
+       0-1024 (resolución máxima 10 bits)
+     El ciclo de trabajo debe ser un número entre 0 y 100/256/512/1024;
+     0 corresponde a siempre bajo, y 100/256/512/1024 corresponde a
+     siempre alto. (Si está familiarizado con el funcionamiento del periférico PWM,
+     luego observe que eso significa que LDmicro escala automáticamente
+     ciclo de trabajo variable desde porcentaje (o valor binario) hasta períodos de reloj PWM).
 
     Puede especificar la frecuencia PWM objetivo, en Hz. La frecuencia que
-Â Â Â Â  que especifique podrÃ­a no ser exactamente posible, dependiendo de cÃ³mo
-Â Â Â Â  se divide en la frecuencia de reloj del microcontrolador. LDmicro will
-Â Â Â Â  elija la frecuencia alcanzable mÃ¡s cercana; si el error es grande entonces
-Â Â Â Â  Te lo advertirÃ¡. Las velocidades mÃ¡s rÃ¡pidas (frecuencia PWM) pueden sacrificar la resoluciÃ³n.
+     que especifique podría no ser exactamente posible, dependiendo de cómo
+     se divide en la frecuencia de reloj del microcontrolador. LDmicro will
+     elija la frecuencia alcanzable más cercana; si el error es grande entonces
+     Te lo advertirá. Las velocidades más rápidas (frecuencia PWM) pueden sacrificar la resolución.
 
-    Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
-Â Â Â Â  El tiempo de ejecuciÃ³n de la lÃ³gica de escalera consume un temporizador para medir el ciclo
-Â Â Â Â  hora. Eso significa que PWM solo estÃ¡ disponible en microcontroladores
-Â Â Â Â  con al menos dos temporizadores adecuados. PWM usa el pin CCP2 (no CCP1)
-Â Â Â Â  en chips PIC16 y OC1B (no OC1A) en AVR.
+    Esta instrucción debe ser la instrucción más a la derecha en su peldaño.
+     El tiempo de ejecución de la lógica de escalera consume un temporizador para medir el ciclo
+     hora. Eso significa que PWM solo está disponible en microcontroladores
+     con al menos dos temporizadores adecuados. PWM usa el pin CCP2 (no CCP1)
+     en chips PIC16 y OC1B (no OC1A) en AVR.
 
     Actualizado: LDmicro v4.x.x permite todo el hardware PWM.
     Ver https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
 
-    Puede establecer otra frecuencia base de PWM solo despuÃ©s de activar RESET PWM.
-Â Â Â Â  Ver RESET PWM arriba.
+    Puede establecer otra frecuencia base de PWM solo después de activar RESET PWM.
+     Ver RESET PWM arriba.
 
 
 > HACER PERSISTENTE          saved_var
                            --{PERSIST}--
 
-    Cuando la condiciÃ³n de entrada de esta instrucciÃ³n es verdadera, causa la
-Â Â Â Â  La variable entera especificada se guardarÃ¡ automÃ¡ticamente en EEPROM. Ese
-Â Â Â Â  significa que su valor persistirÃ¡, incluso cuando el micro pierde
-Â Â Â Â  poder. No hay necesidad de guardar explÃ­citamente la variable en EEPROM;
-Â Â Â Â  eso sucederÃ¡ automÃ¡ticamente, siempre que cambie la variable.
-Â Â Â Â  La variable se carga automÃ¡ticamente desde EEPROM despuÃ©s del reinicio de encendido. Si
-Â Â Â Â  una variable que cambia con frecuencia se hace persistente, luego en
-Â Â Â Â  La EEPROM en su micro puede desgastarse muy rÃ¡pidamente, porque eso no es
-Â Â Â Â  bueno para un nÃºmero limitado (~ 100 000) de escrituras. Cuando el peldaÃ±o
-Â Â Â Â  la condiciÃ³n es falsa, no pasa nada. Esta instrucciÃ³n debe ser la
-Â Â Â Â  instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
+    Cuando la condición de entrada de esta instrucción es verdadera, causa la
+     La variable entera especificada se guardará automáticamente en EEPROM. Ese
+     significa que su valor persistirá, incluso cuando el micro pierde
+     poder. No hay necesidad de guardar explícitamente la variable en EEPROM;
+     eso sucederá automáticamente, siempre que cambie la variable.
+     La variable se carga automáticamente desde EEPROM después del reinicio de encendido. Si
+     una variable que cambia con frecuencia se hace persistente, luego en
+     La EEPROM en su micro puede desgastarse muy rápidamente, porque eso no es
+     bueno para un número limitado (~ 100 000) de escrituras. Cuando el peldaño
+     la condición es falsa, no pasa nada. Esta instrucción debe ser la
+     instrucción más a la derecha en su peldaño.
 
     Ver https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
 
@@ -1521,45 +1521,45 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > UART (SERIE) RECIBIR           var
                            --{UART RECV}--
 
-    LDmicro puede generar cÃ³digo para usar el UART integrado en ciertos
-Â Â Â Â  microcontroladores. En AVR con mÃºltiples UART solo UART1 (no
-Â Â Â Â  UART0) es compatible. Configure la velocidad en baudios usando ConfiguraciÃ³n -> MCU
-Â Â Â Â  ParÃ¡metros Ciertas velocidades de transmisiÃ³n pueden no ser alcanzables con ciertas
-Â Â Â Â  frecuencias de cristal; LDmicro te avisarÃ¡ si este es el caso.
+    LDmicro puede generar código para usar el UART integrado en ciertos
+     microcontroladores. En AVR con múltiples UART solo UART1 (no
+     UART0) es compatible. Configure la velocidad en baudios usando Configuración -> MCU
+     Parámetros Ciertas velocidades de transmisión pueden no ser alcanzables con ciertas
+     frecuencias de cristal; LDmicro te avisará si este es el caso.
 
-    Si la condiciÃ³n de entrada a esta instrucciÃ³n es falsa, entonces nada
-Â Â Â Â  sucede Si la condiciÃ³n de entrada es verdadera, esta instrucciÃ³n intenta
-Â Â Â Â  recibir un solo caracter de la UART. Si no se lee ningÃºn caracter
-Â Â Â Â  entonces la condiciÃ³n de salida es falsa. Si se lee un personaje, entonces su
-Â Â Â Â  El valor ASCII se almacena en `var ', y la condiciÃ³n de salida es verdadera
-Â Â Â Â  para un solo ciclo de PLC.
+    Si la condición de entrada a esta instrucción es falsa, entonces nada
+     sucede Si la condición de entrada es verdadera, esta instrucción intenta
+     recibir un solo caracter de la UART. Si no se lee ningún caracter
+     entonces la condición de salida es falsa. Si se lee un personaje, entonces su
+     El valor ASCII se almacena en `var ', y la condición de salida es verdadera
+     para un solo ciclo de PLC.
 
 
-> UART (SERIE) ENVÃO             var
+> UART (SERIE) ENVÍO             var
                            --{UART SEND}--
 
-    LDmicro puede generar cÃ³digo para usar los UART integrados en ciertos
-Â Â Â Â  microcontroladores. En AVRS con mÃºltiples UART solo UART1 (no
-Â Â Â Â  UART0) es compatible. Configure la velocidad en baudios usando ConfiguraciÃ³n -> MCU
-Â Â Â Â  ParÃ¡metros Ciertas velocidades de transmisiÃ³n pueden no ser alcanzables con ciertas
-Â Â Â Â  frecuencias de cristal; LDmicro te avisarÃ¡ si este es el caso.
+    LDmicro puede generar código para usar los UART integrados en ciertos
+     microcontroladores. En AVRS con múltiples UART solo UART1 (no
+     UART0) es compatible. Configure la velocidad en baudios usando Configuración -> MCU
+     Parámetros Ciertas velocidades de transmisión pueden no ser alcanzables con ciertas
+     frecuencias de cristal; LDmicro te avisará si este es el caso.
 
-    Si la condiciÃ³n de entrada a esta instrucciÃ³n es falsa, entonces nada
-Â Â Â Â  sucede Si la condiciÃ³n de entrada es verdadera, entonces esta instrucciÃ³n escribe
-Â Â Â Â  un solo caracter para el UART. El valor ASCII del personaje a
-Â Â Â Â  send debe haberse almacenado previamente en 'var'. La condiciÃ³n de salida
-Â Â Â Â  del peldaÃ±o es verdadero si el UART estÃ¡ ocupado (actualmente transmitiendo un
-Â Â Â Â  carÃ¡cter), y falso de lo contrario.
+    Si la condición de entrada a esta instrucción es falsa, entonces nada
+     sucede Si la condición de entrada es verdadera, entonces esta instrucción escribe
+     un solo caracter para el UART. El valor ASCII del personaje a
+     send debe haberse almacenado previamente en 'var'. La condición de salida
+     del peldaño es verdadero si el UART está ocupado (actualmente transmitiendo un
+     carácter), y falso de lo contrario.
 
     Recuerda que los caracteres tardan un poco en transmitirse. Hay varios
-Â Â Â Â  formas de organizar la transmisiÃ³n:
-    1) Use el tiempo de ciclo del PLC, que es conscientemente mayor que el tiempo de transmisiÃ³n UART.
+     formas de organizar la transmisión:
+    1) Use el tiempo de ciclo del PLC, que es conscientemente mayor que el tiempo de transmisión UART.
    ||                                                               ||
    || ; El tiempo de ciclo del PLC es de 10 ms.                     ||
-   || ; La velocidad de transmisiÃ³n UART es de 9600 bps.            ||
+   || ; La velocidad de transmisión UART es de 9600 bps.            ||
    ||                                                               ||
    || ; En este caso, hay una reserva de tiempo diez veces mayor.   ||
-   || ; La secuencia de caracteres se transmitirÃ¡ sin pÃ©rdida.      ||
+   || ; La secuencia de caracteres se transmitirá sin pérdida.      ||
    ||                                                               ||
    || ; 1 2 3 4 5 6 7 8 9 10 11 12 ...                              ||
    ||                                                               ||
@@ -1571,13 +1571,13 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||                                                               ||
 
     2) Use temporizadores para insertar retrasos entre caracteres. El retraso del temporizador debe ser
-Â Â Â Â  mÃ¡s largo que el tiempo de transmisiÃ³n UART.
+     más largo que el tiempo de transmisión UART.
    ||                                                                    ||
    || ; El tiempo de ciclo del PLC es de 1 ms.                           ||
-   || ; La velocidad de transmisiÃ³n UART es de 9600 bps.                 ||
+   || ; La velocidad de transmisión UART es de 9600 bps.                 ||
    ||                                                                    ||
    || ; En este caso, hay una reserva de cinco veces.                    ||
-   || ; La secuencia de caracteres se transmitirÃ¡ sin pÃ©rdida.           ||
+   || ; La secuencia de caracteres se transmitirá sin pérdida.           ||
    ||                                                                    ||
    || ; char1 char2 char3   char1 char2 char3   char1 char2 char3   ...  ||
    || ; 1     5     10      2     10    20      3     15    30      ...  ||
@@ -1616,13 +1616,13 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||                                                  +------{RES}------||
    ||                                                                    ||
 
-    3) Verifique la condiciÃ³n de salida de esta instrucciÃ³n para asegurarse de que
-Â Â Â Â  el carÃ¡cter anterior se ha transmitido antes de intentar enviar un siguiente
-Â Â Â Â  Caracter. Solo debe hacer que la condiciÃ³n de entrada sea verdadera (intente enviar
-Â Â Â Â  un carÃ¡cter) cuando la condiciÃ³n de salida es falsa (UART no estÃ¡ ocupado).
+    3) Verifique la condición de salida de esta instrucción para asegurarse de que
+     el carácter anterior se ha transmitido antes de intentar enviar un siguiente
+     Caracter. Solo debe hacer que la condición de entrada sea verdadera (intente enviar
+     un carácter) cuando la condición de salida es falsa (UART no está ocupado).
    ||                                                            ||
    || ; El tiempo de ciclo del PLC y la velocidad de             ||
-   || ; transmisiÃ³n UART son independientesy puede ser diferente ||
+   || ; transmisión UART son independientesy puede ser diferente ||
    ||                                                            ||
    || ; 1 2 3 4 5 6 7 8 9 10 11 12 ...                           ||
    ||                                                            ||
@@ -1648,8 +1648,8 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
    ||                          +---------------------------{DATA2   +   10}-||
    ||                                                                       ||
 
-    4) Use el mensaje 'UART SEND: Â¿estÃ¡ listo?' instrucciÃ³n antes de UART ENVIAR a los cheque
-Â Â Â Â  El estado UART.
+    4) Use el mensaje 'UART SEND: ¿está listo?' instrucción antes de UART ENVIAR a los cheque
+     El estado UART.
    ||                                                    ||
    || ; 0 1 2 3 4 5 6 7 8 9 10 11 12 ...                 ||
    ||                                                    ||
@@ -1662,136 +1662,136 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
     Ver: UART communication FAQ
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ
 
-    Actualizado: las instrucciones UART RECEIVE, UART SEND pueden recibir / enviar mÃ¡s
-Â Â Â Â  que las variables de longitud de un byte. ParÃ¡metro "NÃºmero de bytes a transmitir:"
-Â Â Â Â  debe ser menor o igual al tamaÃ±o de la variable utilizada. El valor de 1 byte es
-Â Â Â Â  compatible con la versiÃ³n anterior de LDmicro.
-Â Â Â Â  El parÃ¡metro "Esperar hasta que se transmitan todos los bytes:" controla el algoritmo
-Â Â Â Â  de la transmisiÃ³n: si 1 - todos los bytes se transmiten en un paquete,
-Â Â Â Â  si 0: un byte por ciclo de PLC. Cuando todos los bytes se han transmitido,
-Â Â Â Â  la condiciÃ³n de salida es "verdadera" durante un ciclo de PLC. El valor 0 es
-Â Â Â Â  compatible con la versiÃ³n anterior de LDmicro.
-Â Â Â Â  Consulte: Preguntas frecuentes sobre comunicaciÃ³n UART, parte 2
+    Actualizado: las instrucciones UART RECEIVE, UART SEND pueden recibir / enviar más
+     que las variables de longitud de un byte. Parámetro "Número de bytes a transmitir:"
+     debe ser menor o igual al tamaño de la variable utilizada. El valor de 1 byte es
+     compatible con la versión anterior de LDmicro.
+     El parámetro "Esperar hasta que se transmitan todos los bytes:" controla el algoritmo
+     de la transmisión: si 1 - todos los bytes se transmiten en un paquete,
+     si 0: un byte por ciclo de PLC. Cuando todos los bytes se han transmitido,
+     la condición de salida es "verdadera" durante un ciclo de PLC. El valor 0 es
+     compatible con la versión anterior de LDmicro.
+     Consulte: Preguntas frecuentes sobre comunicación UART, parte 2
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ-part-2
 
-    Investigue la instrucciÃ³n de cadena formateada (siguiente) antes de usar esto
-Â Â Â Â  instrucciÃ³n. La instrucciÃ³n de cadena formateada es mucho mÃ¡s fÃ¡cil de usar,
-Â Â Â Â  y es casi seguro que es capaz de hacer lo que quieras.
+    Investigue la instrucción de cadena formateada (siguiente) antes de usar esto
+     instrucción. La instrucción de cadena formateada es mucho más fácil de usar,
+     y es casi seguro que es capaz de hacer lo que quieras.
 
     Vea https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
 
 
-> ENVÃO UART (SERIE)             var
+> ENVÍO UART (SERIE)             var
                            --{UART SENDn}--
 
-    Si la condiciÃ³n de entrada a esta instrucciÃ³n es falsa, entonces nada
-Â Â Â Â  sucede Si la condiciÃ³n de entrada es verdadera, entonces esta instrucciÃ³n escribe
-Â Â Â Â  una variable a la UART en formato binario sin formato. Un byte envÃ­a por ciclo
-Â Â Â Â  de PLC, como el elemento 'FORMATO STR OVER UART'. La condiciÃ³n de salida
-Â Â Â Â  del peldaÃ±o es verdadero si el UART estÃ¡ ocupado (actualmente transmitiendo un
-Â Â Â Â  variable), y falso de lo contrario.
+    Si la condición de entrada a esta instrucción es falsa, entonces nada
+     sucede Si la condición de entrada es verdadera, entonces esta instrucción escribe
+     una variable a la UART en formato binario sin formato. Un byte envía por ciclo
+     de PLC, como el elemento 'FORMATO STR OVER UART'. La condición de salida
+     del peldaño es verdadero si el UART está ocupado (actualmente transmitiendo un
+     variable), y falso de lo contrario.
 
 
-> ENVÃO UART: estÃ¡ listo ?     Is ready?
+> ENVÍO UART: está listo ?     Is ready?
                            --[UART SEND]--
 
-    Si la condiciÃ³n de entrada a esta instrucciÃ³n es falsa, entonces nada
-Â Â Â Â  sucede Si la condiciÃ³n de entrada es verdadera, entonces la salida es verdadera
-Â Â Â Â  cuando el bÃºfer de transmisiÃ³n estÃ¡ vacÃ­o y listo para cargar nuevos datos,
-Â Â Â Â  y falso de lo contrario.
+    Si la condición de entrada a esta instrucción es falsa, entonces nada
+     sucede Si la condición de entrada es verdadera, entonces la salida es verdadera
+     cuando el búfer de transmisión está vacío y listo para cargar nuevos datos,
+     y falso de lo contrario.
 
 
-> UART RECV: estÃ¡ disponible?    Is avail?
+> UART RECV: está disponible?    Is avail?
                               --[UART RECV]--
 
-    Si la condiciÃ³n de entrada a esta instrucciÃ³n es falsa, entonces nada
-Â Â Â Â  sucede Si la condiciÃ³n de entrada es verdadera, la salida es verdadera cuando
-Â Â Â Â  hay datos no leÃ­dos en el bÃºfer de recepciÃ³n y falsos de lo contrario.
+    Si la condición de entrada a esta instrucción es falsa, entonces nada
+     sucede Si la condición de entrada es verdadera, la salida es verdadera cuando
+     hay datos no leídos en el búfer de recepción y falsos de lo contrario.
 
 
 > CADENA FORMATEADA SOBRE UART             var
                                    -{"Pressure: \3\r\n"}-
 
-    LDmicro puede generar cÃ³digo para usar los UART integrados en ciertos
-Â Â Â Â  microcontroladores. En AVRS con mÃºltiples UART solo UART1 (no
-Â Â Â Â  UART0) es compatible. Configure la velocidad en baudios usando ConfiguraciÃ³n -> MCU
-Â Â Â Â  ParÃ¡metros Ciertas velocidades de transmisiÃ³n pueden no ser alcanzables con ciertas
-Â Â Â Â  frecuencias de cristal; LDmicro te avisarÃ¡ si este es el caso.
+    LDmicro puede generar código para usar los UART integrados en ciertos
+     microcontroladores. En AVRS con múltiples UART solo UART1 (no
+     UART0) es compatible. Configure la velocidad en baudios usando Configuración -> MCU
+     Parámetros Ciertas velocidades de transmisión pueden no ser alcanzables con ciertas
+     frecuencias de cristal; LDmicro te avisará si este es el caso.
 
-    Cuando la condiciÃ³n de entrada para esta instrucciÃ³n pasa de falso a
-Â Â Â Â  Es cierto, comienza a enviar una cadena completa a travÃ©s del puerto serie. Si
-Â Â Â Â  la cadena contiene la secuencia especial `\ 3 ', entonces esa secuencia
-Â Â Â Â  serÃ¡ reemplazado con el valor de 'var', que es automÃ¡ticamente
-Â Â Â Â  convertido en una cadena. La variable se formatearÃ¡ para tomar
-Â Â Â Â  exactamente 3 caracteres; por ejemplo, si 'var' es igual a 35, entonces
-Â Â Â Â  la cadena exacta impresa serÃ¡ 'PresiÃ³n: 35 \ r \ n' (tenga en cuenta el extra
-Â Â Â Â  espacio). Si, en cambio, 'var' fuera igual a 1432, entonces el comportamiento serÃ­a
-Â Â Â Â  ser indefinido, porque 1432 tiene mÃ¡s de tres dÃ­gitos. En ese caso
-Â Â Â Â  serÃ­a necesario usar `\ 4 'en su lugar.
+    Cuando la condición de entrada para esta instrucción pasa de falso a
+     Es cierto, comienza a enviar una cadena completa a través del puerto serie. Si
+     la cadena contiene la secuencia especial `\ 3 ', entonces esa secuencia
+     será reemplazado con el valor de 'var', que es automáticamente
+     convertido en una cadena. La variable se formateará para tomar
+     exactamente 3 caracteres; por ejemplo, si 'var' es igual a 35, entonces
+     la cadena exacta impresa será 'Presión: 35 \ r \ n' (tenga en cuenta el extra
+     espacio). Si, en cambio, 'var' fuera igual a 1432, entonces el comportamiento sería
+     ser indefinido, porque 1432 tiene más de tres dígitos. En ese caso
+     sería necesario usar `\ 4 'en su lugar.
 
     Si la variable puede ser negativa, use `\ -3d '(o` \ -4d'
-Â Â Â Â  etc.) en su lugar. Eso harÃ¡ que LDmicro imprima un espacio lÃ­der para
-Â Â Â Â  nÃºmeros positivos y un signo menos inicial para nÃºmeros negativos.
+     etc.) en su lugar. Eso hará que LDmicro imprima un espacio líder para
+     números positivos y un signo menos inicial para números negativos.
 
     Si se activan varias instrucciones de cadena formateadas a la vez
-Â Â Â Â  (o si uno se energiza antes de que otro complete), o si estos
-Â Â Â Â  las instrucciones se entremezclan con las instrucciones UART TX, luego el
-Â Â Â Â  El comportamiento es indefinido.
+     (o si uno se energiza antes de que otro complete), o si estos
+     las instrucciones se entremezclan con las instrucciones UART TX, luego el
+     El comportamiento es indefinido.
 
-    TambiÃ©n es posible usar esta instrucciÃ³n para generar una cadena fija,
-Â Â Â Â  sin interpolar el valor de una variable entera en el texto que
-Â Â Â Â  se envÃ­a por serie. En ese caso, simplemente no incluya el especial
-Â Â Â Â  secuencia de escape.
+    También es posible usar esta instrucción para generar una cadena fija,
+     sin interpolar el valor de una variable entera en el texto que
+     se envía por serie. En ese caso, simplemente no incluya el especial
+     secuencia de escape.
 
-    La condiciÃ³n de salida de esta instrucciÃ³n es verdadera mientras es
-Â Â Â Â  transmisiÃ³n de datos, de lo contrario falso. Esta instrucciÃ³n consume un muy
-Â Â Â Â  gran cantidad de memoria de programa, por lo que debe usarse con moderaciÃ³n. los
-Â Â Â Â  La implementaciÃ³n actual no es eficiente, pero una mejor serÃ¡
-Â Â Â Â  requieren modificaciones a todos los back-end.
+    La condición de salida de esta instrucción es verdadera mientras es
+     transmisión de datos, de lo contrario falso. Esta instrucción consume un muy
+     gran cantidad de memoria de programa, por lo que debe usarse con moderación. los
+     La implementación actual no es eficiente, pero una mejor será
+     requieren modificaciones a todos los back-end.
 
-   Use `\\'para una barra invertida literal. AdemÃ¡s de la secuencia de escape
-Â Â Â Â  para interpolar una variable entera, el siguiente control
-Â Â Â Â  los caracteres estÃ¡n disponibles:
+   Use `\\'para una barra invertida literal. Además de la secuencia de escape
+     para interpolar una variable entera, el siguiente control
+     los caracteres están disponibles:
 
-         Escape       Hex         CarÃ¡cter
+         Escape       Hex         Carácter
          Secuencia    Valor       Representado
 
          \a          0x07        BEL, alerta (pitido, campana)
          \b          0x08        BS, Retroceso (Escape)
-         \e          0x1B        carÃ¡cter de escape
+         \e          0x1B        carácter de escape
          \f          0x0C        FF, Formfeed
-         \n          0x0A        NL,Nueva lÃ­nea (avance de lÃ­nea)
+         \n          0x0A        NL,Nueva línea (avance de línea)
          \r          0x0D        CR, Retorno de carro
-         \t          0x09        HT, TAB, PestaÃ±a horizontal
-         \v          0x0B        VT, PestaÃ±a vertical
+         \t          0x09        HT, TAB, Pestaña horizontal
+         \v          0x0B        VT, Pestaña vertical
          \'          0x27        Comillas simples
          \"          0x22        Comillas dobles
-         \?          0x3F        Signo de interrogaciÃ³n
+         \?          0x3F        Signo de interrogación
          \\          0x5C        Barra invertida
-         \xhh        any         El byte cuyo valor numÃ©rico viene dado por
-                                 hh: interpretado como un nÃºmero hexadecimal
+         \xhh        any         El byte cuyo valor numérico viene dado por
+                                 hh: interpretado como un número hexadecimal
                                  del rango 0x00..0xFF (hex), 0..255 (dec)
          por ejemplo
-Â Â Â Â Â Â Â Â Â  \xAB es un carÃ¡cter con valor ASCII 0xAB (hexadecimal)
+          \xAB es un carácter con valor ASCII 0xAB (hexadecimal)
 
       Vea https://en.m.wikipedia.org/wiki/Escape_sequences_in_C
 
-    ------------------------------ CÃ³digos de control ASCII -------------------------------------
+    ------------------------------ Códigos de control ASCII -------------------------------------
     |Dec Hex Ctl  Nombre Significado del control      |Dec Hex Ctl  Nombre  Significado de Control
     |--- --- ---  ---- ---------------------------  |--- --- ---  ---- -------------------------------
-    |  0  00  ^@  NUL  nulo (cadena final)          | 16  10  ^P  DLE   escape de lÃ­nea de datos
+    |  0  00  ^@  NUL  nulo (cadena final)          | 16  10  ^P  DLE   escape de línea de datos
     |  1  01  ^A  SOH  inicio de encabezamiento     | 17  11  ^Q  DC1   dev ctrl 1 (X-ON)
     |  2  02  ^B  STX  inicio de texto              | 18  12  ^R  DC2   Ctrl 2 del dispositivo
     |  3  03  ^C  ETX  fin del texto                | 19  13  ^S  DC3   dev  ctrl 3 (X-OFF)
-    |  4  04  ^D  EOT  fin de la transmisiÃ³n        | 20  14  ^T  DC4   Ctrl 4 del dispositivo
-    |  5  05  ^E  ENQ  peticiÃ³n                     | 21  15  ^U  NAK   reconocimiento negativo
-    |  6  06  ^F  ACK  reconocer                    | 22  16  ^V  SYN   inactivo sÃ­ncrono
-    |  7  07  ^G  BEL  campana                \a    | 23  17  ^W  ETB   bloque de transmisiÃ³n final
+    |  4  04  ^D  EOT  fin de la transmisión        | 20  14  ^T  DC4   Ctrl 4 del dispositivo
+    |  5  05  ^E  ENQ  petición                     | 21  15  ^U  NAK   reconocimiento negativo
+    |  6  06  ^F  ACK  reconocer                    | 22  16  ^V  SYN   inactivo síncrono
+    |  7  07  ^G  BEL  campana                \a    | 23  17  ^W  ETB   bloque de transmisión final
     |  8  08  ^H  BS   retroceso              \b    | 24  18  ^X  CAN   cancelar
-    |  9  09  ^I  HT   PestaÃ±a horizontal TAB \t    | 25  19  ^Y  EM    fin del medio
-    | 10  0a  ^J  LF   linea de alimentaciÃ³n  \n    | 26  1a  ^Z  SUB   sustituir
-    | 11  0b  ^K  VT   pestaÃ±a vertical       \v    | 27  1b  ^[  ESC   escape (Salir)
-    | 12  0c  ^L  FF   alimentaciÃ³n de formulario \ | 28  1c  ^\  FS    separador de archivos
+    |  9  09  ^I  HT   Pestaña horizontal TAB \t    | 25  19  ^Y  EM    fin del medio
+    | 10  0a  ^J  LF   linea de alimentación  \n    | 26  1a  ^Z  SUB   sustituir
+    | 11  0b  ^K  VT   pestaña vertical       \v    | 27  1b  ^[  ESC   escape (Salir)
+    | 12  0c  ^L  FF   alimentación de formulario \ | 28  1c  ^\  FS    separador de archivos
     | 13  0d  ^M  CR   retorno de carro   \r        | 29  1d  ^]  GS    separador de grupo
     | 14  0e  ^N  SO   desplazar fuera              | 30  1e  ^^  RS    separador de registros
     | 15  0f  ^O  SI   desplazar dentro             | 31  1f  ^_  US    separador de unidad
@@ -1800,170 +1800,170 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > SPI ENVIAR / RECIBIR          {SPI       SPI}
                                -{->recv send->}-
 
-    Las funciones SPI solo estÃ¡n disponibles en el modo 'C', es decir, mediante la compilaciÃ³n de C,
-Â Â Â Â  solo para ARM de 32 bits y AVR de tipo AtMega. Solo se puede usar un SPI
-Â Â Â Â  en una misma escalera, llamada SPI, o SPI1, SPI2, SPI3 cuando hay varios
-Â Â Â Â  disponible en el micro. SPI funciona solo en modo maestro, 8 bits de datos, con
-Â Â Â Â  MSB primero, y su frecuencia se establece en el panel de configuraciÃ³n del micro
-Â Â Â Â  en ldmicro. El pin SS se maneja para AVR pero no para ARM. Uno puede usar externo
-Â Â Â Â  pines para activar / desactivar los esclavos en el bus SPI, y / o pin SS.
-Â Â Â Â  En un SPI, el envÃ­o y la recepciÃ³n son simultÃ¡neos, es por eso que ambas operaciones
-Â Â Â Â  se combinan en una sola funciÃ³n.
+    Las funciones SPI solo están disponibles en el modo 'C', es decir, mediante la compilación de C,
+     solo para ARM de 32 bits y AVR de tipo AtMega. Solo se puede usar un SPI
+     en una misma escalera, llamada SPI, o SPI1, SPI2, SPI3 cuando hay varios
+     disponible en el micro. SPI funciona solo en modo maestro, 8 bits de datos, con
+     MSB primero, y su frecuencia se establece en el panel de configuración del micro
+     en ldmicro. El pin SS se maneja para AVR pero no para ARM. Uno puede usar externo
+     pines para activar / desactivar los esclavos en el bus SPI, y / o pin SS.
+     En un SPI, el envío y la recepción son simultáneos, es por eso que ambas operaciones
+     se combinan en una sola función.
 
 
 > SPI ESCRIBIR                  {SPI_WR     SPI}
                                -{   "Message"->}-
 
-    La funciÃ³n Escribir SPI envÃ­a una cadena a travÃ©s de SPI, sin importar los datos entrantes.
-Â Â Â Â  La cadena puede contener caracteres especiales introducidos por \\. No abuses de esto
-Â Â Â Â  funciÃ³n, porque SPI puede ralentizar el programa y generar tiempos de ciclo
-Â Â Â Â  problemas!
+    La función Escribir SPI envía una cadena a través de SPI, sin importar los datos entrantes.
+     La cadena puede contener caracteres especiales introducidos por \\. No abuses de esto
+     función, porque SPI puede ralentizar el programa y generar tiempos de ciclo
+     problemas!
 
-    NÃ“TESE BIEN:
+    NÓTESE BIEN:
     Las funciones SPI utilizan bibliotecas C externas (suministradas) que deben compilarse
-Â Â Â Â  con el programa C principal generado por ldmicro al compilar a travÃ©s de menÃºs ldmicro
-Â Â Â Â  <Compilar Atmel AVR-GCC> o <Compilar ARM-GCC>, seguido de un <FlashMCU>
-Â Â Â Â  comando para construir el ejecutable .hex y, si estÃ¡ bien configurado, cargarlo
-Â Â Â Â  ejecutable en el objetivo AVR o ARM.
+     con el programa C principal generado por ldmicro al compilar a través de menús ldmicro
+     <Compilar Atmel AVR-GCC> o <Compilar ARM-GCC>, seguido de un <FlashMCU>
+     comando para construir el ejecutable .hex y, si está bien configurado, cargarlo
+     ejecutable en el objetivo AVR o ARM.
 
 
 > I2C LEER                      {I2C_RD    I2C}
                                -{->recv 0x20 0}-
 
-    Las funciones I2C solo estÃ¡n disponibles en el modo 'C', es decir, mediante la compilaciÃ³n de C,
-Â Â Â Â  solo para ARM de 32 bits y AVR de tipo AtMega. Solo se puede usar un bus I2C
-Â Â Â Â  en una misma escalera, llamada I2C, o I2C1, I2C2, I2C3 cuando hay varios
-Â Â Â Â  disponible en el micro. I2C funciona solo en modo maestro y puede acceder a cualquier
-Â Â Â Â  registrarse (basado en 0) en cualquier direcciÃ³n (1-127) en el bus I2C.
-Â Â Â Â  La frecuencia I2C se configura en el panel de configuraciÃ³n del micro.
-Â Â Â Â  La funciÃ³n I2C READ lee un byte en un registro en el esclavo en la direcciÃ³n dada.
+    Las funciones I2C solo están disponibles en el modo 'C', es decir, mediante la compilación de C,
+     solo para ARM de 32 bits y AVR de tipo AtMega. Solo se puede usar un bus I2C
+     en una misma escalera, llamada I2C, o I2C1, I2C2, I2C3 cuando hay varios
+     disponible en el micro. I2C funciona solo en modo maestro y puede acceder a cualquier
+     registrarse (basado en 0) en cualquier dirección (1-127) en el bus I2C.
+     La frecuencia I2C se configura en el panel de configuración del micro.
+     La función I2C READ lee un byte en un registro en el esclavo en la dirección dada.
 
 
 > I2C ESCRIBIR                  {I2C_WR    I2C}
                                -{0x20 0 send->}-
 
-   La funciÃ³n I2C WRITE escribe un byte en un registro en el esclavo en la direcciÃ³n dada.
+   La función I2C WRITE escribe un byte en un registro en el esclavo en la dirección dada.
 
-    NÃ“TESE BIEN:
+    NÓTESE BIEN:
     Las funciones I2C utilizan bibliotecas C externas (suministradas) que deben compilarse
-Â Â Â Â  con el programa C principal generado por ldmicro al compilar a travÃ©s de menÃºs ldmicro
-Â Â Â Â  <Compilar Atmel AVR-GCC> o <Compilar ARM-GCC>, seguido de un <FlashMCU>
-Â Â Â Â  comando para construir el ejecutable .hex y, si estÃ¡ bien configurado, cargarlo
-Â Â Â Â  ejecutable en el objetivo AVR o ARM.
+     con el programa C principal generado por ldmicro al compilar a través de menús ldmicro
+     <Compilar Atmel AVR-GCC> o <Compilar ARM-GCC>, seguido de un <FlashMCU>
+     comando para construir el ejecutable .hex y, si está bien configurado, cargarlo
+     ejecutable en el objetivo AVR o ARM.
 
 
 > CADENA FORMATEADA                         dest
                                        -{"string", var}-
 
     Para objetivos como Netzer con implementaciones de printf ya presentes
-Â Â Â Â  Esta instrucciÃ³n puede ser utilizada.
+     Esta instrucción puede ser utilizada.
 
-    Cuando la condiciÃ³n de entrada para esta instrucciÃ³n pasa de falso a
-Â Â Â Â  Es cierto, comienza a procesar la cadena con printf y escribe el resultado
-Â Â Â Â  al registro de destino dado.
+    Cuando la condición de entrada para esta instrucción pasa de falso a
+     Es cierto, comienza a procesar la cadena con printf y escribe el resultado
+     al registro de destino dado.
 
    Incrusta completamente la cadena dada en la imagen resultante.
 
     La variable dada puede ser cualquier registro del programa. Es
-Â Â Â Â  utilizado como marcador de posiciÃ³n para imprimirf. La funciÃ³n printf accede
-Â Â Â Â  el registro si se encuentra algÃºn marcador de posiciÃ³n de estilo printf (es decir,% d).
+     utilizado como marcador de posición para imprimirf. La función printf accede
+     el registro si se encuentra algún marcador de posición de estilo printf (es decir,% d).
 
-    Dest es un registro donde se escribe el resultado. Esto deberÃ­a
-Â Â Â Â  ser la entrada superior de una memoria intermedia o circular.
+    Dest es un registro donde se escribe el resultado. Esto debería
+     ser la entrada superior de una memoria intermedia o circular.
 
-    La condiciÃ³n de llamada de esta instrucciÃ³n es siempre cierta.
+    La condición de llamada de esta instrucción es siempre cierta.
 
 
 > CLRWDT
                            --{CLRWDT}--
 
-    Cuando la condiciÃ³n de entrada de esta instrucciÃ³n es verdadera, causa la
-Â Â Â Â  borrar el temporizador WDT. LDmicro ejecuta el comando CLRWDT en cada ciclo del PLC
-Â Â Â Â  automÃ¡ticamente (al comienzo del ciclo), por lo que necesita CLRWDT adicional
-Â Â Â Â  si el perÃ­odo de ciclo del PLC es mayor que el perÃ­odo WDT si WDT estÃ¡ habilitado
-Â Â Â Â  Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s a la derecha en su peldaÃ±o.
+    Cuando la condición de entrada de esta instrucción es verdadera, causa la
+     borrar el temporizador WDT. LDmicro ejecuta el comando CLRWDT en cada ciclo del PLC
+     automáticamente (al comienzo del ciclo), por lo que necesita CLRWDT adicional
+     si el período de ciclo del PLC es mayor que el período WDT si WDT está habilitado
+     Esta instrucción debe ser la instrucción más a la derecha en su peldaño.
 
 
 > LOCK (BLOQUEAR)
                            --{LOCK}--
 
-    Cuando la condiciÃ³n de entrada de esta instrucciÃ³n es verdadera, causa la
-Â Â Â Â  Comando LOCK. Es un artificial
-Â Â Â Â  situaciÃ³n para provocar el reinicio de WDT (si WDT estÃ¡ habilitado). Comando LOCK
-Â Â Â Â  diseÃ±ado como bucle infinito. Es punto muerto, forma de congelar, bloquear el
-Â Â Â Â  programa.
-Â Â Â Â  El comando LOCK ejecuta goto a la direcciÃ³n actual, es decir
-Â Â Â Â  labelN: goto labelN (label02: rjmp label02), es decir, bucle infinito.
-Â Â Â Â  El comando LOCK ejecuta el bucle infinito, pero WDT puede restablecer la MCU.
-Â Â Â Â  Solo WDT o reinicio externo pueden descongelar el programa despuÃ©s del comando LOCK.
+    Cuando la condición de entrada de esta instrucción es verdadera, causa la
+     Comando LOCK. Es un artificial
+     situación para provocar el reinicio de WDT (si WDT está habilitado). Comando LOCK
+     diseñado como bucle infinito. Es punto muerto, forma de congelar, bloquear el
+     programa.
+     El comando LOCK ejecuta goto a la dirección actual, es decir
+     labelN: goto labelN (label02: rjmp label02), es decir, bucle infinito.
+     El comando LOCK ejecuta el bucle infinito, pero WDT puede restablecer la MCU.
+     Solo WDT o reinicio externo pueden descongelar el programa después del comando LOCK.
 
 
 > SLEEP (DORMIR)
                            --{SLEEP}--
 
-    Cuando la condiciÃ³n de entrada de esta instrucciÃ³n es verdadera,
-Â Â Â Â  se configura el modo SLEEP (apagado). Se utiliza para ahorrar energÃ­a.
-Â Â Â Â  en suministro de baterÃ­a.
-Â Â Â Â  PIC: Despertar desde el sueÃ±o debido a una interrupciÃ³n externa en el borde ascendente del pin RB0 / INT.
-Â Â Â Â  PIC10xxxx: Despertar desde el modo de suspensiÃ³n en el cambio de pin GP0, GP1, GP3.
-Â Â Â Â  AVR: Despertar desde el sueÃ±o debido a una interrupciÃ³n externa en el borde ascendente de los pines PD2 / INT0, PD3 / INT1.
-Â Â Â Â  La operaciÃ³n SLEEP no afecta los pines MCU IO y otras operaciones LDmicro.
-Â Â Â Â  Nota: SLEEP alarga el tiempo del ciclo del PLC y los temporizadores TON, TOF, RTO, CTY.
-Â Â Â Â  Esto puede frustrar los planes, romper el flujo de trabajo.
-Â Â Â Â  Esta instrucciÃ³n debe ser la instrucciÃ³n mÃ¡s correcta en su peldaÃ±o.
+    Cuando la condición de entrada de esta instrucción es verdadera,
+     se configura el modo SLEEP (apagado). Se utiliza para ahorrar energía.
+     en suministro de batería.
+     PIC: Despertar desde el sueño debido a una interrupción externa en el borde ascendente del pin RB0 / INT.
+     PIC10xxxx: Despertar desde el modo de suspensión en el cambio de pin GP0, GP1, GP3.
+     AVR: Despertar desde el sueño debido a una interrupción externa en el borde ascendente de los pines PD2 / INT0, PD3 / INT1.
+     La operación SLEEP no afecta los pines MCU IO y otras operaciones LDmicro.
+     Nota: SLEEP alarga el tiempo del ciclo del PLC y los temporizadores TON, TOF, RTO, CTY.
+     Esto puede frustrar los planes, romper el flujo de trabajo.
+     Esta instrucción debe ser la instrucción más correcta en su peldaño.
 
 
 >LABEL, GOTO, SUBPROG, RETURN, ENDSUB, GOSUB
 
-    LABEL y GOTO instrucciÃ³nes
+    LABEL y GOTO instrucciónes
     https://github.com/LDmicro/LDmicro/wiki/GOTO-instruction
 
-    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL y GOTO instrucciÃ³nes. Part 2
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL y GOTO instrucciónes. Part 2
     https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-2
 
-    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL y GOTO instrucciÃ³nes. Part 3
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL y GOTO instrucciónes. Part 3
     https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-3
 
 
 > RAND                        Rand
                           --{ RAND }--
 
-    El generador de nÃºmeros pseudoaleatorios devuelve el nÃºmero en el rango completo
-Â Â Â Â  de la variable 'Rand'.
-Â Â Â Â  Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino 'Rand' con el siguiente nÃºmero pseudoaleatorio calculado
-Â Â Â Â  por un generador lineal congruencial (LCG). Cuando la entrada a esto
-Â Â Â Â  la instrucciÃ³n es falsa no pasa nada.
-Â Â Â Â  Ver https://en.m.wikipedia.org/wiki/Linear_congruential_generator
-Â Â Â Â  El generador estÃ¡ definido por la relaciÃ³n de recurrencia:
-Â Â Â Â  X [n + 1] = (a * X [n] + c) mod m
-Â Â Â Â  Constantes usadas de MTH $ RANDOM del VMS, versiones antiguas de glibc
-Â Â Â Â  a = 69069 (0x10DCD)
-Â Â Â Â  c = 1
-Â Â Â Â  m = 2 ^ 32
-Â Â Â Â  X = (X * 0x10DCD + 1)% 0x100000000
-Â Â Â Â  RAND devuelve los bytes mÃ¡s significativos de X.
-Â Â Â Â  X almacenado como $ seed_Rand variable de 32 bits.
+    El generador de números pseudoaleatorios devuelve el número en el rango completo
+     de la variable 'Rand'.
+     Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino 'Rand' con el siguiente número pseudoaleatorio calculado
+     por un generador lineal congruencial (LCG). Cuando la entrada a esto
+     la instrucción es falsa no pasa nada.
+     Ver https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+     El generador está definido por la relación de recurrencia:
+     X [n + 1] = (a * X [n] + c) mod m
+     Constantes usadas de MTH $ RANDOM del VMS, versiones antiguas de glibc
+     a = 69069 (0x10DCD)
+     c = 1
+     m = 2 ^ 32
+     X = (X * 0x10DCD + 1)% 0x100000000
+     RAND devuelve los bytes más significativos de X.
+     X almacenado como $ seed_Rand variable de 32 bits.
 
 
 > SRAND                     {SRAND     Rand}
                           --{$seed:=newSeed}--
 
-    El generador de nÃºmeros pseudoaleatorios se inicializa utilizando el argumento
-Â Â Â Â  pasado como nueva semilla. $ seed_Rand: = newSeed.
-Â Â Â Â  Cuando la entrada a esta instrucciÃ³n es verdadera, establece el valor dado
-Â Â Â Â  variable de destino $ seed_Rand igual a la variable de origen dada o
-Â Â Â Â  constante. Cuando la entrada a esta instrucciÃ³n es falsa, nada
-Â Â Â Â  sucede
-Â Â Â Â  Dos inicializaciones diferentes con la misma semilla generarÃ¡n la misma
-Â Â Â Â  sucesiÃ³n de resultados en llamadas posteriores a RAND.
-Â Â Â Â  Si la semilla se establece en 1, el generador 'Rand' se reinicializa a su inicial
-Â Â Â Â  valor y produce los mismos valores que antes de cualquier llamada a RAND o SRAND.
-Â Â Â Â  Las fuentes de entropÃ­a pueden ser ADC, temporizadores, RAND anteriores guardados en EEPROM, etc.
+    El generador de números pseudoaleatorios se inicializa utilizando el argumento
+     pasado como nueva semilla. $ seed_Rand: = newSeed.
+     Cuando la entrada a esta instrucción es verdadera, establece el valor dado
+     variable de destino $ seed_Rand igual a la variable de origen dada o
+     constante. Cuando la entrada a esta instrucción es falsa, nada
+     sucede
+     Dos inicializaciones diferentes con la misma semilla generarán la misma
+     sucesión de resultados en llamadas posteriores a RAND.
+     Si la semilla se establece en 1, el generador 'Rand' se reinicializa a su inicial
+     valor y produce los mismos valores que antes de cualquier llamada a RAND o SRAND.
+     Las fuentes de entropía pueden ser ADC, temporizadores, RAND anteriores guardados en EEPROM, etc.
 
-Â Â Â Â  En este ejemplo tenemos dos SEPARAR los generadores de nÃºmeros pseudoaleatorios LCG.
-Â Â Â Â  Pero si newSeed1 es igual a newSeed2, entonces RAnd1 y Rand2 son iguales
-Â Â Â Â  Secuencias de nÃºmeros.
+     En este ejemplo tenemos dos SEPARAR los generadores de números pseudoaleatorios LCG.
+     Pero si newSeed1 es igual a newSeed2, entonces RAnd1 y Rand2 son iguales
+     Secuencias de números.
    ||     _    _      {SRAND     Rand1}                       ||
  1 ||--[_/ OSR/ \_]---{$seed:=newSeed1}-                      ||
    ||                                                         ||
@@ -1983,20 +1983,20 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                              --{C          src}--
 
     La variable 'dest' obtiene el valor 'abcdefgDP', controla (resalta)
-Â Â Â Â  los segmentos de fuente
-Â Â Â Â  Puede usar la variable de puerto de acceso directo '#PORTx' como la variable 'dest'.
-Â Â Â Â  Se puede conectar a los Ã¡nodos (cÃ¡todos) del mÃ³dulo LED de 7 segmentos.
-Â Â Â Â  a travÃ©s de las resistencias limitantes de corriente.
+     los segmentos de fuente
+     Puede usar la variable de puerto de acceso directo '#PORTx' como la variable 'dest'.
+     Se puede conectar a los ánodos (cátodos) del módulo LED de 7 segmentos.
+     a través de las resistencias limitantes de corriente.
 
-Â Â Â Â  Para encender (resaltar) el segmento LED "a", se requiere un nivel alto
-Â Â Â Â  en el pin "a" y un nivel bajo en el pin comÃºn, cuando un mÃ³dulo con
-Â Â Â Â  Se utiliza la conexiÃ³n LED de cÃ¡todo comÃºn.
-Â Â Â Â  Cuando se utiliza un mÃ³dulo con la conexiÃ³n de Ã¡nodo comÃºn, para encender
-Â Â Â Â  el segmento LED "a", el nivel bajo se requiere en el pin "a" y
-Â Â Â Â  Se requiere un alto nivel en el pin comÃºn. Utilice el parÃ¡metro 'A' en su lugar
-Â Â Â Â  de la 'C' para especificar quÃ© tipo de conexiÃ³n comÃºn se utiliza.
+     Para encender (resaltar) el segmento LED "a", se requiere un nivel alto
+     en el pin "a" y un nivel bajo en el pin común, cuando un módulo con
+     Se utiliza la conexión LED de cátodo común.
+     Cuando se utiliza un módulo con la conexión de ánodo común, para encender
+     el segmento LED "a", el nivel bajo se requiere en el pin "a" y
+     Se requiere un alto nivel en el pin común. Utilice el parámetro 'A' en su lugar
+     de la 'C' para especificar qué tipo de conexión común se utiliza.
 
-Â Â Â Â  Fuente de visualizaciÃ³n de 7 segmentos
+     Fuente de visualización de 7 segmentos
          a
         --
      f|    |b
@@ -2012,14 +2012,14 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
     DP - es un segmento de puntos
 
 
-    a  --|>|-----+-- ConexiÃ³n LED de cÃ¡todos comÃºn
+    a  --|>|-----+-- Conexión LED de cátodos común
                  |
     b  --|>|-----+
     ...          |
                  |
     DP --|>|-----+
 
-    a  --|<|-----+-- ConexiÃ³n LED de Ã¡nodos comunes
+    a  --|<|-----+-- Conexión LED de ánodos comunes
                  |
     b  --|<|-----+
     ...          |
@@ -2027,13 +2027,13 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
     DP --|<|-----+
 
 
-    La variable 'src' (char) debe estar en el rango de 0..128 y generalmente tiene un tamaÃ±o de 1 byte.
-Â Â Â Â  Se implementan 128 caracteres de cÃ³digos de tabla ASCII.
-Â Â Â Â  Los primeros 32 caracteres ASCII replased a los dÃ­gitos hexadecimales.
-Â Â Â Â  El 129Âº sÃ­mbolo es un sÃ­mbolo de un grado 'o' para usar con un valor de temperatura.
+    La variable 'src' (char) debe estar en el rango de 0..128 y generalmente tiene un tamaño de 1 byte.
+     Se implementan 128 caracteres de códigos de tabla ASCII.
+     Los primeros 32 caracteres ASCII replased a los dígitos hexadecimales.
+     El 129º símbolo es un símbolo de un grado 'o' para usar con un valor de temperatura.
 DIRECCION=  0               16(0x10)       31(0x1F)
-row+colmn  |               |              | de 0 a 15 - dÃ­gitos hexadecimales
-  0       0123456789ABCDEF0123456789ABCDEF  del 16 al 31 - dÃ­gitos hexadecimales con el punto DP
+row+colmn  |               |              | de 0 a 15 - dígitos hexadecimales
+  0       0123456789ABCDEF0123456789ABCDEF  del 16 al 31 - dígitos hexadecimales con el punto DP
  32(0x20)  !"#$%&'()*+,-./0123456789:;<=>?
  64(0x40) @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
  96(0x60) `abcdefghijklmnopqrstuvwxyz{|}~
@@ -2063,7 +2063,7 @@ row+colmn  |               |              | de 0 a 15 - dÃ­gitos hexadecimales
     SEGMENTO  0 0 m j DP g f e d c b a
     BIT           9 8  7 6 5 4 3 2 1 0
     nibbles  ^        ^       ^       ^
-    El tamaÃ±o de la variable 'dest' debe ser de al menos 2 bytes.
+    El tamaño de la variable 'dest' debe ser de al menos 2 bytes.
 
 
 > 14-CONVERTIDOR DE SEGMENTOS  {14SEG   dest:=}
@@ -2081,7 +2081,7 @@ row+colmn  |               |              | de 0 a 15 - dÃ­gitos hexadecimales
     SEGMENTO 0 g2  l  k  i  h  m  j DP g1  f  e  d  c  b  a
     BIT        14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
     nibbles ^          ^           ^           ^           ^
-    El tamaÃ±o de la variable 'dest' debe ser de al menos 2 bytes.
+    El tamaño de la variable 'dest' debe ser de al menos 2 bytes.
 
 
 > 16-CONVERTIDOR DE SEGMENTOS  {16SEG   dest:=}
@@ -2099,27 +2099,27 @@ row+colmn  |               |              | de 0 a 15 - dÃ­gitos hexadecimales
     SEGMENTO  0  0  0 a2 d2 g2  l  k  i  h  m  j DP g1  f  e d1  c  b a1
     BIT               16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
     nibbles  ^          ^           ^           ^           ^           ^
-    El tamaÃ±o de la variable 'dest' debe ser de al menos 3 bytes.
+    El tamaño de la variable 'dest' debe ser de al menos 3 bytes.
 
 
 > CONVERTIR BINARIO EN BCD    {BIN2BCD dest:=}
                             --{           src}-
 
     El 'src' es un valor binario con una longitud de 1,2,3,4 bytes.
-Â Â Â Â  El 'dest' es un valor BCD desempaquetado con 3, 5, 8, 10 bytes de longitud.
-Â Â Â Â  Desempaquetado: cada nÃºmero estÃ¡ codificado en un byte, con cuatro bits
-Â Â Â Â  representando el nÃºmero y los bits restantes que no tienen significado.
-Â Â Â Â  El decimal 99 (0x63) se convertirÃ¡ al valor 0x00 09 09.
-Â Â Â Â  El decimal 100 (0x64) se convertirÃ¡ al valor 0x01 00 00.
-Â Â Â Â  Ver https://en.wikipedia.org/wiki/Binary-coded_decimal
+     El 'dest' es un valor BCD desempaquetado con 3, 5, 8, 10 bytes de longitud.
+     Desempaquetado: cada número está codificado en un byte, con cuatro bits
+     representando el número y los bits restantes que no tienen significado.
+     El decimal 99 (0x63) se convertirá al valor 0x00 09 09.
+     El decimal 100 (0x64) se convertirá al valor 0x01 00 00.
+     Ver https://en.wikipedia.org/wiki/Binary-coded_decimal
 
 
 > CODIFICADOR DE CUADRATURA   ~~[XqA0 XqB0            YqDir0]-
                               -\[XqZ0   QUAD ENCOD   qCount0]^-
 
-    La instrucciÃ³n QUADRATURE ENCODER toma dos seÃ±ales codificadas en cuadratura
-Â Â Â Â  (A y B) de un dispositivo codificador incremental rotativo o lineal.
-Â Â Â Â  Ver https://en.wikipedia.org/wiki/Incremental_encoder
+    La instrucción QUADRATURE ENCODER toma dos señales codificadas en cuadratura
+     (A y B) de un dispositivo codificador incremental rotativo o lineal.
+     Ver https://en.wikipedia.org/wiki/Incremental_encoder
 
  Nivel
  Logico             move (mover) ->             |            <- move (mover) 
@@ -2133,7 +2133,7 @@ Entrada B|        |_______|       |_______|   |_______|        |_______|
          |
 Contador |  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0
          |
- Salida  | ___________________________________   disminuir o CCW o hacia atrÃ¡s
+ Salida  | ___________________________________   disminuir o CCW o hacia atrás
  Direcion|    aumentar o CW o hacia adelante  |________________________________
          |
  Salida  |
@@ -2142,39 +2142,39 @@ Contador |  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0
        --+----------------------------------------------------------------> Tiempo
          |
            '^' - es un impulso de tiempo de ciclo del PLC
-    Sugerencia: use el pulso de salida para determinar si se cambiÃ³ el contador,
-Â Â Â Â  No para contar.
+    Sugerencia: use el pulso de salida para determinar si se cambió el contador,
+     No para contar.
 
-    La instrucciÃ³n QUAD ENCOD puede contener 3 o 2 entradas y 1 o 0 salida.
-Â Â Â Â  Las entradas A y B deben estar ubicadas en el mismo PUERTO MCU.
-Â Â Â Â  Por ejemplo, RBx y RBx, no RAx, RBx.
-Â Â Â Â  La entrada Z es opcional y puede estar vacÃ­a.
-Â Â Â Â  La salida Dir es opcional y puede estar vacÃ­a.
-Â Â Â Â  La salida Dir puede ser Y (pin) o R (relÃ© interno).
+    La instrucción QUAD ENCOD puede contener 3 o 2 entradas y 1 o 0 salida.
+     Las entradas A y B deben estar ubicadas en el mismo PUERTO MCU.
+     Por ejemplo, RBx y RBx, no RAx, RBx.
+     La entrada Z es opcional y puede estar vacía.
+     La salida Dir es opcional y puede estar vacía.
+     La salida Dir puede ser Y (pin) o R (relé interno).
 
    ||                                                                    ||
    ||       R0        ~~[XqA0 XqB0            YqDir0]-         R1        ||
    ||-------] [--------\[XqZ0   QUAD ENCOD   qCount0]^---------( )-------||
    ||                                                                    ||
 
-    Cuando la condiciÃ³n R0 de entrada de la instrucciÃ³n QUAD ENCOD es falsa,
-Â Â Â Â  las entradas A, B, Z se ignoran.
-Â Â Â Â  Cuando la condiciÃ³n R0 de entrada de la instrucciÃ³n QUAD ENCOD es verdadera,
-Â Â Â Â  los pulsos en las entradas A, B, Z se decodifican en el valor del contador,
-Â Â Â Â  la seÃ±al de salida Dir es alta, cuando el contador aumenta y
-Â Â Â Â  un nivel bajo cuando se disminuye el contador, se produce un pulso de salida R1.
-Â Â Â Â  El valor del contador cambia cuando ambas entradas A y B cambian.
-Â Â Â Â  Esto corresponde al multiplicador de reloj x2. La frecuencia de la salida
-Â Â Â Â  pulsos es el doble de la frecuencia de los pulsos de entrada A (B).
-Â Â Â Â  La frecuencia de los pulsos de entrada A (B) debe ser menor que la frecuencia de
-Â Â Â Â  el ciclo PLC / 4, de lo contrario habrÃ¡ pÃ©rdidas de pulsos de entrada.
-Â Â Â Â  Un rebote de los pulsos de entrada A (B) debe ser menor que el tiempo de ciclo del PLC / 8.
+    Cuando la condición R0 de entrada de la instrucción QUAD ENCOD es falsa,
+     las entradas A, B, Z se ignoran.
+     Cuando la condición R0 de entrada de la instrucción QUAD ENCOD es verdadera,
+     los pulsos en las entradas A, B, Z se decodifican en el valor del contador,
+     la señal de salida Dir es alta, cuando el contador aumenta y
+     un nivel bajo cuando se disminuye el contador, se produce un pulso de salida R1.
+     El valor del contador cambia cuando ambas entradas A y B cambian.
+     Esto corresponde al multiplicador de reloj x2. La frecuencia de la salida
+     pulsos es el doble de la frecuencia de los pulsos de entrada A (B).
+     La frecuencia de los pulsos de entrada A (B) debe ser menor que la frecuencia de
+     el ciclo PLC / 4, de lo contrario habrá pérdidas de pulsos de entrada.
+     Un rebote de los pulsos de entrada A (B) debe ser menor que el tiempo de ciclo del PLC / 8.
 
-    La entrada Z puede ser dinÃ¡mica (activada por flanco) o estÃ¡tica.
-Â Â Â Â  Si el parÃ¡metro 'Count per revol' es 0 y la entrada Z estÃ¡ activa, el contador se establece en 0.
-Â Â Â Â  Si el parÃ¡metro 'Count per revol' es mayor que 0 y la entrada Z estÃ¡ activa, entonces
-Â Â Â Â  el contador se redondearÃ¡ a un mÃºltiplo del valor 'Recuento por revoluciÃ³n'.
-Â Â Â Â  Si el parÃ¡metro 'Count per revol' es menor que 0, entonces la entrada Z se ignora.
+    La entrada Z puede ser dinámica (activada por flanco) o estática.
+     Si el parámetro 'Count per revol' es 0 y la entrada Z está activa, el contador se establece en 0.
+     Si el parámetro 'Count per revol' es mayor que 0 y la entrada Z está activa, entonces
+     el contador se redondeará a un múltiplo del valor 'Recuento por revolución'.
+     Si el parámetro 'Count per revol' es menor que 0, entonces la entrada Z se ignora.
 
 
  Nivel
@@ -2195,7 +2195,7 @@ Entrada Z| _______________________________________________________/\___________
 Contador |  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   | 0 |   | 1
          |
          |
-         |  (hay pÃ©rdidas de pulsos A, B) 'Count per revol' es 10 (recupera el contador)
+         |  (hay pérdidas de pulsos A, B) 'Count per revol' es 10 (recupera el contador)
          |
 Contador |  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   |10 |   | 11
          |
@@ -2203,26 +2203,26 @@ Contador |  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   |10 |   | 11
          |
 
     Para simular las entradas A, B, Z: haga doble clic en el nombre de la entrada en la lista
-Â Â Â Â  en la parte inferior de la pantalla.
+     en la parte inferior de la pantalla.
 
-    Ver para mÃ¡s detalles https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
+    Ver para más detalles https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
     Incremental QUADRATURE ENCODER controls the brightness of the LED (PWM out)
     https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER-controls-the-brightness-of-the-LED-(PWM-out)
 
 
-UNA NOTA SOBRE EL USO DE LAS MATEMÃTICAS
+UNA NOTA SOBRE EL USO DE LAS MATEMÁTICAS
 ========================================
 
-Recuerde que LDmicro realiza solo matemÃ¡ticas de enteros de 16 bits. Eso significa
-que el resultado final de cualquier cÃ¡lculo que realice debe ser un
-entero entre -32768 y 32767. TambiÃ©n significa que el intermedio
-los resultados de su cÃ¡lculo deben estar todos dentro de ese rango.
+Recuerde que LDmicro realiza solo matemáticas de enteros de 16 bits. Eso significa
+que el resultado final de cualquier cálculo que realice debe ser un
+entero entre -32768 y 32767. También significa que el intermedio
+los resultados de su cálculo deben estar todos dentro de ese rango.
 
 Por ejemplo, digamos que desea calcular y = (1 / x) * 1200,
-donde x estÃ¡ entre 1 y 20. Entonces y va entre 1200 y 60, que
-cabe en un nÃºmero entero de 16 bits, por lo que al menos en teorÃ­a es posible
-realiza el cÃ¡lculo Hay dos formas de codificar esto:
-puede realizar el recÃ­proco y luego multiplicar:
+donde x está entre 1 y 20. Entonces y va entre 1200 y 60, que
+cabe en un número entero de 16 bits, por lo que al menos en teoría es posible
+realiza el cálculo Hay dos formas de codificar esto:
+puede realizar el recíproco y luego multiplicar:
 
    ||         {DIV  temp  :=}          ||
    ||---------{ 1 / x       }----------||
@@ -2231,27 +2231,27 @@ puede realizar el recÃ­proco y luego multiplicar:
    ||----------{ temp * 1200}----------||
    ||                                  ||
 
-O simplemente puede hacer la divisiÃ³n directamente, en un solo paso:
+O simplemente puede hacer la división directamente, en un solo paso:
 
    ||           {DIV  y  :=}           ||
    ||-----------{ 1200 / x }-----------||
 
-MatemÃ¡ticamente, estos dos son equivalentes; pero si los pruebas, entonces
-encontrarÃ¡ que el primero da un resultado incorrecto de y = 0. Que
+Matemáticamente, estos dos son equivalentes; pero si los pruebas, entonces
+encontrará que el primero da un resultado incorrecto de y = 0. Que
 es porque la variable 'temp' se desborda. Por ejemplo, cuando x = 3,
-(1 / x) = 0.333, pero eso no es un nÃºmero entero; la operaciÃ³n de divisiÃ³n
+(1 / x) = 0.333, pero eso no es un número entero; la operación de división
 aproxima esto como temp = 0. Entonces y = temp * 1200 = 0. En el segundo
 En caso de que no haya un resultado intermedio para el flujo inferior, todo funciona.
 
-Si estÃ¡ viendo problemas con sus matemÃ¡ticas, marque el intermedio
+Si está viendo problemas con sus matemáticas, marque el intermedio
 resultados de subdesbordamiento (o desbordamiento, que `se envuelve '; por ejemplo,
 32767 + 1 = -32768). Cuando sea posible, elija unidades que pongan valores en
 un rango de -100 a 100.
 
-Cuando necesite escalar una variable por algÃºn factor, hÃ¡galo usando una multiplicaciÃ³n
-y una divisiÃ³n Por ejemplo, para escalar y = 1.8 * x, calcule y = (9/5) * x
+Cuando necesite escalar una variable por algún factor, hágalo usando una multiplicación
+y una división Por ejemplo, para escalar y = 1.8 * x, calcule y = (9/5) * x
 (que es lo mismo, ya que 1.8 = 9/5), y codifique esto como y = (9 * x) / 5,
-realizando la multiplicaciÃ³n primero:
+realizando la multiplicación primero:
 
    ||         {MUL  temp  :=}          ||
    ||---------{ x * 9       }----------||
@@ -2263,10 +2263,10 @@ This works for all x < (32767 / 9), or x < 3640. For larger values of x,
 the variable `temp' would overflow. There is a similar lower limit on x.
 
 
-ESTILO DE CODIFICACIÃ“N
+ESTILO DE CODIFICACIÓN
 ======================
 
-Permito mÃºltiples bobinas en paralelo en un solo peldaÃ±o. Esto significa que
+Permito múltiples bobinas en paralelo en un solo peldaño. Esto significa que
 puedes hacer cosas como esta:
 
    ||       Xa               Ya        ||
@@ -2297,21 +2297,21 @@ En lugar de esto:
  3 ||-------] [--------------( )-------||
    ||                                  ||
 
-Esto significa que, en teorÃ­a, podrÃ­a escribir cualquier programa como un peldaÃ±o gigante,
-y no hay necesidad de usar varios peldaÃ±os en absoluto. En la prÃ¡ctica eso
-serÃ­a una mala idea, porque a medida que los peldaÃ±os se vuelven mÃ¡s complejos se vuelven
-mÃ¡s difÃ­cil de editar sin eliminar y volver a dibujar mucha lÃ³gica.
+Esto significa que, en teoría, podría escribir cualquier programa como un peldaño gigante,
+y no hay necesidad de usar varios peldaños en absoluto. En la práctica eso
+sería una mala idea, porque a medida que los peldaños se vuelven más complejos se vuelven
+más difícil de editar sin eliminar y volver a dibujar mucha lógica.
 
-AÃºn asÃ­, a menudo es una buena idea agrupar la lÃ³gica relacionada como una sola
-peldaÃ±o. Esto genera un cÃ³digo casi idÃ©ntico a si hiciste peldaÃ±os separados,
-pero muestra que estÃ¡n relacionados cuando los miras en la escalera
+Aún así, a menudo es una buena idea agrupar la lógica relacionada como una sola
+peldaño. Esto genera un código casi idéntico a si hiciste peldaños separados,
+pero muestra que están relacionados cuando los miras en la escalera
 diagrama.
 
                   *                 *                  *
 
-En general, se considera una forma pobre de escribir cÃ³digo de tal manera que
-su salida depende del orden de los peldaÃ±os. Por ejemplo, este cÃ³digo
-no es muy bueno si tanto Xa como Xb podrÃ­an ser ciertos:
+En general, se considera una forma pobre de escribir código de tal manera que
+su salida depende del orden de los peldaños. Por ejemplo, este código
+no es muy bueno si tanto Xa como Xb podrían ser ciertos:
 
    ||       Xa         {v  :=       }  ||
  1 ||-------] [--------{ 12      MOV}--||
@@ -2326,8 +2326,8 @@ no es muy bueno si tanto Xa como Xb podrÃ­an ser ciertos:
  2 ||------[ 15]-------------( )-------||
    ||                                  ||
 
-RomperÃ© esta regla si al hacerlo puedo hacer un cÃ³digo
-significativamente mÃ¡s compacto, sin embargo. Por ejemplo, asÃ­ es como lo harÃ­a
+Romperé esta regla si al hacerlo puedo hacer un código
+significativamente más compacto, sin embargo. Por ejemplo, así es como lo haría
 Convierta una cantidad binaria de 4 bits en Xb3: 0 en un entero:
 
    ||                                   {v  :=       }  ||
@@ -2346,72 +2346,72 @@ Convierta una cantidad binaria de 4 bits en Xb3: 0 en un entero:
    ||-------] [------------------{ v + 8    }-----------||
    ||                                                   ||
 
-Si la instrucciÃ³n MOV se moviÃ³ al final del peldaÃ±o en lugar de
+Si la instrucción MOV se movió al final del peldaño en lugar de
 arriba, entonces el valor de v cuando se lee en otra parte del programa
-ser 0. La salida de este cÃ³digo, por lo tanto, depende del orden en que
-Se evalÃºan las instrucciones. Considerando lo engorroso que serÃ­a
+ser 0. La salida de este código, por lo tanto, depende del orden en que
+Se evalúan las instrucciones. Considerando lo engorroso que sería
 para codificar esto de otra manera, acepto eso.
 
 ABREVIATURAS
 ============
-PLC - controlador lÃ³gico programable.
-PWM - modulaciÃ³n de ancho de pulso.
-ADC - convertidor analÃ³gico a digital.
+PLC - controlador lógico programable.
+PWM - modulación de ancho de pulso.
+ADC - convertidor analógico a digital.
 PCB - placa de circuito impreso
 
 BUGS
 ====
 
-LDmicro no genera cÃ³digo muy eficiente; es lento de ejecutar y
-derrochador de flash y RAM. A pesar de esto, un PIC o AVR de tamaÃ±o mediano puede
-hacer todo lo que puede hacer un PLC pequeÃ±o, por lo que esto no me molesta mucho.
+LDmicro no genera código muy eficiente; es lento de ejecutar y
+derrochador de flash y RAM. A pesar de esto, un PIC o AVR de tamaño mediano puede
+hacer todo lo que puede hacer un PLC pequeño, por lo que esto no me molesta mucho.
 
-La longitud mÃ¡xima de los nombres de variables es muy limitada. Esto es para que
-encajan bien en el diagrama de escalera, asÃ­ que no veo una buena soluciÃ³n
+La longitud máxima de los nombres de variables es muy limitada. Esto es para que
+encajan bien en el diagrama de escalera, así que no veo una buena solución
 a ese.
 
 Si su programa es demasiado grande para la hora, memoria de programa o memoria de datos
-restricciones del dispositivo que ha elegido, entonces probablemente no lo harÃ¡
-obtener un error Simplemente se arruinarÃ¡ en alguna parte.
+restricciones del dispositivo que ha elegido, entonces probablemente no lo hará
+obtener un error Simplemente se arruinará en alguna parte.
 
-La programaciÃ³n descuidada en las rutinas de carga / guardado de archivos probablemente lo hace
-posible bloquear o ejecutar cÃ³digo arbitrario dado un corrupto o malicioso
+La programación descuidada en las rutinas de carga / guardado de archivos probablemente lo hace
+posible bloquear o ejecutar código arbitrario dado un corrupto o malicioso
 archivo .ld.
 
-Informe errores adicionales o solicitudes de caracterÃ­sticas al autor.
+Informe errores adicionales o solicitudes de características al autor.
 
 Gracias a:
-Â Â Â Â * Marcelo Solano, por informar de un error de interfaz de usuario en Win98
-Â Â Â Â * Serge V. Polubarjev, por no solo notar que RA3: 0 en el
-Â Â Â Â Â Â PIC16F628 no funcionÃ³, pero tambiÃ©n me dijo cÃ³mo solucionarlo
-Â Â Â Â * Maxim Ibragimov, para informar y diagnosticar problemas importantes
-Â Â Â Â Â Â con los objetivos ATmega16 y ATmega162 hasta entonces no probados
-Â Â Â Â * Bill Kishonti, por informar que el simulador se bloqueÃ³ cuando el
-Â Â Â Â Â Â programa de lÃ³gica de escalera dividido por cero
-Â Â Â Â * Mohamed Tayae, por informar que las variables persistentes se rompieron
-Â Â Â Â Â Â en el PIC16F628
-Â Â Â Â * David Rothwell, por informar de varios errores de interfaz de usuario y un
-Â Â Â Â Â Â problema con la funciÃ³n "Exportar como texto"
+    * Marcelo Solano, por informar de un error de interfaz de usuario en Win98
+    * Serge V. Polubarjev, por no solo notar que RA3: 0 en el
+      PIC16F628 no funcionó, pero también me dijo cómo solucionarlo
+    * Maxim Ibragimov, para informar y diagnosticar problemas importantes
+      con los objetivos ATmega16 y ATmega162 hasta entonces no probados
+    * Bill Kishonti, por informar que el simulador se bloqueó cuando el
+      programa de lógica de escalera dividido por cero
+    * Mohamed Tayae, por informar que las variables persistentes se rompieron
+      en el PIC16F628
+    * David Rothwell, por informar de varios errores de interfaz de usuario y un
+      problema con la función "Exportar como texto"
 
 COPIA Y DESCARGO DE RESPONSABILIDAD
 ===================================
 
-NO USE EL CÃ“DIGO GENERADO POR LDMICRO EN APLICACIONES DONDE SOFTWARE
-LA FALLA PODRÃA RESULTAR EN PELIGRO PARA LA VIDA HUMANA O DAÃ‘AR LA PROPIEDAD. EL
-EL AUTOR NO ASUME NINGUNA RESPONSABILIDAD POR NINGÃšN DAÃ‘O RESULTANTE DE LA OPERACIÃ“N
-DE LDMICRO O CÃ“DIGO GENERADO POR LDMICRO.
+NO USE EL CÓDIGO GENERADO POR LDMICRO EN APLICACIONES DONDE SOFTWARE
+LA FALLA PODRÍA RESULTAR EN PELIGRO PARA LA VIDA HUMANA O DAÑAR LA PROPIEDAD. EL
+EL AUTOR NO ASUME NINGUNA RESPONSABILIDAD POR NINGÚN DAÑO RESULTANTE DE LA OPERACIÓN
+DE LDMICRO O CÓDIGO GENERADO POR LDMICRO.
 
 Este programa es software libre: puede redistribuirlo y / o modificarlo
-bajo los tÃ©rminos de la Licencia PÃºblica General GNU publicada por el
-Free Software Foundation, ya sea la versiÃ³n 3 de la Licencia, o (a su
-opciÃ³n) cualquier versiÃ³n posterior.
+bajo los términos de la Licencia Pública General GNU publicada por el
+Free Software Foundation, ya sea la versión 3 de la Licencia, o (a su
+opción) cualquier versión posterior.
 
-Este programa se distribuye con la esperanza de que sea Ãºtil, pero
-SIN NINGUNA GARANTÃA; sin siquiera la garantÃ­a implÃ­cita de COMERCIABILIDAD
-o APTITUD PARA UN PROPÃ“SITO EN PARTICULAR. Ver la Licencia PÃºblica General de GNU
-para mÃ¡s detalles.
+Este programa se distribuye con la esperanza de que sea útil, pero
+SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de COMERCIABILIDAD
+o APTITUD PARA UN PROPÓSITO EN PARTICULAR. Ver la Licencia Pública General de GNU
+para más detalles.
 
-DeberÃ­a haber recibido una copia de la Licencia PÃºblica General de GNU junto con
+Debería haber recibido una copia de la Licencia Pública General de GNU junto con
 con este programa Si no, ver <http://www.gnu.org/licenses/>.
 
 
@@ -2428,6 +2428,6 @@ Email: user jwesthues, at host cq.cx
 
 Soporte LDmicro:
     Foro LDmicro:  http://cq.cx/ladder-forum.pl
-    Ãšltimo lanzamiento: https://github.com/LDmicro/LDmicro/releases
+    Último lanzamiento: https://github.com/LDmicro/LDmicro/releases
     Repositorio:     https://github.com/LDmicro/LDmicro
     Email:          LDmicro.GitHub@gmail.com
