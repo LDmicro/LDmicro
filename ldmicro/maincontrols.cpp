@@ -619,9 +619,6 @@ HMENU MakeMainWindowMenus()
 #endif
 
     settings = CreatePopupMenu();
-    AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
-    AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
-
     ProcessorMenu = CreatePopupMenu();
     /// Modified by JG3
     ProcAvrMenu = CreatePopupMenu();
@@ -668,6 +665,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
+    AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
+    AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
 
     ProcessorMenu2 = CreatePopupMenu();
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2, _("Microcontrollers: TODO and DONE"));

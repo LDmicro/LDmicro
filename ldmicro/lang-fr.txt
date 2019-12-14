@@ -2559,3 +2559,12 @@
 
 "*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable."
 "PICs seulement: Voir registres RBPU et GPPU."
+
+"*PIC only: if PORT RB value is not 0, Weak Pull-ups will be enabled for all port B pins via RBPU."
+"PICs seulement: Si la valeur sur le PORT RB est non nulle, les Pull-ups seront activees pour tout le port B."
+
+"Use menu: 'Compile->Compile HI-TECH C for PIC'"
+"Utiliser le menu 'Compiler en Hi-Tech C pour PIC'"
+
+"Other MCUs"
+"Autres MCUs"
