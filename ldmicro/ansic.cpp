@@ -1215,7 +1215,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 else if(IntCode[i].name2.length() && IntCode[i].literal1)
                     fprintf(f, "%s = BYTE_AT(%s, %s+%d);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT), IntCode[i].literal1);
-                else if(IntCode[i].name2.length())
+                else if(IntCode[i].name3.length())
                     fprintf(f, "%s = BYTE_AT(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 else
                     fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -2922,7 +2922,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n"
                         "\n");
             } else {
-/*              // moved to LIBRARIES_FOR\Pic16\UartLib.c 
+/*              // moved to LIBRARIES_FOR\Pic16\UartLib.c
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"

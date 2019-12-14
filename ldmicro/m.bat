@@ -394,9 +394,8 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT="D:\LDs\servo\servo pwm.ld"
 @SET PROGECT="D:\LDs\servo\servo_pwm_arduino_uno.ld"
 
-@SET PROGECT=D:\LDs\pulser\pulser.ld
-
 @SET PROGECT=D:\LDs\quad_test\quad_test.ld
+@SET PROGECT=D:\LDs\pulser\pulser.ld
 
 
 if "%1" == "" goto DO_BUILD

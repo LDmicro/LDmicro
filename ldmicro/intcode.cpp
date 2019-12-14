@@ -2993,80 +2993,78 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             // Variable duty cycle pulse generator.
             // Генератор импульсов переменной скважности.
             char decCounter[MAX_NAME_LEN];
-            GenSymStepper(decCounter, "decCounter");
+            GenVar(decCounter, "PULSER", "decCounter");
             char workT1[MAX_NAME_LEN];
-            GenSymStepper(workT1, "workT1");
+            GenVar(workT1, "PULSER", "workT1");
             char workT0[MAX_NAME_LEN];
-            GenSymStepper(workT0, "workT0");
+            GenVar(workT0, "PULSER", "workT0");
             char doSetT[MAX_NAME_LEN];
-            GenSymStepper(doSetT, "doSetT");
+            GenVar(doSetT, "PULSER", "doSetT");
             char T1mul[MAX_NAME_LEN];
-            GenSymStepper(T1mul, "T1mul");
+            GenVar(T1mul, "PULSER", "T1mul");
             char T0mul[MAX_NAME_LEN];
-            GenSymStepper(T0mul, "T0mul");
+            GenVar(T0mul, "PULSER", "T0mul");
 
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "PULSER", "");
             char Osc[MAX_NAME_LEN];
             GenSymOneShot(Osc, "PULSER", "Osc");
-            /*
-            char busy[MAX_NAME_LEN];
-            GenSymOneShot(busy);
-            char OneShot1[MAX_NAME_LEN];
-            GenSymOneShot(OneShot1);
-            char OneShot0[MAX_NAME_LEN];
-            GenSymOneShot(OneShot0);
-            */
+
+            char pulserP1[MAX_NAME_LEN];
+            GenVar(pulserP1, "PULSER", "P1");
+            char pulserP0[MAX_NAME_LEN];
+            GenVar(pulserP0, "PULSER", "P0");
+            char pulserAccel[MAX_NAME_LEN];
+            GenVar(pulserAccel, "PULSER", "Accel");
+            char pulserCounter[MAX_NAME_LEN];
+            GenVar(pulserCounter, "PULSER", "Counter");
+
             int Meander = 0;
             if(IsNumber(leaf->d.pulser.P1) && IsNumber(leaf->d.pulser.P0)) {
-                if((CheckMakeNumber(leaf->d.pulser.P1) == 1) && (CheckMakeNumber(leaf->d.pulser.P0) == 1)) {
+                if((CheckMakeNumber(leaf->d.pulser.P1) == 1) && (CheckMakeNumber(leaf->d.pulser.P0) == 1)
+                && IsNumber(leaf->d.pulser.accel) && (CheckMakeNumber(leaf->d.pulser.accel) == 1)
+                ) {
                     Meander = 11;
-                    //dbp("meander11");
                 } else if(CheckMakeNumber(leaf->d.pulser.P1) == CheckMakeNumber(leaf->d.pulser.P0)) {
-                    Meander = 2;
-                    //dbp("meander2");
+                    Meander = 1;
                 }
             }
 
-            //if(!Meander11) {
-            const char *P1 = VarFromExpr(leaf->d.pulser.P1, "$scratch11");
-            const char *P0 = VarFromExpr(leaf->d.pulser.P0, "$scratch12");
-            const char *accel = VarFromExpr(leaf->d.pulser.accel, "$scratch13");
-            //}
-            const char *counter = VarFromExpr(leaf->d.pulser.counter, "$scratch14");
+            const char *P1 = VarFromExpr(leaf->d.pulser.P1, pulserP1);
+            const char *P0 = VarFromExpr(leaf->d.pulser.P0, pulserP0);
+            const char *accel = VarFromExpr(leaf->d.pulser.accel, pulserAccel);
+            const char *counter = VarFromExpr(leaf->d.pulser.counter, pulserCounter);
             const char *busy = leaf->d.pulser.busy;
-
+            // start
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, storeName);
                 Op(INT_SET_BIT, storeName);
-                // Этот фр гмент код  выполняется 1 р з при переключении 0->1.
                 // This code fragment is executed 1 time when switching 0->1.
                 Op(INT_SET_BIT, busy);
                 Op(INT_SET_BIT, Osc);
                 Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
-                if(Meander < 11) {
-                    Op(INT_CLEAR_BIT, doSetT);
-                    Op(INT_SET_VARIABLE_MULTIPLY, T1mul, P1, accel);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-                    if(Meander < 2) {
-                        Op(INT_SET_VARIABLE_MULTIPLY, T0mul, P0, accel);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                    }
+                if(Meander <= 1) {
+                  Op(INT_CLEAR_BIT, doSetT);
+                  Op(INT_SET_VARIABLE_MULTIPLY, T1mul, P1, accel);
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                  if(Meander == 0) {
+                    Op(INT_SET_VARIABLE_MULTIPLY, T0mul, P0, accel);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                  }
                 }
               Op(INT_END_IF);
-              Op(INT_ELSE);
-                Op(INT_CLEAR_BIT, storeName);
-              Op(INT_END_IF);
-              //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
-              //
-              Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
+            // main iteration - decCounter
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
               Op(INT_ELSE);
                 Op(INT_CLEAR_BIT, busy);
               Op(INT_END_IF);
             Op(INT_ELSE);
-            if(Meander == 11) {
+              if(Meander == 11) {
                 Op(INT_IF_BIT_SET, Osc);
                   Op(INT_SET_BIT, stateInOut); // 1
                   Op(INT_CLEAR_BIT, Osc);
@@ -3076,81 +3074,59 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
 
                   Op(INT_DECREMENT_VARIABLE, decCounter);
                 Op(INT_END_IF);
-            } else if(Meander == 2) {
-                Op(INT_IF_BIT_SET, busy);
-                  /*
-                    Op(INT_IF_BIT_SET, Osc);
-                      Op(INT_SET_BIT, stateInOut);// 1
-                    Op(INT_ELSE);
-                      Op(INT_CLEAR_BIT, stateInOut);// 1
-                    Op(INT_END_IF);
-                  */
+              } else if(Meander == 1) {
                   Op(INT_COPY_BIT_TO_BIT, stateInOut, Osc);
                   //
-                  Op(INT_DECREMENT_VARIABLE, workT1);
+                  Op(INT_DECREMENT_VARIABLE, workT1); // internal iteration - workT1
                   Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)1);
-                  Op(INT_IF_BIT_SET, Osc);
-                    Op(INT_CLEAR_BIT, Osc);
+                    Op(INT_IF_BIT_SET, Osc);
+                      Op(INT_CLEAR_BIT, Osc);
 
-                    Op(INT_DECREMENT_VARIABLE, decCounter);
-                  Op(INT_ELSE);
-                    Op(INT_SET_BIT, Osc);
+                    Op(INT_ELSE);
+                      Op(INT_SET_BIT, Osc);
+
+                      Op(INT_DECREMENT_VARIABLE, decCounter);
+
+                      Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                        Op(INT_DECREMENT_VARIABLE, T1mul);
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                    //
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
                   Op(INT_END_IF);
-                  //
-                  //Op(INT_SET_BIT, doSetT);
-                  Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                  Op(INT_DECREMENT_VARIABLE, T1mul);
-                Op(INT_END_IF);
-                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-              Op(INT_END_IF);
-            Op(INT_END_IF);
-            } else { // (Meander==0)
-                Op(INT_DECREMENT_VARIABLE, workT1);
+              } else { // (Meander==0)
+                Op(INT_DECREMENT_VARIABLE, workT1); // internal iteration - workT1
                 Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)0);
                   Op(INT_CLEAR_BIT, stateInOut); // 1
-                  Op(INT_DECREMENT_VARIABLE, workT0);
+                  Op(INT_DECREMENT_VARIABLE, workT0); // internal iteration - workT0
 
                   Op(INT_IF_VARIABLE_LES_LITERAL, workT0, (int32_t)1);
                     Op(INT_DECREMENT_VARIABLE, decCounter);
                     //
                     Op(INT_SET_BIT, doSetT);
-                    /*
-                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                          Op(INT_DECREMENT_VARIABLE, T1mul);
-                        Op(INT_END_IF);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-
-                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
-                          Op(INT_DECREMENT_VARIABLE, T0mul);
-                        Op(INT_END_IF);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                        // */
-                //Op(INT_ELSE);
-                //    Op(INT_CLEAR_BIT, OneShot0);
-                Op(INT_END_IF);
+                  Op(INT_END_IF);
                 Op(INT_ELSE);
                   Op(INT_SET_BIT, stateInOut); // 1
-                  //Op(INT_CLEAR_BIT, OneShot1);
                 Op(INT_END_IF);
-            }
-            Op(INT_END_IF);
-            //
-            if(Meander < 11) {
+              }
+              //
+              if(Meander <= 1) {
                 Op(INT_IF_BIT_SET, doSetT);
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                Op(INT_DECREMENT_VARIABLE, T1mul);
-                Op(INT_END_IF);
-                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                    Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                      Op(INT_DECREMENT_VARIABLE, T1mul);
+                    Op(INT_END_IF);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
 
-                if(Meander == 0) {
+                  if(Meander == 0) {
                     Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
-                    Op(INT_DECREMENT_VARIABLE, T0mul);
+                      Op(INT_DECREMENT_VARIABLE, T0mul);
                     Op(INT_END_IF);
                     Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                }
-                Op(INT_CLEAR_BIT, doSetT);
+                  }
+                    Op(INT_CLEAR_BIT, doSetT);
                 Op(INT_END_IF);
-            }
+              }
+            Op(INT_END_IF);
             break;
         }
 
