@@ -1,3 +1,9 @@
+== Release 5.4.0.4
+
+    * PULSER instruction tested with ATmega2560 (both HEX->ASM and AVR-GCC compilers)
+      See: https://github.com/LDmicro/LDmicro/wiki/PULSER
+
+
 == Release 5.4.0.3
 
     * Modified menu Settings
@@ -41,8 +47,7 @@
     * Added "9-SEGMENT FONT converter"
            "14-SEGMENT FONT converter"
            "16-SEGMENT FONT converter"
-
-    * Added "BUS tracer" support
+        * Added "BUS tracer" support
 
     * Added STRING type support in generated C code
         Tested ATmega2560,

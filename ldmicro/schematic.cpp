@@ -737,7 +737,7 @@ void EditSelectedElement()
             break;
 
         case ELEM_PULSER:
-            ShowPulserDialog(Selected.leaf()->d.pulser.P1, Selected.leaf()->d.pulser.P0, Selected.leaf()->d.pulser.accel, Selected.leaf()->d.pulser.counter, Selected.leaf()->d.pulser.busy);
+            ShowPulserDialog(Selected.leaf());
             break;
 
         case ELEM_NPULSE:

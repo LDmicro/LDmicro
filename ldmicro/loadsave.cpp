@@ -293,7 +293,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 
     } else if(sscanf(line, "STEPPER %s %s %s %d %d %s", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, &l->d.stepper.nSize, &l->d.stepper.graph, l->d.stepper.coil) == 6) {
         *which = ELEM_STEPPER;
-    } else if(sscanf(line, "PULSER %s %s %s %s %s", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy) == 5) {
+    } else if(sscanf(line, "PULSER %s %s %s %s %s", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.coil) == 5) {
         *which = ELEM_PULSER;
     } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil) == 3) {
         *which = ELEM_NPULSE;
@@ -1079,7 +1079,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_PULSER:
-            fprintf(f, "PULSER %s %s %s %s %s\n", leaf->d.pulser.P1, leaf->d.pulser.P0, leaf->d.pulser.accel, leaf->d.pulser.counter, leaf->d.pulser.busy);
+            fprintf(f, "PULSER %s %s %s %s %s\n", leaf->d.pulser.P1, leaf->d.pulser.P0, leaf->d.pulser.accel, leaf->d.pulser.counter, leaf->d.pulser.coil);
             break;
 
         case ELEM_NPULSE:

@@ -535,7 +535,7 @@ void ShowDelayDialog(ElemLeaf *l)
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(const char *name, const char *str, int32_t v)
+static void CheckConstantInRange(const char *name, const char *str, int32_t v, int32_t loRange = INT32_MIN, int32_t hiRange = INT32_MAX)
 {
     int32_t val = hobatoi(str);
     if(val != v)
@@ -572,6 +572,10 @@ static void CheckConstantInRange(const char *name, const char *str, int32_t v)
             Error(_("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
     } else
         ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
+    if(v < loRange)
+        Error(_("Constant %s=%d value '%s' is less than the lower range: %d."), str, v, name, loRange);
+    if(v > hiRange)
+        Error(_("Constant %s=%d value '%s' is greater than the upper range: %d."), str, v, name, loRange);
 }
 
 //-----------------------------------------------------------------------------
@@ -1296,24 +1300,31 @@ void ShowStepperDialog(void *e)
     };
 }
 
-void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy)
+void ShowPulserDialog(ElemLeaf *l)
 {
+    ElemPulser *e = &(l->d.pulser);
+    char *P1 = e->P1;
+    char *P0 = e->P0;
+    char *accel = e->accel;
+    char *counter = e->counter;
+    char *coil = e->coil;
+
     const char *title;
     title = _("Pulser");
 
-    const char *labels[] = {_("Counter:"), "P1:", "P0:", _("Accel.:"), _("Busy to:")};
-    char *      dests[] = {counter, P1, P0, accel, busy};
-    if(ShowSimpleDialog(title, 5, labels, 0, 0xff, 0xff, dests)) {
+    const char *labels[] = {_("Pulse counter:"), "Duration of 1:", "Duration of 0:", _("Acc/Decel Factor:"), _("Pulse to:"),_("Duration is in Tcycles, Acceleration/Deceleration Factor is a multiplier of Durations")};
+    char *      dests[] = {counter, P1, P0, accel, coil};
+    if(ShowSimpleDialog(title, 6, labels, 0, 0xff, 0xff, 5, dests)) {
         if(IsNumber(P1))
-            CheckConstantInRange("", P1, hobatoi(P1));
+            CheckConstantInRange("Duration of 1", P1, hobatoi(P1), 1);
         if(IsNumber(P0))
-            CheckConstantInRange("", P0, hobatoi(P0));
+            CheckConstantInRange("Duration of 0", P0, hobatoi(P0), 1);
         if(IsNumber(accel))
-            CheckConstantInRange("", accel, hobatoi(accel));
+            CheckConstantInRange("Acc/Decel Factor", accel, hobatoi(accel), 1);
         if(IsNumber(counter))
-            CheckConstantInRange("", counter, hobatoi(counter));
-        if((busy[0] != 'Y') && (busy[0] != 'R'))
-            Error(_("Busy to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."), busy, busy, busy);
+            CheckConstantInRange("Pulse to", counter, hobatoi(counter), 1);
+        if((coil[0] != 'Y') && (coil[0] != 'R'))
+            Error(_("Pulse to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."), coil, coil, coil);
 
         if(IsNumber(P1) && IsNumber(P0)) {
             double      P1t = (double)Prog.cycleTime * hobatoi(P1) / 1000.0;
