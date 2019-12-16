@@ -4612,7 +4612,7 @@ static void CompileFromIntermediate()
                     freq = (1.0 * Prog.mcuClock) / (1.0 * TOP * prescale);
 
                     freqSI = SIprefix(freq, SI);
-                    sprintf(freqStr, "%.3f %sHz    ", freqSI, SI);
+                    sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
 
                     long int err = (long int)fabs(freq - target);
                     if(err < bestError) {
