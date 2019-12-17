@@ -1,6 +1,7 @@
 == Release 5.4.0.4
 
     * PULSER instruction tested with ATmega2560 (both HEX->ASM and AVR-GCC compilers)
+      PULSER instruction tested with PIC16F887 (both HEX->ASM and HI-TECH C compilers)
       See: https://github.com/LDmicro/LDmicro/wiki/PULSER
 
 

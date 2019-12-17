@@ -3303,14 +3303,14 @@ bool CompileAnsiC(const char *outFile, int MNU)
         if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
             // no watchdog
         } else {
-            if(Prog.pullUpRegs[1]) { /// if value is not 0 all pull-ups are enabled on Port B
+            if(Prog.pullUpRegs[1] & 0xFF) { /// if value is not 0 all pull-ups are enabled on Port B
             fprintf(f,
                     "\n"
-                        "    // Turn on the pull-ups on Port B.\n"
+                    "    // Turn on the pull-ups on Port B.\n"
                     "    #ifdef CCS_PIC_C\n"
                     "        port_b_pullups(true);\n"
                     "    #elif defined(HI_TECH_C)\n"
-                    "        nRBPU = 0;\n"
+                    "        nRBPU = 0;\n" // 0 = PORTB pull-ups are enabled by individual port latch values
                     "    #endif\n"
                         "\n");
             } else { /// else no pull-up at all on Port B (Modified by JG3)
@@ -3320,7 +3320,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "    #ifdef CCS_PIC_C\n"
                         "        port_b_pullups(false);\n"
                         "    #elif defined(HI_TECH_C)\n"
-                        "        nRBPU = 1;\n"
+                        "        nRBPU = 1;\n" // 1 = PORTB pull-ups are disabled
                         "    #endif\n"
                         "\n");
             }
