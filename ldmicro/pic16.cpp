@@ -7707,7 +7707,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
         // TODO: WPUA - WPUG bits for PIC16F1512 - PIC16F1947
         // TODO: WPUB
-        if((Prog.pullUpRegs[1] & 0xFF) != 0xFF) {
+        if((Prog.pullUpRegs[1] & 0xFF)) {
             // Pull-ups are enabled after direction settings !
             Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
             Instruction(OP_BCF, REG_OPTION, _RBPU);

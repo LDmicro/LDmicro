@@ -85,7 +85,6 @@ static uint32_t GenSymCountParThis;
 static uint32_t GenSymCountParOut;
 static uint32_t GenSymCountOneShot;
 static uint32_t GenSymCountFormattedString;
-static uint32_t GenSymCountStepper;
 
 uint32_t EepromAddrFree;
 
@@ -747,15 +746,6 @@ static void GenSymFormattedString(char *dest)
 {
     GenSymFormattedString(dest, "");
 }
-static void GenSymStepper(char *dest, const char *name)
-{
-    if(strlen(name))
-        sprintf(dest, "$step_%01x_%s", GenSymCountStepper, name);
-    else
-        sprintf(dest, "$step_%01x", GenSymCountStepper);
-    GenSymCountStepper++;
-}
-
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
@@ -2871,7 +2861,7 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             GenSymOneShot(storeName, "STEPPER", "");
 
             char Tmul[MAX_NAME_LEN];
-            GenSymStepper(Tmul, "Tmul");
+            GenVar(Tmul, "STEPPER", "Tmul");
 
             char nameTable[MAX_NAME_LEN];
             if(speed >= 3) {
@@ -2993,164 +2983,177 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             // Variable duty cycle pulse generator.
             // Генератор импульсов переменной скважности.
             char decCounter[MAX_NAME_LEN];
-            GenSymStepper(decCounter, "decCounter");
+            GenVar(decCounter, "PULSER", "decCounter");
             char workT1[MAX_NAME_LEN];
-            GenSymStepper(workT1, "workT1");
+            GenVar(workT1, "PULSER", "workT1");
             char workT0[MAX_NAME_LEN];
-            GenSymStepper(workT0, "workT0");
+            GenVar(workT0, "PULSER", "workT0");
             char doSetT[MAX_NAME_LEN];
-            GenSymStepper(doSetT, "doSetT");
+            GenVar(doSetT, "PULSER", "doSetT");
             char T1mul[MAX_NAME_LEN];
-            GenSymStepper(T1mul, "T1mul");
+            GenVar(T1mul, "PULSER", "T1mul");
             char T0mul[MAX_NAME_LEN];
-            GenSymStepper(T0mul, "T0mul");
+            GenVar(T0mul, "PULSER", "T0mul");
 
-            char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName, "PULSER", "");
+            char decelPos[MAX_NAME_LEN];
+            GenVar(decelPos, "PULSER", "decelPos");
+
+            char busy[MAX_NAME_LEN];
+            GenSymOneShot(busy, "PULSER", "busy");
             char Osc[MAX_NAME_LEN];
             GenSymOneShot(Osc, "PULSER", "Osc");
-            /*
-            char busy[MAX_NAME_LEN];
-            GenSymOneShot(busy);
-            char OneShot1[MAX_NAME_LEN];
-            GenSymOneShot(OneShot1);
-            char OneShot0[MAX_NAME_LEN];
-            GenSymOneShot(OneShot0);
-            */
+
+            char pulserP1[MAX_NAME_LEN];
+            GenVar(pulserP1, "PULSER", "P1");
+            char pulserP0[MAX_NAME_LEN];
+            GenVar(pulserP0, "PULSER", "P0");
+            char pulserAccel[MAX_NAME_LEN];
+            GenVar(pulserAccel, "PULSER", "Accel");
+            char pulserCounter[MAX_NAME_LEN];
+            GenVar(pulserCounter, "PULSER", "Counter");
+
             int Meander = 0;
             if(IsNumber(leaf->d.pulser.P1) && IsNumber(leaf->d.pulser.P0)) {
-                if((CheckMakeNumber(leaf->d.pulser.P1) == 1) && (CheckMakeNumber(leaf->d.pulser.P0) == 1)) {
+                if((CheckMakeNumber(leaf->d.pulser.P1) == 1) && (CheckMakeNumber(leaf->d.pulser.P0) == 1)
+                && IsNumber(leaf->d.pulser.accel) && (CheckMakeNumber(leaf->d.pulser.accel) == 1)
+                ) {
                     Meander = 11;
-                    //dbp("meander11");
                 } else if(CheckMakeNumber(leaf->d.pulser.P1) == CheckMakeNumber(leaf->d.pulser.P0)) {
-                    Meander = 2;
-                    //dbp("meander2");
+                    Meander = 1;
                 }
             }
+            Comment("Meander = %d", Meander);
 
-            //if(!Meander11) {
-            const char *P1 = VarFromExpr(leaf->d.pulser.P1, "$scratch11");
-            const char *P0 = VarFromExpr(leaf->d.pulser.P0, "$scratch12");
-            const char *accel = VarFromExpr(leaf->d.pulser.accel, "$scratch13");
-            //}
-            const char *counter = VarFromExpr(leaf->d.pulser.counter, "$scratch14");
-            const char *busy = leaf->d.pulser.busy;
+            const char *P1 = VarFromExpr(leaf->d.pulser.P1, pulserP1);
+            const char *P0 = VarFromExpr(leaf->d.pulser.P0, pulserP0);
+            const char *accel = VarFromExpr(leaf->d.pulser.accel, pulserAccel);
+            const char *counter = VarFromExpr(leaf->d.pulser.counter, pulserCounter);
 
+            const char *coil = leaf->d.pulser.coil;
+            // start
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_BIT_CLEAR, storeName);
-                Op(INT_SET_BIT, storeName);
-                // Этот фр гмент код  выполняется 1 р з при переключении 0->1.
-                // This code fragment is executed 1 time when switching 0->1.
+              Op(INT_IF_BIT_CLEAR, busy);
                 Op(INT_SET_BIT, busy);
+                // This code fragment is executed 1 time when switching 0->1.
                 Op(INT_SET_BIT, Osc);
                 Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
-                if(Meander < 11) {
-                    Op(INT_CLEAR_BIT, doSetT);
-                    Op(INT_SET_VARIABLE_MULTIPLY, T1mul, P1, accel);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-                    if(Meander < 2) {
-                        Op(INT_SET_VARIABLE_MULTIPLY, T0mul, P0, accel);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                    }
+                //Op(INT_SET_VARIABLE_SUBTRACT, decelPos, counter, accel);
+                //Op(INT_SET_VARIABLE_TO_VARIABLE, decelPos, accel);
+                /*
+                Op(INT_SET_VARIABLE_MULTIPLY, decelPos, P1, accel);
+                Op(INT_DECREMENT_VARIABLE, decelPos);
+                */
+                Op(INT_SET_VARIABLE_TO_VARIABLE, decelPos, accel);
+                Op(INT_DECREMENT_VARIABLE, decelPos);
+                Op(INT_SET_VARIABLE_MULTIPLY, decelPos, P1, decelPos);
+                //
+                if(Meander <= 1) {
+                  Op(INT_CLEAR_BIT, doSetT);
+                  Op(INT_SET_VARIABLE_MULTIPLY, T1mul, P1, accel);
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+
+                  if(Meander == 0) {
+                    Op(INT_SET_VARIABLE_MULTIPLY, T0mul, P0, accel);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                  }
                 }
               Op(INT_END_IF);
-              Op(INT_ELSE);
-                Op(INT_CLEAR_BIT, storeName);
-              Op(INT_END_IF);
-              //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
-              //
-              Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
-              Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
-              Op(INT_ELSE);
-                Op(INT_CLEAR_BIT, busy);
-              Op(INT_END_IF);
             Op(INT_ELSE);
-            if(Meander == 11) {
+              Op(INT_COPY_BIT_TO_BIT, stateInOut, busy);
+            Op(INT_END_IF);
+            // main iteration - decCounter
+            Op(INT_IF_BIT_SET, busy);
+              if(Meander == 11) {
                 Op(INT_IF_BIT_SET, Osc);
-                  Op(INT_SET_BIT, stateInOut); // 1
+                  Op(INT_SET_BIT, coil); // 1
                   Op(INT_CLEAR_BIT, Osc);
                 Op(INT_ELSE);
-                  Op(INT_CLEAR_BIT, stateInOut); // 1
+                  Op(INT_CLEAR_BIT, coil); // 0
                   Op(INT_SET_BIT, Osc);
 
                   Op(INT_DECREMENT_VARIABLE, decCounter);
                 Op(INT_END_IF);
-            } else if(Meander == 2) {
-                Op(INT_IF_BIT_SET, busy);
-                  /*
-                    Op(INT_IF_BIT_SET, Osc);
-                      Op(INT_SET_BIT, stateInOut);// 1
-                    Op(INT_ELSE);
-                      Op(INT_CLEAR_BIT, stateInOut);// 1
-                    Op(INT_END_IF);
-                  */
-                  Op(INT_COPY_BIT_TO_BIT, stateInOut, Osc);
+              } else if(Meander == 1) {
+                  Op(INT_COPY_BIT_TO_BIT, coil, Osc); // 0 // 1
                   //
-                  Op(INT_DECREMENT_VARIABLE, workT1);
+                  Op(INT_DECREMENT_VARIABLE, workT1); // internal iteration - workT1
+                  //
                   Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)1);
-                  Op(INT_IF_BIT_SET, Osc);
-                    Op(INT_CLEAR_BIT, Osc);
+                    Op(INT_IF_BIT_SET, Osc);
+                      Op(INT_CLEAR_BIT, Osc);
 
-                    Op(INT_DECREMENT_VARIABLE, decCounter);
-                  Op(INT_ELSE);
-                    Op(INT_SET_BIT, Osc);
+                    Op(INT_ELSE);
+                      Op(INT_SET_BIT, Osc);
+
+                      Op(INT_DECREMENT_VARIABLE, decCounter);
+                    Op(INT_END_IF);
+                    //
+                    Op(INT_SET_BIT, doSetT);
                   Op(INT_END_IF);
-                  //
-                  //Op(INT_SET_BIT, doSetT);
-                  Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                  Op(INT_DECREMENT_VARIABLE, T1mul);
-                Op(INT_END_IF);
-                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-              Op(INT_END_IF);
-            Op(INT_END_IF);
-            } else { // (Meander==0)
-                Op(INT_DECREMENT_VARIABLE, workT1);
+              } else { // (Meander==0)
+                Op(INT_DECREMENT_VARIABLE, workT1); // internal iteration - workT1
                 Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)0);
-                  Op(INT_CLEAR_BIT, stateInOut); // 1
-                  Op(INT_DECREMENT_VARIABLE, workT0);
+                  Op(INT_CLEAR_BIT, coil); // 0
 
+                  Op(INT_DECREMENT_VARIABLE, workT0); // internal iteration - workT0
                   Op(INT_IF_VARIABLE_LES_LITERAL, workT0, (int32_t)1);
                     Op(INT_DECREMENT_VARIABLE, decCounter);
                     //
                     Op(INT_SET_BIT, doSetT);
-                    /*
-                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                          Op(INT_DECREMENT_VARIABLE, T1mul);
-                        Op(INT_END_IF);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
-
-                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
-                          Op(INT_DECREMENT_VARIABLE, T0mul);
-                        Op(INT_END_IF);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                        // */
-                //Op(INT_ELSE);
-                //    Op(INT_CLEAR_BIT, OneShot0);
-                Op(INT_END_IF);
+                  Op(INT_END_IF);
                 Op(INT_ELSE);
-                  Op(INT_SET_BIT, stateInOut); // 1
-                  //Op(INT_CLEAR_BIT, OneShot1);
+                  Op(INT_SET_BIT, coil); // 1
                 Op(INT_END_IF);
-            }
-            Op(INT_END_IF);
-            //
-            if(Meander < 11) {
+              }
+              // continue
+              if(Meander == 1) {
                 Op(INT_IF_BIT_SET, doSetT);
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
-                Op(INT_DECREMENT_VARIABLE, T1mul);
-                Op(INT_END_IF);
-                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                  Op(INT_CLEAR_BIT, doSetT);
 
-                if(Meander == 0) {
+                  Op(INT_IF_BIT_SET, Osc);
+                    Op(INT_IF_VARIABLE_GRT_VARIABLE, decCounter, decelPos);
+                      // acceleration
+                      Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                        Op(INT_DECREMENT_VARIABLE, T1mul);
+                      Op(INT_END_IF);
+                    Op(INT_ELSE);
+                      // deceleration
+                      Op(INT_INCREMENT_VARIABLE, T1mul);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                Op(INT_END_IF);
+              } else if(Meander == 0) {
+                Op(INT_IF_BIT_SET, doSetT);
+                  Op(INT_CLEAR_BIT, doSetT);
+
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, decCounter, decelPos);
+                    // acceleration
+                    Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                      Op(INT_DECREMENT_VARIABLE, T1mul);
+                    Op(INT_END_IF);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+
                     Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
-                    Op(INT_DECREMENT_VARIABLE, T0mul);
+                      Op(INT_DECREMENT_VARIABLE, T0mul);
                     Op(INT_END_IF);
                     Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                }
-                Op(INT_CLEAR_BIT, doSetT);
+                  Op(INT_ELSE);
+                    // deceleration
+                    Op(INT_INCREMENT_VARIABLE, T1mul);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+
+                    Op(INT_INCREMENT_VARIABLE, T0mul);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                  Op(INT_END_IF);
                 Op(INT_END_IF);
-            }
+              }
+              //
+              Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
+                Op(INT_CLEAR_BIT, busy);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
+//            Op(INT_COPY_BIT_TO_BIT, stateInOut, busy);
             break;
         }
 
@@ -5044,7 +5047,6 @@ bool GenerateIntermediateCode()
         GenSymCountParOut = 0;
         GenSymCountOneShot = 0;
         GenSymCountFormattedString = 0;
-        GenSymCountStepper = 0;
 
         // The EEPROM addresses for the `Make Persistent' op are assigned at
         // int code generation time.

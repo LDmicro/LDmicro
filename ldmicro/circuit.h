@@ -455,7 +455,7 @@ typedef struct ElemPulserTag {
     char P1[MAX_NAME_LEN];
     char P0[MAX_NAME_LEN];
     char accel[MAX_NAME_LEN];
-    char busy[MAX_NAME_LEN];
+    char coil[MAX_NAME_LEN];
 } ElemPulser;
 
 typedef struct ElemNPulseTag {
