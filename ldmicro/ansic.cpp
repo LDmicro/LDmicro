@@ -2315,7 +2315,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "#include <stdio.h>\n"
                 "#include <avr\\io.h>\n"
                 "#include <avr\\interrupt.h>\n"
-                "#include <avr\\%s.h>\n"
+                "//#include <avr\\%s.h>\n"
                 "#include \"UsrLib.h\"\n"
                 "\n",
                 Prog.mcu()->mcuH2);

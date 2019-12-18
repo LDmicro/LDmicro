@@ -71,12 +71,14 @@ goto NOT_SUPPORTED
 ::**************************************************************************
 @rem *** Set up avrdude.exe path. ***
 @rem     It may be:
+     SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
+@rem SET AVRDUDE_PATH=D:\01 - Programas Plc\Atmel\AVR-Gcc-8.2.0
+@rem SET AVRDUDE_PATH=D:\01 - Programas Plc\Arduino 1.8.0\hardware\tools\avr
 @rem SET AVRDUDE_PATH=D:\WinAVR\bin\
 @rem SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
 @rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
 @rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
 @rem SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
-     SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
 
 @rem *** Set up your avrdude config file. ***
 @rem SET AVRDUDE_CONF=
@@ -153,6 +155,8 @@ REM Compilation with avr-gcc
 
      SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
+@rem SET GCC_PATH=D:\01 - Programas Plc\Atmel\AVR-Gcc-8.2.0
+@rem SET GCC_PATH=D:\01 - Programas Plc\Arduino 1.8.0\hardware\tools\avr
 @rem SET GCC_PATH=D:\WinAVR
 @rem SET GCC_PATH=c:\WinAVR-20100110
 @rem SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
@@ -185,6 +189,7 @@ if exist PROTEUS del PROTEUS\*.elf  > nul
 if exist PROTEUS del PROTEUS\*.cof  > nul
 
 for %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%~dp2 -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
+
 :pause
 
 avr-gcc.exe -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.o %~f2.c -o AVRGCC\obj\%~nx2.o
@@ -194,6 +199,8 @@ avr-gcc.exe -o AVRGCC\bin\%~nx2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%~nx2.map
 
 REM Convert Elf to Hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~nx2.elf AVRGCC\bin\%~nx2.hex
+
+:pause
 
 @echo off
 :mkdir PROTEUS
@@ -209,7 +216,8 @@ copy AVRGCC\BIN\*.elf PROTEUS > nul
 @echo on
 
 REM Transfer of the program with AvrDude
-avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
+     avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
+@rem avrdude.exe -p %4 -c patmega328p -carduino -P %COMPORT% -b 115200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
 pause
 goto exit
@@ -422,10 +430,10 @@ goto exit
 @echo on
 REM Compilation with arm-gcc
 
-@rem      SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 @rem SET GCC_PATH=C:\yagarto-20121222
 @rem SET GCC_PATH=c:\Program Files (x86)\GNU Tools ARM Embedded\8 2018-q4-major
-SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
+     SET GCC_PATH=c:\Program Files (x86)\emIDE\emIDE V2.20\arm
 
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
 

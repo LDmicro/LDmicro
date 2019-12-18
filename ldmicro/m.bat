@@ -398,6 +398,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=d:\lds\pwm\PWM_up_down.ld
 
+@SET PROGECT=D:\LDs\new\new.ld
 @SET PROGECT=D:\LDs\pulser\stepper.ld
 @SET PROGECT=D:\LDs\pulser\pulser.ld
 
