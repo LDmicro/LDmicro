@@ -6,6 +6,8 @@
       PULSER instruction tested with PIC16F887 (both HEX->ASM and HI-TECH C compilers)
       See: https://github.com/LDmicro/LDmicro/wiki/PULSER
 
+    * Fixed: Convert manual-es.txt from 65001 UTF-8 code page to 1252 code page
+
 
 == Release 5.4.0.3
 
