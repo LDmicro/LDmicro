@@ -58,7 +58,8 @@ typedef enum CoreTag {
     PICcores_, // end of PICcores
 
     ESPcores,
-    ESP8266Core,
+    ESP8266,
+    ESP32,
     ESPcores_, // end of ESPcores
 
     ARMcores,
@@ -70,6 +71,7 @@ typedef enum CoreTag {
 
     PCcores,
     PC_LPT_COM,
+    PCcores_, // end of PCcores
 } Core;
 
 //-----------------------------------------------
@@ -181,8 +183,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo *spiInfo;
     uint32_t    spiCount;
 
-    McuI2cInfo       *i2cInfo;              
-    uint32_t          i2cCount;           
+    McuI2cInfo       *i2cInfo;
+    uint32_t          i2cCount;
 
     struct {
         uint32_t start;

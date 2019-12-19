@@ -573,7 +573,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_ARDUINO) {
-        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ESP8266)) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ESP)) {
             int msgboxID = MessageBox(NULL, _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"), _("MCU type warning"), MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
             if(msgboxID != IDYES)
                 return;

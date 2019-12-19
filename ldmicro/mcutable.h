@@ -2889,39 +2889,6 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
     {
-        "Atmel AVR ATtiny10 6-Pin packages",
-        "ATtiny10",
-        "tn10def",
-        "tiny10",
-        "iotn11", // AVRGCC
-        'P',
-        { 0, 0x00 }, // PINx
-        { 0, 0x02 }, // PORTx
-        { 0, 0x01 }, // DDRx
-        1*1024,
-        { { 0x40, 32 } },
-        AvrATtiny10IoPinInfo6,               //McuIoPinInfo    *pinInfo;
-        arraylen(AvrATtiny10IoPinInfo6),     //int              pinCount;
-        AvrATtiny10AdcPinInfo6,              //McuAdcPinInfo   *adcInfo;
-        arraylen(AvrATtiny10AdcPinInfo6),    //int              adcCount;
-        255,
-        { 0, 0 },
-//        0, // OC2
-        ISA_AVR,
-        ReducedCore,
-        0,
-        6,
-        nullptr, //AvrPwmPinInfo6,
-        0, //arraylen(AvrPwmPinInfo6),
-        AvrExtIntPinInfo6,
-        arraylen(AvrExtIntPinInfo6),
-        nullptr,
-        0,
-        nullptr,
-        0,
-        {{0,0}}
-    },
-    {
         "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
         "ATmega8",
         "m8def", // "iom8"
@@ -2988,6 +2955,39 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(McuSpiInfoATmega8),
         McuI2cInfoATmega8,
         arraylen(McuI2cInfoATmega8),
+        {{0,0}}
+    },
+    {
+        "Atmel AVR ATtiny10 6-Pin packages",
+        "ATtiny10",
+        "tn10def",
+        "tiny10",
+        "iotn11", // AVRGCC
+        'P',
+        { 0, 0x00 }, // PINx
+        { 0, 0x02 }, // PORTx
+        { 0, 0x01 }, // DDRx
+        1*1024,
+        { { 0x40, 32 } },
+        AvrATtiny10IoPinInfo6,               //McuIoPinInfo    *pinInfo;
+        arraylen(AvrATtiny10IoPinInfo6),     //int              pinCount;
+        AvrATtiny10AdcPinInfo6,              //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny10AdcPinInfo6),    //int              adcCount;
+        255,
+        { 0, 0 },
+//        0, // OC2
+        ISA_AVR,
+        ReducedCore,
+        0,
+        6,
+        nullptr, //AvrPwmPinInfo6,
+        0, //arraylen(AvrPwmPinInfo6),
+        AvrExtIntPinInfo6,
+        arraylen(AvrExtIntPinInfo6),
+        nullptr,
+        0,
+        nullptr,
+        0,
         {{0,0}}
     },
 //===========================================================================
@@ -3835,8 +3835,8 @@ McuIoInfo SupportedMcus_[] = {
         1023,
         { 21 , 22 },
 //        0,
-        ISA_ESP8266,
-        ESP8266Core,
+        ISA_ESP,
+        ESP8266,
         22,
         0,
         nullptr, //ESP8266PwmPinInfo,
