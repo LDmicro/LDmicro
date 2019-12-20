@@ -574,7 +574,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowWrDialog(int which, ElemLeaf *l);
 void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(void *e);
-void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
+void ShowPulserDialog(ElemLeaf *l);
 void ShowNPulseDialog(char *counter, char *targetFreq, char *coil);
 void ShowQuadEncodDialog(ElemLeaf *l);
 void ShowSegmentsDialog(ElemLeaf *l);

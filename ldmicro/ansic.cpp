@@ -1215,7 +1215,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 else if(IntCode[i].name2.length() && IntCode[i].literal1)
                     fprintf(f, "%s = BYTE_AT(%s, %s+%d);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT), IntCode[i].literal1);
-                else if(IntCode[i].name2.length())
+                else if(IntCode[i].name3.length())
                     fprintf(f, "%s = BYTE_AT(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
                 else
                     fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -2315,7 +2315,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "#include <stdio.h>\n"
                 "#include <avr\\io.h>\n"
                 "#include <avr\\interrupt.h>\n"
-                "#include <avr\\%s.h>\n"
+                "//#include <avr\\%s.h>\n"
                 "#include \"UsrLib.h\"\n"
                 "\n",
                 Prog.mcu()->mcuH2);
@@ -2922,7 +2922,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n"
                         "\n");
             } else {
-/*              // moved to LIBRARIES_FOR\Pic16\UartLib.c 
+/*              // moved to LIBRARIES_FOR\Pic16\UartLib.c
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"
@@ -3303,14 +3303,14 @@ bool CompileAnsiC(const char *outFile, int MNU)
         if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
             // no watchdog
         } else {
-            if(Prog.pullUpRegs[1]) { /// if value is not 0 all pull-ups are enabled on Port B
+            if(Prog.pullUpRegs[1] & 0xFF) { /// if value is not 0 all pull-ups are enabled on Port B
             fprintf(f,
                     "\n"
-                        "    // Turn on the pull-ups on Port B.\n"
+                    "    // Turn on the pull-ups on Port B.\n"
                     "    #ifdef CCS_PIC_C\n"
                     "        port_b_pullups(true);\n"
                     "    #elif defined(HI_TECH_C)\n"
-                    "        nRBPU = 0;\n"
+                    "        nRBPU = 0;\n" // 0 = PORTB pull-ups are enabled by individual port latch values
                     "    #endif\n"
                         "\n");
             } else { /// else no pull-up at all on Port B (Modified by JG3)
@@ -3320,7 +3320,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "    #ifdef CCS_PIC_C\n"
                         "        port_b_pullups(false);\n"
                         "    #elif defined(HI_TECH_C)\n"
-                        "        nRBPU = 1;\n"
+                        "        nRBPU = 1;\n" // 1 = PORTB pull-ups are disabled
                         "    #endif\n"
                         "\n");
             }

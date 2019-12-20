@@ -627,27 +627,37 @@ HMENU MakeMainWindowMenus()
     ProcEspMenu = CreatePopupMenu();
     ProcArmMenu = CreatePopupMenu();
     ProcOthersMenu = CreatePopupMenu();
+    static HMENU ProcMenu = nullptr;
+    static HMENU ProcMenu_ = nullptr;
+    Core core_ = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         Core core = supportedMcus()[i].core;
-        if((core > AVRcores) && (core < PICcores))
-            AppendMenu(ProcAvrMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > PICcores) && (core < ESPcores))
+        if((core > AVRcores) && (core < AVRcores_) && (supportedMcus()[i].whichIsa == ISA_AVR))
+            ProcMenu = ProcAvrMenu;
+        else if((core > PICcores) && (core < PICcores_)) {
             if(core == PIC18HighEndCore16bit)
-                AppendMenu(ProcPic18Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+                ProcMenu = ProcPic18Menu;
             else
-                AppendMenu(ProcPic16Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > ESPcores) && (core < ARMcores))
-            AppendMenu(ProcEspMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > ARMcores) && (core < PCcores))
-            AppendMenu(ProcArmMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if(core > PCcores)
-            AppendMenu(ProcOthersMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+                ProcMenu = ProcPic16Menu;
+        } else if((core > ESPcores) && (core < ESPcores_))
+            ProcMenu = ProcEspMenu;
+        else if((core > ARMcores) && (core < ARMcores_))
+            ProcMenu = ProcArmMenu;
+        else // if(core > PCcores)
+            ProcMenu = ProcOthersMenu;
+
+        if((core_ != supportedMcus()[i].core) && (ProcMenu_ == ProcMenu)) {
+            core_ = supportedMcus()[i].core;
+            AppendMenu(ProcMenu, MF_SEPARATOR, 0, "");
+        }
+        AppendMenu(ProcMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        ProcMenu_ = ProcMenu;
     }
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcAvrMenu, _("Atmel AVR MCUs"));            /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic16Menu, _("Microchip Pic10-16 MCUs")); /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic18Menu, _("Microchip Pic18 MCUs"));    /// To translate
-    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcArmMenu, _("ARM MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcOthersMenu, _("Other MCUs"));             /// To translate
                                                                                                             ///
 

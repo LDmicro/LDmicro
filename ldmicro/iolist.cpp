@@ -363,15 +363,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_PULSER:
-            switch(l->d.pulser.busy[0]) {
+            switch(l->d.pulser.coil[0]) {
                 case 'R':
-                    AppendIo(l->d.pulser.busy, IO_TYPE_INTERNAL_RELAY);
+                    AppendIo(l->d.pulser.coil, IO_TYPE_INTERNAL_RELAY);
                     break;
                 case 'Y':
-                    AppendIo(l->d.pulser.busy, IO_TYPE_DIG_OUTPUT);
+                    AppendIo(l->d.pulser.coil, IO_TYPE_DIG_OUTPUT);
                     break;
                 default:
-                    Error(_("Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."));
+                    Error(_("Connect PULSER coil to output pin YsomeName or internal relay RsomeName."));
                     break;
             }
             break;
