@@ -909,7 +909,7 @@ bool LoadIoListFromFile(FileTracker &f)
                     type = IO_TYPE_MODBUS_HREG;
                     break;
                 default:
-                    Warning(_("Line\n'%s'\nis skipped in IO LIST section from '%s'"), strspace(line), f.name());
+                    Warning(_("Line\n'%s'\nis skipped in IO LIST section from '%s'"), strspace(line), f.name().c_str());
                     continue;
             }
         }
@@ -1676,7 +1676,7 @@ void IoListProc(NMHDR *h)
                     }
 
                     if(Prog.io.assignment[item].modbus.Slave == 0) {
-                        sprintf(i->item.pszText, _("(not assigned)"));
+                        sprintf(i->item.pszText, "%s", _("(not assigned)"));
                     } else {
                         sprintf(i->item.pszText, "%d:%05d", Prog.io.assignment[item].modbus.Slave, Prog.io.assignment[item].modbus.Address);
                     }
