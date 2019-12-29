@@ -1361,7 +1361,7 @@ doPageCorrection:
                     PicProg[j].arg1 = 0;
                     PicProg[j].arg2 = 0;
                     sprintf(PicProg[j].commentAsm, " PS(0x%02X,0x%02X)", PCLATHnow, PicProgArg1 >> 8);
-                    sprintf(PicProg[j].commentInt, "");
+                    sprintf(PicProg[j].commentInt, "%s", "");
                 }
                 // select new page
                 n4 = PageSelect(ii, &PCLATHnow, PicProgArg1 >> 8);
@@ -7707,7 +7707,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
         // TODO: WPUA - WPUG bits for PIC16F1512 - PIC16F1947
         // TODO: WPUB
-        if((Prog.pullUpRegs[1] & 0xFF) != 0xFF) {
+        if((Prog.pullUpRegs[1] & 0xFF)) {
             // Pull-ups are enabled after direction settings !
             Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
             Instruction(OP_BCF, REG_OPTION, _RBPU);

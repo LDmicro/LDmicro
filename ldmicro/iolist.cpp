@@ -363,15 +363,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_PULSER:
-            switch(l->d.pulser.busy[0]) {
+            switch(l->d.pulser.coil[0]) {
                 case 'R':
-                    AppendIo(l->d.pulser.busy, IO_TYPE_INTERNAL_RELAY);
+                    AppendIo(l->d.pulser.coil, IO_TYPE_INTERNAL_RELAY);
                     break;
                 case 'Y':
-                    AppendIo(l->d.pulser.busy, IO_TYPE_DIG_OUTPUT);
+                    AppendIo(l->d.pulser.coil, IO_TYPE_DIG_OUTPUT);
                     break;
                 default:
-                    Error(_("Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."));
+                    Error(_("Connect PULSER coil to output pin YsomeName or internal relay RsomeName."));
                     break;
             }
             break;
@@ -909,7 +909,8 @@ bool LoadIoListFromFile(FileTracker &f)
                     type = IO_TYPE_MODBUS_HREG;
                     break;
                 default:
-                    oops();
+                    Warning(_("Line\n'%s'\nis skipped in IO LIST section from '%s'"), strspace(line), f.name().c_str());
+                    continue;
             }
         }
         char *s = strstr(line, " at ");
@@ -1675,7 +1676,7 @@ void IoListProc(NMHDR *h)
                     }
 
                     if(Prog.io.assignment[item].modbus.Slave == 0) {
-                        sprintf(i->item.pszText, _("(not assigned)"));
+                        sprintf(i->item.pszText, "%s", _("(not assigned)"));
                     } else {
                         sprintf(i->item.pszText, "%d:%05d", Prog.io.assignment[item].modbus.Slave, Prog.io.assignment[item].modbus.Address);
                     }

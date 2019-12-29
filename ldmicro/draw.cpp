@@ -1233,7 +1233,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             ElemPulser *m = &leaf->d.pulser;
 
             sprintf(s2, "%s", m->counter);
-            sprintf(s3, "%s", m->busy);
+            sprintf(s3, "%s", m->coil);
             formatWidth(top,
                         2 * POS_WIDTH,
                         "[\x01"

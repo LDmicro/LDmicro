@@ -1959,7 +1959,7 @@ static void SimulateIntCode()
                     SimulateUartTxCountdown = 2;
                     if(GetVariableType(a->name1) == IO_TYPE_STRING) {
                         static char *s = GetSimulationStr(a->name1.c_str());
-                        for(auto i = 0; i < strlen(s); i++) {
+                        for(decltype (strlen(s)) i = 0; i < strlen(s); i++) {
                             AppendToSimulationTextControl(s[i], UartSimulationTextControl);
                         }
                     } else
@@ -2883,8 +2883,7 @@ void DestroySimulationWindow(HWND SimulationWindow) ///// Modified by JG
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
 static int32_t bPrev = 0;
-static void    AppendToSimulationTextControl(BYTE b,
-                                             HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
+static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
 

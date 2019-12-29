@@ -256,8 +256,7 @@ void ADC_Init(ADC_TypeDef *ADCx, ADC_InitTypeDef *ADC_InitStruct)
     /* Configure ADCx: scan conversion mode and resolution */
     /* Set SCAN bit according to ADC_ScanConvMode value */
     /* Set RES bit according to ADC_Resolution value */
-    tmpreg1 |= (uint32_t)(((uint32_t)ADC_InitStruct->ADC_ScanConvMode << 8) | //
-                          ADC_InitStruct->ADC_Resolution);
+    tmpreg1 |= (uint32_t)(((uint32_t)ADC_InitStruct->ADC_ScanConvMode << 8) | ADC_InitStruct->ADC_Resolution);
     /* Write to ADCx CR1 */
     ADCx->CR1 = tmpreg1;
     /*---------------------------- ADCx CR2 Configuration -----------------*/

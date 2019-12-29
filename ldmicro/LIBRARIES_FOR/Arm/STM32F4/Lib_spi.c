@@ -15,28 +15,22 @@ void LibSPI_Init(SPI_TypeDef *SPIx, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI
 {
     // Init with default settings
     if(SPIx == SPI1) {
-        LibSPIx_Init(
-            SPI1, LibSPI_PinsPack_1, LibSPI1_MODE, SPI_BaudRatePrescaler, LibSPI1_MASTERSLAVE, LibSPI1_FIRSTBIT);
+        LibSPIx_Init(SPI1, LibSPI_PinsPack_1, LibSPI1_MODE, SPI_BaudRatePrescaler, LibSPI1_MASTERSLAVE, LibSPI1_FIRSTBIT);
     }
     if(SPIx == SPI2) {
-        LibSPIx_Init(
-            SPI2, LibSPI_PinsPack_1, LibSPI2_MODE, SPI_BaudRatePrescaler, LibSPI2_MASTERSLAVE, LibSPI2_FIRSTBIT);
+        LibSPIx_Init(SPI2, LibSPI_PinsPack_1, LibSPI2_MODE, SPI_BaudRatePrescaler, LibSPI2_MASTERSLAVE, LibSPI2_FIRSTBIT);
     }
     if(SPIx == SPI3) {
-        LibSPIx_Init(
-            SPI3, LibSPI_PinsPack_1, LibSPI3_MODE, SPI_BaudRatePrescaler, LibSPI3_MASTERSLAVE, LibSPI3_FIRSTBIT);
+        LibSPIx_Init(SPI3, LibSPI_PinsPack_1, LibSPI3_MODE, SPI_BaudRatePrescaler, LibSPI3_MASTERSLAVE, LibSPI3_FIRSTBIT);
     }
     if(SPIx == SPI4) {
-        LibSPIx_Init(
-            SPI4, LibSPI_PinsPack_1, LibSPI4_MODE, SPI_BaudRatePrescaler, LibSPI4_MASTERSLAVE, LibSPI4_FIRSTBIT);
+        LibSPIx_Init(SPI4, LibSPI_PinsPack_1, LibSPI4_MODE, SPI_BaudRatePrescaler, LibSPI4_MASTERSLAVE, LibSPI4_FIRSTBIT);
     }
     if(SPIx == SPI5) {
-        LibSPIx_Init(
-            SPI5, LibSPI_PinsPack_1, LibSPI5_MODE, SPI_BaudRatePrescaler, LibSPI5_MASTERSLAVE, LibSPI5_FIRSTBIT);
+        LibSPIx_Init(SPI5, LibSPI_PinsPack_1, LibSPI5_MODE, SPI_BaudRatePrescaler, LibSPI5_MASTERSLAVE, LibSPI5_FIRSTBIT);
     }
     if(SPIx == SPI6) {
-        LibSPIx_Init(
-            SPI6, LibSPI_PinsPack_1, LibSPI6_MODE, SPI_BaudRatePrescaler, LibSPI6_MASTERSLAVE, LibSPI6_FIRSTBIT);
+        LibSPIx_Init(SPI6, LibSPI_PinsPack_1, LibSPI6_MODE, SPI_BaudRatePrescaler, LibSPI6_MASTERSLAVE, LibSPI6_FIRSTBIT);
     }
 
     LibSPI_SetDataSize(SPIx, SPI_DataSize);
@@ -51,8 +45,7 @@ void LibSPI_Init(SPI_TypeDef *SPIx, LibSPI_DataSize_t SPI_DataSize, uint16_t SPI
   * @retval None
   */
 
-void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_PinsPack_t pinspack, uint16_t SPI_BaudRatePrescaler,
-                     LibSPI_Mode_t SPI_Mode_t, uint16_t SPI_Mode, uint16_t SPI_FirstBit)
+void LibSPI_InitFull(SPI_TypeDef *SPIx, LibSPI_PinsPack_t pinspack, uint16_t SPI_BaudRatePrescaler, LibSPI_Mode_t SPI_Mode_t, uint16_t SPI_Mode, uint16_t SPI_FirstBit)
 {
     // Init FULL SPI settings by user
     if(SPIx == SPI1) {
@@ -348,8 +341,7 @@ void LibSPI_ReadMulti16(SPI_TypeDef *SPIx, uint16_t *dataIn, uint16_t dummy, uin
 /**
   * @brief  private functions
   */
-static void LibSPIx_Init(SPI_TypeDef *SPIx, LibSPI_PinsPack_t pinspack, LibSPI_Mode_t SPI_Mode,
-                         uint16_t SPI_BaudRatePrescaler, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
+static void LibSPIx_Init(SPI_TypeDef *SPIx, LibSPI_PinsPack_t pinspack, LibSPI_Mode_t SPI_Mode, uint16_t SPI_BaudRatePrescaler, uint16_t SPI_MasterSlave, uint16_t SPI_FirstBit)
 {
     SPI_InitTypeDef SPI_InitStruct;
 
@@ -457,20 +449,10 @@ void LibSPI1_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     // Init SPI pins
     if(pinspack == LibSPI_PinsPack_1) {
-        LibGPIO_InitAlternate(GPIOA,
-                              GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI1);
+        LibGPIO_InitAlternate(GPIOA, GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI1);
     }
     if(pinspack == LibSPI_PinsPack_2) {
-        LibGPIO_InitAlternate(GPIOB,
-                              GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI1);
+        LibGPIO_InitAlternate(GPIOB, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI1);
     }
 }
 
@@ -478,26 +460,14 @@ void LibSPI2_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     // Init SPI pins
     if(pinspack == LibSPI_PinsPack_1) {
-        LibGPIO_InitAlternate(
-            GPIOB, GPIO_PIN_10, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
-        LibGPIO_InitAlternate(
-            GPIOC, GPIO_PIN_2 | GPIO_PIN_3, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
+        LibGPIO_InitAlternate(GPIOB, GPIO_PIN_10, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
+        LibGPIO_InitAlternate(GPIOC, GPIO_PIN_2 | GPIO_PIN_3, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
     }
     if(pinspack == LibSPI_PinsPack_2) {
-        LibGPIO_InitAlternate(GPIOB,
-                              GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI2);
+        LibGPIO_InitAlternate(GPIOB, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
     }
     if(pinspack == LibSPI_PinsPack_3) {
-        LibGPIO_InitAlternate(GPIOI,
-                              GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI2);
+        LibGPIO_InitAlternate(GPIOI, GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI2);
     }
 }
 
@@ -505,20 +475,10 @@ void LibSPI3_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     // Enable SPI pins
     if(pinspack == LibSPI_PinsPack_1) {
-        LibGPIO_InitAlternate(GPIOB,
-                              GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI3);
+        LibGPIO_InitAlternate(GPIOB, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI3);
     }
     if(pinspack == LibSPI_PinsPack_2) {
-        LibGPIO_InitAlternate(GPIOC,
-                              GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI3);
+        LibGPIO_InitAlternate(GPIOC, GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI3);
     }
 }
 
@@ -526,20 +486,10 @@ void LibSPI4_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     // Init SPI pins
     if(pinspack == LibSPI_PinsPack_1) {
-        LibGPIO_InitAlternate(GPIOE,
-                              GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI4);
+        LibGPIO_InitAlternate(GPIOE, GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI4);
     }
     if(pinspack == LibSPI_PinsPack_2) {
-        LibGPIO_InitAlternate(GPIOE,
-                              GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI4);
+        LibGPIO_InitAlternate(GPIOE, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI4);
     }
 }
 
@@ -547,18 +497,11 @@ void LibSPI5_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     // Init SPI pins
     if(pinspack == LibSPI_PinsPack_1) {
-        LibGPIO_InitAlternate(GPIOF,
-                              GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI5);
+        LibGPIO_InitAlternate(GPIOF, GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI5);
     }
     if(pinspack == LibSPI_PinsPack_2) {
-        LibGPIO_InitAlternate(
-            GPIOF, GPIO_PIN_11, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI5);
-        LibGPIO_InitAlternate(
-            GPIOH, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI5);
+        LibGPIO_InitAlternate(GPIOF, GPIO_PIN_11, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI5);
+        LibGPIO_InitAlternate(GPIOH, GPIO_PIN_6 | GPIO_PIN_7, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI5);
     }
 }
 
@@ -566,11 +509,6 @@ void LibSPI6_INT_InitPins(LibSPI_PinsPack_t pinspack)
 {
     if(pinspack == LibSPI_PinsPack_1) {
         // Init SPI pins
-        LibGPIO_InitAlternate(GPIOG,
-                              GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14,
-                              LibGPIO_OType_PP,
-                              LibGPIO_PuPd_NOPULL,
-                              LibGPIO_Speed_High,
-                              GPIO_AF_SPI6);
+        LibGPIO_InitAlternate(GPIOG, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14, LibGPIO_OType_PP, LibGPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_SPI6);
     }
 }

@@ -234,9 +234,6 @@
 @SET PROGECT=D:\LDs\pwm\pwm_mega16.ld
 @SET PROGECT=D:\LDs\pwm\test.ld
 
-@SET PROGECT="D:\LDs\servo pwm\servo pwm.ld"
-@SET PROGECT="D:\LDs\servo pwm\servo pwm Pic16f887.ld"
-
 @SET PROGECT=D:\LDs\errors\pwm3\DIMERpwm3PHASES-TesteJTAtmega328.ld
 @SET PROGECT=D:\LDs\marchat1\marchat1.ld
 @SET PROGECT=D:\LDs\errors\pic\nofeedbacksensorprogramTOOSMALL_1.ld
@@ -282,8 +279,6 @@
 
 @SET PROGECT=D:\LDs\STEPPER\stepper.ld
 @SET PROGECT=e:\SVARKA2\svarka.ld
-
-@SET PROGECT=D:\LDs\pulse\pulse.ld
 
 @SET PROGECT=D:\LDs\speed\Speed.ld
 @SET PROGECT=D:\LDs\pwm_led\pwm_led_TYC_328.ld
@@ -394,6 +389,19 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=C:\LDs\Buttonnombre\Buttonnombre.ld
 
 @SET PROGECT=D:\lds\FormattedStr\FormattedStr.ld
+
+@SET PROGECT="D:\LDs\servo\servo pwm Pic16f887.ld"
+@SET PROGECT="D:\LDs\servo\servo pwm.ld"
+@SET PROGECT="D:\LDs\servo\servo_pwm_arduino_uno.ld"
+
+@SET PROGECT=D:\LDs\quad_test\quad_test.ld
+
+@SET PROGECT=d:\lds\pwm\PWM_up_down.ld
+
+@SET PROGECT=D:\LDs\new\new.ld
+@SET PROGECT=D:\LDs\pulser\stepper.ld
+@SET PROGECT=D:\LDs\pulser\pulser.ld
+
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

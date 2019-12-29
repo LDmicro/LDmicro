@@ -700,11 +700,11 @@ void AddPulser()
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.pulser.P1, "P1");
-    strcpy(t->d.pulser.P0, "P0");
-    strcpy(t->d.pulser.accel, "accel");
+    strcpy(t->d.pulser.P1, "D1");
+    strcpy(t->d.pulser.P0, "D0");
+    strcpy(t->d.pulser.accel, "accel_decel");
     strcpy(t->d.pulser.counter, "counter");
-    strcpy(t->d.pulser.busy, "Rbusy");
+    strcpy(t->d.pulser.coil, "Ypulse");
     AddLeaf(ELEM_PULSER, t);
 }
 

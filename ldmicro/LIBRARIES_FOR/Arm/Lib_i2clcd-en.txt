@@ -22,10 +22,13 @@ In the 'send variable' field, you can put a variable or a value, knowing that
 there are 3 possibilities:
 
 - values between 0 and 0x10 are commands (described in libraries):
- 	0= Erase display
-	1= Cursor home
-	2= Blinking display
-	3= Normal display
+ 	0x00= Erase display
+	0x01= Cursor home
+	0x02= Blinking display
+	0x03= Normal display
+
+	0x0F= Backlight off (if available)
+	0x10= Backlight on (if available)
 
 	Other values / functions can be added in libraries.
 
@@ -39,7 +42,7 @@ there are 3 possibilities:
 - other values between 0x11 and 0x7F are standard chars to display at cursor position.
 
 It normally doesn't prevent to use other I2C devices on the same bus.
-It has been tested successfully on STM32F407.
+It has been tested successfully on STM32F407 and STM32F103.
 
 JG
 

@@ -295,15 +295,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM1Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -316,15 +314,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM1Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -337,15 +333,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM1Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_13, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_13, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -358,15 +352,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM1Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM1);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -392,22 +384,19 @@ LibPWM_Result_t LibPWM_INT_InitTIM2Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_3:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -420,15 +409,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM2Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -441,15 +428,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM2Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -462,15 +447,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM2Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM2);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -496,22 +479,19 @@ LibPWM_Result_t LibPWM_INT_InitTIM3Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_4, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_4, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_3:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -524,22 +504,19 @@ LibPWM_Result_t LibPWM_INT_InitTIM3Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_3:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -552,15 +529,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM3Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -573,15 +548,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM3Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM3);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -607,15 +580,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM4Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOD
-                    LibGPIO_InitAlternate(
-                        GPIOD, GPIO_PIN_12, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOD, GPIO_PIN_12, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -628,15 +599,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM4Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOD
-                    LibGPIO_InitAlternate(
-                        GPIOD, GPIO_PIN_13, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOD, GPIO_PIN_13, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -649,15 +618,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM4Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOD
-                    LibGPIO_InitAlternate(
-                        GPIOD, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOD, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -670,15 +637,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM4Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOD
-                    LibGPIO_InitAlternate(
-                        GPIOD, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
+                    LibGPIO_InitAlternate(GPIOD, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM4);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -704,15 +669,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM5Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOH
-                    LibGPIO_InitAlternate(
-                        GPIOH, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOH, GPIO_PIN_10, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -725,15 +688,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM5Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOH
-                    LibGPIO_InitAlternate(
-                        GPIOH, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOH, GPIO_PIN_11, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -746,15 +707,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM5Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOH
-                    LibGPIO_InitAlternate(
-                        GPIOH, GPIO_PIN_12, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOH, GPIO_PIN_12, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -767,15 +726,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM5Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOI
-                    LibGPIO_InitAlternate(
-                        GPIOI, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
+                    LibGPIO_InitAlternate(GPIOI, GPIO_PIN_0, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM5);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -801,15 +758,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM8Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOI
-                    LibGPIO_InitAlternate(
-                        GPIOI, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOI, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -822,15 +777,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM8Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOI
-                    LibGPIO_InitAlternate(
-                        GPIOI, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOI, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -843,15 +796,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM8Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOI
-                    LibGPIO_InitAlternate(
-                        GPIOI, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOI, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -864,15 +815,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM8Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOC
-                    LibGPIO_InitAlternate(
-                        GPIOC, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOC, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOI
-                    LibGPIO_InitAlternate(
-                        GPIOI, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
+                    LibGPIO_InitAlternate(GPIOI, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM8);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -898,15 +847,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM9Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_2, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_5, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -919,15 +866,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM9Pins(LibPWM_Channel_t Channel, LibPWM_PinsPac
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_3, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOE
-                    LibGPIO_InitAlternate(
-                        GPIOE, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
+                    LibGPIO_InitAlternate(GPIOE, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM9);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -953,15 +898,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM10Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM10);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM10);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOF
-                    LibGPIO_InitAlternate(
-                        GPIOF, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM10);
+                    LibGPIO_InitAlternate(GPIOF, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM10);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -987,15 +930,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM11Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM11);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM11);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOF
-                    LibGPIO_InitAlternate(
-                        GPIOF, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM11);
+                    LibGPIO_InitAlternate(GPIOF, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM11);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -1021,15 +962,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM12Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_14, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOH
-                    LibGPIO_InitAlternate(
-                        GPIOH, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
+                    LibGPIO_InitAlternate(GPIOH, GPIO_PIN_6, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -1042,15 +981,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM12Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOB
-                    LibGPIO_InitAlternate(
-                        GPIOB, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
+                    LibGPIO_InitAlternate(GPIOB, GPIO_PIN_15, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOH
-                    LibGPIO_InitAlternate(
-                        GPIOH, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
+                    LibGPIO_InitAlternate(GPIOH, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM12);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -1076,15 +1013,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM13Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM13);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_1, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM13);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOF
-                    LibGPIO_InitAlternate(
-                        GPIOF, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM13);
+                    LibGPIO_InitAlternate(GPIOF, GPIO_PIN_8, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM13);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -1110,15 +1045,13 @@ LibPWM_Result_t LibPWM_INT_InitTIM14Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
             switch(PinsPack) {
                 case LibPWM_PinsPack_1:
 #ifdef GPIOA
-                    LibGPIO_InitAlternate(
-                        GPIOA, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM14);
+                    LibGPIO_InitAlternate(GPIOA, GPIO_PIN_7, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM14);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
                 case LibPWM_PinsPack_2:
 #ifdef GPIOF
-                    LibGPIO_InitAlternate(
-                        GPIOF, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM14);
+                    LibGPIO_InitAlternate(GPIOF, GPIO_PIN_9, GPIO_OType_PP, GPIO_PuPd_NOPULL, LibGPIO_Speed_High, GPIO_AF_TIM14);
                     result = LibPWM_Result_Ok;
 #endif
                     break;
@@ -1135,8 +1068,7 @@ LibPWM_Result_t LibPWM_INT_InitTIM14Pins(LibPWM_Channel_t Channel, LibPWM_PinsPa
     return result;
 }
 
-LibTIMER_PROPERTIES_Result_t LibTIMER_PROPERTIES_GetTimerProperties(TIM_TypeDef *          TIMx,
-                                                                    LibTIMER_PROPERTIES_t *Timer_Data)
+LibTIMER_PROPERTIES_Result_t LibTIMER_PROPERTIES_GetTimerProperties(TIM_TypeDef *TIMx, LibTIMER_PROPERTIES_t *Timer_Data)
 {
     RCC_ClocksTypeDef RCC_ClocksStruct;
 
@@ -1215,8 +1147,7 @@ LibTIMER_PROPERTIES_Result_t LibTIMER_PROPERTIES_GetTimerProperties(TIM_TypeDef 
     return LibTIMER_PROPERTIES_Result_TimerNotValid;
 }
 
-LibTIMER_PROPERTIES_Result_t LibTIMER_PROPERTIES_GenerateDataForWorkingFrequency(LibTIMER_PROPERTIES_t *Timer_Data,
-                                                                                 double                 frequency)
+LibTIMER_PROPERTIES_Result_t LibTIMER_PROPERTIES_GenerateDataForWorkingFrequency(LibTIMER_PROPERTIES_t *Timer_Data, double frequency)
 {
     if(frequency > Timer_Data->TimerFrequency) {
         /* Reset values */

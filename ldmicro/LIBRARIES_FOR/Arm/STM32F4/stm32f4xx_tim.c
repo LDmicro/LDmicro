@@ -1855,29 +1855,25 @@ void TIM_ICInit(TIM_TypeDef *TIMx, TIM_ICInitTypeDef *TIM_ICInitStruct)
 
     if(TIM_ICInitStruct->TIM_Channel == TIM_Channel_1) {
         /* TI1 Configuration */
-        TI1_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI1_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC1Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
     } else if(TIM_ICInitStruct->TIM_Channel == TIM_Channel_2) {
         /* TI2 Configuration */
         assert_param(IS_TIM_LIST2_PERIPH(TIMx));
-        TI2_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI2_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC2Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
     } else if(TIM_ICInitStruct->TIM_Channel == TIM_Channel_3) {
         /* TI3 Configuration */
         assert_param(IS_TIM_LIST3_PERIPH(TIMx));
-        TI3_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI3_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC3Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
     } else {
         /* TI4 Configuration */
         assert_param(IS_TIM_LIST3_PERIPH(TIMx));
-        TI4_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI4_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC4Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
     }
@@ -1930,8 +1926,7 @@ void TIM_PWMIConfig(TIM_TypeDef *TIMx, TIM_ICInitTypeDef *TIM_ICInitStruct)
     }
     if(TIM_ICInitStruct->TIM_Channel == TIM_Channel_1) {
         /* TI1 Configuration */
-        TI1_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI1_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC1Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
         /* TI2 Configuration */
@@ -1940,8 +1935,7 @@ void TIM_PWMIConfig(TIM_TypeDef *TIMx, TIM_ICInitTypeDef *TIM_ICInitStruct)
         TIM_SetIC2Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
     } else {
         /* TI2 Configuration */
-        TI2_Config(
-            TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
+        TI2_Config(TIMx, TIM_ICInitStruct->TIM_ICPolarity, TIM_ICInitStruct->TIM_ICSelection, TIM_ICInitStruct->TIM_ICFilter);
         /* Set the Input Capture Prescaler value */
         TIM_SetIC2Prescaler(TIMx, TIM_ICInitStruct->TIM_ICPrescaler);
         /* TI1 Configuration */
@@ -2633,8 +2627,7 @@ void TIM_ITRxExternalClockConfig(TIM_TypeDef *TIMx, uint16_t TIM_InputTriggerSou
   *          This parameter must be a value between 0x0 and 0xF.
   * @retval None
   */
-void TIM_TIxExternalClockConfig(TIM_TypeDef *TIMx, uint16_t TIM_TIxExternalCLKSource, uint16_t TIM_ICPolarity,
-                                uint16_t ICFilter)
+void TIM_TIxExternalClockConfig(TIM_TypeDef *TIMx, uint16_t TIM_TIxExternalCLKSource, uint16_t TIM_ICPolarity, uint16_t ICFilter)
 {
     /* Check the parameters */
     assert_param(IS_TIM_LIST1_PERIPH(TIMx));
@@ -2670,8 +2663,7 @@ void TIM_TIxExternalClockConfig(TIM_TypeDef *TIMx, uint16_t TIM_TIxExternalCLKSo
   *          This parameter must be a value between 0x00 and 0x0F
   * @retval None
   */
-void TIM_ETRClockMode1Config(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity,
-                             uint16_t ExtTRGFilter)
+void TIM_ETRClockMode1Config(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity, uint16_t ExtTRGFilter)
 {
     uint16_t tmpsmcr = 0;
 
@@ -2717,8 +2709,7 @@ void TIM_ETRClockMode1Config(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, ui
   *          This parameter must be a value between 0x00 and 0x0F
   * @retval None
   */
-void TIM_ETRClockMode2Config(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity,
-                             uint16_t ExtTRGFilter)
+void TIM_ETRClockMode2Config(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity, uint16_t ExtTRGFilter)
 {
     /* Check the parameters */
     assert_param(IS_TIM_LIST3_PERIPH(TIMx));
@@ -2924,8 +2915,7 @@ void TIM_ETRConfig(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM
     tmpsmcr &= SMCR_ETR_MASK;
 
     /* Set the Prescaler, the Filter value and the Polarity */
-    tmpsmcr |=
-        (uint16_t)(TIM_ExtTRGPrescaler | (uint16_t)(TIM_ExtTRGPolarity | (uint16_t)(ExtTRGFilter << (uint16_t)8)));
+    tmpsmcr |= (uint16_t)(TIM_ExtTRGPrescaler | (uint16_t)(TIM_ExtTRGPolarity | (uint16_t)(ExtTRGFilter << (uint16_t)8)));
 
     /* Write to TIMx SMCR */
     TIMx->SMCR = tmpsmcr;
@@ -2966,8 +2956,7 @@ void TIM_ETRConfig(TIM_TypeDef *TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM
   *            @arg TIM_ICPolarity_Rising: IC Rising edge.
   * @retval None
   */
-void TIM_EncoderInterfaceConfig(TIM_TypeDef *TIMx, uint16_t TIM_EncoderMode, uint16_t TIM_IC1Polarity,
-                                uint16_t TIM_IC2Polarity)
+void TIM_EncoderInterfaceConfig(TIM_TypeDef *TIMx, uint16_t TIM_EncoderMode, uint16_t TIM_IC1Polarity, uint16_t TIM_IC2Polarity)
 {
     uint16_t tmpsmcr = 0;
     uint16_t tmpccmr1 = 0;
