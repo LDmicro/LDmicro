@@ -355,16 +355,16 @@ void ShowConfDialog()
     }
 
     if(!DialogCancel) {
-        char buf[26];
-        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        double        dProgCycleTime = 1000.0 * atof(buf);
+        char cancel_buf[26];
+        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        double        dProgCycleTime = 1000.0 * atof(cancel_buf);
         long long int ProgCycleTime;
 
         sprintf(buf, "%.0f", dProgCycleTime);
         ProgCycleTime = hobatoi(buf);
 
-        SendMessage(TimerTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        if(atoi(buf) == 0)
+        SendMessage(TimerTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        if(atoi(cancel_buf) == 0)
             Prog.cycleTimer = 0;
         else
             Prog.cycleTimer = 1;
@@ -378,32 +378,32 @@ void ShowConfDialog()
         } else {
             Prog.cycleDuty = 0;
         }
-        SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+        SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
         ///// Added by JG:  convert '.' to ',' for atof()
-        for(size_t i = 0; i < strlen(buf); i++)
-            if(buf[i] == '.')
-                buf[i] = ',';
+        for(size_t i = 0; i < strlen(cancel_buf); i++)
+            if(cancel_buf[i] == '.')
+                cancel_buf[i] = ',';
         /////
-        Prog.mcuClock = (int)(1e6 * atof(buf) + 0.5);
+        Prog.mcuClock = (int)(1e6 * atof(cancel_buf) + 0.5);
 
-        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
 
         if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
-            Prog.configurationWord = hobatoi(buf);
+            Prog.configurationWord = hobatoi(cancel_buf);
             if(!Prog.configurationWord) {
                 Error(_("Zero Configuration Word(s) not valid."));
                 Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
 
-        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.baudRate = atoi(buf);
+        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.baudRate = atol(cancel_buf);
 
-        SendMessage(RateTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.spiRate = atol(buf);
+        SendMessage(RateTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.spiRate = atol(cancel_buf);
 
-        SendMessage(SpeedTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.i2cRate = atol(buf);
+        SendMessage(SpeedTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.i2cRate = atol(cancel_buf);
 
         if(Prog.mcuClock <= 0) {
             Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));

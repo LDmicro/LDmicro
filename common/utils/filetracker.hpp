@@ -6,10 +6,13 @@
 #include <cstdio>
 #include <stdexcept>
 
+#ifndef LD_WITH_NOEXEPT
+#define noexcept throw()
+#endif
 
 class FileTracker
 {
-    FileTracker(const FileTracker& ) {}
+    FileTracker(const FileTracker& ) : file_(nullptr) {}
     FileTracker& operator=(const FileTracker&) {return *this;}
 public:
     FileTracker(const char* name = nullptr, const char* mode = nullptr) :
@@ -79,13 +82,13 @@ public:
     {
         return get();
     }
-    FileTracker(FileTracker&& other) : file_(nullptr)
+    FileTracker(FileTracker&& other) noexcept : file_(nullptr)
     {
         file_ = other.file_;
         name_ = other.name_;
         other.file_ = nullptr;
     }
-    FileTracker& operator=(FileTracker&& other)
+    FileTracker& operator=(FileTracker&& other) noexcept
     {
         if(*this != other)
             {
