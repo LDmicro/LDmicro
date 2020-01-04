@@ -479,7 +479,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         */
         //      *which = ELEM_UART_WR;
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
-        int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
+        size_t i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
@@ -522,7 +522,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_STRING;
 */
     } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string) == 3) {
-        int i = strlen("STRING") + 1 + strlen(l->d.fmtdStr.dest) + 1 + strlen(l->d.fmtdStr.var) + 1;
+        size_t i = strlen("STRING") + 1 + strlen(l->d.fmtdStr.dest) + 1 + strlen(l->d.fmtdStr.var) + 1;
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
         DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
@@ -613,7 +613,7 @@ char *strspace(char *str)
 //-----------------------------------------------------------------------------
 char *strspacer(char *str)
 {
-    int i = strlen(str) - 1;
+    size_t i = strlen(str) - 1;
     while((i >= 0) && isspace(str[i])) {
         str[i] = 0;
         i--;

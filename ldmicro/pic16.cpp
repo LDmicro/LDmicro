@@ -3789,7 +3789,7 @@ static void InitTableString(IntOp *a)
             THROW_COMPILER_EXCEPTION_FMT("TABLE_CALC=%u", PicProgWriteP - addrOfTableRoutine);
 
         Comment("DATA's size is 1");
-        for(int i = 0; i < strlen(str); i++) {
+        for(size_t i = 0; i < strlen(str); i++) {
             Instruction(OP_RETLW, str[i]);
         }
         Instruction(OP_RETLW, 0); // string final '\0' is included

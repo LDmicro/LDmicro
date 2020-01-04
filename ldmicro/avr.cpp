@@ -2584,7 +2584,7 @@ static void InitTableString(IntOp *a)
         SetMemForVariable(a->name1, addrOfTable, 1);
 
         Comment("DATA's size is 1");
-        for(decltype(strlen(str)) i = 0; i < strlen(str); i += 2) {
+        for(size_t i = 0; i < strlen(str); i += 2) {
             Instruction(OP_DB2, str[i], str[i + 1]);
         }
         if(strlen(str) % 2 == 0)

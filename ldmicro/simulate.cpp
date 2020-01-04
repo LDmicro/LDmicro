@@ -1959,7 +1959,7 @@ static void SimulateIntCode()
                     SimulateUartTxCountdown = 2;
                     if(GetVariableType(a->name1) == IO_TYPE_STRING) {
                         static char *s = GetSimulationStr(a->name1.c_str());
-                        for(decltype (strlen(s)) i = 0; i < strlen(s); i++) {
+                        for(size_t i = 0; i < strlen(s); i++) {
                             AppendToSimulationTextControl(s[i], UartSimulationTextControl);
                         }
                     } else
@@ -2954,7 +2954,7 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
     bPrev = b;
     // ^^^ // This patch only for simulation mode and for WC_EDIT control.
 
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
+    size_t overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
     if(overBy > 0) {
         memmove(buf, buf + overBy, strlen(buf));
     }
