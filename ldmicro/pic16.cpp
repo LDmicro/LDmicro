@@ -1361,7 +1361,7 @@ doPageCorrection:
                     PicProg[j].arg1 = 0;
                     PicProg[j].arg2 = 0;
                     sprintf(PicProg[j].commentAsm, " PS(0x%02X,0x%02X)", PCLATHnow, PicProgArg1 >> 8);
-                    sprintf(PicProg[j].commentInt, "");
+                    sprintf(PicProg[j].commentInt, "%s", "");
                 }
                 // select new page
                 n4 = PageSelect(ii, &PCLATHnow, PicProgArg1 >> 8);

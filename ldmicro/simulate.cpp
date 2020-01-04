@@ -1959,7 +1959,7 @@ static void SimulateIntCode()
                     SimulateUartTxCountdown = 2;
                     if(GetVariableType(a->name1) == IO_TYPE_STRING) {
                         static char *s = GetSimulationStr(a->name1.c_str());
-                        for(auto i = 0; i < strlen(s); i++) {
+                        for(decltype (strlen(s)) i = 0; i < strlen(s); i++) {
                             AppendToSimulationTextControl(s[i], UartSimulationTextControl);
                         }
                     } else
