@@ -3403,11 +3403,11 @@ McuIoInfo SupportedMcus_[] = {
         8,
         0x3FC4,
         /*
-            ($7f <<7) |
-            (1 <<  6) |     // BOD enabled
-            (0 <<  5) |     // _MCLR disabled
-            (0 <<  4) |     // PWRT enabled
-            (0 <<  3) |     // WDTE disabled
+          ($3f <<  7) |
+            (1 <<  6) |     // BOD enabled, Brown-out Detect Enable
+            (0 <<  5) |     // _MCLR disabled, GP3/MCLR pin function is digital I/O, MCLR internally tied to VDD
+            (0 <<  4) |     // PWRT enabled, Power-up Timer Enable
+            (0 <<  3) |     // WDTE disabled, Watchdog Timer disable
             (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
         */
         nullptr,
