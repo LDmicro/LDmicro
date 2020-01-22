@@ -80,7 +80,7 @@ class PlcProgram {
     int               mcuROM() const;
     int               mcuRAM() const;
     void              reset();
-    ElemSubcktSeries *rungs(uint32_t idx)
+    ElemSubcktSeries *rungs(size_t idx)
     {
         return rungs_[idx];
     }

@@ -475,10 +475,10 @@ static void postCompile(const char *MNU)
     strcpy(LdName, ExtractFileName(CurrentCompileFile));
     SetExt(LdName, LdName, "");
 
-    char outFile[MAX_PATH];
-
     if(!fsize(CurrentCompileFile)) {
-        remove(CurrentCompileFile);
+	    char outFile[MAX_PATH];
+        
+		remove(CurrentCompileFile);
         if(strstr(CurrentCompileFile, ".hex")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
             remove(outFile);
@@ -2932,13 +2932,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             char exportFile[MAX_PATH];
 
-            const char *err = "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
-
             char *source = lpCmdLine + 2;
             while(isspace(*source)) {
                 source++;
             }
             if(*source == '\0') {
+                const char *err = "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
                 Error(err);
                 doexit(EXIT_FAILURE);
             }

@@ -518,9 +518,8 @@ int byteNeeded(long long int i)
 int TestByteNeeded(int count, const int32_t *vals)
 {
     int res = -1;
-    int r;
     for(int i = 0; i < count; i++) {
-        r = byteNeeded(vals[i]);
+        int r = byteNeeded(vals[i]);
         if(res < r)
             res = r;
     }

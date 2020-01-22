@@ -2876,11 +2876,8 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                 for(int i = 0; i < leaf->d.stepper.n; i++) {
                     Tdata[i] = r.T[i + 1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
                 }
-            }
-            //
-            if(speed >= 3) {
-                //IJMP inside INT_FLASH_INIT
 
+                //IJMP inside INT_FLASH_INIT
                 if((isVarInited(nameTable) < 0) || (isVarInited(nameTable) == rungNow)) {
                     Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, leaf->d.stepper.n, r.sovElement, Tdata);
                 } else {

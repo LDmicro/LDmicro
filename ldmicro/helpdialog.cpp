@@ -240,7 +240,7 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_SIZING: {
             RECT *r = (RECT *)lParam;
             return Resizing(r, wParam);
-            break;
+            //break;
         }
         case WM_SIZE:
             SizeRichEdit(a);

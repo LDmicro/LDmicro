@@ -727,7 +727,7 @@ void                CopyRungDown();
 void                CutRung();
 void                CopyRung();
 void                CopyElem();
-void                PasteRung(int PasteTo);
+void                PasteRung(int PasteInTo);
 void                NewProgram();
 ElemLeaf *          AllocLeaf();
 ElemSubcktSeries *  AllocSubcktSeries();
