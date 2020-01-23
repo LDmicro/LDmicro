@@ -34,15 +34,15 @@ static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
 static HWND BaudTextbox;
-static HWND RateTextbox;          
-static HWND SpeedTextbox;       
+static HWND RateTextbox;
+static HWND SpeedTextbox;
 
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
-static LONG_PTR PrevRateProc;    
-static LONG_PTR PrevSpeedProc;   
+static LONG_PTR PrevRateProc;
+static LONG_PTR PrevSpeedProc;
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -66,10 +66,10 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
         t = PrevBaudProc;
-    else if(hwnd == RateTextbox)  
-        t = PrevRateProc;       
+    else if(hwnd == RateTextbox)
+        t = PrevRateProc;
     else if(hwnd == SpeedTextbox)
-        t = PrevSpeedProc;       
+        t = PrevSpeedProc;
 
     else
         oops();
@@ -121,7 +121,7 @@ static void MakeControls()
     HWND textLabel2_ = CreateWindowEx(0, WC_STATIC, _("PIC Configuration Bits:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT, 267, 73, 130, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2_);
 
-    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 72, 85, 21, ConfDialog, nullptr, Instance, nullptr);
+    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 72, 100, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(ConfigBitsTextbox);
 
     if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
@@ -305,13 +305,9 @@ void ShowConfDialog()
             Prog.configurationWord = Prog.mcu()->configurationWord;
     }
     if(Prog.configurationWord) {
-        sprintf(buf, "0x%llX", Prog.configurationWord);
-    }
-    ///// Added by JG
-    else {
-        sprintf(buf, "%i", 0);
-    }
-    /////
+        sprintf(buf, "0x%lX", Prog.configurationWord);
+    else
+        strcpy(buf, "0");
     SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     sprintf(buf, "%d", Prog.baudRate);

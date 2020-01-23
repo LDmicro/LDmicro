@@ -102,7 +102,7 @@ class PlcProgram {
     int32_t  cycleTimer;               // 1 or 0
     uint32_t pullUpRegs[MAX_IO_PORTS]; // A is 0, J is 9 // PIC, AVR, ARM, ...
                                        //  uint32_t      pullDnRegs[MAX_IO_PORTS]; // A is 0, J is 9 // ARM
-    int64_t configurationWord;         // only PIC
+    int32_t configurationWord;         // only PIC
     uint8_t WDTPSA;                    // only for PIC
     uint8_t OPTION;                    // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
@@ -122,7 +122,7 @@ class PlcProgram {
     uint32_t OpsInRung[MAX_RUNGS + 1];
     uint32_t HexInRung[MAX_RUNGS + 1];
 
-	int		 compiler; // TODO: instead of compiler_variant
+    int      compiler; // TODO: instead of compiler_variant
   private:
     McuIoInfo *mcu_;
 };
