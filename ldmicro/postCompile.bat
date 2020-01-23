@@ -21,8 +21,8 @@
 ;
 @SET DIFF_TOOL="D:\Program Files\WinMerge\WinMergeU.exe"
 ;
-@if NOT EXIST "%P3%\ladder.h"    copy "%P3%\ladder.h_"   "%P3%\ladder.h"
-@if NOT EXIST "%P3%\%P4%.ino"    copy "%P3%\%P4%.ino_"   "%P3%\%P4%.ino"
+@rem if NOT EXIST "%P3%\ladder.h"    copy "%P3%\ladder.h_"   "%P3%\ladder.h"
+@rem if NOT EXIST "%P3%\%P4%.ino"    copy "%P3%\%P4%.ino_"   "%P3%\%P4%.ino"
 ;
 :pause
 ;
@@ -129,10 +129,10 @@ copy "%P3%\%P4%.cpp"          "%P3%\ARDUINO\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\ARDUINO\%P4%"
 @rem copy "%P3%\%P4%.ino_"         "%P3%\ARDUINO\%P4%"
 @rem copy "%P3%\ladder.h_"         "%P3%\ARDUINO\%P4%"
-copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
-copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
-@rem if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
-@rem if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
+@rem copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
+@rem copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
+@if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
+@if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
 @rem pause
 goto exit
 ;

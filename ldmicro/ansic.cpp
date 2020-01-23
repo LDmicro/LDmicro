@@ -257,9 +257,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
+                fprintf(fh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
-                fprintf(flh, "const int pin_%s = -1;\n", str);
+                fprintf(fh, "const int pin_%s = -1;\n", str);
                 all_arduino_pins_are_mapped = false;
             }
 
@@ -328,9 +328,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
+                fprintf(fh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
-                fprintf(flh, "const int pin_%s = -1;\n", str);
+                fprintf(fh, "const int pin_%s = -1;\n", str);
                 all_arduino_pins_are_mapped = false;
             }
 
@@ -477,9 +477,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, s, iop->pinName);
+                fprintf(fh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, s, iop->pinName);
             } else {
-                fprintf(flh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
+                fprintf(fh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
                 all_arduino_pins_are_mapped = false;
             }
 
@@ -624,9 +624,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, s, iop->pinName);
+                fprintf(fh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, s, iop->pinName);
             } else {
-                fprintf(flh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
+                fprintf(fh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
                 all_arduino_pins_are_mapped = false;
             }
 
@@ -2100,10 +2100,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     SPI_Used = -1;
     I2C_Used = -1;
 
-    if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC) || (compiler_variant == MNU_COMPILE_HI_TECH_C))
-        sprintf(ladderhName, "%s\\ladder.h", compilePath);
-    else
-        sprintf(ladderhName, "%s\\ladder.h_", compilePath);
+    sprintf(ladderhName, "%s\\ladder.h", compilePath);
 
     FileTracker flh(ladderhName, "w");
     if(!flh) {
@@ -2138,6 +2135,11 @@ bool CompileAnsiC(const char *outFile, int MNU)
     fprintf(flh,
             "/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
             "//#define EXTERN_EVERYTHING\n"
+            "#ifdef EXTERN_EVERYTHING\n"
+            "  #define STATIC\n"
+            "#else\n"
+            "  #define STATIC static\n"
+            "#endif\n"
             "\n"
             "/* Uncomment NO_PROTOTYPES if you want own prototypes for functions. */\n"
             "//#define NO_PROTOTYPES\n"
@@ -2641,33 +2643,29 @@ bool CompileAnsiC(const char *outFile, int MNU)
             "   Ux_xxx\n"
             "    ^\n"
             "    b means bool type\n"
-            "    i means int type */\n"
-            "\n",
+            "    i means int type */\n",
             CurrentLdName);
-    fprintf(flh,
+    fprintf(f,
             "/* Define EXTERN_EVERYTHING in ladder.h if you want all symbols extern.\n"
             "   This could be useful to implement `magic variables,' so that for\n"
             "   example when you write to the ladder variable duty_cycle, your PLC\n"
             "   runtime can look at the C variable U_duty_cycle and use that to set\n"
             "   the PWM duty cycle on the micro. That way you can add support for\n"
             "   peripherals that LDmicro doesn't know about. */\n"
-            "#ifdef EXTERN_EVERYTHING\n"
-            "  #define STATIC\n"
-            "#else\n"
-            "  #define STATIC static\n"
-            "#endif\n"
             "\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
+/*
         fprintf(fh,
                 "// You provide I/O pin mapping for ARDUINO in ladder.h.\n"
                 "// See example lader.h_.\n"
                 "\n");
+*/
         fprintf(flh,
                 "// You provide analog reference type for ARDUINO in ladder.h here.\n"
                 "const int analogReference_type = DEFAULT;\n"
-                "\n"
-                "// You must provide the I/O pin mapping for ARDUINO board in ladder.h here.\n");
+                "\n");
+//              "// You must provide the I/O pin mapping for ARDUINO board in ladder.h here.\n");
     } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
     }
@@ -3814,14 +3812,14 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         if(all_arduino_pins_are_mapped)
-            fprintf(flh, "//");
-        fprintf(flh, " You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
+            fprintf(fh, "//");
+        fprintf(fh, " You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in %s.\n", ladderhName);
     }
     fprintf(flh, "\n");
     fprintf(flh, "#endif\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        SetExt(ladderhName, outFile, ".ino_");
+        SetExt(ladderhName, outFile, ".ino");
         FileTracker fino(ladderhName, "w");
         if(!fino) {
             THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);

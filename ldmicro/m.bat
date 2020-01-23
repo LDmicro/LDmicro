@@ -405,6 +405,9 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\lds\PIC12F675\internal_oscillator.ld
 @SET PROGECT=D:\lds\relay_2_motores\relay_2_motores.ld
 
+@SET PROGECT=d:\lds\pic16f1827V2-test\A0016f1827V2-test.ld
+@SET PROGECT=d:\lds\moteur_on_fc\moteur_on_fc_v3.ld
+
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

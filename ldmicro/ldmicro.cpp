@@ -539,9 +539,9 @@ static void postCompile(const char *MNU)
         if(strstr(CurrentCompileFile, ".cpp")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino_");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino");
             remove(outFile);
-            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
+            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h");
             remove(outFile);
         }
         return;

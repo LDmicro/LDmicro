@@ -304,7 +304,7 @@ void ShowConfDialog()
         if(Prog.mcu())
             Prog.configurationWord = Prog.mcu()->configurationWord;
     }
-    if(Prog.configurationWord) {
+    if(Prog.configurationWord)
         sprintf(buf, "0x%lX", Prog.configurationWord);
     else
         strcpy(buf, "0");
