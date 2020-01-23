@@ -32,6 +32,7 @@
 #include "pcports.h"
 #include "accel.h"
 #include "display.h"
+#include "flash.h"
 
 #include "ldversion.h"
 #include <ldlog.hpp>
@@ -373,6 +374,52 @@ int GetMnu(char *MNU_name)
 }
 
 //-----------------------------------------------------------------------------
+static void BuildAll(char *name, int ISA)
+{
+    char s[MAX_PATH];
+    char r[MAX_PATH];
+    char deviceName[64];
+
+    if(strlen(name) == 0) {
+        Warning(_("Save ld before build."));
+        return;
+    }
+    if (!Prog.mcu()) return;
+    strcpy(deviceName, Prog.mcu()->deviceName);
+
+    s[0] = '\0';
+    SetExt(s, name, "");
+    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
+        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+    }
+
+    if (ISA == ISA_AVR) {
+        sprintf(r, "%sbuildAvr.bat", ExePath);
+        GetFileName(s, CurrentSaveFile);
+        // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+    }
+    else if (ISA == ISA_PIC16) {
+        sprintf(r, "%sbuildPic16.bat", ExePath);
+        GetFileName(s, CurrentSaveFile);
+        // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+    }
+    else if (ISA == ISA_PIC18) {
+        sprintf(r, "%sbuildPic18.bat", ExePath);
+        GetFileName(s, CurrentSaveFile);
+        // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+    }
+    else if (ISA == ISA_ARM) {
+        sprintf(r, "%sbuildArm.bat", ExePath);
+        GetFileName(s, CurrentSaveFile);
+        // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+    }
+}
+
+//-----------------------------------------------------------------------------
 static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
@@ -476,9 +523,9 @@ static void postCompile(const char *MNU)
     SetExt(LdName, LdName, "");
 
     if(!fsize(CurrentCompileFile)) {
-	    char outFile[MAX_PATH];
-        
-		remove(CurrentCompileFile);
+        char outFile[MAX_PATH];
+
+        remove(CurrentCompileFile);
         if(strstr(CurrentCompileFile, ".hex")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
             remove(outFile);
@@ -993,6 +1040,10 @@ static void ProcessMenu(int code)
 
         case MNU_EXPORT:
             ExportDialog();
+            break;
+
+        case MNU_BUILD_ALL:
+            BuildAll(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
             break;
 
         case MNU_FLASH_BAT:

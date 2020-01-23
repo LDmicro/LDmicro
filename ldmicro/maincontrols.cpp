@@ -737,10 +737,12 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE_INT, _("Compile Interpretable Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT, _("Compile Interpretable Extended Byte Code"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu.bat\tF6"));
-    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu.bat\tCtrl+F6"));
+    AppendMenu(compile, MF_STRING, MNU_BUILD_ALL, _("Build C Solution"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT, _("Call clear.bat"));
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu\tF6"));
+    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu\tCtrl+F6"));
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT, _("Call clear"));
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();

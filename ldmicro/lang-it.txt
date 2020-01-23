@@ -331,14 +331,14 @@
 "Call SUBPROG rung number or label"
 "Chiama il numero o l'etichetta del Sottoprogramma"
 
-"Call clear.bat"
-"Chiama clear.bat"
+"Call clear"
+"Chiama clear"
 
-"Call flashMcu.bat\tF6"
-"Chiama flashMcu.bat\t F6"
+"Call flashMcu\tF6"
+"Chiama flashMcu\t F6"
 
-"Call readMcu.bat\tCtrl+F6"
-"Chiama readMcu.bat\t Ctrl + F6"
+"Call readMcu\tCtrl+F6"
+"Chiama readMcu\t Ctrl + F6"
 
 "Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"
 "Impossibile aumentare la dimensione della variabile '%s' in %d bit.\n» necessario aumentare la dimensione della variabile nel file LD!"

@@ -328,14 +328,14 @@
 "Call SUBPROG rung number or label"
 "Llame al número de renglón o etiqueta SUBPROG"
 
-"Call clear.bat"
-"Llama limpio.bat"
+"Call clear"
+"Llama clear"
 
-"Call flashMcu.bat\tF6"
-"Llama flashMcu.bat\tF6"
+"Call flashMcu\tF6"
+"Llama flashMcu\tF6"
 
-"Call readMcu.bat\tCtrl+F6"
-"Llama readMcu.bat\tCtrl+F6"
+"Call readMcu\tCtrl+F6"
+"Llama readMcu\tCtrl+F6"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname or Pname)."
 "Solo se puede asignar un numero de pin a los pines de entrada/salida (Xname o Yname o Aname o Pname)."
@@ -2815,3 +2815,29 @@
 "|/| Negated"
 "|/| Negado (Cerrado)"
 
+"*PIC only: if PORT RB value is not 0, Weak Pull-ups will be enabled for all port B pins via RBPU."
+"PICs solamente: si el valor de PORT RB no es 0, se habilitaran Pull-ups para todos los pines del PORT B a traves de RBPU. "
+
+"Use menu: 'Compile->Compile HI-TECH C for PIC'"
+"Usa el menu 'Compilar en HI-TECH C para PIC'"
+
+"Other MCUs"
+"Otros MCUs"
+
+"Pipe creation error"
+"Error en la creacion del Pipe"
+
+"Pipe error"
+"Error en el Pipe"
+
+"Exec error from batch file"
+"Error en el batch archivo"
+
+"Build Solution"
+"Generacion"
+
+"Build C Solution"
+"Generar C solucion"
+
+"Save ld before build."
+"Guardar ld antes de generar la solucion."

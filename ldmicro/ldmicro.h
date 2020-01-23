@@ -283,6 +283,8 @@ typedef uint32_t ADDR_T;
 #define MNU_COMPILE_INT             0x7800          // Interpreter
 #define MNU_COMPILE_XINT            0x7810          // Extended interpreter
 
+#define MNU_BUILD_ALL               0x7900          // Build C with libraries
+
 #define MNU_FLASH_BAT           0x7D
 #define MNU_READ_BAT            0x7E
 #define MNU_CLEAR_BAT           0x7F
