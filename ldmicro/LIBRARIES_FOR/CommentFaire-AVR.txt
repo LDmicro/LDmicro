@@ -1,56 +1,50 @@
 
-	LdMicro sur microcontrôleurs AVR ATMEGA 
-	_______________________________________
+	Tester LdMicro sur microcontrôleurs AVR ATMEGA 
+	______________________________________________
 
-
-	LdMicro 5 offre de nouvelles fonctions SPI et I2C via le langage C
 
 	Si tout est bien configuré, il est possible de générer des fichiers C,
 	puis un fichier hex et de le transférer dans la cible sans quitter ldmicro
 
 
 
-Comment tester ldmicro sur AVRs (AtMega) et utiliser ADC, PWM, SPI ou I2C:
-_____________________________________________________________________________
+1)	Installer un compilateur avr-gcc pour windows 
 
-1)	Installer AvrStudio 5, 6 ou 7 (7 non testé) depuis le site d'Atmel
-	ou installer directement un compilateur	avr-gcc pour windows 
+2)	Copier l'exécutable LdMicro, buildAvr.bat et flashMCU.bat dans un même dossier
+	Copier au même endroit le dossier LIBRARIES_FOR et son contenu
+	Vérifier que la version des librairies correspond à celle de LdMicro
 
-2)	Copier l'exécutable LdMicro et flashMCU.bat dans un même dossier.
-	Copier au même endroit le dossier LIBRARIES_FOR et son contenu.
+3)	Editer buildAvr.bat (Clic droit + Modifier) et modifier GCCPATH pour pointer 
+	sur le répertoire d'installation d'avr-gcc
 
-3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section AVRGCC,
-	modifier GCCPATH pour pointer sur le répertoire d'installation d'avr-gcc
-
+	Editer ensuite si nécessaire FlashMCU.bat (Clic droit + Modifier)
 	Si vous utilisez AvrDude pour flasher la cible, modifier également
-	la variable DUDPATH, et adapter la ligne de commande avrdude.exe selon
+	la variable AVRDUDE_PATH, et adapter la ligne de commande avrdude.exe selon
 	le programmateur utilisé
-
 	Sinon, il est toujours possible de flasher la cible manuellement
 	à partir du fichier hex généré par LdMicro
 
-4)	Créer un ladder avec LdMicro dans un dossier.
+4)	Créer un ladder avec LdMicro dans un dossier
 
-5)	Compiler le ladder avec "Compiler en AVR-GCC" (différent maintenant de Win-AVR)
+5)	Compiler le ladder avec "Compiler en AVR-GCC pour Atmel AVR"
 	et générer le fichier C proposé dans le même dossier que le ladder (.ld) 
 	avec le même nom (.c)
 	
 	Cela génère aussi un fichier header (.h) et un autre header ladder.h
 	Avec les librairies fournies, ceci constitue un projet C prêt à l'emploi
 
-6)	Lancer FlashMCU.bat depuis LdMicro pour générer le fichier hex
-	et charger ce fichier dans la cible, automatiquement ou manuellement,
-	à partir du sous-dossier "bin" qui a été créé si tout va bien
+6)	Lancer "Générer la solution C" depuis LdMicro pour générer le fichier hex
+	dans le dossier "bin" à partir des fichiers précédents
 
 	Observer la fenêtre de commande ; il ne devrait pas y avoir d'erreur
 	Les librairies sont automatiquement recopiées (la première fois)
 	dans le sous-dossier "lib" où elles peuvent ensuite être adaptées
 	Les fichiers intermédiaires sont générés dans le sous-dossier "obj"
 
-7)	Tester le fichier hex ainsi généré sur la cible...
+7)	Charger ce fichier dans la cible, soit automatiquement avec "Lancer FlashMcu"
+	soit manuellement à partir du sous-dossier "bin" qui a été créé
+	Tester le fichier hex ainsi généré sur la cible...
 
-	Bien sûr des tests complémentaires doivent être faits avec ces librairies
-	Rapporter les problèmes (et les succès) sur le forum ldmicro
 
 
 NB:	Les librairies ont été testées sur AtMega8, 16 et 328

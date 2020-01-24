@@ -62,7 +62,7 @@ void Capture(char * batchfile,  char * fpath1, char * fname2, char * target3, ch
 
     hwndChildTexte = CreateWindow ("WTEXTCLASS", _("Build Solution"),
             WS_POPUP | WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_VSCROLL | ES_LEFT | WS_MINIMIZEBOX | ES_MULTILINE,
-            40, 80, 700, 400, MainWindow, NULL, Instance, NULL);
+            80, 80, 700, 400, MainWindow, NULL, Instance, NULL);
 
     SetWindowPos(hwndChildTexte, HWND_TOP, rect.left+100, rect.top+100, 700, 400, SWP_SHOWWINDOW);
 
@@ -308,7 +308,7 @@ LRESULT CALLBACK WndProcTexte (HWND hwndTexte, UINT message, WPARAM wParam, LPAR
             police.lfEscapement     = 0;
             police.lfOrientation    = 0;
             police.lfStrikeOut      = 0;
-            police.lfCharSet        = ANSI_CHARSET;
+            police.lfCharSet        = OEM_CHARSET;//DEFAULT_CHARSET;//RUSSIAN_CHARSET;//ANSI_CHARSET;
             police.lfOutPrecision   = OUT_TT_PRECIS;
             police.lfClipPrecision  = CLIP_TT_ALWAYS;
             police.lfQuality        = DEFAULT_QUALITY;

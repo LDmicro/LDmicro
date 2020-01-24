@@ -92,6 +92,10 @@ set(HELPER_SCRIPRS
     ${CMAKE_SOURCE_DIR}/notepad.bat
     ${CMAKE_SOURCE_DIR}/postCompile.bat
     ${CMAKE_SOURCE_DIR}/clear.bat
+    ${CMAKE_SOURCE_DIR}/buildarm.bat
+    ${CMAKE_SOURCE_DIR}/buildavr.bat
+    ${CMAKE_SOURCE_DIR}/buildPic16.bat
+    ${CMAKE_SOURCE_DIR}/buildPic18.bat
     )
 
 set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ${LDMICRO_HEADERS})

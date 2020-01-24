@@ -24,6 +24,10 @@ SYS("copy notepad.bat     buildXXXX");
 SYS("copy readmcu.bat     buildXXXX");
 SYS("copy flashmcu.bat    buildXXXX");
 SYS("copy postCompile.bat buildXXXX");
+SYS("copy buildarm.bat    buildXXXX");
+SYS("copy buildavr.bat    buildXXXX");
+SYS("copy buildPic16.bat  buildXXXX");
+SYS("copy buildPic18.bat  buildXXXX");
 
 SYS("mkdir buildXXXX\\LIBRARIES_FOR");
 SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARDUINO");
