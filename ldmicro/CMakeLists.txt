@@ -70,6 +70,8 @@ set(LDMICRO_SRC_LIST
     simulate.cpp
     undoredo.cpp
     undoredo.hpp
+    flash.cpp
+    flash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
     ldversion.h
 
