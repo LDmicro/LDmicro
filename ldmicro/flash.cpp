@@ -24,6 +24,7 @@ char tg3[64]= "";
 char cp4[MAX_PATH]= "";
 char pt5[MAX_PATH]= "";
 
+UINT codepage;
 
 // Capture function
 void Capture(char * batchfile,  char * fpath1, char * fname2, char * target3, char * compiler4, char * progtool5)
@@ -40,6 +41,10 @@ void Capture(char * batchfile,  char * fpath1, char * fname2, char * target3, ch
     if (! running)
     {
     running= TRUE;
+
+        AllocConsole();
+        codepage= GetConsoleCP();                       // Get local codepage (850 for instance)
+        FreeConsole();
 
     // Window class for captures
     memset(&wc, 0, sizeof(wc));
@@ -62,9 +67,9 @@ void Capture(char * batchfile,  char * fpath1, char * fname2, char * target3, ch
 
     hwndChildTexte = CreateWindow ("WTEXTCLASS", _("Build Solution"),
             WS_POPUP | WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_VSCROLL | ES_LEFT | WS_MINIMIZEBOX | ES_MULTILINE,
-            80, 80, 700, 400, MainWindow, NULL, Instance, NULL);
+            40, 80, 700, 400, MainWindow, NULL, Instance, NULL);
 
-    SetWindowPos(hwndChildTexte, HWND_TOP, rect.left+100, rect.top+100, 700, 400, SWP_SHOWWINDOW);
+    SetWindowPos(hwndChildTexte, HWND_TOP, rect.left+100, rect.top+100, 700, rect.bottom-100, SWP_SHOWWINDOW);
 
     Sleep(200);
 
@@ -263,10 +268,10 @@ void CodePage(LPSTR lpString)
     {
     int n= 0;
     wchar_t wString[BUFSIZE+1];
-
-    n= MultiByteToWideChar(850, 0, lpString, -1, wString, sizeof(wString));
-    WideCharToMultiByte(CP_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL);
-    }
+        n= MultiByteToWideChar(codepage, 0, lpString, -1, wString, sizeof(wString));
+        WideCharToMultiByte(CP_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+        //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+}
 
 
 // Capture window Proc
@@ -308,7 +313,7 @@ LRESULT CALLBACK WndProcTexte (HWND hwndTexte, UINT message, WPARAM wParam, LPAR
             police.lfEscapement     = 0;
             police.lfOrientation    = 0;
             police.lfStrikeOut      = 0;
-            police.lfCharSet        = OEM_CHARSET;//DEFAULT_CHARSET;//RUSSIAN_CHARSET;//ANSI_CHARSET;
+            police.lfCharSet        = DEFAULT_CHARSET; //GetACP(); //GetOEMCP();           //// ANSI_CHARSET; //// OEM_CHARSET;
             police.lfOutPrecision   = OUT_TT_PRECIS;
             police.lfClipPrecision  = CLIP_TT_ALWAYS;
             police.lfQuality        = DEFAULT_QUALITY;
