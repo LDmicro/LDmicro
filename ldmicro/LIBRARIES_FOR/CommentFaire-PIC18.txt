@@ -1,0 +1,83 @@
+
+	Tester LdMicro sur microcontrôleurs PIC18F :
+	____________________________________________
+
+
+	Si tout est bien configuré, il est possible de générer des fichiers C,
+	puis un fichier hex et de le transférer dans la cible sans quitter ldmicro
+
+
+1)	Installer un compilateur Hi-Tech C (alias PicC) pour PIC18F depuis le site 
+	de microchip ou autre
+
+2)	Copier l'exécutable LdMicro, buildPic18.bat et flashMCU.bat dans un même dossier
+	Copier au même endroit le dossier LIBRARIES_FOR et son contenu
+	Vérifier que la version des librairies correspond à celle de LdMicro
+
+3)	Editer buildPic18.bat (Clic droit + Modifier) et modifier PCCPATH pour pointer 
+	sur le répertoire d'installation de Hi-Tech C
+
+	Editer ensuite si nécessaire FlashMCU.bat (Clic droit + Modifier)
+	Selon le programmateur utilisé, vous pouvez alors modifier les instructions
+	qui vont charger le fichier hex dans la cible
+	Sinon, il est toujours possible de flasher la cible manuellement
+	à partir du fichier hex généré par LdMicro
+
+4)	Créer un ladder avec LdMicro dans un dossier
+
+5)	Compiler le ladder avec "Compiler en HI-TECH C pour PIC"
+	et générer le fichier C proposé dans le même dossier que le ladder (.ld) 
+	avec le même nom (.c)
+	
+	Cela génère aussi un fichier header (.h) et un autre header ladder.h
+	Avec les librairies fournies, ceci constitue un projet C prêt à l'emploi
+
+6)	Lancer "Générer la solution C" depuis LdMicro pour générer le fichier hex
+	dans le dossier "bin" à partir des fichiers précédents
+
+	Observer la fenêtre de commande ; il ne devrait pas y avoir d'erreur
+	Les librairies sont automatiquement recopiées (la première fois)
+	dans le sous-dossier "lib" où elles peuvent ensuite être adaptées
+	Les fichiers intermédiaires sont générés dans le sous-dossier "obj"
+
+7)	Charger ce fichier dans la cible, soit automatiquement avec "Lancer FlashMcu"
+	soit manuellement à partir du sous-dossier "bin" qui a été créé
+	Tester le fichier hex ainsi généré sur la cible...
+
+
+
+NB:	Les librairies ont été testées sur PIC18F4520, mais devraient fonctionner 
+	pour tous les PIC18F déclarés dans Ldmicro
+	Il est possible (et facile) d'adapter le code à d'autres cibles de la même
+	famille en utilisant des directives de compilation
+	Le nom de la cible est défini dans ladder.h comme LDTARGET_pic18Fxxxx
+
+	Il est possible d'utiliser plusieurs ADC ou PWM, mais seulement une UART,
+	un SPI, et un I2C
+	(Mais avec plusieurs périphériques utilisant différents pins SS pour le SPI
+	ou différentes adresses pour l'I2C)
+
+NB:	Le SPI doit être nommé "SPI"sur PICs
+	Les nouvelles fonctions SPI sont:
+	Emission/Reception SPI, qui envoie et/ou reçoit un octet
+	Ecriture SPI, qui envoie une chaine alphanumerique sur le SPI sans réception
+
+	La fréquence du SPI est définie comme celle de l'UART dans le panneau de 
+	configuration de LdMicro
+	Le SPI le fonctionne qu'en mode master, avec la configuration standard
+
+NB:	L'I2C doit être nommé "I2C"sur PICs
+	Les nouvelles fonctions I2C sont:
+	Réception I2C, pour lire un octet dans un registre du peripherique
+	Emission I2C, pour écrire un octet dans un registre du peripherique
+
+	La fréquence I2C est aussi définie dans le panneau de configuration de LdMicro
+	L'I2C ne fonctionne également qu'en mode master
+
+NB:	Toutes les fréquences utilisées par les ADC, PWM, SPI ou I2C sont obtenues par
+	division de la fréquence CPU. Il y a peu de choix pour le facteur de division,
+	et les fréquences obtenues sont donc très approximatives.
+
+NB:	La résolution maximale est utilisée pour les ADC
+	La résolution maximale est utilisée pour les PWM et le paramétrage fonctionne
+	uniquement en % entre 0 and 100

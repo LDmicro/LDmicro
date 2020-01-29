@@ -1,0 +1,55 @@
+#include <htc.h>
+
+#include "ladder.h"
+#include "SpiLib.h"
+
+// Compute division factor
+int SPI_GetPrescaler(long fcpu, long fspi)
+{
+    int  i = 1;
+    long q = fcpu / fspi;
+
+    for(i = 2; i <= 6; i += 2) {
+        if(q > (1 << i))
+            continue;
+        break;
+    }
+    if(i >= 6)
+        i = 6;
+
+    return (1 << i);
+}
+
+// Master mode SPI Init
+void SPI_Init(char division)
+{
+#if defined(LDTARGET_pic18f4520)
+    TRISC3 = 0; // SCK= Ouput
+    TRISC4 = 1; // SDI= Input (MISO)
+    TRISC5 = 0; // SDO= Output (MOSI)
+#endif
+
+    SSPSTAT = 0; // reset status register
+    CKE = 1;     // transmit on clock rising edges
+
+    // clock division factor 4, 16 or 64
+    if(division == 4)
+        SSPCON1 = 0x0;
+    else if(division == 16)
+        SSPCON1 = 0x1;
+    else
+        SSPCON1 = 0x2;
+
+    SSPEN = 1; // activate SPI
+}
+
+// Send (and receive) on SPI
+char SPI_Send(char tx)
+{
+    SSPBUF = tx;
+
+    while(!BF)
+        ; // wait for transmission to complete
+
+    return SSPBUF;
+}
