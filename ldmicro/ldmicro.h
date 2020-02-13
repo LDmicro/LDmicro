@@ -1095,4 +1095,7 @@ void Transliterate(char *dest, const char* str);
 // exceptions
 void abortHandler(int signum);      ///// Added by JG
 
+//ldmicro.cpp
+bool ExistFile(const char *name);
+
 #endif

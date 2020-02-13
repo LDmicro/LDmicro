@@ -18,6 +18,10 @@
 @REM %~dp0 = Drive + Path in full name
 @REM %~nx0 = Name + extension
 
+@rem Select working drive and directory
+%~d1
+chdir %~pn1
+
 @rmdir ARMGCC\obj /s /q
 @rmdir ARMGCC\bin /s /q
 @mkdir ARMGCC\obj
@@ -33,7 +37,19 @@
 IF not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
 dir ARMGCC\lib\*.c
 
-SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+     SET GCC_PATH=%ProgramFiles%\emIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=%ProgramFiles%\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain
+@rem SET GCC_PATH=%ProgramFiles%\GNU Tools ARM Embedded\7 2018-q2-update
+@rem SET GCC_PATH=%ProgramFiles%\Atmel\AVR-Gcc-8.2.0
+@rem SET GCC_PATH=%ProgramFiles%\EmIDE\emIDE V2.20\arm
+@rem SET GCC_PATH=%ProgramFiles%\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
+@rem SET GCC_PATH=D:\01 - Programas Plc\Atmel\AVR-Gcc-8.2.0
+@rem SET GCC_PATH=D:\01 - Programas Plc\Arduino 1.8.0\hardware\tools\avr
+@rem SET GCC_PATH=D:\WinAVR
+@rem SET GCC_PATH=c:\WinAVR-20100110
+@rem SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
+@rem SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
+
 PATH %GCC_PATH%\BIN;%PATH%
 
 @IF "%3" == "stm32f10x" goto STM32F1
@@ -49,7 +65,7 @@ FOR %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%G
 CD ..\..
 
 :: compile main file
-arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
+arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~nx2.c -o ARMGCC\obj\%~n2.o
 
 :: link object files
 arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m4 -mthumb -TARMGCC\lib\CortexM4.ln

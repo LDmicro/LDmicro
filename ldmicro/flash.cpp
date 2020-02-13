@@ -17,26 +17,26 @@ OVERLAPPED over;
 
 BOOL running = FALSE;
 
-char bf0[MAX_PATH] = "";
-char fp1[MAX_PATH] = "";
-char fn2[64] = "";
-char tg3[64] = "";
-char cp4[MAX_PATH] = "";
-char pt5[MAX_PATH] = "";
+char arg0[MAX_PATH] = "";
+char arg1[MAX_PATH] = "";
+char arg2[MAX_PATH] = "";
+char arg3[MAX_PATH] = "";
+char arg4[MAX_PATH] = "";
+char arg5[MAX_PATH] = "";
 
 UINT codepage;
 
 // Capture function
-void Capture(char *batchfile, char *fpath1, char *fname2, char *target3, char *compiler4, char *progtool5)
+void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
 {
     WNDCLASSEX wc;
     RECT       rect;
 
-    strcpy(fp1, fpath1);
-    strcpy(fn2, fname2);
-    strcpy(tg3, target3);
-    strcpy(cp4, compiler4);
-    strcpy(pt5, progtool5);
+    strcpy(arg1, fpath1);
+    strcpy(arg2, fname2);
+    strcpy(arg3, target3);
+    strcpy(arg4, compiler4);
+    strcpy(arg5, progtool5);
 
     if(!running) {
         running = TRUE;
@@ -65,7 +65,7 @@ void Capture(char *batchfile, char *fpath1, char *fname2, char *target3, char *c
         GetWindowRect(MainWindow, &rect);
 
         hwndChildTexte = CreateWindow("WTEXTCLASS",
-                                      _("Build Solution"),
+                                      title,
                                       WS_POPUP | WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_VSCROLL | ES_LEFT | WS_MINIMIZEBOX | ES_MULTILINE,
                                       40,
                                       80,
@@ -90,12 +90,12 @@ int CreateChildThread(char *cmdfile)
     HANDLE ChildThread = NULL;
     DWORD  dwThreadId;
 
-    strcpy(bf0, cmdfile);
+    strcpy(arg0, cmdfile);
 
     ChildThread = CreateThread(NULL,           // default security attributes
                                0,              // use default stack size
                                ThreadFunction, // thread function
-                               (LPVOID)bf0,    // argument passed to thread function
+                               (LPVOID) arg0,  // argument passed to thread function
                                0,              // use default creation flags
                                &dwThreadId);   // returns the thread identifier
 
@@ -105,27 +105,29 @@ int CreateChildThread(char *cmdfile)
 // Thread function (with specific prototype)
 DWORD WINAPI ThreadFunction(LPVOID lpParam)
 {
+    TCHAR sysdir[MAX_PATH] = "";
+    char comspec[MAX_PATH] = "";
     char  command[CMDSIZE];
-    FILE *fptr;
-    int   nb, mute = 0;
 
-    sprintf(command, "%s %s %s %s %s %s %s", "@cmd.exe /c ", (char *)lpParam, fp1, fn2, tg3, cp4, pt5);
+    GetEnvironmentVariable("COMSPEC", comspec, MAX_PATH);
+    if((strlen(comspec) == 0) || (!ExistFile(comspec))) {
+        GetSystemDirectory(sysdir, MAX_PATH);
+        sprintf(comspec, "%s\\cmd.exe", sysdir);
+        if(!ExistFile(comspec))
+            sprintf(comspec, "%s\\command.com", sysdir);
+    }
+    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" %s %s %s\"", comspec, (char *)lpParam, arg1, arg2, arg3, arg4, arg5);
 
-    mute = 0;
-    if(command[0] == '@')
-        mute = 1; // dont display command if @
-
-    CreateChildPiped(command + mute, mute);
+    CreateChildPiped(command);
     return 0;
 }
 
 // Create Child process and Pipe
-int CreateChildPiped(char *cmdline, int mode)
+int CreateChildPiped(char *cmdline)
 {
     SECURITY_ATTRIBUTES saAttr;
-    BOOL                conv = FALSE;
+    //BOOL                conv = FALSE;
     DWORD               dwWritten;
-    TCHAR               windir[MAX_PATH];
 
     // Set the bInheritHandle flag so that pipe handles are inherited
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -140,23 +142,18 @@ int CreateChildPiped(char *cmdline, int mode)
     if(!SetHandleInformation(hChild_Stdout_Rd, HANDLE_FLAG_INHERIT, 0))
         Error(_("Pipe error"));
 
-    if(strncmp(cmdline, "cmd.exe ", 8) == 0) {
-        conv = TRUE;
-
-        GetWindowsDirectory(windir, MAX_PATH);
-        strcat(windir, "\\System32\\");
-        strcat(windir, cmdline);
-        strcpy(cmdline, windir);
-    }
+    int mute = 0;
+    if(cmdline[0] == '@')
+        mute = 1; // dont display command if @
 
     // Send the command line to the pipe
-    if(mode == 0) {
+    if(mute == 0) {
         WriteFile(hChild_Stdout_Wr, cmdline, strlen(cmdline), &dwWritten, NULL);
         WriteFile(hChild_Stdout_Wr, "\r\n\r\n", 4, &dwWritten, NULL);
     }
 
     // Create child process
-    CreateChildProcess(cmdline);
+    CreateChildProcess(&cmdline[mute]);
 
     // Write handle must absolutely be closed before calling ReadFromPipe()
     // so that the pipe be fully closed when child process ends
@@ -164,7 +161,7 @@ int CreateChildPiped(char *cmdline, int mode)
     CloseHandle(hChild_Stdout_Wr);
 
     // Read from pipe that is the standard output for child process
-    ReadFromPipe(conv);
+    ReadFromPipe(true);
 
     // Close last access to the pipe to set it free
     CloseHandle(hChild_Stdout_Rd);
@@ -224,7 +221,7 @@ void ReadFromPipe(BOOL convert)
 {
     DWORD    dwRead;
     BOOL     bSuccess = FALSE;
-    HANDLE   hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    //HANDLE   hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CHAR     chBuf[BUFSIZE + 1];
     buflist *bufptr;
 
@@ -236,7 +233,7 @@ void ReadFromPipe(BOOL convert)
             bufptr = stBuf;
             stBuf = (buflist *)malloc(sizeof(buflist));
             stBuf->next = NULL;
-            stBuf->prev = bufptr;
+            //stBuf->prev = bufptr;
 
             chBuf[dwRead] = 0;
             stBuf->buffer = (CHAR *)malloc(dwRead + 1);
@@ -256,7 +253,7 @@ void ReadFromPipe(BOOL convert)
     bufptr = stBuf; // add an empty line
     stBuf = (buflist *)malloc(sizeof(buflist));
     stBuf->next = NULL;
-    stBuf->prev = bufptr;
+    //stBuf->prev = bufptr;
     stBuf->buffer = (CHAR *)malloc(4);
     strcpy(stBuf->buffer, "\r\n");
     if(bufptr != NULL)
@@ -272,7 +269,7 @@ void CodePage(LPSTR lpString)
     wchar_t wString[BUFSIZE + 1];
     n = MultiByteToWideChar(codepage, 0, lpString, -1, wString, sizeof(wString));
     WideCharToMultiByte(CP_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
-                                                                                        //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+  //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
 }
 
 // Capture window Proc
@@ -288,8 +285,6 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
     HDC         hdc;
     PAINTSTRUCT ps;
     TEXTMETRIC  tm;
-    //HANDLE conout;
-    //CONSOLE_FONT_INFOEX confnt;
 
     buflist * bufptr;
     int       index, pos;
@@ -377,7 +372,7 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
                     return 0;
             }
 
-            VscrollPos = max(0, min(VscrollPos, total)); // securite  0 <= VscrollPos <= total
+            VscrollPos = std::max(0, std::min(VscrollPos, total)); // securite  0 <= VscrollPos <= total
 
             if(VscrollPos != GetScrollPos(hwndTexte, SB_VERT)) {
                 SetScrollPos(hwndTexte, SB_VERT, VscrollPos, TRUE);
@@ -487,7 +482,7 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
 
             scroll = total - VscrollPos;
             if(scroll + maxaff > total)
-                scroll = max(total - maxaff, 0);
+                scroll = std::max(total - maxaff, 0);
 
             // affichage des lignes :
 
@@ -579,7 +574,7 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
     }
     return (DefWindowProc(hwndTexte, message, wParam, lParam));
 }
-
+/*
 // Utilities
 int min(int x, int y)
 {
@@ -596,3 +591,4 @@ int max(int x, int y)
     else
         return y;
 }
+*/

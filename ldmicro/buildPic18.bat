@@ -32,17 +32,17 @@
 IF not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 dir HTC\lib\*.c
 
-SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
-SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+SET PCC_PATH=%ProgramFiles%\HI-TECH Software\PICC\9.81
+SET PICKIT_PATH=%ProgramFiles%\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
 PATH %PCC_PATH%\BIN;%PICKIT_PATH%;%PATH%
 
 :: compile libraries
 :: %4\picc18.exe --pass1 UsrLib.c -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
-FOR %%F in (HTC\lib\*.c) do  picc18.exe --pass1 %%F -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj     
+FOR %%F in (HTC\lib\*.c) do  picc18.exe --pass1 %%F -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 :: compile main file
 :: %4\picc18.exe --pass1 %2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
-picc18.exe --pass1 %2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
+picc18.exe --pass1 %~nx2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 :: link object files
 :: %4\picc18.exe -oHTC\bin\%2.cof -mHTC\bin\%2.map --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin

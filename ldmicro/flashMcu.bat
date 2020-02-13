@@ -10,16 +10,16 @@ SET EXE_PATH=%~dp0
 @echo Target name = %4
 @echo ...
 
-@REM %~d2 = Drive letter in path 
+@REM %~d2 = Drive letter in path
 @REM %~p2 = Path to ld file
 @REM %~nx2 = Filename without path
 
 @SET COMPILER=%3
 
-if "%1" == "PIC16" goto PIC16
-if "%1" == "PIC18" goto PIC18
-if "%1" == "AVR" goto AVR
-if "%1" == "ARM" goto ARM
+if %1 == "PIC16" goto PIC16
+if %1 == "PIC18" goto PIC18
+if %1 == "AVR" goto AVR
+if %1 == "ARM" goto ARM
 
 goto NOT_SUPPORTED
 
@@ -80,7 +80,7 @@ PK3CMD.exe -P%4 -FHTC\bin\%~nx2.hex %TOOL_OPTIONS%
 
 IF "%4" == "stm32f10x" goto STM32F1
 
-:STM32F4 
+:STM32F4
 
 @rem *** Set up J-LINK utility ***
 SET JLN_PATH="C:\Program Files\SEGGER\JLink_V502j"
@@ -97,7 +97,7 @@ JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\c
 :STM32F1
 
 @rem *** Set up ST-LINK utility ***
-SET STL_PATH="C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility"
+SET STL_PATH="%ProgramFiles%\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility"
 SET PATH=%PATH%;%STL_PATH%
 
 @ECHO on

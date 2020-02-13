@@ -397,25 +397,25 @@ static void BuildAll(char *name, int ISA)
         sprintf(r, "%sbuildAvr.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
     }
     else if (ISA == ISA_PIC16) {
         sprintf(r, "%sbuildPic16.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
     }
     else if (ISA == ISA_PIC18) {
         sprintf(r, "%sbuildPic18.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
     }
     else if (ISA == ISA_ARM) {
         sprintf(r, "%sbuildArm.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
     }
 }
 
@@ -424,7 +424,7 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-    char deviceName[MAX_PATH];
+    char deviceName[64];
 
     if(strlen(name) == 0) {
         Warning(_("Save ld before flash."));
@@ -438,11 +438,11 @@ static void flashBat(char *name, int ISA)
     SetExt(s, name, "");
     if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
         strcpy(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
+        _strlwr(deviceName);
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %s %s", ExePath, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName));
-
-    isErr(Execute(r), r);
+    sprintf(r, "%sflashMcu.bat", ExePath);
+    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), deviceName, "");
 }
 
 //-----------------------------------------------------------------------------
@@ -450,15 +450,36 @@ static void readBat(const char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
+    char deviceName[64];
+
     if(strlen(name) == 0) {
         name = "read";
     }
+    if (!Prog.mcu())
+        return;
+    strcpy(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
-    sprintf(r, "\"%sreadMcu.bat\" %s \"%s\"", ExePath, GetIsaName(ISA), s);
+    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
+        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+    }
 
-    isErr(Execute(r), r);
+    sprintf(r, "%sreadMcu.bat", ExePath);
+    Capture(_("Read MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "");
+}
+
+//-----------------------------------------------------------------------------
+static void clearBat(int ISA)
+{
+    char r[MAX_PATH];
+    char deviceName[64];
+
+    if (!Prog.mcu()) return;
+    strcpy(deviceName, Prog.mcu()->deviceName);
+
+    sprintf(r, "%sclearMcu.bat", ExePath);
+    Capture(_("Clear MCU"), r, GetIsaName(ISA), _strlwr(deviceName), "", "", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -1055,7 +1076,7 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_CLEAR_BAT:
-            clearBat();
+            clearBat(Prog.mcu() ? Prog.mcu()->whichIsa : 0);
             break;
 
         case MNU_NOTEPAD_LD:
