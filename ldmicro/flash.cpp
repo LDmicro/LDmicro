@@ -2,10 +2,12 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <strsafe.h>
+#include <memory>
 
 #include "ldmicro.h"
 #include "ldconfig.h"
 #include "flash.h"
+#include "ldlog.hpp"
 
 buflist *stBuf = NULL;
 buflist *startBuf = NULL;
@@ -17,7 +19,6 @@ OVERLAPPED over;
 
 BOOL running = FALSE;
 
-char arg0[MAX_PATH] = "";
 char arg1[MAX_PATH] = "";
 char arg2[MAX_PATH] = "";
 char arg3[MAX_PATH] = "";
@@ -85,20 +86,56 @@ void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, co
 }
 
 // Create a Thread (to free Main window Proc )
-int CreateChildThread(char *cmdfile)
+int CreateChildThread(const char *cmdfile)
 {
     HANDLE ChildThread = NULL;
     DWORD  dwThreadId;
 
-    strcpy(arg0, cmdfile);
+    struct ThData {
+        HANDLE child;
+        char* arg;
+        ThData()
+        {
+            child = NULL;
+            arg = nullptr;
+        }
+        ~ThData()
+        {
+            if(arg)
+                delete[] arg;
+        }
+
+    };
+
+    static std::vector<std::shared_ptr<ThData> > thData;
+
+    thData.erase(std::remove_if(std::begin(thData),
+                                std::end(thData),
+                                [](std::shared_ptr<ThData> &x) -> bool {
+        DWORD exitCode;
+        auto  res = GetExitCodeThread(x->child, &exitCode);
+        if((res > 0) && (exitCode != STILL_ACTIVE)) {
+            return true;
+        }
+        return false;
+        }), std::end(thData));
+
+    char *arg = new char[strlen(cmdfile) + 1];
+    strcpy(arg, cmdfile);
 
     ChildThread = CreateThread(NULL,           // default security attributes
                                0,              // use default stack size
                                ThreadFunction, // thread function
-                               (LPVOID) arg0,  // argument passed to thread function
+                               (LPVOID) arg,  // argument passed to thread function
                                0,              // use default creation flags
                                &dwThreadId);   // returns the thread identifier
 
+    if(ChildThread != NULL) {
+        auto data = std::make_shared<ThData>();
+        data->arg = arg;
+        data->child = ChildThread;
+        thData.push_back(data);
+    }
     return 0;
 }
 
