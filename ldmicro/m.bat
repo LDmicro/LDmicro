@@ -407,6 +407,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=d:\lds\pic16f1827V2-test\A0016f1827V2-test.ld
 @SET PROGECT=d:\lds\moteur_on_fc\moteur_on_fc_v3.ld
+@SET PROGECT="C:\tmp\SPACE â¥áâ\moteur ïçäë v3.ld"
 
 
 if "%1" == "" goto DO_BUILD
@@ -438,15 +439,15 @@ if "%1" == "" goto DO_BUILD
 @del temp.pl > nul
 @del ldmicro.temp > nul
 
-@rem @nmake clean
-@rem copy ldmicro.exe ldmicro-en.exe
-@rem @nmake LDLANG=LDLANG_JA %*
-@rem @nmake LDLANG=LDLANG_RU %*
-@rem @nmake LDLANG=LDLANG_TR %*
-@rem @nmake LDLANG=LDLANG_DE %*
-@rem @nmake LDLANG=LDLANG_FR %*
-@rem @nmake LDLANG=LDLANG_ES %*
-@rem @nmake LDLANG=LDLANG_IT %*
+::@nmake clean
+::copy ldmicro.exe ldmicro-en.exe
+::@nmake LDLANG=LDLANG_JA %*
+::@nmake LDLANG=LDLANG_RU %*
+::@nmake LDLANG=LDLANG_TR %*
+::@nmake LDLANG=LDLANG_DE %*
+::@nmake LDLANG=LDLANG_FR %*
+::@nmake LDLANG=LDLANG_ES %*
+::@nmake LDLANG=LDLANG_IT %*
 @nmake LDLANG=LDLANG_EN %*
 
 @echo off
