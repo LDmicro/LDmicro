@@ -25,11 +25,17 @@ char arg3[MAX_PATH] = "";
 char arg4[MAX_PATH] = "";
 char arg5[MAX_PATH] = "";
 
-UINT codepage;
+UINT codepage = 866; // 850
 
 // Capture function
-void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
+void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
 {
+#if 0
+    char batchArgs[MAX_PATH];
+	//sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
+	sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
+	IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
+#else
     WNDCLASSEX wc;
     RECT       rect;
 
@@ -41,10 +47,13 @@ void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, co
 
     if(!running) {
         running = TRUE;
-
-        AllocConsole();
+		/*
+        AllocConsole(); // Console window is displayed. :(
         codepage = GetConsoleCP(); // Get local codepage (850 for instance)
         FreeConsole();
+		*/
+		//codepage = GetACP();
+		codepage = GetOEMCP();
 
         // Window class for captures
         memset(&wc, 0, sizeof(wc));
@@ -68,21 +77,22 @@ void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, co
         hwndChildTexte = CreateWindow("WTEXTCLASS",
                                       title,
                                       WS_POPUP | WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_VSCROLL | ES_LEFT | WS_MINIMIZEBOX | ES_MULTILINE,
-                                      40,
-                                      80,
+                                      rect.left + 100,
+                                      rect.top + 100,
                                       700,
-                                      400,
+                                      rect.bottom - 100,
                                       MainWindow,
                                       NULL,
                                       Instance,
                                       NULL);
 
-        SetWindowPos(hwndChildTexte, HWND_TOP, rect.left + 100, rect.top + 100, 700, rect.bottom - 100, SWP_SHOWWINDOW);
+        //SetWindowPos(hwndChildTexte, HWND_TOP, rect.left + 100, rect.top + 100, 700, rect.bottom - 100, SWP_SHOWWINDOW);
 
-        Sleep(200);
+        //Sleep(200);
 
-        CreateChildThread(batchfile);
+        CreateChildThread(batchFile);
     }
+#endif
 }
 
 // Create a Thread (to free Main window Proc )
@@ -142,16 +152,16 @@ int CreateChildThread(const char *cmdfile)
 // Thread function (with specific prototype)
 DWORD WINAPI ThreadFunction(LPVOID lpParam)
 {
-    TCHAR sysdir[MAX_PATH] = "";
+    TCHAR sysDir[MAX_PATH] = "";
     char comspec[MAX_PATH] = "";
     char  command[CMDSIZE];
 
     GetEnvironmentVariable("COMSPEC", comspec, MAX_PATH);
     if((strlen(comspec) == 0) || (!ExistFile(comspec))) {
-        GetSystemDirectory(sysdir, MAX_PATH);
-        sprintf(comspec, "%s\\cmd.exe", sysdir);
+        GetSystemDirectory(sysDir, MAX_PATH);
+        sprintf(comspec, "%s\\cmd.exe", sysDir);
         if(!ExistFile(comspec))
-            sprintf(comspec, "%s\\command.com", sysdir);
+            sprintf(comspec, "%s\\command.com", sysDir);
     }
     sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" %s %s %s\"", comspec, (char *)lpParam, arg1, arg2, arg3, arg4, arg5);
 
@@ -304,8 +314,8 @@ void CodePage(LPSTR lpString)
 {
     int     n = 0;
     wchar_t wString[BUFSIZE + 1];
-    n = MultiByteToWideChar(codepage, 0, lpString, -1, wString, sizeof(wString));
-    WideCharToMultiByte(CP_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+    n = MultiByteToWideChar(/*codepage*/1?CP_OEMCP:GetOEMCP(), 0, lpString, -1, wString, sizeof(wString));
+    WideCharToMultiByte(1?CP_ACP:GetACP(), 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
   //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
 }
 
@@ -345,7 +355,7 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
             police.lfEscapement = 0;
             police.lfOrientation = 0;
             police.lfStrikeOut = 0;
-            police.lfCharSet = DEFAULT_CHARSET; //GetACP(); //GetOEMCP();           //// ANSI_CHARSET; //// OEM_CHARSET;
+            police.lfCharSet = GetOEMCP(); //DEFAULT_CHARSET; //GetACP(); //GetOEMCP();           //// ANSI_CHARSET; //// OEM_CHARSET;
             police.lfOutPrecision = OUT_TT_PRECIS;
             police.lfClipPrecision = CLIP_TT_ALWAYS;
             police.lfQuality = DEFAULT_QUALITY;
@@ -365,7 +375,7 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
             scroll = 0;
             maxaff = 0;
 
-            MoveWindow(hwndTexte, 40, 80, 800, 400, TRUE);
+            //MoveWindow(hwndTexte, 40, 80, 800, 400, TRUE);
 
             return 0;
 
@@ -401,6 +411,14 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
                     VscrollPos += cyClient / cyChar;
                     break;
 
+				case SB_TOP:
+                    VscrollPos = 0;
+                    break;
+
+				case SB_BOTTOM:
+                    VscrollPos = total;
+                    break;
+
                 case SB_THUMBPOSITION:
                     VscrollPos = HIWORD(wParam);
                     break;
@@ -419,6 +437,14 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
 
         case WM_KEYDOWN:
             switch(LOWORD(wParam)) {
+				case VK_HOME:
+					SendMessage(hwndTexte, WM_VSCROLL, SB_TOP, 0L);
+                    break;
+
+				case VK_END:
+					SendMessage(hwndTexte, WM_VSCROLL, SB_BOTTOM, 0L);
+                    break;
+
                 case VK_PRIOR:
                     SendMessage(hwndTexte, WM_VSCROLL, SB_PAGEUP, 0L);
                     break;

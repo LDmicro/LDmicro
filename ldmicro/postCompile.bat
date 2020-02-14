@@ -1,7 +1,18 @@
+@rem COLOR [background][foreground]
+@rem 0 = Black   8 = Gray
+@rem 1 = Blue    9 = Light Blue
+@rem 2 = Green   A = Light Green
+@rem 3 = Aqua    B = Light Aqua
+@rem 4 = Red     C = Light Red
+@rem 5 = Purple  D = Light Purple
+@rem 6 = Yellow  E = Light Yellow
+@rem 7 = White   F = Bright White
+@COLOR F0
+
 @echo on
 @echo This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 @echo This file executes after menu Compile - F5
-@REM EXE_PATH from where the ldmicro.exe and *.bat are executes
+@rem EXE_PATH from where the ldmicro.exe and *.bat are executes
 @SET  EXE_PATH=%~dp0
 @echo %EXE_PATH% - EXE_PATH
 @echo %1 - Compile target
@@ -124,13 +135,13 @@ mkdir  "%P3%\ARDUINO"
 mkdir  "%P3%\ARDUINO\%P4%"
 @rem @del /S /Y "%P3%\ARDUINO\%P4%\BUILD\*.*"
 rm -r "%P3%\ARDUINO\%P4%\BUILD"
-@rem pause
+::pause
 copy "%P3%\%P4%.cpp"          "%P3%\ARDUINO\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\ARDUINO\%P4%"
-@rem copy "%P3%\%P4%.ino_"         "%P3%\ARDUINO\%P4%"
-@rem copy "%P3%\ladder.h_"         "%P3%\ARDUINO\%P4%"
-@rem copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
-@rem copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
+::copy "%P3%\%P4%.ino_"         "%P3%\ARDUINO\%P4%"
+::copy "%P3%\ladder.h_"         "%P3%\ARDUINO\%P4%"
+::copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
+::copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
 @rem pause

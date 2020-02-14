@@ -78,7 +78,7 @@ int         IoListHeight;
 int         IoListTop;
 
 // whether the simulation is running in real time
-static bool RealTimeSimulationRunning;
+bool RealTimeSimulationRunning;
 
 extern HWND UartSimulationWindow;
 extern HWND SpiSimulationWindow;
@@ -710,7 +710,7 @@ HMENU MakeMainWindowMenus()
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE, _("Si&mulation Mode\tCtrl+M or F7"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F9"));
+    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE, _("Single &Cycle\tSpace"));
 
     compile = CreatePopupMenu();
@@ -737,10 +737,10 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE_INT, _("Compile Interpretable Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT, _("Compile Interpretable Extended Byte Code"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_BUILD_ALL, _("Build C Solution"));
+    AppendMenu(compile, MF_STRING, MNU_BUILD_ALL, _("Build C Solution\tF6"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu\tF6"));
-    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu\tCtrl+F6"));
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu\tF9"));
+    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu\tCtrl+F9"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT, _("Call clear"));
 
@@ -1174,6 +1174,7 @@ void StartSimulation()
 {
     RealTimeSimulationRunning = true;
 
+    EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
     StartSimulationTimer();
@@ -1196,6 +1197,7 @@ void StopSimulation()
 {
     RealTimeSimulationRunning = false;
 
+    EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
     KillTimer(MainWindow, TIMER_SIMULATE);

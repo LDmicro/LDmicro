@@ -2574,10 +2574,6 @@ static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, L
                             StartSimulation();
                         break;
 
-                    case VK_F9:
-                        StopSimulation();
-                        break;
-
                     case 'H':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                             StopSimulation();
