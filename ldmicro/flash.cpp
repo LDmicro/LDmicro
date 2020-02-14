@@ -32,7 +32,7 @@ struct BuildRunData {
     std::string progtool5;
 };
 
-using BuildRunDataPtr = std::shared_ptr<BuildRunData>;
+typedef std::shared_ptr<BuildRunData> BuildRunDataPtr;
 
 int CreateChildThread(BuildRunDataPtr runData);
 
