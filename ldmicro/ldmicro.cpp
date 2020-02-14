@@ -287,10 +287,45 @@ long int fsize(char *filename)
 }
 
 //-----------------------------------------------------------------------------
-static void isErr(int Err, char *r)
+void GetErrorMessage(DWORD err, LPTSTR lpszFunction)
 {
+    // Retrieve the system error message for the error code
+    if(err) {
+        LPVOID lpMsgBuf;
+        LPVOID lpDisplayBuf;
+
+        FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            err,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR) &lpMsgBuf,
+            0, NULL );
+
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+            (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 256) * sizeof(TCHAR));
+
+        StringCchPrintf((LPTSTR)lpDisplayBuf,
+            LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+            "%s\n%s %d:\n%s",
+            lpszFunction, _("System error code"), err, lpMsgBuf);
+
+        Error((char *)lpDisplayBuf);
+
+        LocalFree(lpMsgBuf);
+        LocalFree(lpDisplayBuf);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void IsErr(DWORD err, char *msg)
+{
+    GetErrorMessage(err, msg);
+return;
     const char *s;
-    switch(Err) {
+    switch(err) {
         // clang-format off
         case 0:                    s = "The system is out of memory or resources"; break;
         case ERROR_BAD_FORMAT:     s = "The .exe file is invalid";                 break;
@@ -300,13 +335,75 @@ static void isErr(int Err, char *r)
             // clang-format on
     }
     if(strlen(s))
-        Error("Error: %d - %s in command line:\n\n%s", Err, s, r);
+        Error("Error: %d - %s in command line:\n\n%s", err, s, msg);
 }
 
 //-----------------------------------------------------------------------------
-static int Execute(char *r)
+int Execute(char *batchfile, char *batchArgs, int nShowCmd)
 {
-    return WinExec(r, SW_SHOWNORMAL /* | SW_SHOWMINIMIZED*/);
+    DWORD err = GetLastError();
+    IsErr(err, "Why???");
+    SetLastError(ERROR_SUCCESS);
+#define VAR 2
+    char cmdLine[MAX_PATH];
+#if VAR == 1
+    sprintf(cmdLine, "%s %s", batchfile, batchArgs);
+    err = WinExec(cmdLine, nShowCmd); // If the function succeeds, the return value is greater than 31.
+    if(err > 31)
+        err = ERROR_SUCCESS;
+    else if (err == 0)
+        err = ERROR_NOT_ENOUGH_MEMORY;
+#else
+    char comspec[MAX_PATH] = "";
+    GetEnvironmentVariable("COMSPEC", comspec, MAX_PATH);
+
+  #if VAR == 2
+    sprintf(cmdLine, "/C \"%s %s\"", batchfile, batchArgs);
+
+    err = (DWORD) ShellExecute(NULL, NULL, comspec, cmdLine, NULL, nShowCmd);
+    if(err > 32)
+        err = ERROR_SUCCESS;
+    else if (err == 0)
+        err = ERROR_NOT_ENOUGH_MEMORY;
+  #else
+    TODO
+    sprintf(cmdLine, " /C %s \%s", batchfile, batchArgs);
+//  sprintf(cmdLine, " /C %s", batchfile, batchArgs);
+//  sprintf(cmdLine, "/C aaa.bat");
+
+    TCHAR sysDir[MAX_PATH] = "";
+    GetSystemDirectory(sysDir, MAX_PATH);
+
+    STARTUPINFO si = {0}; // alternative way to zero array
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {0};
+
+    TCHAR coms[MAX_PATH] = "";
+    sprintf(coms, "%s", comspec); // quotes are not needed
+
+    if( !CreateProcess(coms,
+        cmdLine,
+        NULL,
+        NULL,
+        FALSE,
+        0,
+        sysDir,
+        NULL,
+        &si,
+        &pi )
+        )
+    {
+        IsErr(GetLastError(), coms);
+        return 0;
+    }
+
+    WaitForSingleObject( pi.hProcess, INFINITE );
+    CloseHandle( pi.hProcess );
+    CloseHandle( pi.hThread );
+    return 0;
+  #endif
+#endif
+    return err;
 }
 
 //-----------------------------------------------------------------------------
@@ -442,7 +539,7 @@ static void flashBat(char *name, int ISA)
     }
 
     sprintf(r, "%sflashMcu.bat", ExePath);
-    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), deviceName, "");
+    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), deviceName, " ");
 }
 
 //-----------------------------------------------------------------------------
@@ -504,7 +601,7 @@ static void notepad(const char *path, const char *name, const char *ext)
         return;
     }
     sprintf(r, "\"%snotepad.bat\" \"%s\"", ExePath, s);
-    isErr(Execute(r), r);
+    IsErr(Execute(r, "", SW_SHOWMINIMIZED), r);
 }
 
 static void notepad(const char *name, const char *ext)
@@ -530,7 +627,7 @@ static void clearBat()
         return;
 
     sprintf(r, "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath, CurrentLdPath, LdName, CurrentCompilePath, CompileName);
-    isErr(Execute(r), r);
+    IsErr(Execute(r, "", SW_SHOWMINIMIZED/*SW_SHOWMINNOACTIVE*/), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -579,7 +676,7 @@ static void postCompile(const char *MNU)
         ISA = GetIsaName(Prog.mcu()->whichIsa);
 
     sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
-    isErr(Execute(r), r);
+    IsErr(Execute(r, "", SW_SHOWMINNOACTIVE), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -2126,11 +2223,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 notepad(CurrentSaveFile, "ld");
                 break;
-            } else if(wParam == VK_F6) {
+            } else if(wParam == VK_F9) {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                     readBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
                 else
                     flashBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
+                break;
+            } else if(wParam == VK_F6) {
+                BuildAll(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
                 break;
             }
 
@@ -2269,16 +2369,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         break;
 
                     case VK_F8:
-                        StartSimulation();
+                        if(!RealTimeSimulationRunning)
+                            StartSimulation();
+                        else
+                            StopSimulation();
                         break;
 
                     case 'R':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                             StartSimulation();
-                        break;
-
-                    case VK_F9:
-                        StopSimulation();
                         break;
 
                     case 'H':
