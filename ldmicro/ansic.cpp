@@ -2087,6 +2087,12 @@ bool CompileAnsiC(const char *outFile, int MNU)
     char CurrentLdName[MAX_PATH];
     GetFileName(CurrentLdName, outFile);
 
+    char Current_Ld_Name[MAX_PATH];
+    strcpy(Current_Ld_Name, CurrentLdName);
+    for(int i = 0; i<strlen(Current_Ld_Name); i++)
+		if(Current_Ld_Name[i] == ' ')
+			Current_Ld_Name[i] = '_';
+
     char desth[MAX_PATH];
     SetExt(desth, outFile, ".h");
 
@@ -2412,8 +2418,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
             "\n"
             "#include \"ladder.h\"\n"
             "\n",
-            CurrentLdName,
-            CurrentLdName);
+            Current_Ld_Name,
+            Current_Ld_Name);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(fh,
