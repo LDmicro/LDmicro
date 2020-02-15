@@ -8,7 +8,7 @@
 // NB:  pas d'ADC sur ATMega 164
 
 #if defined(LDTARGET_atmega8) || defined(LDTARGET_atmega48) || defined(LDTARGET_atmega88) || defined(LDTARGET_atmega168) || defined(LDTARGET_atmega328) || defined(LDTARGET_atmega16) || defined(LDTARGET_atmega32) \
-    || defined(LDTARGET_atmega64) || defined(LDTARGET_atmega128) || defined(LDTARGET_atmega164) || defined(LDTARGET_atmega324) || defined(LDTARGET_atmega644) || defined(LDTARGET_atmega1284)                       \
+    || defined(LDTARGET_atmega64) || defined(LDTARGET_atmega128) || defined(LDTARGET_atmega164) || defined(LDTARGET_atmega324) || defined(LDTARGET_atmega644) || defined(LDTARGET_atmega1284p)                       \
     || defined(LDTARGET_atmega2560)
 void ADC_Init(int div, int resol)
 {
