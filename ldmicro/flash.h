@@ -18,7 +18,6 @@ typedef struct buflist // liste chainée de buffers
 void Capture(const char * title, char *batchfile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5);
 
 int  CreateChildPiped(char *cmdline);
-int  CreateChildThread(const char *cmdfile);
 void CreateChildProcess(char *cmdline);
 void ReadFromPipe(BOOL convert);
 void CodePage(LPSTR lpString);
