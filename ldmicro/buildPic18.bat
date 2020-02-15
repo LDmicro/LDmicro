@@ -58,13 +58,28 @@ PATH %PCC_PATH%\BIN;%PICKIT_PATH%;%PATH%
 :: %4\picc18.exe --pass1 UsrLib.c -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 FOR %%F in (HTC\lib\*.c) do  picc18.exe --pass1 %%F -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-@rem Compile main file
+@echo Compile main file
 :: %4\picc18.exe --pass1 %2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 picc18.exe --pass1 "%~nx2.c" -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-@rem Link object files
+@echo Link object files
 :: %4\picc18.exe -oHTC\bin\%2.cof -mHTC\bin\%2.map --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 picc18.exe -o"HTC\bin\%~2.cof" -m"HTC\bin\%~2.map" --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto skipPROTEUS
+del PROTEUS\*.hex  > nul
+del PROTEUS\*.elf  > nul
+del PROTEUS\*.cof  > nul
+REM Copy source code for debugging in Proteus
+copy HTC\lib\*.h PROTEUS > nul
+copy HTC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy HTC\BIN\*.hex PROTEUS > nul
+copy HTC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS
 
 @echo ...
 @pause

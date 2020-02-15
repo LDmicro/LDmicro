@@ -48,18 +48,9 @@ chdir %~pn1
 if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
 dir ARMGCC\lib\*.c
 
-  SET GCC_PATH=%ProgramFiles%\emIDE\emIDE V2.20\arm
+  SET GCC_PATH=%ProgramFiles%\EmIDE\emIDE V2.20\arm
 ::SET GCC_PATH=%ProgramFiles%\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain
 ::SET GCC_PATH=%ProgramFiles%\GNU Tools ARM Embedded\7 2018-q2-update
-::SET GCC_PATH=%ProgramFiles%\Atmel\AVR-Gcc-8.2.0
-::SET GCC_PATH=%ProgramFiles%\EmIDE\emIDE V2.20\arm
-::SET GCC_PATH=%ProgramFiles%\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
-::SET GCC_PATH=D:\01 - Programas Plc\Atmel\AVR-Gcc-8.2.0
-::SET GCC_PATH=D:\01 - Programas Plc\Arduino 1.8.0\hardware\tools\avr
-::SET GCC_PATH=D:\WinAVR
-::SET GCC_PATH=c:\WinAVR-20100110
-::SET GCC_PATH=c:\avr-gcc-9.1.0-x64-mingw
-::SET GCC_PATH=c:\avr8-gnu-toolchain-win32_x86
 
 PATH %GCC_PATH%\BIN;%PATH%
 
@@ -104,14 +95,29 @@ CD ARMGCC\lib
 FOR %%F in (*.c) do arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
 CD ..\..
 
-@rem Compile main file
+@echo Compile main file
 arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c "%~n2.c" -o "ARMGCC\obj\%~n2.o"
 
-@rem Link object files
+@echo Link object files
 arm-none-eabi-gcc.exe -o "ARMGCC\bin\%~nx2.elf" ARMGCC\obj\*.o -Wl,-Map -Wl,"ARMGCC\bin\%~nx2.elf.map" -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
 
-@rem Convert Elf to Hex
+@echo Convert Elf to Hex
 arm-none-eabi-objcopy -O ihex "ARMGCC\bin\%~nx2.elf" "ARMGCC\bin\%~nx2.hex"
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto skipPROTEUS
+del PROTEUS\*.hex  > nul
+del PROTEUS\*.elf  > nul
+del PROTEUS\*.cof  > nul
+REM Copy source code for debugging in Proteus
+copy ARMGCC\lib\*.h PROTEUS > nul
+copy ARMGCC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy ARMGCC\BIN\*.hex PROTEUS > nul
+copy ARMGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS
 
 @GOTO END
 

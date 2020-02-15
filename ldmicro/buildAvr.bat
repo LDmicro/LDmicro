@@ -66,17 +66,32 @@ PATH %GCC_PATH%\BIN;%PATH%
 :: %4\avr-gcc.exe -I%1 -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\UsrLib.d -MT AVRGCC\obj\UsrLib.d -MT AVRGCC\obj\UsrLib.o %1\AVRGCC\lib\UsrLib.c -o AVRGCC\obj\UsrLib.o
 FOR %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%1 -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %1\AVRGCC\lib\%%~nF.c -o AVRGCC\obj\%%~nF.o
 
-@rem Compile main file
+@echo Compile main file
 :: %4\avr-gcc.exe -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\%2.d -MT AVRGCC\obj\%2.d -MT AVRGCC\obj\%2.o %1\%2.c -o AVRGCC\obj\%2.o
 avr-gcc.exe -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%3 -MF "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.o" "%~nx2.c" -o "AVRGCC\obj\%~2.o"
 
-@rem Link object files
+@echo Link object files
 :: %4\avr-gcc.exe -o AVRGCC\bin\%2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%3
 avr-gcc.exe -o "AVRGCC\bin\%~2.elf" AVRGCC\obj\*.o -Wl,-Map="AVRGCC\obj\%~2.map" -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%3
 
-@rem Convert Elf to Hex
+@echo Convert Elf to Hex
 :: %4\avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%2.elf AVRGCC\bin\%2.hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature "AVRGCC\bin\%~2.elf" "AVRGCC\bin\%~2.hex"
+
+@echo off
+:mkdir PROTEUS
+if not exist PROTEUS goto skipPROTEUS
+del PROTEUS\*.hex  > nul
+del PROTEUS\*.elf  > nul
+del PROTEUS\*.cof  > nul
+REM Copy source code for debugging in Proteus
+copy AVRGCC\lib\*.h PROTEUS > nul
+copy AVRGCC\lib\*.c PROTEUS > nul
+copy *.h PROTEUS > nul
+copy *.c PROTEUS > nul
+copy AVRGCC\BIN\*.hex PROTEUS > nul
+copy AVRGCC\BIN\*.elf PROTEUS > nul
+:skipPROTEUS
 
 @echo ...
 @pause
