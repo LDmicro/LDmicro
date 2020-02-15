@@ -1,3 +1,14 @@
+@rem COLOR [background][foreground]
+@rem 0 = Black   8 = Gray
+@rem 1 = Blue    9 = Light Blue
+@rem 2 = Green   A = Light Green
+@rem 3 = Aqua    B = Light Aqua
+@rem 4 = Red     C = Light Red
+@rem 5 = Purple  D = Light Purple
+@rem 6 = Yellow  E = Light Yellow
+@rem 7 = White   F = Bright White
+@COLOR F0
+
 :: BUILD Script for PIC16 targets
 
 :: %1 = project_path
@@ -6,47 +17,54 @@
 :: %4 = compiler_path
 :: %5 = prog_tool
 
-@ECHO Running script = %0
-@ECHO Working dir = %1
-@ECHO File name = %2
-@ECHO Target name = %3
-@Echo ...
+@echo Running script = %0
+@echo Working dir = %1
+@echo File name = %2
+@echo Target name = %3
+@echo ...
 
-@REM %~d0 = Drive in full name
-@REM %~p0 = Path in full name
-@REM %~n0 = Name without extension
-@REM %~dp0 = Drive + Path in full name
-@REM %~nx0 = Name + extension
+@rem %~d0 = Drive in full name
+@rem %~p0 = Path in full name
+@rem %~n0 = Name without extension
+@rem %~dp0 = Drive + Path in full name
+@rem %~nx0 = Name + extension
 
-@rmdir HTC\obj /s /q
-@rmdir HTC\bin /s /q
-@mkdir HTC\obj
-@mkdir HTC\bin
-@mkdir HTC\lib
+@rem Select working drive and directory
+%~d1
+chdir %~pn1
 
-@REM EXE_PATH from where the ldmicro.exe and *.bat are run
+@if exist HTC\obj rmdir HTC\obj /s /q
+@if exist HTC\bin rmdir HTC\bin /s /q
+@if not exist HTC\obj mkdir HTC\obj
+@if not exist HTC\bin mkdir HTC\bin
+@if not exist HTC\lib mkdir HTC\lib
+
+@rem EXE_PATH from where the ldmicro.exe and *.bat are run
 @SET EXE_PATH=%~dp0
 
 @SET LIB_PATH=%EXE_PATH%\LIBRARIES_FOR\PIC16
 
-IF not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 dir HTC\lib\*.c
 
-SET PCC_PATH=%ProgramFiles%\HI-TECH Software\PICC\9.81
+::SET PCC_PATH=%ProgramFiles%\HI-TECH Software\PICC\9.82
+  SET PCC_PATH=%ProgramFiles%\HI-TECH Software\PICC\9.81
+
 SET PICKIT_PATH=%ProgramFiles%\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
+
 PATH %PCC_PATH%\BIN;%PICKIT_PATH%;%PATH%
 
-:: compile libraries
+@rem Compile libraries
 :: %4\picc.exe --pass1 UsrLib.c -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 FOR %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%3 -P -I%1 -I%1\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-:: compile main file
+@rem Compile main file
 :: %4\picc.exe --pass1 %2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
-picc.exe --pass1 %~nx2.c -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
+picc.exe --pass1 "%~nx2.c" -q --chip=%3 -P --runtime=default -I%1\HTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
-:: link object files
+@rem Link object files
 :: %4\picc.exe -oHTC\bin\%2.cof -mHTC\bin\%2.map --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
-picc.exe -oHTC\bin\%2.cof -mHTC\bin\%2.map --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
+picc.exe -o"HTC\bin\%~2.cof" -m"HTC\bin\%~2.map" --summary=default --output=default HTC\obj\*.p1 --chip=%3 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
 @echo ...
 @pause

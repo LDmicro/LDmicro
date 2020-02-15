@@ -447,6 +447,7 @@ extern HWND IoList;
 extern int IoListTop;
 extern int IoListHeight;
 extern char IoListSelectionName[MAX_NAME_LEN];
+extern bool RealTimeSimulationRunning;
 
 // draw.cpp
 int ProgCountWidestRow();
@@ -742,9 +743,6 @@ char *strncpyn(char *s1, const char *s2, size_t n);
 char *strncatn(char *s1, const char *s2, size_t n);
 char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
-
-// lang.cpp
-const char *_(const char *in);
 
 // simulate.cpp
 int isVarInited(const char *name);
@@ -1097,5 +1095,7 @@ void abortHandler(int signum);      ///// Added by JG
 
 //ldmicro.cpp
 bool ExistFile(const char *name);
+void IsErr(DWORD err, char *msg);
+int Execute(char *batchfile, char *batchArgs, int nShowCmd);
 
 #endif
