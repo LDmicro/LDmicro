@@ -969,31 +969,6 @@ McuPwmPinInfo AvrAtmega2560PwmPinInfo[] = {
 //  { 40, 5, 8,     5, 0x12C, 0x12D, 0x120, 3,     2,        1, 0x121, 0x08 , ""}, // OC5C
 };
 
-McuPwmPinInfo AvrPwmPinInfo44_[] = {
-////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
-//// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    { 16, 2, 8,    0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
-/*
-//  { 26, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        1, 0x45,  0x08 , ""}, // OC0A
-    {  1, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        2, 0x45,  0x08 , ""}, // OC0B
-
-    { 24, 1, 8,     5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 , ""}, // OC1A
-    { 24, 1, 9,     5, 0x88,  0x89,  0x80,  7,     6,        2, 0x81,  0x08 , ""}, // OC1A
-    { 24, 1,10,     5, 0x88,  0x89,  0x80,  7,     6,        3, 0x81,  0x08 , ""}, // OC1A
-
-    { 25, 1, 8,     5, 0x8A,  0x8B,  0x80,  5,     4,        1, 0x81,  0x08 , ""}, // OC1B
-    { 25, 1, 9,     5, 0x8A,  0x8B,  0x80,  5,     4,        2, 0x81,  0x08 , ""}, // OC1B
-    { 25, 1,10,     5, 0x8A,  0x8B,  0x80,  5,     4,        3, 0x81,  0x08 , ""}, // OC1B
-
-    { 26, 1, 8,     5, 0x8C,  0x8D,  0x80,  3,     2,        1, 0x81,  0x08 , ""}, // OC1C
-    { 26, 1, 9,     5, 0x8C,  0x8D,  0x80,  3,     2,        2, 0x81,  0x08 , ""}, // OC1C
-    { 26, 1,10,     5, 0x8C,  0x8D,  0x80,  3,     2,        3, 0x81,  0x08 , ""}, // OC1C
-
-    { 23, 2, 8,     5, 0xB3,  0,     0xB0,  7,     6,        1, 0xB1,  0x08 , ""}, // OC2A
-    { 18, 2, 8,     5, 0xB4,  0,     0xB0,  5,     4,        2, 0xB1,  0x08 , ""}, // OC2B
-*/
-};
-
 McuPwmPinInfo AvrAtmega16_32PwmPinInfo40[] = {
 ////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
@@ -1013,8 +988,8 @@ McuPwmPinInfo AvrAtmega16_32PwmPinInfo40[] = {
 McuPwmPinInfo AvrPwmPinInfo40_[] = {
 ////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    {  4, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        3, 0x45,  0x08 , ""}, // OC0A
-    {  5, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        3, 0x45,  0x08 , ""}, // OC0B
+    {  4, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        3, 0x45,     0 , ""}, // OC0A // Fast PWM
+    {  5, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        3, 0x45,     0 , ""}, // OC0B // Fast PWM
 
     { 19, 1, 8,     5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 , ""}, // OC1A // Fast PWM  8-bit
     { 19, 1, 9,     5, 0x88,  0x89,  0x80,  7,     6,        2, 0x81,  0x08 , ""}, // OC1A // Fast PWM  9-bit
@@ -1034,6 +1009,32 @@ McuPwmPinInfo AvrPwmPinInfo40_[] = {
 
     { 21, 2, 8,     7, 0xB3,  0   ,  0xB0,  7,     6,        3, 0xB1,  0x84 , ""}, // OC2A // Fast PWM
     { 20, 2, 8,     7, 0xB4,  0   ,  0xB0,  5,     4,        3, 0xB1,  0x84 , ""}, // OC2B // Fast PWM
+};
+
+McuPwmPinInfo AvrPwmPinInfo44[] = {
+////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    { 43, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        3, 0x45,     0 , ""}, // OC0A // Fast PWM
+    { 44, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        3, 0x45,     0 , ""}, // OC0B // Fast PWM
+
+    { 14, 1, 8,     5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 , ""}, // OC1A // Fast PWM  8-bit
+    { 14, 1, 9,     5, 0x88,  0x89,  0x80,  7,     6,        2, 0x81,  0x08 , ""}, // OC1A // Fast PWM  9-bit
+    { 14, 1,10,     5, 0x88,  0x89,  0x80,  7,     6,        3, 0x81,  0x08 , ""}, // OC1A // Fast PWM 10-bit
+
+    { 13, 1, 8,     5, 0x8A,  0x8B,  0x80,  5,     4,        1, 0x81,  0x08 , ""}, // OC1B // Fast PWM  8-bit
+    { 13, 1, 9,     5, 0x8A,  0x8B,  0x80,  5,     4,        2, 0x81,  0x08 , ""}, // OC1B // Fast PWM  9-bit
+    { 13, 1,10,     5, 0x8A,  0x8B,  0x80,  5,     4,        3, 0x81,  0x08 , ""}, // OC1B // Fast PWM 10-bit
+
+    {  2, 1, 8,     5, 0x98,  0x99,  0x90,  7,     6,        1, 0x91,  0x08 , ""}, // OC3A // Fast PWM  8-bit
+    {  2, 1, 9,     5, 0x98,  0x99,  0x90,  7,     6,        2, 0x91,  0x08 , ""}, // OC3A // Fast PWM  9-bit
+    {  2, 1,10,     5, 0x98,  0x99,  0x90,  7,     6,        3, 0x91,  0x08 , ""}, // OC3A // Fast PWM 10-bit
+
+    {  3, 1, 8,     5, 0x9A,  0x9B,  0x90,  5,     4,        1, 0x91,  0x08 , ""}, // OC3B // Fast PWM  8-bit
+    {  3, 1, 9,     5, 0x9A,  0x9B,  0x90,  5,     4,        2, 0x91,  0x08 , ""}, // OC3B // Fast PWM  9-bit
+    {  3, 1,10,     5, 0x9A,  0x9B,  0x90,  5,     4,        3, 0x91,  0x08 , ""}, // OC3B // Fast PWM 10-bit
+
+    { 16, 2, 8,     7, 0xB3,  0   ,  0xB0,  7,     6,        3, 0xB1,  0x84 , ""}, // OC2A // Fast PWM
+    { 15, 2, 8,     7, 0xB4,  0   ,  0xB0,  5,     4,        3, 0xB1,  0x84 , ""}, // OC2B // Fast PWM
 };
 
 McuPwmPinInfo AvrAtmega162PwmPinInfo40_[] = {
@@ -1258,7 +1259,7 @@ McuIoPinInfo AvrAtmegaIo44PinInfo[] = {
     { 'B',  1, 41, "PB1 T1/CLKO/PCINT9"   , 0, "", 0, 0, 0, 0 },
     { 'B',  2, 42, "PB2 AIN0/INT2/PCINT10", 0, "", 0, 0, 0, 0 },
     { 'B',  3, 43, "PB3 AIN1/OC0A/PCINT11", 0, "", 0, 0, 0, 0 },
-    { 'B',  4, 44, "PB4 _SS/OC0B/PCINT12" , 0, "", 0, 0, 0, 0 },
+    { 'B',  4, 44, "PB4 _SS/ OC0B/PCINT12", 0, "", 0, 0, 0, 0 },
     { 'B',  5, 1,  "PB5 PCINT13/ICP3/MOSI", 0, "", 0, 0, 0, 0 },
     { 'B',  6, 2,  "PB6 PCINT14/OC3A/MISO", 0, "", 0, 0, 0, 0 },
     { 'B',  7, 3,  "PB7 PCINT15/OC3B/SCK" , 0, "", 0, 0, 0, 0 },
@@ -2544,8 +2545,8 @@ McuIoInfo SupportedMcus_[] = {
         EnhancedCore128K,
         44,
         0,
-        AvrPwmPinInfo44_,
-        arraylen(AvrPwmPinInfo44_),
+        AvrPwmPinInfo44,
+        arraylen(AvrPwmPinInfo44),
         nullptr,
         0,
         nullptr,
@@ -2886,7 +2887,7 @@ McuIoInfo SupportedMcus_[] = {
     },
     {
         "Atmel AVR ATmega1284 44-Pin packages",
-        "ATmega1284",
+        "ATmega1284p",
         "",
         "",
         "iom1284", // AVRGCC
@@ -2907,8 +2908,8 @@ McuIoInfo SupportedMcus_[] = {
         EnhancedCore128K,
         44,
         0,
-        AvrPwmPinInfo44_,
-        arraylen(AvrPwmPinInfo44_),
+        AvrPwmPinInfo44,
+        arraylen(AvrPwmPinInfo44),
         nullptr,
         0,
         McuSpiInfoATmega16,
