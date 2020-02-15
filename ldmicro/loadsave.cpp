@@ -768,15 +768,17 @@ bool LoadPullUpListFromFile(FileTracker &f)
             return true;
         }
         Ok = true;
-        // Don't internationalize this! It's the file format, not UI.
-        if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+		if(Prog.mcu()) {
+          // Don't internationalize this! It's the file format, not UI.
+          if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
             i = port - 'A';
             if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
                 Prog.pullUpRegs[i] = pullUpRegs;
             } else {
                 Ok = false;
             }
-        }
+          }
+		}
         if(!Ok) {
             THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
         }

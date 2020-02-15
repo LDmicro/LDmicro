@@ -409,6 +409,11 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=d:\lds\moteur_on_fc\moteur_on_fc_v3.ld
 @SET PROGECT="C:\tmp\SPACE тест\moteur ячфы v3.ld"
 
+@SET PROGECT="d:\lds\ATmega1284 44-Pin\ATmega1284 44-Pin.ld"
+@SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
+
+@SET PROGECT="d:\lds\ATmega1284 40-Pin\pwm.ld"
+
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
@@ -455,7 +460,8 @@ if "%1" == "" goto DO_BUILD
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
 :start ldmicro.exe %PROGEC2%
-:start ldmicro.exe %PROGECT%
+start ldmicro.exe %PROGECT%
+goto EXIT
 
 start ldmicro.exe "C:\tmp\SPACE тест\moteur AVR v3.ld"
 start ldmicro.exe "C:\tmp\SPACE тест\moteur ARM1 v3.ld"

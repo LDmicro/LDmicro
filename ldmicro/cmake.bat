@@ -23,6 +23,9 @@
 
 @SET PROGECT=C:\LDs\ERR\TEST1.ld
 
+@SET PROGECT="d:\lds\ATmega1284 44-Pin\ATmega1284 44-Pin.ld"
+@SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD
