@@ -30,11 +30,11 @@ UINT codepage = 866; // 850
 // Capture function
 void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
 {
-#if 0
+#if 1
     char batchArgs[MAX_PATH];
-	//sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
-	sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
-	IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
+    //sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
+    sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
+    IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
 #else
     WNDCLASSEX wc;
     RECT       rect;
@@ -47,13 +47,13 @@ void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, co
 
     if(!running) {
         running = TRUE;
-		/*
+        /*
         AllocConsole(); // Console window is displayed. :(
         codepage = GetConsoleCP(); // Get local codepage (850 for instance)
         FreeConsole();
-		*/
-		//codepage = GetACP();
-		codepage = GetOEMCP();
+        */
+        //codepage = GetACP();
+        codepage = GetOEMCP();
 
         // Window class for captures
         memset(&wc, 0, sizeof(wc));
@@ -411,11 +411,11 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
                     VscrollPos += cyClient / cyChar;
                     break;
 
-				case SB_TOP:
+                case SB_TOP:
                     VscrollPos = 0;
                     break;
 
-				case SB_BOTTOM:
+                case SB_BOTTOM:
                     VscrollPos = total;
                     break;
 
@@ -437,12 +437,12 @@ LRESULT CALLBACK WndProcTexte(HWND hwndTexte, UINT message, WPARAM wParam, LPARA
 
         case WM_KEYDOWN:
             switch(LOWORD(wParam)) {
-				case VK_HOME:
-					SendMessage(hwndTexte, WM_VSCROLL, SB_TOP, 0L);
+                case VK_HOME:
+                    SendMessage(hwndTexte, WM_VSCROLL, SB_TOP, 0L);
                     break;
 
-				case VK_END:
-					SendMessage(hwndTexte, WM_VSCROLL, SB_BOTTOM, 0L);
+                case VK_END:
+                    SendMessage(hwndTexte, WM_VSCROLL, SB_BOTTOM, 0L);
                     break;
 
                 case VK_PRIOR:

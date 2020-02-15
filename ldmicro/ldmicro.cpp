@@ -535,11 +535,10 @@ static void flashBat(char *name, int ISA)
     SetExt(s, name, "");
     if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
         strcpy(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
-        _strlwr(deviceName);
     }
 
     sprintf(r, "%sflashMcu.bat", ExePath);
-    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), deviceName, " ");
+    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), " ");
 }
 
 //-----------------------------------------------------------------------------

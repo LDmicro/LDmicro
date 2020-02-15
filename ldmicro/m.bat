@@ -455,7 +455,14 @@ if "%1" == "" goto DO_BUILD
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
 :start ldmicro.exe %PROGEC2%
-start ldmicro.exe %PROGECT%
+:start ldmicro.exe %PROGECT%
+
+start ldmicro.exe "C:\tmp\SPACE тест\moteur AVR v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur ARM1 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur ARM4 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur PIC16 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur PIC18 v3.ld"
+
 goto EXIT
 
 ldmicro.exe /c %PROGECT% %PROGECT%.c
