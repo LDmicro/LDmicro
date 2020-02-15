@@ -19,13 +19,22 @@ OVERLAPPED over;
 
 BOOL running = FALSE;
 
-char arg1[MAX_PATH] = "";
-char arg2[MAX_PATH] = "";
-char arg3[MAX_PATH] = "";
-char arg4[MAX_PATH] = "";
-char arg5[MAX_PATH] = "";
+
 
 UINT codepage = 866; // 850
+
+struct BuildRunData {
+    std::string batchfile;
+    std::string fpath1;
+    std::string fname2;
+    std::string target3;
+    std::string compiler4;
+    std::string progtool5;
+};
+
+typedef std::shared_ptr<BuildRunData> BuildRunDataPtr;
+
+int CreateChildThread(BuildRunDataPtr runData);
 
 // Capture function
 void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
@@ -39,11 +48,14 @@ void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, co
     WNDCLASSEX wc;
     RECT       rect;
 
-    strcpy(arg1, fpath1);
-    strcpy(arg2, fname2);
-    strcpy(arg3, target3);
-    strcpy(arg4, compiler4);
-    strcpy(arg5, progtool5);
+    BuildRunDataPtr runData = std::shared_ptr<BuildRunData>(new BuildRunData);
+    runData->batchfile = batchfile;
+    runData->fpath1 = fpath1;
+    runData->fname2 = fname2;
+    runData->target3 = target3;
+    runData->compiler4 = compiler4;
+    runData->progtool5 = progtool5;
+
 
     if(!running) {
         running = TRUE;
@@ -90,31 +102,25 @@ void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, co
 
         //Sleep(200);
 
-        CreateChildThread(batchFile);
+        CreateChildThread(runData);
     }
 #endif
 }
 
 // Create a Thread (to free Main window Proc )
-int CreateChildThread(const char *cmdfile)
+int CreateChildThread(BuildRunDataPtr runData)
 {
     HANDLE ChildThread = NULL;
     DWORD  dwThreadId;
 
     struct ThData {
         HANDLE child;
-        char* arg;
+        BuildRunDataPtr arg;
         ThData()
         {
             child = NULL;
-            arg = nullptr;
+            arg.reset();
         }
-        ~ThData()
-        {
-            if(arg)
-                delete[] arg;
-        }
-
     };
 
     static std::vector<std::shared_ptr<ThData> > thData;
@@ -130,19 +136,17 @@ int CreateChildThread(const char *cmdfile)
         return false;
         }), std::end(thData));
 
-    char *arg = new char[strlen(cmdfile) + 1];
-    strcpy(arg, cmdfile);
 
     ChildThread = CreateThread(NULL,           // default security attributes
                                0,              // use default stack size
                                ThreadFunction, // thread function
-                               (LPVOID) arg,  // argument passed to thread function
+                               (LPVOID) runData.get(),  // argument passed to thread function
                                0,              // use default creation flags
                                &dwThreadId);   // returns the thread identifier
 
     if(ChildThread != NULL) {
         auto data = std::make_shared<ThData>();
-        data->arg = arg;
+        data->arg = runData;
         data->child = ChildThread;
         thData.push_back(data);
     }
@@ -163,7 +167,10 @@ DWORD WINAPI ThreadFunction(LPVOID lpParam)
         if(!ExistFile(comspec))
             sprintf(comspec, "%s\\command.com", sysDir);
     }
-    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" %s %s %s\"", comspec, (char *)lpParam, arg1, arg2, arg3, arg4, arg5);
+
+    const BuildRunData *rd = reinterpret_cast<const BuildRunData *>(lpParam);
+    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" %s %s %s\"", comspec, rd->batchfile.c_str(), 
+        rd->fpath1.c_str(), rd->fname2.c_str(), rd->target3.c_str(), rd->compiler4.c_str(), rd->progtool5.c_str());
 
     CreateChildPiped(command);
     return 0;
@@ -314,9 +321,9 @@ void CodePage(LPSTR lpString)
 {
     int     n = 0;
     wchar_t wString[BUFSIZE + 1];
-    n = MultiByteToWideChar(/*codepage*/1?CP_OEMCP:GetOEMCP(), 0, lpString, -1, wString, sizeof(wString));
+    n = MultiByteToWideChar(/*codepage*/ 1 ? CP_OEMCP : GetOEMCP(), 0, lpString, -1, wString, sizeof(wString) / sizeof(wchar_t));
     WideCharToMultiByte(1?CP_ACP:GetACP(), 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
-  //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+    //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
 }
 
 // Capture window Proc
