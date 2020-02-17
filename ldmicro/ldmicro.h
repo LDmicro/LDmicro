@@ -1094,6 +1094,7 @@ void Transliterate(char *dest, const char* str);
 void abortHandler(int signum);      ///// Added by JG
 
 //ldmicro.cpp
+char *GetComspec(char *comspec, int size);
 bool ExistFile(const char *name);
 void IsErr(DWORD err, char *msg);
 int Execute(char *batchfile, char *batchArgs, int nShowCmd);

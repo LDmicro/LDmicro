@@ -40,10 +40,47 @@ int CreateChildThread(BuildRunDataPtr runData);
 void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
 {
 #if 1
-    char batchArgs[MAX_PATH];
-    //sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
-    sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
-    IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
+    char batchArgs[MAX_PATH] = "";
+//  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
+//	sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
+	if(strlen(fpath1)||strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
+		strcat(batchArgs, "\"");
+		if(strlen(fpath1))
+		   strcat(batchArgs, fpath1);
+		else
+		   strcat(batchArgs, " ");
+		strcat(batchArgs, "\"");
+	}
+	if(strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
+		strcat(batchArgs, " \"");
+		if(strlen(fname2))
+			strcat(batchArgs, fname2);
+		else
+		   strcat(batchArgs, " ");
+		strcat(batchArgs, "\"");
+	}
+	if(strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
+		strcat(batchArgs, " \"");
+		if(strlen(target3))
+			strcat(batchArgs, target3);
+		else
+		   strcat(batchArgs, " ");
+		strcat(batchArgs, "\"");
+	}
+	if(strlen(compiler4)||strlen(progtool5)) {
+		strcat(batchArgs, " \"");
+		if(strlen(compiler4))
+			strcat(batchArgs, compiler4);
+		else
+		   strcat(batchArgs, " ");
+		strcat(batchArgs, "\"");
+	}
+	if(strlen(progtool5)) {
+		strcat(batchArgs, " \"");
+		strcat(batchArgs, progtool5);
+		strcat(batchArgs, "\"");
+	}
+	IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
 #else
     WNDCLASSEX wc;
     RECT       rect;
@@ -156,20 +193,13 @@ int CreateChildThread(BuildRunDataPtr runData)
 // Thread function (with specific prototype)
 DWORD WINAPI ThreadFunction(LPVOID lpParam)
 {
-    TCHAR sysDir[MAX_PATH] = "";
-    char comspec[MAX_PATH] = "";
     char  command[CMDSIZE];
+	char comspec[MAX_PATH*2];
 
-    GetEnvironmentVariable("COMSPEC", comspec, MAX_PATH);
-    if((strlen(comspec) == 0) || (!ExistFile(comspec))) {
-        GetSystemDirectory(sysDir, MAX_PATH);
-        sprintf(comspec, "%s\\cmd.exe", sysDir);
-        if(!ExistFile(comspec))
-            sprintf(comspec, "%s\\command.com", sysDir);
-    }
+	GetComspec(comspec, sizeof(comspec));
 
     const BuildRunData *rd = reinterpret_cast<const BuildRunData *>(lpParam);
-    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" %s %s %s\"", comspec, rd->batchfile.c_str(), 
+    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\"", comspec, rd->batchfile.c_str(), 
         rd->fpath1.c_str(), rd->fname2.c_str(), rd->target3.c_str(), rd->compiler4.c_str(), rd->progtool5.c_str());
 
     CreateChildPiped(command);

@@ -338,14 +338,28 @@ return;
         Error("Error: %d - %s in command line:\n\n%s", err, s, msg);
 }
 
+char *GetComspec(char *comspec, int size)
+{
+    TCHAR sysDir[MAX_PATH] = "";
+	GetEnvironmentVariable("COMSPEC", comspec, size);
+    if((strlen(comspec) == 0) || (!ExistFile(comspec))) {
+        GetSystemDirectory(sysDir, MAX_PATH);
+        sprintf(comspec, "%s\\cmd.exe", sysDir);
+        if(!ExistFile(comspec))
+            sprintf(comspec, "%s\\command.com", sysDir);
+    }
+	return comspec;
+}
+
 //-----------------------------------------------------------------------------
 int Execute(char *batchfile, char *batchArgs, int nShowCmd)
 {
     DWORD err = GetLastError();
     IsErr(err, "Why???");
     SetLastError(ERROR_SUCCESS);
+
+	char cmdLine[1024*3];
 #define VAR 2
-    char cmdLine[MAX_PATH];
 #if VAR == 1
     sprintf(cmdLine, "%s %s", batchfile, batchArgs);
     err = WinExec(cmdLine, nShowCmd); // If the function succeeds, the return value is greater than 31.
@@ -353,9 +367,10 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
         err = ERROR_SUCCESS;
     else if (err == 0)
         err = ERROR_NOT_ENOUGH_MEMORY;
+    return err;
 #else
-    char comspec[MAX_PATH] = "";
-    GetEnvironmentVariable("COMSPEC", comspec, MAX_PATH);
+    char comspec[MAX_PATH*2];
+    GetComspec(comspec, sizeof(comspec));
 
   #if VAR == 2
     sprintf(cmdLine, "/C \"%s %s\"", batchfile, batchArgs);
@@ -365,35 +380,32 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
         err = ERROR_SUCCESS;
     else if (err == 0)
         err = ERROR_NOT_ENOUGH_MEMORY;
+    return err;
   #else
-    TODO
-    sprintf(cmdLine, " /C %s \%s", batchfile, batchArgs);
-//  sprintf(cmdLine, " /C %s", batchfile, batchArgs);
-//  sprintf(cmdLine, "/C aaa.bat");
+    
+    //sprintf(cmdLine, "/k \"\"a a a.bat\" 1 \"2 2\" \" \" \"4 4\" 5 \"", batchfile, batchArgs);
+    sprintf(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs); 
 
     TCHAR sysDir[MAX_PATH] = "";
     GetSystemDirectory(sysDir, MAX_PATH);
 
-    STARTUPINFO si = {0}; // alternative way to zero array
+    STARTUPINFO si = {0};
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi = {0};
 
-    TCHAR coms[MAX_PATH] = "";
-    sprintf(coms, "%s", comspec); // quotes are not needed
-
-    if( !CreateProcess(coms,
+    if( !CreateProcess(comspec, // quotes are not needed
         cmdLine,
         NULL,
         NULL,
         FALSE,
         0,
-        sysDir,
+        NULL,
         NULL,
         &si,
         &pi )
         )
     {
-        IsErr(GetLastError(), coms);
+        IsErr(GetLastError(), cmdLine);
         return 0;
     }
 
@@ -403,7 +415,6 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     return 0;
   #endif
 #endif
-    return err;
 }
 
 //-----------------------------------------------------------------------------
@@ -538,7 +549,7 @@ static void flashBat(char *name, int ISA)
     }
 
     sprintf(r, "%sflashMcu.bat", ExePath);
-    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), " ");
+    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "");
 }
 
 //-----------------------------------------------------------------------------
