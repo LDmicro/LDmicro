@@ -9,12 +9,19 @@
 @rem 7 = White   F = Bright White
 @COLOR F0
 
+@rem MODE CON[:] [COLS=c] [LINES=n]
+@MODE CON: COLS=160
+
 @echo off
-@rem This file is part of LDmicro and must be in the same directory where LDmicro.exe is located.
+@rem This file is part of LDmicro project and must be in the same directory where LDmicro.exe is located.
+
+@title Flash the "%~nx2.hex" file to the target MCU %4
 
 REM EXE_PATH from where the ldmicro.exe and *.bat are run
-SET EXE_PATH=%~dp0
+:SET EXE_PATH=%~dp0
 
+@rem Note! All batch file arguments(parameters) are enclosed in quotation marks!
+@echo Running script = %0
 @echo ISA type = %1
 @echo Filename = %2
 @echo Compiler = %3

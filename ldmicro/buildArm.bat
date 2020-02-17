@@ -9,8 +9,14 @@
 @rem 7 = White   F = Bright White
 @COLOR F0
 
-:: BUILD Script for ARM targets
+@rem MODE CON[:] [COLS=c] [LINES=n]
+@MODE CON: COLS=160
 
+@rem This file is part of LDmicro project and must be in the same directory where LDmicro.exe is located.
+
+@title BUILD Script for ARM targets
+
+@rem Note! All batch file arguments(parameters) are enclosed in quotation marks!
 :: %1 = project_path
 :: %2 = file_name (.ld)
 :: %3 = target_name
