@@ -3210,7 +3210,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         FreezeWindowPos(MainWindow);
         FreezeDWORD(IoListHeight);
 
-        UndoFlush();
+		UndoEmpty();
         Prog.reset();
 
         return 0;

@@ -59,7 +59,7 @@ del /S "%P1%%SL1%*.tmp"
 del /S "%P3%%SL3%*.tmp"
 del /S "%P1%%SL1%*.bak"
 del /S "%P3%%SL3%*.bak"
-del bak
+del bak.
 ;
 attrib -R -A -S -H Thumbs.db /S
 del /S Thumbs.db

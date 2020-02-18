@@ -413,6 +413,10 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
 
 @SET PROGECT="d:\lds\ATmega1284 40-Pin\pwm.ld"
+@SET PROGECT="d:\lds\ATmega1284 44-Pin\pwm.ld"
+
+@SET PROGECT=d:\lds\PULSER_Amjad\Pulser.ld
+
 
 
 if "%1" == "" goto DO_BUILD

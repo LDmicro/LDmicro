@@ -522,6 +522,7 @@ void UndoUndo();
 void UndoRedo();
 void UndoRemember();
 void UndoFlush();
+void UndoEmpty();
 bool CanUndo();
 
 // loadsave.cpp
