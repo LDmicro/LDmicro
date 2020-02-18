@@ -1008,8 +1008,8 @@ McuPwmPinInfo AvrPwmPinInfo40_[] = {
 McuPwmPinInfo AvrPwmPinInfo44[] = {
 ////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    { 43, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        3, 0x45,     0 , ""}, // OC0A // Fast PWM
-    { 44, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        3, 0x45,     0 , ""}, // OC0B // Fast PWM
+    { 43, 0, 8,     5, 0x47,  0,     0x44,  7,     6,        3, 0x45,  0x00 , ""}, // OC0A // Fast PWM
+    { 44, 0, 8,     5, 0x48,  0,     0x44,  5,     4,        3, 0x45,  0x00 , ""}, // OC0B // Fast PWM
 
     { 14, 1, 8,     5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 , ""}, // OC1A // Fast PWM  8-bit
     { 14, 1, 9,     5, 0x88,  0x89,  0x80,  7,     6,        2, 0x81,  0x08 , ""}, // OC1A // Fast PWM  9-bit
@@ -1019,16 +1019,16 @@ McuPwmPinInfo AvrPwmPinInfo44[] = {
     { 13, 1, 9,     5, 0x8A,  0x8B,  0x80,  5,     4,        2, 0x81,  0x08 , ""}, // OC1B // Fast PWM  9-bit
     { 13, 1,10,     5, 0x8A,  0x8B,  0x80,  5,     4,        3, 0x81,  0x08 , ""}, // OC1B // Fast PWM 10-bit
 
-    {  2, 1, 8,     5, 0x98,  0x99,  0x90,  7,     6,        1, 0x91,  0x08 , ""}, // OC3A // Fast PWM  8-bit
-    {  2, 1, 9,     5, 0x98,  0x99,  0x90,  7,     6,        2, 0x91,  0x08 , ""}, // OC3A // Fast PWM  9-bit
-    {  2, 1,10,     5, 0x98,  0x99,  0x90,  7,     6,        3, 0x91,  0x08 , ""}, // OC3A // Fast PWM 10-bit
+    {  2, 3, 8,     5, 0x98,  0x99,  0x90,  7,     6,        1, 0x91,  0x08 , ""}, // OC3A // Fast PWM  8-bit
+    {  2, 3, 9,     5, 0x98,  0x99,  0x90,  7,     6,        2, 0x91,  0x08 , ""}, // OC3A // Fast PWM  9-bit
+    {  2, 3,10,     5, 0x98,  0x99,  0x90,  7,     6,        3, 0x91,  0x08 , ""}, // OC3A // Fast PWM 10-bit
 
-    {  3, 1, 8,     5, 0x9A,  0x9B,  0x90,  5,     4,        1, 0x91,  0x08 , ""}, // OC3B // Fast PWM  8-bit
-    {  3, 1, 9,     5, 0x9A,  0x9B,  0x90,  5,     4,        2, 0x91,  0x08 , ""}, // OC3B // Fast PWM  9-bit
-    {  3, 1,10,     5, 0x9A,  0x9B,  0x90,  5,     4,        3, 0x91,  0x08 , ""}, // OC3B // Fast PWM 10-bit
+    {  3, 3, 8,     5, 0x9A,  0x9B,  0x90,  5,     4,        1, 0x91,  0x08 , ""}, // OC3B // Fast PWM  8-bit
+    {  3, 3, 9,     5, 0x9A,  0x9B,  0x90,  5,     4,        2, 0x91,  0x08 , ""}, // OC3B // Fast PWM  9-bit
+    {  3, 3,10,     5, 0x9A,  0x9B,  0x90,  5,     4,        3, 0x91,  0x08 , ""}, // OC3B // Fast PWM 10-bit
 
-    { 16, 2, 8,     7, 0xB3,  0   ,  0xB0,  7,     6,        3, 0xB1,  0x84 , ""}, // OC2A // Fast PWM
-    { 15, 2, 8,     7, 0xB4,  0   ,  0xB0,  5,     4,        3, 0xB1,  0x84 , ""}, // OC2B // Fast PWM
+    { 16, 2, 8,     7, 0xB3,  0   ,  0xB0,  7,     6,        3, 0xB1,  0x00 , ""}, // OC2A // Fast PWM
+    { 15, 2, 8,     7, 0xB4,  0   ,  0xB0,  5,     4,        3, 0xB1,  0x00 , ""}, // OC2B // Fast PWM
 };
 
 McuPwmPinInfo AvrAtmega162PwmPinInfo40_[] = {
