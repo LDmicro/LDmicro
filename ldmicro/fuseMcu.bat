@@ -9,14 +9,27 @@
 @rem 7 = White   F = Bright White
 @COLOR F0
 
-@echo OFF
-@rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
-cls
-if "%1" == "" goto AVR
-if "%1" == "AVR" goto AVR
+@rem MODE CON[:] [COLS=c] [LINES=n]
+@MODE CON: COLS=160
+
+@echo off
+@rem This file is part of LDmicro project and must be in the same directory where LDmicro.exe is located.
+
+@title Show/Flash the fuses of the target MCU %4
+
+@rem Note! All batch file arguments(parameters) are enclosed in quotation marks!
+@echo Running script = %0
+@echo ISA type = %1
+@echo Filename = %2
+@echo Compiler = %3
+@echo Target name = %4
+@echo ...
+
+if %1 == "" goto AVR
+if %1 == "AVR" goto AVR
+goto NOT_SUPPOTED
 if "%1" == "PIC16" goto PIC16
 if "%1" == "" goto pauses
-goto NOT_SUPPOTED
 
 :AVR
 @rem Set up avrdude.exe path. It may be:

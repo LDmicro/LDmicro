@@ -17,9 +17,6 @@
 
 @title Flash the "%~nx2.hex" file to the target MCU %4
 
-REM EXE_PATH from where the ldmicro.exe and *.bat are run
-:SET EXE_PATH=%~dp0
-
 @rem Note! All batch file arguments(parameters) are enclosed in quotation marks!
 @echo Running script = %0
 @echo ISA type = %1
@@ -31,6 +28,9 @@ REM EXE_PATH from where the ldmicro.exe and *.bat are run
 @rem %~d2 = Drive letter in path
 @rem %~p2 = Path to ld file
 @rem %~nx2 = Filename without path
+
+@rem EXE_PATH from where the ldmicro.exe and *.bat are run
+@SET EXE_PATH=%~dp0
 
 @SET COMPILER=%3
 
