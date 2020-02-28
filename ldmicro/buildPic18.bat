@@ -85,6 +85,7 @@ copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.elf PROTEUS > nul
+copy HTC\BIN\*.cof PROTEUS > nul
 :skipPROTEUS
 
 @echo ...
