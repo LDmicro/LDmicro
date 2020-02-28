@@ -4669,20 +4669,10 @@ otherwise the result was zero or greater.
 
             case INT_SET_VARIABLE_ADD: {
                 Comment("INT_SET_VARIABLE_ADD %s := %s + %s; '%s'; '%s'", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str(), a->name5.c_str());
-                // a->name1 = a->name2 + a->name3
                 MemForVariable(a->name1, &addr1);
-                // MemForVariable(a->name2, &addr2);
-                // MemForVariable(a->name3, &addr3);
-                //MemForSingleBit(a->name4, &addr4, &bit4); // Set Carry to stateInOut // Overflow
-
                 sov1 = SizeOfVar(a->name1);
-                // sov2 = SizeOfVar(a->name2);
-                // sov3 = SizeOfVar(a->name3);
 
-                // ADDR_T addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true); // v1
-                // isModificationRisk = addr1 != addr2;
-                // ADDR_T addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov1, a->name2, true); // v2
-                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
+                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1) || (a->name1 != a->name2), addr1, Scratch0, sov1, a->name2, true);
                 ADDR_T addrA = CopyArgToReg(false, Scratch4, sov1, a->name3, true);
                 add(addrB, addrA, sov1, a->name4, a->name5); // b = b + a , b - is rewritten
                 CopyRegToReg(addr1, sov1, addrB, sov1, a->name1, "addrB", true);
@@ -4718,9 +4708,7 @@ otherwise the result was zero or greater.
 
             case INT_SET_VARIABLE_SUBTRACT: {
                 Comment("INT_SET_VARIABLE_SUBTRACT %s := %s - %s; '%s'; '%s'", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str(), a->name5.c_str());
-                // a->name1 = a->name2 - a->name3
                 MemForVariable(a->name1, &addr1);
-
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
                 sov3 = SizeOfVar(a->name3);
@@ -4729,16 +4717,14 @@ otherwise the result was zero or greater.
                     Warning("Size of result '%s' less than an argument(s) '%s' or '%s'", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
                 }
 
-                // ADDR_T addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true);  // v1
-                // isModificationRisk = addr1 != addr2;
-                // ADDR_T addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov, a->name2, true); // v2
-                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
+
+                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1) || (a->name1 != a->name2), addr1, Scratch0, sov1, a->name2, true);
                 ADDR_T addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
                 sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
                 CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
                 break;
             }
-            case -INT_SET_VARIABLE_MULTIPLY:
+            case -INT_SET_VARIABLE_MULTIPLY: 
                 MultiplyNeeded = true;
 
                 MemForVariable(a->name1, &addr1);
@@ -5026,7 +5012,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 }
 
                 int timer = ioPWM->timer;
@@ -5102,6 +5088,8 @@ otherwise the result was zero or greater.
                                 prescale = 4;
                             } else if(prescale == 4) {
                                 prescale = 16;
+                            } else if(prescale == 16) {
+                                prescale = 64;
                             } else {
                                 THROW_COMPILER_EXCEPTION_FMT("SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s", a->name3.c_str(), _("PWM frequency too slow."), str0, str1, str3);
                             }
@@ -5291,6 +5279,8 @@ otherwise the result was zero or greater.
                         t2con |= 1;
                     else if(prescale == 16)
                         t2con |= 2;
+                    else if(prescale == 64)
+                        t2con |= 3;  
                     else
                         oops();
 

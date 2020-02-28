@@ -4093,6 +4093,7 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
               Op(INT_VARIABLE_CLEAR_BIT, leaf->d.math.dest, leaf->d.math.op1);
             Op(INT_END_IF);
             break;
+		//vvv
         {
         int intOp;
         case ELEM_NEG:
@@ -4165,17 +4166,54 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             break;
         }
         }
-        //
-        {
-        int intOp;
+        //^^^
         case ELEM_ADD:
-            intOp = INT_SET_VARIABLE_ADD;
-            Comment(3, "ELEM_ADD");
-            goto math;
+            Comment(3, "ELEM_ADD");   
+            if(IsNumber(leaf->d.math.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                             leaf->d.math.dest);
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+				if((int_comment_level != 1)
+						  && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
+					Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else if((int_comment_level != 1)
+						  && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "1") == 0)) {
+					Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else if((int_comment_level != 1)
+						  && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
+					Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else if((int_comment_level != 1)
+						  && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "-1") == 0)) {
+					Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else if((strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) ) {
+					Op(INT_SET_VARIABLE_ADD, leaf->d.math.dest, leaf->d.math.op2, leaf->d.math.op1, stateInOut2, "ROverflowFlagV");
+				} else {
+					Op(INT_SET_VARIABLE_ADD, leaf->d.math.dest, leaf->d.math.op1, leaf->d.math.op2, stateInOut2, "ROverflowFlagV");
+				}
+            Op(INT_END_IF);
+            break;
         case ELEM_SUB:
-            intOp = INT_SET_VARIABLE_SUBTRACT;
             Comment(3, "ELEM_SUB");
-            goto math;
+            if(IsNumber(leaf->d.math.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                             leaf->d.math.dest);
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+				if((int_comment_level != 1)
+				   && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
+					Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else if((int_comment_level != 1)
+						  && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
+					Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+				} else {
+					Op(INT_SET_VARIABLE_SUBTRACT, leaf->d.math.dest, leaf->d.math.op1, leaf->d.math.op2, stateInOut2, "ROverflowFlagV");
+				}
+            Op(INT_END_IF);
+            break;
+        //vvv
+		{
+        int intOp;
         case ELEM_MUL:
             intOp = INT_SET_VARIABLE_MULTIPLY;
             Comment(3, "ELEM_MUL");
@@ -4194,34 +4232,14 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                                              leaf->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            const char *op1 = VarFromExpr(leaf->d.math.op1, "$scratch1");
-            if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
-               && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else {
-                const char *op2 = VarFromExpr(leaf->d.math.op2, "$scratch2");
-                Op(intOp, leaf->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
-            }
+				const char *op1 = VarFromExpr(leaf->d.math.op1, "$scratch1");
+				const char *op2 = VarFromExpr(leaf->d.math.op2, "$scratch2");
+				Op(intOp, leaf->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
             Op(INT_END_IF);
             break;
         }
         }
+		//^^^
         case ELEM_SLEEP:
             Comment(3, "ELEM_SLEEP");
             Op(INT_IF_BIT_SET, stateInOut);
