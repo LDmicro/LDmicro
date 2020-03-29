@@ -4,7 +4,8 @@
 
 #include "ladder.h"
 #include "UsrLib.h"
-
+/* 
+   use functions from RomLib.h, RomLib.c
 // Read one byte in Eeprom
 unsigned char EEPROM_Read(int address)
 {
@@ -28,7 +29,7 @@ void EEPROM_Write(int address, unsigned char byte)
     EECR |= (1 << EEMWE);
     EECR |= (1 << EEWE);
 }
-
+*/
 // swap bits from higher to lower
 uint16_t swap(uint16_t var)
 {

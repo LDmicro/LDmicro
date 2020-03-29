@@ -55,9 +55,10 @@ void us_delay2();
     #define EEMWE   EEMPE
 #endif
 
+/*
 unsigned char EEPROM_Read(int address);
 void EEPROM_Write(int address, unsigned char byte);
-
+*/
 
 uint16_t swap(uint16_t var);
 int16_t opposite(int16_t var);
