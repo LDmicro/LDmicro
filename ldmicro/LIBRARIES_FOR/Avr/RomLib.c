@@ -47,10 +47,12 @@ void __attribute__ ((optimize("Os"))) EEPROM_write(uint16_t address, unsigned ch
     EECR |= (1 << EEMWE); /* start EEPROM write */ //  Pas d'IT autorisée entre les 2 instructions
     EECR |= (1 << EEWE); // No interrupts allowed between the 2 instructions
     #warning More than four clock cycles! Data not written to the EEPROM!
-#elif 0
-    asm("sbi EECR, EEMWE"); // start EEPROM write
-    asm("sbi EECR, EEWE"); 
+#elif 1
+//  asm("sbi EECR, EEMWE"); // start EEPROM write
+//  asm("sbi EECR, EEWE");
     // Is anybody know how to write asm() command?
+    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEMWE));
+    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEWE));
 #else
     char cEECR1 = EECR | (1 << EEMWE);
     char cEECR2 = cEECR1 | (1 << EEWE);
