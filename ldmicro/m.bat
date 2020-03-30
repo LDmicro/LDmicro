@@ -400,7 +400,6 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\LDs\new\new.ld
 @SET PROGECT=D:\LDs\pulser\stepper.ld
-@SET PROGECT=D:\LDs\pulser\pulser.ld
 
 @SET PROGECT=D:\lds\PIC12F675\internal_oscillator.ld
 @SET PROGECT=D:\lds\relay_2_motores\relay_2_motores.ld
@@ -415,8 +414,15 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT="d:\lds\ATmega1284 40-Pin\pwm.ld"
 @SET PROGECT="d:\lds\ATmega1284 44-Pin\pwm.ld"
 
+@SET PROGECT=D:\lds\servo_pwm_pic16f1827\servo_pwm_PIC16F1827.ld
 @SET PROGECT=d:\lds\PULSER_Amjad\Pulser.ld
 
+@SET PROGECT=D:\LDs\pulser\pulser.ld
+
+@SET PROGECT=d:\lds\Calc_16F628\Calc_16F628a_ADD_test.ld
+
+@SET PROGECT=d:\lds\PresistTest\PIC16F628\PresistTest.ld
+@SET PROGECT=d:\lds\PresistTest\ATmega8\PresistTest.ld
 
 
 if "%1" == "" goto DO_BUILD

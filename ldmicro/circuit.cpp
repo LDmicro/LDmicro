@@ -471,7 +471,10 @@ void AddTimer(int which)
         strcpy(t->d.timer.name, "Tnew");
         strcpy(t->d.timer.delay, "100000"); // 100 ms
     }
-    t->d.timer.adjust = 0;
+    if(Prog.LDversion == "0.1")
+        t->d.timer.adjust = -1;
+    else
+        t->d.timer.adjust = 0;
     AddLeaf(which, t);
 }
 

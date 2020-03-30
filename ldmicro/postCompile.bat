@@ -125,6 +125,12 @@ goto PROTEUS
 @rem -----------------------------------------------------------------------
 :PROTEUS
 @mkdir  "%P3%\PROTEUS"
+del "%P3%\PROTEUS\*.h"  > nul
+del "%P3%\PROTEUS\*.c"  > nul
+del "%P3%\PROTEUS\*.asm"  > nul
+del "%P3%\PROTEUS\*.hex"  > nul
+del "%P3%\PROTEUS\*.elf"  > nul
+del "%P3%\PROTEUS\*.cof"  > nul
 copy "%P3%\%P4%.asm"          "%P3%\PROTEUS"
 copy "%P3%\%P4%.hex"          "%P3%\PROTEUS"
 goto exit

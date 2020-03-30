@@ -1015,12 +1015,14 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SIMULATE_NODE_STATE:
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_BUSY:
+            //case INT_EEPROM_BUSY_CHECK:
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
+            case INT_EEPROM_WRITE_BYTE:
+            //case INT_EEPROM_WRITE:
                 intVar1 = IntCode[i].name1.c_str();
                 break;
 
@@ -1597,11 +1599,12 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = UART_Transmit_Busy();\n", MapSym(IntCode[i].name1, ASBIT));
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_BUSY:
+            //case INT_EEPROM_BUSY_CHECK:
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
+                    fprintf(f, "%s = EEPROM_busy(); // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASINT));
                 }
                 break;
 
@@ -1610,18 +1613,19 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = EEPROM_read(%d);\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
                 if(sov >= 2) {
                     doIndent(f, i);
-                    fprintf(f, "%s += EEPROM_read(%d) << 8;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 1);
+                    fprintf(f, "%s |= (uint16_t)EEPROM_read(%d) << 8;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 1);
                 }
                 if(sov >= 3) {
                     doIndent(f, i);
-                    fprintf(f, "%s += EEPROM_read(%d) << 16;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 2);
+                    fprintf(f, "%s |= (uint32_t)EEPROM_read(%d) << 16;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 2);
                 }
                 if(sov >= 4) {
                     doIndent(f, i);
-                    fprintf(f, "%s += EEPROM_read(%d) << 24;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 3);
+                    fprintf(f, "%s |= (uint32_t)EEPROM_read(%d) << 24;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1 + 3);
                 }
                 break;
             }
+            /*
             case INT_EEPROM_WRITE: {
                 int sov = SizeOfVar(IntCode[i].name1);
                 fprintf(f, "EEPROM_write(%d, %s & 0xFF);\n", IntCode[i].literal1, MapSym(IntCode[i].name1, ASINT));
@@ -1637,6 +1641,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     doIndent(f, i);
                     fprintf(f, "EEPROM_write(%d, (%s >> 24) & 0xFF);\n", IntCode[i].literal1 + 3, MapSym(IntCode[i].name1, ASINT));
                 }
+                break;
+            }
+            */
+            case INT_EEPROM_WRITE_BYTE: {
+                fprintf(f, "EEPROM_write(%d + %s, %s & 0xFF);\n", IntCode[i].literal1, MapSym(IntCode[i].name2, ASINT), MapSym(IntCode[i].name1, ASINT));
                 break;
             }
             case INT_READ_ADC:
@@ -2090,8 +2099,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
     char Current_Ld_Name[MAX_PATH];
     strcpy(Current_Ld_Name, CurrentLdName);
     for(int i = 0; i<strlen(Current_Ld_Name); i++)
-		if(Current_Ld_Name[i] == ' ')
-			Current_Ld_Name[i] = '_';
+        if(Current_Ld_Name[i] == ' ')
+            Current_Ld_Name[i] = '_';
 
     char desth[MAX_PATH];
     SetExt(desth, outFile, ".h");
@@ -2522,14 +2531,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "\n");
     }
     if(EepromFunctionUsed()) {
-        if(compiler_variant == MNU_COMPILE_ARMGCC) {
-            THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"));
-        } else if(compiler_variant == MNU_COMPILE_AVRGCC)
-            fprintf(fh,
-                    "void EEPROM_write(int addr, unsigned char data);\n"
-                    "unsigned char EEPROM_read(int addr);\n"
-                    "\n");
-        else
+        if(compiler_variant == MNU_COMPILE_ARDUINO) {
             fprintf(fh,
                     "#define eeprom_busy_wait() do {} while(!eeprom_is_ready())\n"
                     "\n"
@@ -2541,6 +2543,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "  unsigned char EEPROM_read(int addr);\n"
                     "#endif\n"
                     "\n");
+        } else
+            fprintf(flh,"#include \"romlib.h\"\n");
     }
 
     FileTracker f;

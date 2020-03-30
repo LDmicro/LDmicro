@@ -87,9 +87,9 @@ avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature "AVRGCC\bin\%
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto skipPROTEUS
-del PROTEUS\*.hex  > nul
-del PROTEUS\*.elf  > nul
-del PROTEUS\*.cof  > nul
+del PROTEUS\*.hex /Q > nul
+del PROTEUS\*.elf /Q > nul
+del PROTEUS\*.cof /Q > nul
 REM Copy source code for debugging in Proteus
 copy AVRGCC\lib\*.h PROTEUS > nul
 copy AVRGCC\lib\*.c PROTEUS > nul

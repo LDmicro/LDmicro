@@ -33,12 +33,16 @@ if "%1" == "" goto DO_BUILD
 md build
 cd build
 :cmake.exe ..
-cmake.exe .. -G "Visual Studio 10 2010"
+:cmake.exe .. -G "Visual Studio 10 2010"
 :cmake.exe .. -G "Visual Studio 12 2013"
 :cmake.exe .. -G "Visual Studio 12 2013 Win64"
 :cmake.exe .. -G "Visual Studio 14 2015"
 :cmake.exe .. -G "Visual Studio 14 2015 Win64"
-:@pause
+:cmake.exe .. -G "Visual Studio 15 2017"
+:cmake.exe .. -G "Visual Studio 15 2017 Win64"
+:cmake.exe .. -G "Visual Studio 16 2019" -A Win32
+cmake.exe .. -G "Visual Studio 16 2019" -A x64
+@pause
 cmake.exe --build .
 cd ..
 

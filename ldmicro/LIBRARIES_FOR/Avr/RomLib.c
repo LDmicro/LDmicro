@@ -30,7 +30,7 @@ unsigned char EEPROM_read(uint16_t address)
 }
 
 // Fonction d'écriture d'un octet
-void __attribute__ ((optimize("Os"))) EEPROM_write(uint16_t address, unsigned char data) 
+void /*__attribute__ ((optimize("Os")))*/ EEPROM_write(uint16_t address, unsigned char data)
 {
     while(EECR & (1 << EEWE))
         ; // attendre fin d'écriture précédente
@@ -49,10 +49,10 @@ void __attribute__ ((optimize("Os"))) EEPROM_write(uint16_t address, unsigned ch
     #warning More than four clock cycles! Data not written to the EEPROM!
 #elif 1
 //  asm("sbi EECR, EEMWE"); // start EEPROM write
-//  asm("sbi EECR, EEWE");
-    // Is anybody know how to write asm() command?
-    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEMWE));
-    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEWE));
+//  asm("sbi EECR, EEWE"); // No interrupts allowed between the 2 instructions.
+    // Is anybody know how to write asm() command? Mad syntax.
+    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEMWE)); // start EEPROM write
+    __asm__ __volatile__ ("sbi %0, %1": /* no outputs */: "I"(_SFR_IO_ADDR(EECR)), "I"(EEWE)); // No interrupts allowed between the 2 instructions.
 #else
     char cEECR1 = EECR | (1 << EEMWE);
     char cEECR2 = cEECR1 | (1 << EEWE);
