@@ -106,17 +106,17 @@
 // the high bytes are written in the next PLC cycles
 // when the EEPROM completes the previous byte writing procedure.
 // The postpone algorithm needs two additional internal MCU variables. */
-#define EEPROM_POSTPONE_BYTES_COUNTER "EepromPostponeBytesCounter" // size is 1 byte
+#define EEPROM_POSTPONE_BYTES_COUNTER "$EepromPostponeBytesCounter" // size is 1 byte
 // This internal MCU variable indicates how many bytes have not yet written to the EEPROM.
-#define EEPROM_POSTPONE_BYTES    "EepromPostponeBytes"    // size is 4 byte
+#define EEPROM_POSTPONE_BYTES    "$EepromPostponeBytes"    // size is 4 byte
 // This internal MCU variable stores copy of persistent variable that will be written to the EEPROM in the next PLC cycle.
-#define INT_EEPROM_BUSY_CHECK                   15 // obsolete
-#define INT_EEPROM_BUSY                         1501
+//#define INT_EEPROM_BUSY_CHECK                   1501 // obsolete
+#define INT_EEPROM_BUSY                         15
 #ifdef NEW_FEATURE
-#define INT_EEPROM_INIT                         1601
+#define INT_EEPROM_INIT                         16
 #endif
-#define INT_EEPROM_READ                         16
-#define INT_EEPROM_WRITE                        17 // obsolete
+#define INT_EEPROM_READ                         17
+//#define INT_EEPROM_WRITE                        17 // obsolete
 #define INT_EEPROM_WRITE_BYTE                   18
 
 #define INT_SPI                                 19

@@ -347,7 +347,7 @@ void IntDumpListing(const char *outFile)
             }
             */
             case INT_EEPROM_WRITE_BYTE: {
-                fprintf(f, "write '%s[%s]' into EEPROM[%d+%s]", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal1, IntCode[i].name2.c_str());
+                fprintf(f, "write '%s' into EEPROM[%s]", IntCode[i].name2.c_str(), IntCode[i].name1.c_str());
                 /*
                 int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
@@ -3584,8 +3584,10 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             GenSymOneShot(isWrite, "isWritePERSIST", leaf->d.persist.var);
             Op(INT_IF_BIT_SET, stateInOut);
               // At startup, get the persistent variable from flash.
-              Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
-                Op(INT_EEPROM_BUSY/*_CHECK*/, "$scratch");
+              //Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
+              Op(INT_IF_NEQ, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
+              Op(INT_ELSE);
+                Op(INT_EEPROM_BUSY, "$scratch");
                 Op(INT_IF_BIT_CLEAR, "$scratch"); // if EPPROM is ready
                   Op(INT_IF_BIT_CLEAR, isInit);
                     Op(INT_SET_BIT, isInit);
@@ -3597,11 +3599,13 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                     char tmpVarName[MAX_NAME_LEN];
                     sprintf(tmpVarName, "$tmpVar%dbyte", sov);
                     SetSizeOfVar(tmpVarName, sov);
-                    Op(INT_EEPROM_READ, tmpVarName, leaf->d.persist.var, EepromAddrFree);
+                    Op(INT_EEPROM_READ, tmpVarName, EepromAddrFree);
                     Op(INT_IF_NEQ, tmpVarName, leaf->d.persist.var);
-                      if(sov == 1)
-                        Op(INT_EEPROM_WRITE_BYTE, leaf->d.persist.var, "0", EepromAddrFree);
-                      else {
+                      if(sov == 1) {
+                        char s[MAX_NAME_LEN];
+                        sprintf(s, "%d", EepromAddrFree);
+                        Op(INT_EEPROM_WRITE_BYTE, s, leaf->d.persist.var);
+                      } else {
                         Op(INT_SET_VARIABLE_TO_LITERAL, EEPROM_POSTPONE_BYTES_COUNTER, sov);
                         Op(INT_SET_VARIABLE_TO_VARIABLE, EEPROM_POSTPONE_BYTES, leaf->d.persist.var);
                         Op(INT_SET_BIT, isWrite);
@@ -3613,15 +3617,22 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             Op(INT_END_IF);
             if(sov > 1) {
               Op(INT_IF_BIT_SET, isWrite);
-                Op(INT_IF_NEQ, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if postponed bytes present
+                //Op(INT_IF_NEQ, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if postponed bytes present
+                Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if postponed bytes present
+                Op(INT_ELSE);
                   //Op(INT_CLEAR_BIT, "$scratch");
-                  Op(INT_EEPROM_BUSY/*_CHECK*/, "$scratch");
+                  Op(INT_EEPROM_BUSY, "$scratch");
                   Op(INT_IF_BIT_CLEAR, "$scratch");
-                    SetSizeOfVar("$tmpVar1byte", 1); // index
+                    SetSizeOfVar("$tmpVar1byte", 1); // byte index
+                    SetSizeOfVar("$tmpVar2byte", 2); // ROM address
                     char s[MAX_NAME_LEN];
                     sprintf(s, "%d", sov);
-                    Op(INT_SET_VARIABLE_SUBTRACT, "$tmpVar1byte", s, EEPROM_POSTPONE_BYTES_COUNTER);
-                    Op(INT_EEPROM_WRITE_BYTE, EEPROM_POSTPONE_BYTES, "$tmpVar1byte", EepromAddrFree);
+                    Op(INT_SET_VARIABLE_SUBTRACT, "$tmpVar2byte", s, EEPROM_POSTPONE_BYTES_COUNTER);
+                    if(EepromAddrFree) {
+                      sprintf(s, "%d", EepromAddrFree);
+                      Op(INT_SET_VARIABLE_ADD, "$tmpVar2byte", "$tmpVar2byte", s);
+                    }
+                    Op(INT_EEPROM_WRITE_BYTE, "$tmpVar2byte", EEPROM_POSTPONE_BYTES);
                     Op(INT_SET_VARIABLE_SR0, EEPROM_POSTPONE_BYTES, EEPROM_POSTPONE_BYTES, "8");
                     Op(INT_DECREMENT_VARIABLE, EEPROM_POSTPONE_BYTES_COUNTER);
                     Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0");

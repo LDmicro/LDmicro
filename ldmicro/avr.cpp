@@ -4571,7 +4571,7 @@ static void CompileFromIntermediate()
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
-				 
+
                 McuPwmPinInfo *iop;
                 iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
@@ -4824,6 +4824,7 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(endInit);
                 break;
             }
+                /*
 #if 0
             case INT_EEPROM_BUSY_CHECK: {
                 MemForSingleBit(a->name1, false, &addr, &bit);
@@ -4875,6 +4876,7 @@ static void CompileFromIntermediate()
             }
 #else
             case INT_EEPROM_BUSY_CHECK: {
+                Comment("INT_EEPROM_BUSY_CHECK");
                 MemForSingleBit(a->name1, false, &addr, &bit);
 
                 uint32_t isBusy = AllocFwdAddr();
@@ -4925,9 +4927,12 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(isBusy);
                 SetBit(addr, bit);
                 FwdAddrIsNow(done);
+                Comment("INT_EEPROM_BUSY_CHECK end");
                 break;
             }
 #endif
+*/
+                /*
 #if 0
             case INT_EEPROM_READ: {
                 MemForVariable(a->name1, &addr1);
@@ -4962,6 +4967,23 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
+*/
+            case INT_EEPROM_READ: {
+                Comment("INT_EEPROM_READ");
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
+                LoadYAddr(REG_EEDR);
+                sov = SizeOfVar(a->name1);
+                for(int i = 0; i < sov; i++) {
+                    WriteMemory(REG_EEARH, BYTE(((a->literal1 + i) >> 8) & 0xff));
+                    WriteMemory(REG_EEARL, BYTE((a->literal1 + i) & 0xff));
+                    WriteMemory(REG_EECR, 0x01);
+                    Instruction(OP_LD_Y, 16);
+                    Instruction(OP_ST_XP, 16);
+                }
+                break;
+            }
+                /*
 #if 0
             case INT_EEPROM_WRITE:
                 MemForVariable(a->name1, &addr1);
@@ -4977,6 +4999,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(REG_EEDR);
                 Instruction(OP_ST_X, 16, 0);
+
                 LoadXAddr(REG_EECR);
                 Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
                 Instruction(OP_ST_X, 16, 0);
@@ -4985,10 +5008,17 @@ static void CompileFromIntermediate()
                 break;
 #else
             case INT_EEPROM_WRITE:
+                Comment("INT_EEPROM_WRITE");
                 sov = SizeOfVar(a->name1);
                 Instruction(OP_LDI, 16, sov - 1);
                 LoadYAddr(EepromHighBytesCounter);
                 Instruction(OP_ST_Y, 16);
+
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_ST_X, 16);
 
                 if(sov >= 2) {
                     MemForVariable(a->name1, &addr1);
@@ -4996,17 +5026,106 @@ static void CompileFromIntermediate()
                     LoadYAddr(EepromHighByte);
                     Instruction(OP_LD_XP, 16);
                     Instruction(OP_ST_YP, 16);
+
+                    LoadXAddr(REG_EECR);
+                    Instruction(OP_LDI, 16, 0x04);
+                    Instruction(OP_ST_X, 16);
+                    Instruction(OP_LDI, 16, 0x06);
+                    Instruction(OP_ST_X, 16);
+
                     if(sov >= 3) {
                         Instruction(OP_LD_XP, 16);
                         Instruction(OP_ST_YP, 16);
+
+                        LoadXAddr(REG_EECR);
+                        Instruction(OP_LDI, 16, 0x04);
+                        Instruction(OP_ST_X, 16);
+                        Instruction(OP_LDI, 16, 0x06);
+                        Instruction(OP_ST_X, 16);
+
                         if(sov >= 4) {
                             Instruction(OP_LD_XP, 16);
                             Instruction(OP_ST_YP, 16);
+
+                            LoadXAddr(REG_EECR);
+                            Instruction(OP_LDI, 16, 0x04);
+                            Instruction(OP_ST_X, 16);
+                            Instruction(OP_LDI, 16, 0x06);
+                            Instruction(OP_ST_X, 16);
                         }
                     }
                 }
+                Comment("INT_EEPROM_WRITE end");
                 break;
 #endif
+*/
+            case INT_EEPROM_BUSY:
+                Comment("INT_EEPROM_BUSY");
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
+                CopyBit(addr1, bit1, REG_EECR, EEWE);
+                break;
+            case INT_EEPROM_WRITE_BYTE:
+                Comment("INT_EEPROM_WRITE_BYTE");
+                LoadYAddr(REG_EEARL);
+                if(IsNumber(a->name1)) {
+                    int addr = hobatoi(a->name1.c_str());
+					Instruction(OP_LDI, 16, addr & 0xFF);
+                    Instruction(OP_ST_YP, 16);
+                    Instruction(OP_LDI, 16, addr >> 8 & 0xFF);
+                    Instruction(OP_ST_Y, 16);
+                } else {
+					MemForVariable(a->name1, &addr1);
+					LoadXAddr(addr1);
+					Instruction(OP_LD_XP, 16);
+					Instruction(OP_ST_YP, 16);
+					Instruction(OP_LD_X, 16);
+					Instruction(OP_ST_Y, 16);
+				}
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
+                LoadYAddr(REG_EEDR);
+                Instruction(OP_LD_X, 16);
+                Instruction(OP_ST_Y, 16);
+                /*
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
+                Instruction(OP_LDI, 17, (1 << EEMWE) | (1 << EEWE)); // 0x06
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_ST_X, 17);
+                /*
+                Instruction(OP_SBI, REG_EECR, EEMWE);
+                Instruction(OP_SBI, REG_EECR, EEWE);
+                */
+                SETB(REG_EECR, EEMWE);
+                SETB(REG_EECR, EEWE);
+                break;
+                /*
+            case INT_EEPROM_WRITE_BYTE:
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+
+                WriteMemory(REG_EEARH, BYTE((a->literal1 >> 8) & 0xff));
+                WriteMemory(REG_EEARL, BYTE(a->literal1 & 0xff));
+
+                LoadYAddr(addr2);
+                Instruction(OP_LD_Y, r16);
+                LoadXAddr(addr1);
+                Instruction(OP_ADD, XL, r16);
+                Instruction(OP_CLR, r16);
+                Instruction(OP_ADC, XH, r16);
+                Instruction(OP_LD_X, r16);
+
+                LoadXAddr(REG_EEDR);
+                Instruction(OP_ST_X, 16);
+
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_ST_X, 16);
+
+                break;
+*/
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addr1);
 

@@ -221,9 +221,9 @@ void CompileXInterpreted(const char *outFile)
                 // TODO
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
+            //case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
+            //case INT_EEPROM_WRITE:
             case INT_SPI:
             case INT_SPI_WRITE: ///// Added by JG
             case INT_I2C_READ:  /////

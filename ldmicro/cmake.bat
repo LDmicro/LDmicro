@@ -26,6 +26,8 @@
 @SET PROGECT="d:\lds\ATmega1284 44-Pin\ATmega1284 44-Pin.ld"
 @SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
 
+@SET PROGECT=d:\lds\PresistTest\ATmega8\PresistTest.ld
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD
@@ -38,10 +40,10 @@ cd build
 :cmake.exe .. -G "Visual Studio 12 2013 Win64"
 :cmake.exe .. -G "Visual Studio 14 2015"
 :cmake.exe .. -G "Visual Studio 14 2015 Win64"
-:cmake.exe .. -G "Visual Studio 15 2017"
+cmake.exe .. -G "Visual Studio 15 2017"
 :cmake.exe .. -G "Visual Studio 15 2017 Win64"
 :cmake.exe .. -G "Visual Studio 16 2019" -A Win32
-cmake.exe .. -G "Visual Studio 16 2019" -A x64
+:cmake.exe .. -G "Visual Studio 16 2019" -A x64
 @pause
 cmake.exe --build .
 cd ..

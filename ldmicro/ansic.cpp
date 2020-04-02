@@ -66,6 +66,9 @@ static int  countpwm = 0;
 //-----------------------------------------------------------------------------
 static bool SeenVariable(const char *name)
 {
+    if(IsNumber(name))
+        return true;
+
     if(variables.count(name))
         return true;
 
@@ -138,6 +141,8 @@ static const char *MapSym(const NameArray &name, int how)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
+    if(IsNumber(str))
+        return;
     if(*str == 'A') {
         if(IsNumber(&str[3])) {
             fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
@@ -846,8 +851,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
                 intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_SET_VARIABLE_INDEXED:
@@ -857,10 +861,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
-                if(IntCode[i].name3.length())
-                    intVar3 = IntCode[i].name3.c_str();
+                intVar2 = IntCode[i].name2.c_str();
+                intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -877,10 +879,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_ADD:
                 intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
-                if(!IsNumber(IntCode[i].name3))
-                    intVar3 = IntCode[i].name3.c_str();
+                intVar2 = IntCode[i].name2.c_str();
+                intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_DECREMENT_VARIABLE:
@@ -893,10 +893,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_SET_PWM:
-                if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 bitVar1 = IntCode[i].name3.c_str();
                 break;
 
@@ -912,28 +910,22 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 
             case INT_SPI:
                 intVar1 = IntCode[i].name1.c_str();     // create var name1= spi name
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str(); // create var name2= spi send var if not a number
+                intVar2 = IntCode[i].name2.c_str(); // create var name2= spi send var if not a number
                 intVar3 = IntCode[i].name3.c_str();     // create var name3= spi recv var
                 break;
 
             case INT_I2C_READ:
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
                 intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c recv var
-                if(!IsNumber(IntCode[i].name3))
-                    intVar3 = IntCode[i].name3.c_str(); // create var name3= i2c address if not a number
-                if(!IsNumber(IntCode[i].name4))
-                    intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
+                intVar3 = IntCode[i].name3.c_str(); // create var name3= i2c address if not a number
+                intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
                 break;
 
             case INT_I2C_WRITE:
                 intVar1 = IntCode[i].name1.c_str(); // create var name1= i2c name
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c send var if not a number
-                if(!IsNumber(IntCode[i].name3))
-                    intVar3 = IntCode[i].name3.c_str(); // create var name3= i2c address if not a number
-                if(!IsNumber(IntCode[i].name4))
-                    intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
+                intVar2 = IntCode[i].name2.c_str(); // create var name2= i2c send var if not a number
+                intVar3 = IntCode[i].name3.c_str(); // create var name3= i2c address if not a number
+                intVar4 = IntCode[i].name4.c_str(); // create var name4= i2c register if not a number
                 break;
                 /*
             case INT_UART_RECV:
@@ -977,10 +969,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_VARIABLE_CLEAR_BIT:
             case INT_IF_BIT_SET_IN_VAR:
             case INT_IF_BIT_CLEAR_IN_VAR:
-                if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 #ifdef NEW_CMP
             case INT_IF_EQU:
@@ -989,10 +979,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_IF_GRT:
             case INT_IF_LEQ:
             case INT_IF_GEQ:
-                if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 #else
             case INT_IF_VARIABLE_LES_LITERAL:
@@ -1021,9 +1009,12 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE_BYTE:
-            //case INT_EEPROM_WRITE:
                 intVar1 = IntCode[i].name1.c_str();
+                break;
+
+            case INT_EEPROM_WRITE_BYTE:
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_STRING:
@@ -1049,9 +1040,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1.c_str();
-                if(!IsNumber(IntCode[i].name3)) {
-                    intVar3 = IntCode[i].name3.c_str();
-                }
+                intVar3 = IntCode[i].name3.c_str();
                 break;
 #endif
 
@@ -1645,7 +1634,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             }
             */
             case INT_EEPROM_WRITE_BYTE: {
-                fprintf(f, "EEPROM_write(%d + %s, %s & 0xFF);\n", IntCode[i].literal1, MapSym(IntCode[i].name2, ASINT), MapSym(IntCode[i].name1, ASINT));
+                fprintf(f, "EEPROM_write(%s, %s & 0xFF);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
             }
             case INT_READ_ADC:

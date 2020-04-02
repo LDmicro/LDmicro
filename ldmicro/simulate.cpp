@@ -1929,12 +1929,12 @@ static void SimulateIntCode()
             // Don't try to simulate the EEPROM stuff: just hold the EEPROM
             // busy all the time, so that the program never does anything
             // with it.
-            case INT_EEPROM_BUSY_CHECK:
+			case INT_EEPROM_BUSY:
                 SetSingleBit(a->name1, true);
                 break;
 
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
+            //case INT_EEPROM_WRITE:
                 oops();
                 break;
 
@@ -2060,7 +2060,7 @@ static void SimulateIntCode()
             case INT_STRING: {
                 char buf[MAX_NAME_LEN];
                 if(a->name3.length()) {
-                    int sov = SizeOfVar(a->name3);
+                    sov = SizeOfVar(a->name3);
                     if(sov == 1)
                         sprintf(buf, a->name2.c_str(), GetSimulationVariable(a->name3) & 0xff);
                     else if(sov == 2)

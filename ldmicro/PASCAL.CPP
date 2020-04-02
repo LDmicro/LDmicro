@@ -459,9 +459,9 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_COMMENT:
             case INT_DELAY:
             case INT_SIMULATE_NODE_STATE:
-            case INT_EEPROM_BUSY_CHECK:
+            //case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
+            //case INT_EEPROM_WRITE:
 
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -817,17 +817,19 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_DELAY:
                 fprintf(f, "DelayUs(%d)//us;", IntCode[i].literal1);
                 break;
-
+                /*
             case INT_EEPROM_BUSY_CHECK:
                 fprintf(f, "{INT_EEPROM_BUSY_CHECK %s }\n", IntCode[i].name1.c_str());
                 break;
+				*/
             case INT_EEPROM_READ:
                 fprintf(f, "{INT_EEPROM_READ %s }\n", IntCode[i].name1.c_str());
                 break;
+                /*
             case INT_EEPROM_WRITE:
                 fprintf(f, "{INT_EEPROM_WRITE %s }\n", IntCode[i].name1.c_str());
                 break;
-
+				*/
             case INT_AllocKnownAddr:
                 fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
