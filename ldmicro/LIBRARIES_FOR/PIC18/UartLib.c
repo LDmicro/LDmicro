@@ -36,21 +36,47 @@ void UART_Init(long bauds)
                // #endif
 }
 
-// Receive on UART
-// Return (int) -1 if no available char
-int UART_Recv()
+// Send a char on UART
+void UART_Transmit(unsigned char data)
 {
-    if(RCIF)
-        return RCREG; // A char has been received
+    // Wait for empty transmit buffer
 
-    return (-1); // No available char
+    while(TXIF == 0) // 0 = The USART transmit buffer is full
+        ; // Wait till transmitter register empty
+    TXREG = data; // Put data into buffer, sends the data
+    // Do not wait until the transmitter register empty
 }
 
-// Send a char on UART
-void UART_Send(char ch)
+// Receive on UART
+unsigned char UART_Receive(void)
 {
-    TXREG = ch; // Load char to be transmitted and reset TXIF
+    // Wait for data to be received
+    while(RCIF == 0)
+        ; // Get and return received data from buffer
+    return RCREG; // A char has been received
+}
 
-    while(TXIF == 0)
-        ; // Wait till transmitter register empty
+unsigned char UART_Transmit_Ready(void)
+{
+    //return TRMT == 1; // 1 = Transmit Shift Register empty
+    return TXIF == 1; // 1 = The USART transmit buffer is empty
+}
+
+unsigned char UART_Transmit_Busy(void)
+{
+    //return TRMT == 0; // 0 = Transmit Shift Register full
+    return TXIF == 0; // 0 = The USART transmit buffer is full
+}
+
+unsigned char UART_Receive_Avail(void)
+{
+    return RCIF == 1;
+}
+
+void UART_Write(char *string)
+{
+    while(*string) {
+        UART_Transmit(*string);
+        string++;
+    }
 }

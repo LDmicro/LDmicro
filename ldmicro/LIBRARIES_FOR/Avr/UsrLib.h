@@ -52,6 +52,8 @@ void us_delay2();
 // for AtMega328
 #ifndef EEWE
     #define EEWE    EEPE
+#endif
+#ifndef EEMWE
     #define EEMWE   EEMPE
 #endif
 
@@ -67,7 +69,6 @@ int16_t opposite(int16_t var);
 uint8_t bcd2bin(uint8_t var);
 uint8_t bin2bcd(uint8_t var);
 
-#ifndef TIFR
-    #define TIFR TIFR1
+#ifndef TIFR1
+    #define TIFR1 TIFR
 #endif
-

@@ -10,7 +10,7 @@
 @COLOR F0
 
 @rem MODE CON[:] [COLS=c] [LINES=n]
-@MODE CON: COLS=160
+@MODE CON: COLS=160 LINES=65
 
 @echo off
 @rem This file is part of LDmicro project and must be in the same directory where LDmicro.exe is located.

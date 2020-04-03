@@ -421,9 +421,9 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=d:\lds\Calc_16F628\Calc_16F628a_ADD_test.ld
 
-@SET PROGECT=d:\lds\PresistTest\ATmega8\PresistTest.ld
 @SET PROGECT=d:\lds\PresistTest\PIC16F628\PresistTest.ld
-
+@SET PROGECT=d:\lds\PresistTest\ATmega8\PresistTest.ld
+@SET PROGECT=d:\lds\PresistTest\PIC18F4520\PresistTest.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

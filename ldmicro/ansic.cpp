@@ -293,7 +293,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(fh, "  #define Read_%s() input_state(PIN_%c%d)\n", str, iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(fh, "  #define Read_%s() R%c%d\n", str, iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(fh, "  #define Read_%s() PORT%cbits.R%c%d\n", str, iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(fh, "  #define Read_%s() R%c%d\n", str, iop->port, iop->bit);
                 } else {
                     fprintf(fh, "  #define Read_%s() (PIN%c & (1<<PIN%c%d))\n", str, iop->port, iop->port, iop->bit);
                 }
@@ -308,7 +311,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(f, "    return PORT%cbits.R%c%d;\n", iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "    return GPIO_ReadInputDataBit(GPIO%c, GPIO_Pin_%d);\n", iop->port, iop->bit);
                 } else {
@@ -379,7 +385,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(fh, "  #define Read_%s() input_state(PIN_%c%d)\n", str, iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(fh, "  #define Read_%s() R%c%d\n", str, iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(fh, "  #define Read_%s() PORT%cbits.R%c%d\n", str, iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(fh, "  #define Read_%s() R%c%d\n", str, iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     // Do Nothing (no macro used)
                 } else {
@@ -390,9 +399,15 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Write1_%s() output_high(PIN_%c%d)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(fh, "  #define Write0_%s() (R%c%d = 0)\n", str, iop->port, iop->bit);
-                    fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
-                    fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit) {
+                        fprintf(fh, "  #define Write0_%s() (PORT%cbits.R%c%d = 0)\n", str, iop->port, iop->port, iop->bit);
+                        fprintf(fh, "  #define Write1_%s() (PORT%cbits.R%c%d = 1)\n", str, iop->port, iop->port, iop->bit);
+                        fprintf(fh, "  #define Write_%s(b) PORT%cbits.R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->port, iop->bit);
+                    } else {
+                        fprintf(fh, "  #define Write0_%s() (R%c%d = 0)\n", str, iop->port, iop->bit);
+                        fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
+                        fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
+                    }
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "\n");
                     // Do Nothing (no macro used)
@@ -414,7 +429,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(f, "    return PORT%cbits.R%c%d;\n", iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(f, "    return R%c%d;\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "    return GPIO_ReadInputDataBit(GPIO%c, GPIO_Pin_%d);\n", iop->port, iop->bit);
                 } else {
@@ -423,7 +441,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "  }\n");
                 fprintf(f, "  void Write_%s(ldBOOL b) {\n", str);
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(f, "      R%c%d = b != 0;\n", iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(f, "      PORT%cbits.R%c%d = b != 0;\n", iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(f, "      R%c%d = b != 0;\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    if(b)\n");
                     fprintf(f, "      output_high(PIN_%c%d);\n", iop->port, iop->bit);
@@ -445,7 +466,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "      output_high(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(f, "      R%c%d = 1;\n", iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(f, "      PORT%cbits.R%c%d = 1;\n", iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(f, "      R%c%d = 1;\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "      GPIO_SetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
                 } else {
@@ -456,7 +480,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "      output_low(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                    fprintf(f, "      R%c%d = 0;\n", iop->port, iop->bit);
+                    if(Prog.mcu()->core == PIC18HighEndCore16bit)
+                        fprintf(f, "      PORT%cbits.R%c%d = 0;\n", iop->port, iop->port, iop->bit);
+                    else
+                        fprintf(f, "      R%c%d = 0;\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                     fprintf(f, "      GPIO_ResetBits(GPIO%c, GPIO_PIN_%d);\n", iop->port, iop->bit);
                 } else {
@@ -3206,7 +3233,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                                 "\n"
                                 "ISR(TIMER0_COMPA_vect)\n"
                                 "{\n"
-                                //"    // TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
                                 "    if(softDivisor)\n"
                                 "        softDivisor--;\n"
                                 "}\n");
@@ -3720,13 +3746,13 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 if(plcTmr.softDivisor == 1) {
                     fprintf(f,
                             "        while((TIFR0 & (1<<OCF0A)) == 0);\n"
-                            "        TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                            "        TIFR0 |= 1<<OCF0A;\n" // To clean a bit in the register TIFR0 need write 1 in the corresponding bit!
                     );
                 }
             } else {
                 fprintf(f,
-                        "        while((TIFR & (1<<OCF1A)) == 0);\n"
-                        "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
+                        "        while((TIFR1 & (1<<OCF1A)) == 0);\n"
+                        "        TIFR1 |= 1<<OCF1A;\n"); // OCF1A can be cleared by writing a logic one to its bit location
             }
             if(plcTmr.softDivisor > 1) {
                 fprintf(f,

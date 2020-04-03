@@ -5,13 +5,7 @@
 
 void Set_EEPROM_Address_Register(uint16_t address)
 {
-    #ifdef EEAR
-    EEAR = address & 0xFF;
-    #elif defined(EEARL)
     EEARL = address & 0xFF;
-    #else
-        #error Check names of address registers!!!
-    #endif
     #ifdef EEARH
     EEARH = (address >> 8) & 0xFF;
     #endif
