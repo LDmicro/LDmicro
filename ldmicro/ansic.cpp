@@ -1306,7 +1306,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 opc = '%';
                 goto arith;
             arith:
-                fprintf(f, "%s = %s %c %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), opc, MapSym(IntCode[i].name3, ASINT));
+                if(IntCode[i].name1 == IntCode[i].name2)
+                    fprintf(f, "%s %c= %s;\n", MapSym(IntCode[i].name1, ASINT), opc, MapSym(IntCode[i].name3, ASINT));
+                else
+                    fprintf(f, "%s = %s %c %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), opc, MapSym(IntCode[i].name3, ASINT));
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -1593,7 +1596,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "%s = EEPROM_busy(); // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASINT));
+                    fprintf(f, "%s = EEPROM_busy(); // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 }
                 break;
 
@@ -2810,24 +2813,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "\n");
             else ///// OK for MNU_COMPILE-HI_TECH_C
                 fprintf(f,
-                        "void EEPROM_write(int addr, unsigned char data) {\n"
-                        "    EEADR = addr;\n"
-                        "    EEDATA = data;\n"
-                        "    EEPGD = 0;\n"
-                        "    WREN = 1;\n"
-                        "    EECON2 = 0x55;\n"
-                        "    EECON2 = 0xAA;\n"
-                        "    WR = 1;\n"
-                        "    WREN = 0;\n"
-                        "}\n"
-                        "\n"
-                        "unsigned char EEPROM_read(int addr) {\n"
-                        "    EEADR = addr;\n"
-                        "    EEPGD = 0;\n"
-                        "    RD = 1;\n"
-                        "    return EEDATA;\n"
-                        "}\n"
-                        "\n"
                         "void EEPROM_fill(int addr1, int addr2, unsigned char data) {\n"
                         "//  for (int i = max(0,addr1) ; i < min(addr2+1, EEPROM.length()) ; i++)\n"
                         "//      EEPROM.write(i, data);\n"

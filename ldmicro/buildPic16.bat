@@ -75,9 +75,10 @@ picc.exe -o"HTC\bin\%~2.cof" -m"HTC\bin\%~2.map" --summary=default --output=defa
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto skipPROTEUS
-del PROTEUS\*.hex  > nul
-del PROTEUS\*.elf  > nul
-del PROTEUS\*.cof  > nul
+del PROTEUS\*.hex > nul
+del PROTEUS\*.elf > nul
+del PROTEUS\*.cof > nul
+del PROTEUS\*.as  > nul
 REM Copy source code for debugging in Proteus
 copy HTC\lib\*.h PROTEUS > nul
 copy HTC\lib\*.c PROTEUS > nul
@@ -86,6 +87,7 @@ copy *.c PROTEUS > nul
 copy HTC\BIN\*.hex PROTEUS > nul
 copy HTC\BIN\*.elf PROTEUS > nul
 copy HTC\BIN\*.cof PROTEUS > nul
+copy HTC\BIN\*.as  PROTEUS > nul
 :skipPROTEUS
 
 @echo ...

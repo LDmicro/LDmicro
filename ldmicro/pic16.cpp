@@ -3126,7 +3126,7 @@ static void AllocBitsVars()
                 MemForSingleBit(storeName, false, &addr, &bit);
                 break;
             }
-            case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_BUSY:
                 MemForSingleBit(a->name1, false, &addr, &bit);
                 break;
 
@@ -4724,7 +4724,7 @@ otherwise the result was zero or greater.
                 CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
                 break;
             }
-            case -INT_SET_VARIABLE_MULTIPLY: 
+            case -INT_SET_VARIABLE_MULTIPLY:
                 MultiplyNeeded = true;
 
                 MemForVariable(a->name1, &addr1);
@@ -5280,7 +5280,7 @@ otherwise the result was zero or greater.
                     else if(prescale == 16)
                         t2con |= 2;
                     else if(prescale == 64)
-                        t2con |= 3;  
+                        t2con |= 3;
                     else
                         oops();
 
@@ -5291,7 +5291,7 @@ otherwise the result was zero or greater.
                 FwdAddrIsNow(skip);
                 break;
             }
-
+                /*
             case INT_EEPROM_BUSY_CHECK: {
                 Comment("INT_EEPROM_BUSY_CHECK");
                 uint32_t isBusy = AllocFwdAddr();
@@ -5369,15 +5369,56 @@ otherwise the result was zero or greater.
                 Instruction(OP_BCF, REG_EECON1, 2);
                 break;
             }
-            case INT_EEPROM_READ: {
+*/
+            case INT_EEPROM_BUSY:
+                Comment("INT_EEPROM_BUSY");
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
+                CopyBit(addr1, bit1, REG_EECON1, WR);
+                break;
+
+            case INT_EEPROM_WRITE_BYTE: {
+                Comment("INT_EEPROM_WRITE");
+                if(IsNumber(a->name1)) {
+                    int addr = hobatoi(a->name1.c_str());
+                    Instruction(OP_MOVLW, addr);
+                } else {
+                    MemForVariable(a->name1, &addr1);
+                    Instruction(OP_MOVF, addr1, DEST_W, a->name1);
+                }
+                Instruction(OP_MOVWF, REG_EEADR);
+
+                MemForVariable(a->name2, &addr2);
+                Instruction(OP_MOVF, addr2, DEST_W);
+
+                Instruction(OP_MOVWF, REG_EEDATA);
+                Instruction(OP_BCF, REG_EECON1, EEPGD);
+
+                Instruction(OP_MOVF, REG_INTCON, DEST_W);
+                Instruction(OP_MOVWF, Scratch1);
+                Instruction(OP_BCF, REG_INTCON, GIE); // Prevent interrupts
+
+                Instruction(OP_BSF, REG_EECON1, WREN);
+                Instruction(OP_MOVLW, 0x55);
+                Instruction(OP_MOVWF, REG_EECON2);
+                Instruction(OP_MOVLW, 0xAA);
+                Instruction(OP_MOVWF, REG_EECON2);
+                Instruction(OP_BSF, REG_EECON1, WR);
+                Instruction(OP_BCF, REG_EECON1, WREN);
+
+                //Instruction(OP_BCF, REG_INTCON, GIE);
+                Instruction(OP_MOVF, Scratch1, DEST_W);
+                Instruction(OP_MOVWF, REG_INTCON);    // Restore
+                break;
+            }
+            case INT_EEPROM_READ : {
                 Comment("INT_EEPROM_READ");
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
+                Instruction(OP_BCF, REG_EECON1, EEPGD);
                 for(int i = 0; i < sov1; i++) {
                     Instruction(OP_MOVLW, a->literal1 + i);
                     Instruction(OP_MOVWF, REG_EEADR);
-                    Instruction(OP_BCF, REG_EECON1, 7);
-                    Instruction(OP_BSF, REG_EECON1, 0);
+                    Instruction(OP_BSF, REG_EECON1, RD);
                     Instruction(OP_MOVF, REG_EEDATA, DEST_W);
                     Instruction(OP_MOVWF, addr1 + i);
                 }

@@ -3579,9 +3579,9 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             SetSizeOfVar(EEPROM_POSTPONE_BYTES_COUNTER, 1);
             SetSizeOfVar(EEPROM_POSTPONE_BYTES, 4);
             char isInit[MAX_NAME_LEN];
-            GenSymOneShot(isInit, "isInitPERSIST", leaf->d.persist.var);
+            GenSymOneShot(isInit, "isIniPERSIST", leaf->d.persist.var);
             char isWrite[MAX_NAME_LEN];
-            GenSymOneShot(isWrite, "isWritePERSIST", leaf->d.persist.var);
+            GenSymOneShot(isWrite, "isWrPERSIST", leaf->d.persist.var);
             Op(INT_IF_BIT_SET, stateInOut);
               // At startup, get the persistent variable from flash.
               //Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
