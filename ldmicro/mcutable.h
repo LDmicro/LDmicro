@@ -3118,7 +3118,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F628 18-PDIP or 18-SOIC",
         "PIC16F628",
         "P16F628",
-        "P16F628",
+        "16F628",
         "PIC16F628",
         'R',
         { 0x05, 0x06 }, // PORTx
@@ -3169,7 +3169,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F88 18-PDIP or 18-SOIC",
         "PIC16F88",
         "P16F88",
-        "P16F88",
+        "16F88",
         "PIC16F88",
         'R',
         { 0x05, 0x06 }, // PORTx
@@ -3215,7 +3215,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F819 18-PDIP or 18-SOIC",
         "PIC16F819",
         "P16F819",
-        "P16F819",
+        "16F819",
         "PIC16F819",
         'R',
         { 0x05, 0x06 }, // PORTx
@@ -3295,7 +3295,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F876 28-PDIP or 28-SOIC",
         "PIC16F876",
         "P16F876",
-        "P16F876",
+        "16F876",
         "PIC16F876",
         'R',
         { 0x05, 0x06, 0x07 }, // PORTx
@@ -3331,7 +3331,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F887 40-PDIP",
         "PIC16F887",
         "P16F887",
-        "P16F887",
+        "16F887",
         "PIC16F887",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -3376,7 +3376,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F887 44-TQFP",
         "PIC16F887",
         "P16F887",
-        "P16F887",
+        "16F887",
         "PIC16F887",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -3421,7 +3421,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F886 28-PDIP or 28-SOIC",
         "PIC16F886",
         "P16F886",
-        "P16F886",
+        "16F886",
         "PIC16F886",
         'R',
         { 0x05, 0x06, 0x07, 0, 0x09 }, // PORTx = A B C E
@@ -3468,7 +3468,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP",
         "PIC16F72",
         "P16F72",
-        "P16F72",
+        "16F72",
         "PIC16F72",
         'R',
         { 0x05, 0x06, 0x07 }, // PORTx = A B C
@@ -3505,7 +3505,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC12F675 8-pin packages", // or PIC12F629
         "PIC12F675",
         "P12F675",
-        "P12F675",
+        "12F675",
         "PIC12F675",
         'G',
 //        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
@@ -3547,7 +3547,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC12F683 8-pin packages",
         "PIC12F683",
         "P12F683",
-        "P12F683",
+        "12F683",
         "PIC12F683",
         'G',
 //        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
@@ -3589,7 +3589,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP",
         "PIC16F1512",
         "P16F1512",
-        "P16F1512",
+        "16F1512",
         "PIC16F1512",
         'R',
         { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx = A B C E
@@ -3636,7 +3636,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP",
         "PIC16F1516",
         "P16F1516",
-        "P16F1516",
+        "16F1516",
         "PIC16F1516",
         'R',
         { 0x0C, 0x0D, 0x0E, 0, 0x10 }, // PORTx = A B C E
@@ -3683,7 +3683,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F1527 64-Pin packages",
         "PIC16F1527",
         "P16F1527",
-        "P16F1527",
+        "16F1527",
         "PIC16F1527",
         'R',
         { 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x28C, 0x28D }, // PORTx = A B C D E F G
@@ -3730,7 +3730,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F1824 14-Pin PDIP, SOIC, TSSOP",
         "PIC16F1824",
         "P16F1824",
-        "P16F1824",
+        "16F1824",
         "PIC16F1824",
         'R',
         { 0x0C, 0, 0x0E }, // PORTx
@@ -3779,7 +3779,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC16F1827 18-Pin PDIP, SOIC",
         "PIC16F1827",
         "P16F1827",
-        "P16F1827",
+        "16F1827",
         "PIC16F1827",
         'R',
         { 0x0C, 0x0D }, // PORTx
@@ -3828,7 +3828,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC10F202 6-SOT",
         "PIC10F202",
         "P10F202",
-        "P10F202",
+        "10F202",
         "PIC10F202",
         'G',
 //        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
@@ -3867,7 +3867,7 @@ McuIoInfo SupportedMcus_[] = {
         "Microchip PIC10F200 6-SOT",
         "PIC10F200",
         "P10F200",
-        "P10F200",
+        "10F200",
         "PIC10F200",
         'G',
 //        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P

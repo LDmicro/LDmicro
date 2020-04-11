@@ -149,7 +149,7 @@ typedef struct McuIoInfoTag {
     const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
     const char *mcuInc;     // ASM*.INC // D:\WinAVR\avr\include\avr
     const char *mcuH;       // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    const char *mcuH2;      // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    const char *mcuH2;      // C*.H     // AVRGCC          // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char        portPrefix;
     uint32_t    inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
     uint32_t    outputRegs[MAX_IO_PORTS];

@@ -9,6 +9,9 @@
 @rem 7 = White   F = Bright White
 @COLOR F0
 
+@rem MODE CON[:] [COLS=c] [LINES=n]
+@MODE CON: COLS=160 LINES=65
+
 @echo on
 @echo This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 @echo This file executes after menu Compile - F5
@@ -35,6 +38,16 @@
 @rem if NOT EXIST "%P3%\ladder.h"    copy "%P3%\ladder.h_"   "%P3%\ladder.h"
 @rem if NOT EXIST "%P3%\%P4%.ino"    copy "%P3%\%P4%.ino_"   "%P3%\%P4%.ino"
 ;
+
+:PROTEUS_DEL
+@mkdir  "%P3%\PROTEUS"
+del "%P3%\PROTEUS\*.h"  > nul
+del "%P3%\PROTEUS\*.c"  > nul
+del "%P3%\PROTEUS\*.asm"  > nul
+del "%P3%\PROTEUS\*.hex"  > nul
+del "%P3%\PROTEUS\*.elf"  > nul
+del "%P3%\PROTEUS\*.cof"  > nul
+
 :pause
 ;
 @if "%1" == "AVR"       goto AVR
@@ -80,6 +93,7 @@ goto exit
 copy "%P3%\%P4%.c"            "%P3%\CCS\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\CCS\%P4%"
 copy "%P3%\ladder.h"          "%P3%\CCS\%P4%\ladder.h"
+goto PROTEUS
 @rem -----------------------------------------------------------------------
 :MPLAB
 @mkdir  "%P3%\MPLAB\%P4%"
@@ -124,33 +138,32 @@ goto PROTEUS
 ;
 @rem -----------------------------------------------------------------------
 :PROTEUS
-@mkdir  "%P3%\PROTEUS"
-del "%P3%\PROTEUS\*.h"  > nul
-del "%P3%\PROTEUS\*.c"  > nul
-del "%P3%\PROTEUS\*.asm"  > nul
-del "%P3%\PROTEUS\*.hex"  > nul
-del "%P3%\PROTEUS\*.elf"  > nul
-del "%P3%\PROTEUS\*.cof"  > nul
 copy "%P3%\%P4%.asm"          "%P3%\PROTEUS"
 copy "%P3%\%P4%.hex"          "%P3%\PROTEUS"
 goto exit
 ;
 @rem =======================================================================
 :ARDUINO
+:del /S D:\lds\ARDUINO_BUILD\*.*
+rm -r D:\lds\ARDUINO_BUILD
+mkdir D:\lds\ARDUINO_BUILD
+
+:del /S /Y "%P3%\ARDUINO\%P4%\BUILD\*.*"
+rm -r "%P3%\ARDUINO\%P4%\BUILD"
+mkdir "%P3%\ARDUINO\%P4%\BUILD"
+
 mkdir  "%P3%\ARDUINO"
 mkdir  "%P3%\ARDUINO\%P4%"
-@rem @del /S /Y "%P3%\ARDUINO\%P4%\BUILD\*.*"
-rm -r "%P3%\ARDUINO\%P4%\BUILD"
 ::pause
 copy "%P3%\%P4%.cpp"          "%P3%\ARDUINO\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\ARDUINO\%P4%"
 ::copy "%P3%\%P4%.ino_"         "%P3%\ARDUINO\%P4%"
 ::copy "%P3%\ladder.h_"         "%P3%\ARDUINO\%P4%"
-::copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
-::copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
+copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
+copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
-@rem pause
+:pause
 goto exit
 ;
 @rem =======================================================================

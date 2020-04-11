@@ -1,5 +1,6 @@
 
 #include <avr/io.h>
+#include <avr/wdt.h>
 
 // standard functions to implement in C
 
@@ -72,3 +73,8 @@ uint8_t bin2bcd(uint8_t var);
 #ifndef TIFR1
     #define TIFR1 TIFR
 #endif
+
+#define WDT_restart() wdt_reset()
+
+
+

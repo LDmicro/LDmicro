@@ -154,7 +154,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
             fprintf(f, "#define %s SFR_ADDR(0x%X) // Memory access\n", str, addr);
         }
     } else if(sov == 1) {
-        fprintf(f, "STATIC SBYTE %s = 0;\n", str);
+        fprintf(f, "_STATIC_ SBYTE %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
     } else if(sov == 2) {
         ///// Added by JG to get SPI # / I2C #
@@ -224,13 +224,13 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         }
         /////
 
-        fprintf(f, "STATIC SWORD %s = 0;\n", str);
+        fprintf(f, "_STATIC_ SWORD %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     } else if((sov == 3) || (sov == 4)) {
-        fprintf(f, "STATIC SDWORD %s = 0;\n", str);
+        fprintf(f, "_STATIC_ SDWORD %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
     } else {
-        fprintf(f, "STATIC SWORD %s = 0;\n", str);
+        fprintf(f, "_STATIC_ SWORD %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     }
 }
@@ -240,7 +240,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 //-----------------------------------------------------------------------------
 static void DeclareStr(FILE *f, FILE *fh, const char *str, int sov)
 {
-    fprintf(f, "STATIC char %s[%d];\n", str, sov);
+    fprintf(f, "_STATIC_ char %s[%d];\n", str, sov);
     fprintf(f, "\n");
     fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
     fprintf(fh, "\n");
@@ -273,14 +273,14 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(fh, "  #ifdef USE_MACRO\n");
             fprintf(fh, "    #define Read_%s() digitalRead(pin_%s)\n", str, str);
             fprintf(fh, "  #else\n");
-            fprintf(fh, "    PROTO(ldBOOL Read_%s(void));\n", str);
+            fprintf(fh, "    PROTO(BOOLEAN_t Read_%s(void));\n", str);
             fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
             fprintf(f, "  // LDmicro provide this function.\n");
-            fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
+            fprintf(f, "  BOOLEAN_t Read_%s(void) {\n", str);
             fprintf(f, "    return digitalRead(pin_%s);\n", str);
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
@@ -301,13 +301,13 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Read_%s() (PIN%c & (1<<PIN%c%d))\n", str, iop->port, iop->port, iop->bit);
                 }
                 fprintf(fh, "#else\n");
-                fprintf(fh, "  PROTO(ldBOOL Read_%s(void));\n", str);
+                fprintf(fh, "  PROTO(BOOLEAN_t Read_%s(void));\n", str);
                 fprintf(fh, "#endif\n");
                 fprintf(fh, "\n");
 
                 fprintf(f, "#ifndef USE_MACRO\n");
                 fprintf(f, "  // LDmicro provide this function.\n");
-                fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
+                fprintf(f, "  BOOLEAN_t Read_%s(void) {\n", str);
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
@@ -325,12 +325,12 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "\n");
             } else {
                 fprintf(fh, "// You provide this function.\n");
-                fprintf(fh, "PROTO(ldBOOL Read_%s(void));\n", str);
+                fprintf(fh, "PROTO(BOOLEAN_t Read_%s(void));\n", str);
                 fprintf(fh, "\n");
 
                 fprintf(f, "\n");
                 fprintf(f, "// You provide this function.\n");
-                fprintf(f, "LDSTUB%d( ldBOOL Read_%s(void) )\n", set1, str);
+                fprintf(f, "LDSTUB%d( BOOLEAN_t Read_%s(void) )\n", set1, str);
                 fprintf(f, "\n");
             }
         }
@@ -353,8 +353,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(fh, "    #define Write1_%s() digitalWrite(pin_%s, HIGH)\n", str, str);
             fprintf(fh, "    #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
             fprintf(fh, "  #else\n");
-            fprintf(fh, "    PROTO(ldBOOL Read_%s(void));\n", str);
-            fprintf(fh, "    PROTO(void Write_%s(ldBOOL b));\n", str);
+            fprintf(fh, "    PROTO(BOOLEAN_t Read_%s(void));\n", str);
+            fprintf(fh, "    PROTO(void Write_%s(BOOLEAN_t b));\n", str);
             fprintf(fh, "    PROTO(void Write1_%s(void));\n", str);
             fprintf(fh, "    PROTO(void Write0_%s(void));\n", str);
             fprintf(fh, "  #endif\n");
@@ -363,10 +363,10 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
 
             fprintf(f, "#ifndef USE_MACRO\n");
             fprintf(f, "  // LDmicro provide these functions.\n");
-            fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
+            fprintf(f, "  BOOLEAN_t Read_%s(void) {\n", str);
             fprintf(f, "    return digitalRead(pin_%s);\n", str);
             fprintf(f, "  }\n");
-            fprintf(f, "  void Write_%s(ldBOOL b) {\n", str);
+            fprintf(f, "  void Write_%s(BOOLEAN_t b) {\n", str);
             fprintf(f, "    digitalWrite(pin_%s,b);\n", str);
             fprintf(f, "  }\n");
             fprintf(f, "  void Write1_%s(void) {\n", str);
@@ -417,14 +417,14 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
                 }
                 fprintf(fh, "#else\n");
-                fprintf(fh, "  PROTO(ldBOOL Read_%s(void));\n", str);
-                fprintf(fh, "  PROTO(void Write_%s(ldBOOL b));\n", str);
+                fprintf(fh, "  PROTO(BOOLEAN_t Read_%s(void));\n", str);
+                fprintf(fh, "  PROTO(void Write_%s(BOOLEAN_t b));\n", str);
                 fprintf(fh, "#endif\n");
                 fprintf(fh, "\n");
 
                 fprintf(f, "#ifndef USE_MACRO\n");
                 fprintf(f, "  // LDmicro provide these functions.\n");
-                fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
+                fprintf(f, "  BOOLEAN_t Read_%s(void) {\n", str);
 
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
@@ -439,7 +439,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(f, "    return PORT%c & (1<<PORT%c%d);\n", iop->port, iop->port, iop->bit);
                 }
                 fprintf(f, "  }\n");
-                fprintf(f, "  void Write_%s(ldBOOL b) {\n", str);
+                fprintf(f, "  void Write_%s(BOOLEAN_t b) {\n", str);
                 if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                     if(Prog.mcu()->core == PIC18HighEndCore16bit)
                         fprintf(f, "      PORT%cbits.R%c%d = b != 0;\n", iop->port, iop->port, iop->bit);
@@ -494,13 +494,13 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "\n");
             } else {
                 fprintf(fh, "// You provide these functions.\n");
-                fprintf(fh, "PROTO(ldBOOL Read_%s(void));\n", str);
-                fprintf(fh, "PROTO(void Write_%s(ldBOOL b));\n", str);
+                fprintf(fh, "PROTO(BOOLEAN_t Read_%s(void));\n", str);
+                fprintf(fh, "PROTO(void Write_%s(BOOLEAN_t b));\n", str);
                 fprintf(fh, "\n");
 
                 fprintf(f, "/* You provide these functions. */\n");
-                fprintf(f, "LDSTUB%d( ldBOOL Read_%s(void) )\n", set1, str);
-                fprintf(f, "LDSTUB( void Write_%s(ldBOOL v) )\n", str);
+                fprintf(f, "LDSTUB%d( BOOLEAN_t Read_%s(void) )\n", set1, str);
+                fprintf(f, "LDSTUB( void Write_%s(BOOLEAN_t v) )\n", str);
                 fprintf(f, "\n");
             }
         }
@@ -793,8 +793,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "}\n");
         }
     } else {
-        fprintf(f, "STATIC ldBOOL %s = 0;\n", str);
-        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
+        fprintf(f, "_STATIC_ BOOLEAN_t %s = 0;\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern BOOLEAN_t %s;\n#endif\n", str);
         //      fprintf(f, "\n");
         fprintf(fh, "#define Read_%s() %s\n", str, str);
         fprintf(fh, "#define Write_%s(x) (%s = x)\n", str, str);
@@ -2153,8 +2153,35 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
     char deviceName[MAX_PATH];
     strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu");
-    if(Prog.mcu())
+    if(Prog.mcu()) {
+        if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
+            fprintf(flh, "#include <%s.h>\n", Prog.mcu()->mcuH);
+            fprintf(flh, "#device %s\n", deviceName);
+            fprintf(flh, "#FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
+            if(Prog.configurationWord & 0xFFFF0000) {
+                fprintf(flh, "#FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+            }
+            if(DelayUsed() || UartFunctionUsed()) {
+                fprintf(flh, "#USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
+            }
+            if(UartFunctionUsed()) {
+                fprintf(flh, "#USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
+            }
+            if(AdcFunctionUsed()) {
+                fprintf(flh, "#device ADC=10\n");
+            }
+            if(PwmFunctionUsed()) {
+                fprintf(flh, "//TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
+            }
+            if(Prog.mcu()) {
+                for(int i = 0; i < MAX_IO_PORTS; i++) {
+                    if(IS_MCU_REG(i))
+                        fprintf(flh, "#USE FAST_IO(%c)\n", 'A' + i);
+                }
+            }
+        }
         fprintf(flh,
+                "\n"
                 "#define LDTARGET_%s\n\n"
                 "#ifndef F_CPU\n"
                 "  #define F_CPU %dUL\n"
@@ -2164,15 +2191,17 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 Prog.mcuClock,
                 Prog.mcuClock);
 
-    fprintf(flh, "#define CFG_WORD 0x%X\n\n", (WORD)Prog.configurationWord & 0xFFFF);
-
+        if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
+            fprintf(flh, "#define CFG_WORD 0x%X\n\n", (WORD)Prog.configurationWord & 0xFFFF);
+        }
+    }
     fprintf(flh,
             "/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
             "//#define EXTERN_EVERYTHING\n"
             "#ifdef EXTERN_EVERYTHING\n"
-            "  #define STATIC\n"
+            "  #define _STATIC_\n"
             "#else\n"
-            "  #define STATIC static\n"
+            "  #define _STATIC_ static\n"
             "#endif\n"
             "\n"
             "/* Uncomment NO_PROTOTYPES if you want own prototypes for functions. */\n"
@@ -2243,10 +2272,89 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "  //mem.h ^^^\n"
                 "#endif\n");
     }
+
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
     fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
+    fprintf(flh,
+            "/*\n"
+            "  Type                  Size(bits)\n"
+            "  BOOLEAN_t    unsigned       1 or 8, the smallest possible\n"
+            "  SBYTE     signed integer      8\n"
+            "  SWORD     signed integer     16\n"
+            "  SDWORD    signed integer     32\n"
+            "*/\n");
+    if(compiler_variant == MNU_COMPILE_ARDUINO) {
+        fprintf(flh,
+                "typedef boolean    BOOLEAN_t;\n"
+                "typedef char           SBYTE;\n"
+                "typedef int            SWORD;\n"
+                "typedef long int      SDWORD;\n"
+                "\n");
+    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
+        fprintf(flh,
+                "  typedef uint8_t    BOOLEAN_t\n"
+                "  typedef int8_t     SBYTE\n"
+                "  typedef int16_t    SWORD\n"
+                "  typedef int32_t    SDWORD\n"
+                "\n");
+    } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
+        if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
+            fprintf(flh,
+                "  #define uint8_t  unsigned int8\n"
+                "  #define uint16_t unsigned int16\n"
+                "  #define uint32_t unsigned int32\n"
+                "\n"
+                "  typedef int1         BOOLEAN_t;\n"
+                "  typedef signed  int8     SBYTE;\n"
+                "  typedef signed int16     SWORD;\n"
+                "  typedef signed int32    SDWORD;\n"
+                "\n");
+        } else {
+            fprintf(flh,
+                "  typedef unsigned char BOOLEAN_t;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+        }
+    } else if(mcu_ISA == ISA_ARM) {
+        fprintf(flh,
+                "  typedef unsigned char BOOLEAN_t;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    } else if(mcu_ISA == ISA_AVR) {
+        fprintf(flh,
+                "  typedef unsigned char BOOLEAN_t;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    } else {
+        fprintf(flh,
+                "  typedef unsigned char BOOLEAN_t;\n"
+                "  typedef signed char       SBYTE;\n"
+                "  typedef signed short int  SWORD;\n"
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
+    }
+
+    fprintf(flh,"#include \"UsrLib.h\"\n");
+    if(AdcFunctionUsed())
+        fprintf(flh, "#include \"AdcLib.h\"\n");
+    if(PwmFunctionUsed())
+        fprintf(flh, "#include \"PwmLib.h\"\n");
+    if(UartFunctionUsed())
+        fprintf(flh, "#include \"UartLib.h\"\n");
+    if(SpiFunctionUsed())
+        fprintf(flh, "#include \"SpiLib.h\"\n");
+    if(I2cFunctionUsed())
+        fprintf(flh, "#include \"I2cLib.h\"\n");
+    if(EepromFunctionUsed())
+        fprintf(flh, "#include \"romlib.h\"\n");
 
     if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
 
@@ -2255,27 +2363,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "#include <stdio.h>\n"
                     "#include <string.h>\n");
         }
-        fprintf(flh,
-                "\n"
-                "#include \"UsrLib.h\"\n");
-
-        if(AdcFunctionUsed()) {
-            fprintf(flh, "#include \"AdcLib.h\"\n");
-        }
-        if(PwmFunctionUsed()) {
-            fprintf(flh, "#include \"PwmLib.h\"\n");
-        }
-        if(UartFunctionUsed()) {
-            fprintf(flh, "#include \"UartLib.h\"\n");
-        }
         if(SpiFunctionUsed() && I2cFunctionUsed()) {
             THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
-        }
-        if(SpiFunctionUsed()) {
-            fprintf(flh, "#include \"SpiLib.h\"\n");
-        }
-        if(I2cFunctionUsed()) {
-            fprintf(flh, "#include \"I2cLib.h\"\n");
         }
     } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
         fprintf(flh,
@@ -2352,85 +2441,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "#include <avr\\io.h>\n"
                 "#include <avr\\interrupt.h>\n"
                 "//#include <avr\\%s.h>\n"
-                "#include \"UsrLib.h\"\n"
                 "\n",
                 Prog.mcu()->mcuH2);
-
-        if(AdcFunctionUsed()) {
-            fprintf(flh, "#include \"AdcLib.h\"\n");
-        }
-        if(PwmFunctionUsed()) {
-            fprintf(flh, "#include \"PwmLib.h\"\n");
-        }
-        if(UartFunctionUsed()) {
-            fprintf(flh, "#include \"UartLib.h\"\n");
-        }
-        if(SpiFunctionUsed()) {
-            fprintf(flh, "#include \"SpiLib.h\"\n");
-        }
-        if(I2cFunctionUsed()) {
-            fprintf(flh, "#include \"I2cLib.h\"\n");
-        }
-    }
-
-    fprintf(flh,
-            "/*\n"
-            "  Type                  Size(bits)\n"
-            "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
-            "  SBYTE     signed integer      8\n"
-            "  SWORD     signed integer     16\n"
-            "  SDWORD    signed integer     32\n"
-            "*/\n");
-    if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(flh,
-                "typedef boolean       ldBOOL;\n"
-                "typedef char           SBYTE;\n"
-                "typedef int            SWORD;\n"
-                "typedef long int      SDWORD;\n"
-                "\n");
-    } else if(compiler_variant == MNU_COMPILE_ARMGCC) {
-        fprintf(flh,
-                "  typedef uint8_t    ldBOOL;\n"
-                "  typedef int8_t     SBYTE;\n"
-                "  typedef int16_t    SWORD;\n"
-                "  typedef int32_t    SDWORD;\n"
-                "\n");
-    } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
-        fprintf(flh,
-                "#ifdef CCS_PIC_C\n"
-                "    typedef int1             ldBOOL;\n"
-                "    typedef signed  int8      SBYTE;\n"
-                "    typedef signed int16      SWORD;\n"
-                "    typedef signed int32     SDWORD;\n"
-                "#elif defined(HI_TECH_C)\n"
-                "    typedef unsigned char    ldBOOL;\n"
-                "    typedef signed char       SBYTE;\n"
-                "    typedef signed short int  SWORD;\n"
-                "    typedef signed long int  SDWORD;\n"
-                "#endif\n"
-                "\n");
-    } else if(mcu_ISA == ISA_ARM) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-
-    } else if(mcu_ISA == ISA_AVR) {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
-    } else {
-        fprintf(flh,
-                "  typedef unsigned char    ldBOOL;\n"
-                "  typedef signed char       SBYTE;\n"
-                "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n"
-                "\n");
     }
 
     FileTracker fh(desth, "w");
@@ -2472,9 +2484,10 @@ bool CompileAnsiC(const char *outFile, int MNU)
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
         }
-
+        /*
         if(EepromFunctionUsed())
             fprintf(fh, "#include <EEPROM.h>\n");
+        */
     } else if(mcu_ISA == ISA_PIC16) {
     } else if(mcu_ISA == ISA_PIC18) {
     } else if(mcu_ISA == ISA_AVR) {
@@ -2517,19 +2530,19 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "extern void PlcCycle(void); //  and call PlcCycle() function once per PLC cycle timer.\n"
                 "\n");
     }
-    if(UartFunctionUsed()) {
 /*
+    if(UartFunctionUsed()) {
         if((compiler_variant != MNU_COMPILE_HI_TECH_C) && (compiler_variant != MNU_COMPILE_AVRGCC)) {
             fprintf(fh,
                     "void UART_Init(void);\n"
                     "void UART_Transmit(unsigned char data);\n"
                     "unsigned char UART_Receive(void);\n"
-                    "ldBOOL UART_Receive_Avail(void);\n"
-                    "ldBOOL UART_Transmit_Ready(void);\n"
+                    "BOOLEAN_t UART_Receive_Avail(void);\n"
+                    "BOOLEAN_t UART_Transmit_Ready(void);\n"
                     "\n");
         }
-*/
     }
+*/
 
     if(SpiFunctionUsed()) {
         if(mcu_ISA == ISA_ARM)
@@ -2549,6 +2562,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "void I2C_Send(SBYTE address, SBYTE registr, SWORD send);\n"
                 "\n");
     }
+    /*
     if(EepromFunctionUsed()) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             fprintf(fh,
@@ -2565,6 +2579,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
         } else
             fprintf(flh,"#include \"romlib.h\"\n");
     }
+    */
 
     FileTracker f;
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
@@ -2598,7 +2613,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "   against this one. */\n"
                 "\n"
                 "/* You must provide ladder.h; there you must provide:\n"
-                "   a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
+                "   a typedef for SWORD and BOOLEAN_t, signed 16 bit and boolean types\n"
                 "   (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
                 "\n"
                 "   You must also provide implementations of all the I/O read/write\n"
@@ -2608,59 +2623,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "   See the generated source code (below) for function names. */\n"
                 "\n");
     }
-    if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-        fprintf(f,
-                "#define CCS_PIC_C // CCS C Compiler, Custom Computer Services, Inc.\n"
-                "#ifdef CCS_PIC_C\n"
-                "  #device %s\n"
-                "  #include <%s.h>\n",
-                Prog.mcu()->mcuH2,
-                Prog.mcu()->mcuH);
-        fprintf(f, "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
-        if(Prog.configurationWord & 0xFFFF0000) {
-            fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
-        }
-        if(DelayUsed() || UartFunctionUsed()) {
-            fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
-        }
-        if(UartFunctionUsed()) {
-            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
-        }
-        if(AdcFunctionUsed()) {
-            fprintf(f, "  #device ADC=10\n");
-        }
-        if(PwmFunctionUsed()) {
-            fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
-        }
-        if(Prog.mcu())
-            for(int i = 0; i < MAX_IO_PORTS; i++) {
-                if(IS_MCU_REG(i))
-                    fprintf(f, "  #USE FAST_IO(%c)\n", 'A' + i);
-            }
-        fprintf(f, "#endif\n");
-    } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-        if(mcu_ISA == ISA_PIC16) {
-            fprintf(f,
-                    "#include <htc.h>\n"
-                    "__CONFIG(0x%X);\n",
-                    (WORD)Prog.configurationWord & 0xFFFF);
-            if(Prog.configurationWord & 0xFFFF0000) {
-                fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
-            }
-        } else if(mcu_ISA == ISA_PIC18) { // Beware that __PROG_CONFIG may not work (HITECH-C 18 release notes)
-            fprintf(f,
-                    "#include <htc.h>\n\n"
-                    "//#define _XTAL_FREQ %d\n"
-                    "__PROG_CONFIG(1, 0x%4.4X);\n"
-                    "__CONFIG(2, WDTDIS & PWRTEN & BORDIS);\n"                 // No Wtdog, No Brown out, Pwrup timer
-                    "__CONFIG(3, MCLREN & PBDIGITAL);\n"                       // Mclr, PortB digital
-                    "__CONFIG(4, DEBUGDIS & XINSTDIS & LVPDIS & STVREN);\n\n", // No Debug, No Extended set, No LVP, Stack overflow
-                    Prog.mcuClock,
-                    (WORD)Prog.configurationWord & 0xFFFF); // Config words 5, 6, 7 are left to default
-        }
-    } else if(compiler_variant == MNU_COMPILE_CODEVISIONAVR) {
-    }
-
     fprintf(f,
             "#include \"ladder.h\"\n"
             "#include \"%s.h\" // Copy this line into main project file where is function main().\n"
@@ -2683,7 +2645,27 @@ bool CompileAnsiC(const char *outFile, int MNU)
             "   peripherals that LDmicro doesn't know about. */\n"
             "\n");
 
-    if(compiler_variant == MNU_COMPILE_ARDUINO) {
+    if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
+        if(mcu_ISA == ISA_PIC16) {
+            fprintf(f,
+                    "#include <htc.h>\n"
+                    "__CONFIG(0x%X);\n",
+                    (WORD)Prog.configurationWord & 0xFFFF);
+            if(Prog.configurationWord & 0xFFFF0000) {
+                fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+            }
+        } else if(mcu_ISA == ISA_PIC18) { // Beware that __PROG_CONFIG may not work (HITECH-C 18 release notes)
+            fprintf(f,
+                    "#include <htc.h>\n\n"
+                    "//#define _XTAL_FREQ %d\n"
+                    "__PROG_CONFIG(1, 0x%4.4X);\n"
+                    "__CONFIG(2, WDTDIS & PWRTEN & BORDIS);\n"                 // No Wtdog, No Brown out, Pwrup timer
+                    "__CONFIG(3, MCLREN & PBDIGITAL);\n"                       // Mclr, PortB digital
+                    "__CONFIG(4, DEBUGDIS & XINSTDIS & LVPDIS & STVREN);\n\n", // No Debug, No Extended set, No LVP, Stack overflow
+                    Prog.mcuClock,
+                    (WORD)Prog.configurationWord & 0xFFFF); // Config words 5, 6, 7 are left to default
+        }
+    } else if(compiler_variant == MNU_COMPILE_ARDUINO) {
 /*
         fprintf(fh,
                 "// You provide I/O pin mapping for ARDUINO in ladder.h.\n"
@@ -2695,8 +2677,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "const int analogReference_type = DEFAULT;\n"
                 "\n");
 //              "// You must provide the I/O pin mapping for ARDUINO board in ladder.h here.\n");
-    } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-    } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
     }
     // now generate declarations for all variables
     GenerateDeclarations(f, fh, flh);
@@ -2704,6 +2684,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     GenerateSUBPROG(f);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
+        /*
         if(UartFunctionUsed()) {
             fprintf(f,
                     "void UART_Transmit(unsigned char data) {\n"
@@ -2715,16 +2696,16 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "    return Serial.read();\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Receive_Avail(void) {\n"
+                    "BOOLEAN_t UART_Receive_Avail(void) {\n"
                     "    return Serial.available();\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Transmit_Ready(void) {\n"
+                    "BOOLEAN_t UART_Transmit_Ready(void) {\n"
                     "    Serial.flush();\n"
                     "    return 1;\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Transmit_Busy(void) {\n"
+                    "BOOLEAN_t UART_Transmit_Busy(void) {\n"
                     "    Serial.flush();\n"
                     "    return 0;\n"
                     "}\n"
@@ -2746,6 +2727,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "}\n"
                     "\n");
         }
+        */
     } else if(mcu_ISA == ISA_AVR) {
         /*
         moved to LIBRARIES_FOR\Avr\SpiLib.c
@@ -2779,15 +2761,15 @@ bool CompileAnsiC(const char *outFile, int MNU)
                     "  return UDR;\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Transmit_Ready(void) {\n"
+                    "BOOLEAN_t UART_Transmit_Ready(void) {\n"
                     "  return UCSRA & (1<<UDRE);\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Transmit_Busy(void) {\n"
+                    "BOOLEAN_t UART_Transmit_Busy(void) {\n"
                     "  return (UCSRA & (1<<UDRE)) == 0;\n"
                     "}\n"
                     "\n"
-                    "ldBOOL UART_Receive_Avail(void) {\n"
+                    "BOOLEAN_t UART_Receive_Avail(void) {\n"
                     "  return UCSRA & (1<<RXC);\n"
                     "}\n"
                     "\n");
@@ -2827,6 +2809,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
             }
         }
     } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
+/*
         if(EepromFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C)
                 fprintf(f,
@@ -2846,6 +2829,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n"
                         "\n");
         }
+*/
         if(AdcFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                 fprintf(f, "void ADC_Init(void) {\n");
@@ -2872,6 +2856,8 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
         if(UartFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
+                // use UartLib.h
+/*
                 fprintf(f,
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n"
@@ -2879,8 +2865,9 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n"
                         "\n",
                         Prog.baudRate);
+*/
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-                // used UartLib.h
+                // use UartLib.h
             } else {
                 fprintf(f,
                         "void UART_Init(void) {\n"
@@ -2902,6 +2889,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "\n");
             }
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
+/*              // moved to LIBRARIES_FOR\CCS_PIC_C\UartLib.c
                 fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"
@@ -2917,19 +2905,20 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "  return getc();\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Transmit_Ready(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Ready(void) {\n"
                         "  return 1; // ???\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Transmit_Busy(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Busy(void) {\n"
                         "  return 0; // ???\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Receive_Avail(void) {\n"
+                        "BOOLEAN_t UART_Receive_Avail(void) {\n"
                         "  // Check if a character has been received\n"
                         "  return kbhit();\n"
                         "}\n"
                         "\n");
+*/
             } else {
 /*              // moved to LIBRARIES_FOR\Pic16\UartLib.c
                 fprintf(f,
@@ -2947,15 +2936,15 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "  return RCREG;\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Transmit_Ready(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Ready(void) {\n"
                         "  return TRMT;\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Transmit_Busy(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Busy(void) {\n"
                         "  return ! TRMT;\n"
                         "}\n"
                         "\n"
-                        "ldBOOL UART_Receive_Avail(void) {\n"
+                        "BOOLEAN_t UART_Receive_Avail(void) {\n"
                         "  return RCIF;\n"
                         "}\n"
                         "\n");
@@ -3023,18 +3012,18 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "}\n\n",
                         UART_Used);
                 fprintf(f,
-                        "ldBOOL UART_Transmit_Ready(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Ready(void) {\n"
                         "  if (LibUart_Transmit_Ready(USART%d)) return 1;\n"
                         "  else return 0;\n"
                         "}\n\n",
                         UART_Used);
                 fprintf(f,
-                        "ldBOOL UART_Transmit_Busy(void) {\n"
+                        "BOOLEAN_t UART_Transmit_Busy(void) {\n"
                         "  if (UART_Transmit_Ready()) return 0;\n"
                         "  else return 1;\n"
                         "}\n\n");
                 fprintf(f,
-                        "ldBOOL UART_Receive_Avail(void) {\n"
+                        "BOOLEAN_t UART_Receive_Avail(void) {\n"
                         "  if (LibUart_Received_Data(USART%d)) return 1;\n"
                         "  else return 0;\n"
                         "}\n\n",
@@ -3308,9 +3297,6 @@ bool CompileAnsiC(const char *outFile, int MNU)
             }
         }
 
-        if((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC)) {
-            // no watchdog
-        } else {
             if(Prog.pullUpRegs[1] & 0xFF) { /// if value is not 0 all pull-ups are enabled on Port B
             fprintf(f,
                     "\n"
@@ -3333,7 +3319,10 @@ bool CompileAnsiC(const char *outFile, int MNU)
                         "\n");
             }
 
-            fprintf(f,
+            if((compiler_variant == MNU_COMPILE_ARMGCC)/* || (compiler_variant == MNU_COMPILE_AVRGCC)*/) {
+                // no watchdog
+            } else {
+                fprintf(f,
                     "    #ifdef USE_WDT\n"
                     "      // Watchdog on\n"
                     "      #ifdef __CODEVISIONAVR__\n"
@@ -3698,7 +3687,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
         fprintf(f,
                 "    setupPlc();\n"
-                "    while(1) {\n");
+                "    while(true) {\n");
         //------------------------------------------------------------------------------------
         fprintf(f, "        // Test PLC cycle Timer %d interval here.\n", Prog.cycleTimer);
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
@@ -3769,16 +3758,17 @@ bool CompileAnsiC(const char *outFile, int MNU)
         fprintf(f, "\n");
         //-----------------------------------------------------------------------------------------------
         if(Prog.cycleDuty) {
-            fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n\n");
         }
         fprintf(f,
+                "        #ifdef USE_WDT\n"
+                "          WDT_restart(); // Watchdog reset\n"
+                "        #endif\n"
                 "\n"
                 "        PlcCycle();\n"
                 "        // You can place your code here to run repeatedly, only if you no longer generate C code from LDmicro again.\n"
-                "        // ...\n"
-                "\n"
-                "        #ifdef USE_WDT\n"
-                "          // Watchdog reset\n"
+                "        // ...\n");
+/*
                 "          #ifdef __CODEVISIONAVR__\n"
                 "            #asm(\"wdr\")\n"
                 "          #elif defined(__GNUC__)\n"
@@ -3790,32 +3780,32 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "          #else\n"
                 "            // Watchdog Reset is required. // You must provide this.\n"
                 "          #endif\n"
-                "        #endif\n"
-                "\n");
-
+*/
         if(Prog.cycleDuty) {
-            fprintf(f, "        Write0_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "\n        Write0_Ub_YPlcCycleDuty();\n");
         }
         fprintf(f,
                 "    }\n"
                 "}\n"
                 "\n");
 
-        fprintf(f,
+
+        if(compiler_variant == MNU_COMPILE_CODEVISIONAVR)
+            fprintf(f,
                 "// You can use main() as is.\n"
-                "#ifdef __CODEVISIONAVR__\n"
                 "void main(void) {\n"
                 "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return;\n"
-                "}\n"
-                "#else\n"
+                "}\n");
+        else
+            fprintf(f,
+                "// You can use main() as is.\n"
                 "int main(void) {\n"
                 "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
                 "    mainPlc();\n"
                 "    return 0;\n"
-                "}\n"
-                "#endif\n");
+                "}\n");
     }
 
     fprintf(fh, "#endif\n");
