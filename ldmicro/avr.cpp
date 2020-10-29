@@ -1789,14 +1789,21 @@ static void WriteMemoryStillAddr(ADDR_T addr, BYTE val)
 }
 
 //-----------------------------------------------------------------------------
-static void WriteMemoryCurrAddr(BYTE val)
+static void WriteMemoryCurrAddr(ADDR_T addr, BYTE val)
 //used ZL, r25; Opcodes: 2
 {
-    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
-    // load r25 with the data
-    Instruction(OP_LDI, r25, val);
-    // do the store
-    Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
+    if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
+	    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
+		// load r25 with the data
+		Instruction(OP_LDI, r25, val);
+		// do the store
+		Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
+    } else if(USE_IO_REGISTERS == 1) {
+#if USE_IO_REGISTERS == 1
+        Instruction(OP_OUT, addr - __SFR_OFFSET, val);
+#endif
+    } else
+        oops();
 }
 
 //-----------------------------------------------------------------------------
@@ -2469,7 +2476,7 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         if(WGM01 == -1) {                         // ATmega8
             tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
             if(tcnt0PlcCycle < 0)
-                tcnt0PlcCycle = 0;
+                tcnt0PlcCycle = 0; 
             if(tcnt0PlcCycle > 255)
                 tcnt0PlcCycle = 255;
 
@@ -3125,13 +3132,13 @@ static void   WriteRuntime()
     //  WriteMemoryStillAddr(REG_WDTCR, (1<<WDCE) | (1<<WDE));
 #ifdef USE_WDT
     STOREval(REG_WDTCR, (1 << WDCE) | (1 << WDE));
-#endif
     Comment("- Got only four cycles to set the new values from here! -");
     //WriteMemoryCurrAddr((1 << WDE)); // 16 ms
     //WriteMemoryCurrAddr((1 << WDE) | (1 << WDP2) | (1 << WDP1) | (1 << WDP0)); // 2s
-    WriteMemoryCurrAddr((1 << WDE) | (1 << WDP3) | (1 << WDP0)); // 8s
+    WriteMemoryCurrAddr(REG_WDTCR, (1 << WDE) | (1 << WDP3) | (1 << WDP0)); // 8s
     ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more than four cycles
     ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more than four cycles
+#endif
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
@@ -5069,18 +5076,18 @@ static void CompileFromIntermediate()
                 LoadYAddr(REG_EEARL);
                 if(IsNumber(a->name1)) {
                     int addr = hobatoi(a->name1.c_str());
-					Instruction(OP_LDI, 16, addr & 0xFF);
+                    Instruction(OP_LDI, 16, addr & 0xFF);
                     Instruction(OP_ST_YP, 16);
                     Instruction(OP_LDI, 16, addr >> 8 & 0xFF);
                     Instruction(OP_ST_Y, 16);
                 } else {
-					MemForVariable(a->name1, &addr1);
-					LoadXAddr(addr1);
-					Instruction(OP_LD_XP, 16);
-					Instruction(OP_ST_YP, 16);
-					Instruction(OP_LD_X, 16);
-					Instruction(OP_ST_Y, 16);
-				}
+                    MemForVariable(a->name1, &addr1);
+                    LoadXAddr(addr1);
+                    Instruction(OP_LD_XP, 16);
+                    Instruction(OP_ST_YP, 16);
+                    Instruction(OP_LD_X, 16);
+                    Instruction(OP_ST_Y, 16);
+                }
                 MemForVariable(a->name2, &addr2);
                 LoadXAddr(addr2);
                 LoadYAddr(REG_EEDR);
@@ -7024,18 +7031,19 @@ void CompileAvr(const char *outFile)
     ) {
         REG_OCR0A = 0x49;
         REG_TCCR0A = 0x4A;
-        REG_TCCR0B = 0x53;
         WGM00 = BIT0;
         WGM01 = BIT1;
+        REG_TCCR0B = 0x53;
+        //WGM02 = BIT2
         REG_TCNT0 = 0x52;
 
-        REG_TIFR1 = 0x36;
-        OCF1A = BIT1;
-        TOV1 = BIT0;
-        REG_TIFR0 = 0x35;
-        OCF0A = BIT1;
-        TOV0 = BIT0;
-
+        REG_TIFR0 = 0x58;
+        REG_TIFR1 = REG_TIFR0;
+        OCF1A = BIT6;
+        TOV1 = BIT2;
+        OCF0A = BIT4;
+        TOV0 = BIT1;
+        /*
         REG_OCR2 = 0xB3; // OCR2A
         REG_TCCR2B = 0xB1;
         REG_TCCR2 = 0xB0; // TCCR2A
@@ -7043,36 +7051,39 @@ void CompileAvr(const char *outFile)
         WGM21 = BIT1;
         COM21 = BIT7; // COM2A1
         COM20 = BIT6; // COM2A0
+        */
+        REG_EEARH = 0x3F;
+        REG_EEARL = 0x3E;
+        REG_EEDR = 0x3D;
+        REG_EECR = 0x3C;
 
-        REG_EEARH = 0x42;
-        REG_EEARL = 0x41;
-        REG_EEDR = 0x40;
-        REG_EECR = 0x3F;
+        REG_ADMUX = 0x27;
+        REG_ADCSRA = 0x26;
+        REG_ADCSRB = 0x23;
+        REG_ADCH = 0x25;
+        REG_ADCL = 0x24;
 
-        REG_ADMUX = 0x7C;
-        REG_ADCSRB = 0x7B;
-        REG_ADCSRA = 0x7A;
-        REG_ADCH = 0x79;
-        REG_ADCL = 0x78;
+        REG_WDTCR = 0x41;
 
-        REG_WDTCR = 0x60;
+        //REG_OCR1AH = 0x89;
+        REG_OCR1AL = 0x4E;
+        //REG_TCCR1B = 0x81;
+        REG_TCCR1A = 0x50;
 
-        REG_OCR1AH = 0x89;
-        REG_OCR1AL = 0x88;
-        REG_TCCR1B = 0x81;
-        REG_TCCR1A = 0x80;
-
-        REG_TIMSK = 0x6F; // TIMSK1
-
+        REG_TIMSK = 0x59;
+        /*
         REG_UDR = 0xC6;   // UDR0
         REG_UBRRH = 0xC5; // UBRR0H
         REG_UBRRL = 0xC4; // UBRR0L
-                          //      REG_UCSRC   = 0xC2; // UCSR0C
+        */
+        /*
+        //REG_UCSRC   = 0xC2; // UCSR0C
         REG_UCSRB = 0xC1; // UCSR0B
         REG_UCSRA = 0xC0; // UCSR0A
+        */
 
-        REG_GTCCR = 0x43;
-
+        REG_GTCCR = 0x4C;
+        /*
         REG_sleep = 0x53; // REG_SMCR
         SE = BIT0;
         SM0 = BIT1;
@@ -7089,6 +7100,8 @@ void CompileAvr(const char *outFile)
         REG_int_flag = 0x3C; // REG_EIFR
         INTF1 = BIT1;
         INTF0 = BIT0;
+        */
+
         /*
     } else
     if(McuAs(" ATmega163 ")

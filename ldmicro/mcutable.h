@@ -625,18 +625,7 @@ McuIoPinInfo AvrATtiny85IoPinInfo8[] = {
     { 'B',  5,  1, "PB5 PCINT5/ADC0/_RESET/dW"                   }
 };
 
-McuIoPinInfo AvrATtiny85IoPinInfo20[] = {
-//   port bit pin  pinName                                  ArduinoPin  ArduinoName
-//                                                                   X  Gemma
-    { 'B',  0, 11, "PB0 PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF", 11, "0 // D0/PWM~/SDA"     },
-    { 'B',  1, 12, "PB1 PCINT1/MISO/DO/AIN1/OC0B/OC1A"          , 12, "1 // D1/PWM~/SCL/LED" },
-    { 'B',  2, 14, "PB2 PCINT2/ADC1/SCK/USCK/SCL/T0/INT0"       , 14, "2 // D2/A1"           },
-    { 'B',  3,  2, "PB3 PCINT3/ADC3/XTAL1/CLKI/_OC1B"           ,  2, ""                     },
-    { 'B',  4,  5, "PB4 PCINT4/ADC2/XTAL2/CLKO/OC1B"            ,  5, ""                     },
-    { 'B',  5,  1, "PB5 PCINT5/ADC0/_RESET/dW"                  ,  1, "RESET"                }
-};
-
-McuAdcPinInfo AvrATtiny85AdcPinInfo[] = {
+McuAdcPinInfo AvrATtiny85AdcPinInfo8[] = {
     {  1, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
     {  7, 0x01 },
     {  3, 0x02 },
@@ -650,6 +639,24 @@ McuExtIntPinInfo AvrExtIntPinInfo8[] = {
     { 2 },
     { 3 },
     { 1 }
+};
+
+McuIoPinInfo AvrATtiny85IoPinInfo20[] = {
+//   port bit pin  pinName                                  ArduinoPin  ArduinoName
+//                                                                   X  Gemma
+    { 'B',  0, 11, "PB0 PCINT0/MOSI/DI/SDA/AIN0/OC0A/_OC1A/AREF", 11, "0 // D0/PWM~/SDA"     },
+    { 'B',  1, 12, "PB1 PCINT1/MISO/DO/AIN1/OC0B/OC1A"          , 12, "1 // D1/PWM~/SCL/LED" },
+    { 'B',  2, 14, "PB2 PCINT2/ADC1/SCK/USCK/SCL/T0/INT0"       , 14, "2 // D2/A1"           },
+    { 'B',  3,  2, "PB3 PCINT3/ADC3/XTAL1/CLKI/_OC1B"           ,  2, ""                     },
+    { 'B',  4,  5, "PB4 PCINT4/ADC2/XTAL2/CLKO/OC1B"            ,  5, ""                     },
+    { 'B',  5,  1, "PB5 PCINT5/ADC0/_RESET/dW"                  ,  1, "RESET"                }
+};
+
+McuAdcPinInfo AvrATtiny85AdcPinInfo20[] = {
+    {  1, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    { 14, 0x01 },
+    {  5, 0x02 },
+    {  2, 0x03 }  // ADC3
 };
 
 //-----------------------------------------------------------------------------
@@ -2952,15 +2959,15 @@ McuIoInfo SupportedMcus_[] = {
         "tiny85",
         "iotn85", // AVRGCC
         'P',
-        { 0, 0x16 },
-        { 0, 0x18 },
-        { 0, 0x17 },
+        { 0, 0x36 },
+        { 0, 0x38 },
+        { 0, 0x37 },
         4*1024,
         { { 0x60, 512 } },
         AvrATtiny85IoPinInfo8,              //McuIoPinInfo    *pinInfo;
         arraylen(AvrATtiny85IoPinInfo8),    //int              pinCount;
-        AvrATtiny85AdcPinInfo,              //McuAdcPinInfo   *adcInfo;
-        arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
+        AvrATtiny85AdcPinInfo8,             //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny85AdcPinInfo8),   //int              adcCount;
         1023,
         { 0, 0 },
 //        0, // OC2
@@ -2985,15 +2992,15 @@ McuIoInfo SupportedMcus_[] = {
         "tiny85",
         "iotn85", // AVRGCC
         'P',
-        { 0, 0x16 },
-        { 0, 0x18 },
-        { 0, 0x17 },
+        { 0, 0x36 },
+        { 0, 0x38 },
+        { 0, 0x37 },
         4*1024,
         { { 0x60, 512 } },
         AvrATtiny85IoPinInfo20,             //McuIoPinInfo    *pinInfo;
         arraylen(AvrATtiny85IoPinInfo20),   //int              pinCount;
-        AvrATtiny85AdcPinInfo,              //McuAdcPinInfo   *adcInfo;
-        arraylen(AvrATtiny85AdcPinInfo),    //int              adcCount;
+        AvrATtiny85AdcPinInfo20,            //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny85AdcPinInfo20),  //int              adcCount;
         1023,
         { 0, 0 },
 //        0, // OC2

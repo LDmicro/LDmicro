@@ -1,5 +1,5 @@
-== Release 5.4.
-    
+== Release 5.4.0.5
+
     * Refactor EEPROM RERSIST_ELEM for AVR
 
     * Fixed bug: LDmicro Forum - A problem with substracting 2 values #214
@@ -8,6 +8,8 @@
     * Added "Atmel AVR ATmega1284 44-Pin packages"
 
     * Fixed PWM for AVR ATmega1284. Six PWM Channels are available.
+
+    * Fixed AVR ATtiny85
 
 
 == Release 5.4.0.4

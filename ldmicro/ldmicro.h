@@ -777,7 +777,7 @@ int FindOpName(int op, const NameArray& name1, const NameArray& name2);
 int FindOpNameLast(int op, const NameArray& name1);
 int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2);
 
-#define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
+#define USE_IO_REGISTERS 0 // 0-NO, 1-YES has an error // USE IO REGISTERS in AVR
 // // #define USE_LDS_STS
 // not complete; just what I need
 typedef enum AvrOpTag {

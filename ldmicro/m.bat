@@ -428,6 +428,11 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 :@SET PROGECT="D:\lds\ATMEGA8_32PIN\atmega8 32pin.ld"
 
+@SET PROGECT=D:\lds\ATmega32U4\hello.ld
+@SET PROGECT=D:\lds\josua\josua.ld
+
+@SET PROGECT="D:\lds\batteria\monitor bateria atiny85.ld"
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD
