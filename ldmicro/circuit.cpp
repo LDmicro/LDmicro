@@ -396,13 +396,13 @@ static bool AddLeaf(const SeriesNode newElem)
 // and insert it into the current program with AddLeaf. Fill in some default
 // parameters, name etc. when we create the leaf; user can change them later.
 //-----------------------------------------------------------------------------
-void AddComment(const char *str)
+void AddComment(const char *text)
 {
     if(!CanInsertComment)
         return;
 
     ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.comment.str, str);
+    strcpy(c->d.comment.str, text);
 
     AddLeaf(ELEM_COMMENT, c);
 }
@@ -471,7 +471,10 @@ void AddTimer(int which)
         strcpy(t->d.timer.name, "Tnew");
         strcpy(t->d.timer.delay, "100000"); // 100 ms
     }
-    t->d.timer.adjust = 0;
+    if(Prog.LDversion == "0.1")
+        t->d.timer.adjust = -1;
+    else
+        t->d.timer.adjust = 0;
     AddLeaf(which, t);
 }
 

@@ -57,18 +57,22 @@ target_include_directories(${PROJECT_NAME}
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     )
 
-add_library (ldlog SHARED ${ldlog_cxx_files} ${ldlog_inc_files} ${fmt_cxx_files})
 
-target_include_directories(ldlog
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    )
+if(LDLOGLIB_SHARED)
+    add_library (ldlog SHARED ${ldlog_cxx_files} ${ldlog_inc_files} ${fmt_cxx_files})
 
-target_compile_definitions(ldlog
-    PRIVATE
-        LDLOG_EXPORT
-        FMT_EXPORT
-    INTERFACE
-        LDLOG_IMPORT
-        FMT_SHARED
-    )
+    target_include_directories(ldlog
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        )
+
+    target_compile_definitions(ldlog
+        PRIVATE
+            LDLOG_EXPORT
+            FMT_EXPORT
+        INTERFACE
+            LDLOG_IMPORT
+            FMT_SHARED
+        )
+endif()
+

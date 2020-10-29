@@ -80,6 +80,10 @@ $ cmake -G "Visual Studio 12 2013" ..           # MSVC 2013, 32-bit build
 $ cmake -G "Visual Studio 12 2013 Win64" ..     # MSVC 2013, 64-bit build
 $ cmake -G "Visual Studio 14 2015" ..           # MSVC 2015, 32-bit build
 $ cmake -G "Visual Studio 14 2015 Win64" ..     # MSVC 2015, 64-bit build
+$ cmake -G "Visual Studio 15 2017" ..           # MSVC 2017, 32-bit build
+$ cmake -G "Visual Studio 15 2017 Win64" ..     # MSVC 2017, 64-bit build
+$ cmake -G "Visual Studio 16 2019" ..           # MSVC 2019, 32-bit build
+$ cmake -G "Visual Studio 16 2019 Win64" ..     # MSVC 2019, 64-bit build
 ```
 Then open the generated solution file `build/ldmicro.sln` in Visual Studio and
 build the target `ALL_BUILD`.

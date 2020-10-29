@@ -518,9 +518,8 @@ int byteNeeded(long long int i)
 int TestByteNeeded(int count, const int32_t *vals)
 {
     int res = -1;
-    int r;
     for(int i = 0; i < count; i++) {
-        r = byteNeeded(vals[i]);
+        int r = byteNeeded(vals[i]);
         if(res < r)
             res = r;
     }
@@ -549,7 +548,7 @@ int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
         THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
-        VariableCount++;
+        VariableCount++;        
         memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name.c_str());
         if(name[0] == '#') {
@@ -578,16 +577,16 @@ int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
         }
     } else { // if(sizeOfVar == 0) // if(addr) { Allocate SRAM }
         if(name[0] == '#') {
-            ADDR_T addr = 0xff;
+            ADDR_T address = 0xff;
             if(IsNumber(&name[1])) {
-                addr = hobatoi(&name[1]);
+                address = hobatoi(&name[1]);
 
-                if((addr == 0xff) || (addr == 0)) {
+                if((address == 0xff) || (address == 0)) {
                     dbps("Not a FSR");
                     //Error("Not a FSR");
                 } else {
                     if(Variables[i].Allocated == 0) {
-                        Variables[i].addr = addr;
+                        Variables[i].addr = address;
                     }
                     Variables[i].Allocated = 1;
                 }
@@ -596,17 +595,17 @@ int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
                 if((j >= 0) && (j < MAX_IO_PORTS)) {
                     if((strstr(name.c_str(), "#PORT")) && (name.length() == 6)) { // #PORTx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu()->outputRegs[j];
+                            address = Prog.mcu()->outputRegs[j];
                         }
                     }
                     if((strstr(name.c_str(), "#PIN")) && (name.length() == 5)) { // #PINx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu()->inputRegs[j];
+                            address = Prog.mcu()->inputRegs[j];
                         }
                     }
                     if((strstr(name.c_str(), "#TRIS")) && (name.length() == 6)) { // #TRISx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu()->dirRegs[j];
+                            address = Prog.mcu()->dirRegs[j];
                         }
                     }
                 }
@@ -615,12 +614,12 @@ int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
                     return MemForVariable(&name[1], addr);
                 }
                 */
-                if((addr == 0xff) || (addr == 0)) {
+                if((address == 0xff) || (address == 0)) {
                     //dbps("Not a PORT/PIN");
                     //Error(_("Not a #PORT/#PIN/#TRIS/%s "), name);
                 } else {
                     if(Variables[i].Allocated == 0) {
-                        Variables[i].addr = addr;
+                        Variables[i].addr = address;
                     }
                     Variables[i].Allocated = 1;
                 }
@@ -722,6 +721,8 @@ int SetSizeOfVar(const NameArray &name, int sizeOfVar)
 
 int SizeOfVar(const NameArray &name)
 {
+    if(name.length() == 0)
+        return 0;
     if(IsNumber(name))
         return byteNeeded(hobatoi(name.c_str()));
     else

@@ -283,6 +283,8 @@ typedef uint32_t ADDR_T;
 #define MNU_COMPILE_INT             0x7800          // Interpreter
 #define MNU_COMPILE_XINT            0x7810          // Extended interpreter
 
+#define MNU_BUILD_ALL               0x7900          // Build C with libraries
+
 #define MNU_FLASH_BAT           0x7D
 #define MNU_READ_BAT            0x7E
 #define MNU_CLEAR_BAT           0x7F
@@ -445,6 +447,7 @@ extern HWND IoList;
 extern int IoListTop;
 extern int IoListHeight;
 extern char IoListSelectionName[MAX_NAME_LEN];
+extern bool RealTimeSimulationRunning;
 
 // draw.cpp
 int ProgCountWidestRow();
@@ -519,6 +522,7 @@ void UndoUndo();
 void UndoRedo();
 void UndoRemember();
 void UndoFlush();
+void UndoEmpty();
 bool CanUndo();
 
 // loadsave.cpp
@@ -741,9 +745,6 @@ char *strncatn(char *s1, const char *s2, size_t n);
 char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
 
-// lang.cpp
-const char *_(const char *in);
-
 // simulate.cpp
 int isVarInited(const char *name);
 void MarkInitedVariable(const char *name);
@@ -776,7 +777,7 @@ int FindOpName(int op, const NameArray& name1, const NameArray& name2);
 int FindOpNameLast(int op, const NameArray& name1);
 int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2);
 
-#define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
+#define USE_IO_REGISTERS 0 // 0-NO, 1-YES has an error // USE IO REGISTERS in AVR
 // // #define USE_LDS_STS
 // not complete; just what I need
 typedef enum AvrOpTag {
@@ -1092,5 +1093,11 @@ void Transliterate(char *dest, const char* str);
 
 // exceptions
 void abortHandler(int signum);      ///// Added by JG
+
+//ldmicro.cpp
+char *GetComspec(char *comspec, int size);
+bool ExistFile(const char *name);
+void IsErr(DWORD err, char *msg);
+int Execute(char *batchfile, char *batchArgs, int nShowCmd);
 
 #endif

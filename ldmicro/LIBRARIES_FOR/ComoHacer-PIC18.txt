@@ -1,0 +1,75 @@
+
+	Probar LdMicro en PIC18F :
+	__________________________
+
+
+1) 	Instale desde el sitio de Microchip o autro un compilador High-Tech-C 
+	(PicC) para PIC18F
+
+2) 	Copie el ejecutable LdMicro, buildPic18.bat y flashMCU.bat en un mismo directorio,
+	y copie las bibliotecas de C LIBRARIES_FOR en el mismo dirctorio.
+
+
+3) 	Edite buildPic18.bat (haga clic con el botón derecho + Modificar) y modifique 
+	PCCPATH para que apunte a su ruta High-Tech-C
+
+	Si pretende utilizar directamente un programador para flashear el objetivo, 
+	debe configurar las líneas de comandos en FlashMCU.bat
+	De todos modos, será posible flashear el objetivo manualmente a continuación
+
+4) 	Cree una escalera con LdMicro en un directorio
+
+5) 	Compile la escalera con "Compilar en HI-TECH C para PIC"
+	y genere el archivo C en el mismo directorio que el Archivo fuente (.ld), 
+	con el mismo nombre (.c)
+
+	También genera un archivo (.h) y un encabezado ladder.h
+	Con bibliotecas unidas, realiza un proyecto de C ya confeccionado
+
+6) 	Inicie "Generar C solución" desde LdMicro para obtener el archivo hex
+	en el directorio "bin"
+
+	Mira la ventana de comandos ; no debe haber errores de compilación
+	Las bibliotecas se copian automáticamente (la primera vez) en lel subdirectorio 
+	"lib" donde pueden ser adaptadas
+	Los archivos intermedios se generan en el subdirectorio "obj"
+
+7) 	Flashea el objetivo con "Llamar FlashMcu" o manualmente
+	Prueba de archivo hexadecimal generado en destino ...
+
+
+
+
+NB: 	Las bibliotecas han sido probadas en PIC18F4520.
+	Es posible (y fácil) adaptar el código a otros objetivos de
+	la misma familia mediante el uso de directivas de compilación.
+	El nombre del objetivo se define en ladder.h como LDTARGET_pic18Fxxxx
+
+	Puede usar varios ADC o PWM, pero solo un Uart, un SPI y un I2C
+	(Pero con varios periféricos con diferentes pines SS de software en SPI
+	o con diferentes direcciones en bus I2C)
+
+NB: 	SPI debe llamarse "SPI" en los PIC
+	Las nuevas funciones de SPI son:
+	SPI Enviar / Recibir, que envía y / o recibe un byte
+	SPI Write, que envía una cadena alfanumérica a SPI sin recepción
+
+	La frecuencia SPI se define como la de UART en la configuración global
+	SPI funciona solo en modo maestro con la mayoría de las configuraciones estándar
+
+NB: 	I2C debe llamarse "I2C" en los PIC
+	Las nuevas funciones de I2C son:
+	I2C Leer para leer un byte en un registro de periféricos
+	I2C Escribir para escribir un byte en un registro de periféricos
+
+	La frecuencia I2C también se define en la configuración global
+	I2C también funciona solo en modo maestro
+
+NB: 	Todas las frecuencias utilizadas por ADC, PWM, SPI o I2C se obtienen del 
+	reloj de la CPU por un factor divisorio. Hay pocas opciones para este factor, 
+	por lo que las frecuencias son muy aproximativos. 
+	Para tener consejos sobre frecuencias compile en Hex / Asm y mirar la información 
+	dada o computarla mirando bibliotecas o hoja de datos
+
+NB:	Se utiliza la resolución máxima ADC disponible.
+	Se utiliza la resolución máxima de PWM y el parámetro es solo% entre 0 y 100

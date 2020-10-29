@@ -4,7 +4,7 @@
 #include "AdcLib.h"
 
 static char adcs = 0;
-static int  chsPos = 0, adcsPos = 0;
+static int  chsPos = 0, adcsPos = 0; // TODO: use #define
 
 #ifndef LDTARGET_pic16f628
 

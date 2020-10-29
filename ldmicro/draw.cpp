@@ -1089,7 +1089,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             case ELEM_T_C_SFR: s = "IsBitC"; goto sfrcmp;
                 // clang-format on
                 sfrcmp:
-                    int l1, l2, lmax;
+                    size_t l1, l2, lmax;
 
                     l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
                     l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
@@ -1127,7 +1127,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             case ELEM_LEQ: s = "<="; goto cmp;
             cmp:
                     // clang-format on
-                    int len = std::min(static_cast<size_t>(POS_WIDTH), std::max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
+                    size_t len = std::min(static_cast<size_t>(POS_WIDTH), std::max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
 
                     sprintf(s1, "%s", leaf->d.cmp.op1);
                     sprintf(s2, "%s", leaf->d.cmp.op2);
@@ -1291,7 +1291,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "", "", s2, "", ""), poweredAfter, true);
 
             sprintf(s1, "%s:%s", c->init, c->max);
-            int l = strlen(s1);
+            size_t l = strlen(s1);
             if(l > POS_WIDTH - 7)
                 l = POS_WIDTH - 7;
             formatWidth(s2, l, "", "", s1, "", "");
@@ -1329,7 +1329,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             sprintf(s2, "%s:%s", c->name, c->init);
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "", "", s2, "", ""), poweredAfter, true);
 
-            int l = strlen(c->max);
+            size_t l = strlen(c->max);
             if(which == ELEM_CTD) {
                 if(l > POS_WIDTH - 7)
                     l = POS_WIDTH - 7;

@@ -315,7 +315,8 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "pwm off '%s'", IntCode[i].name1.c_str());
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
+            //case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_BUSY:
                 fprintf(f, "set bit '%s' if EEPROM busy", IntCode[i].name1.c_str());
                 break;
 
@@ -323,16 +324,13 @@ void IntDumpListing(const char *outFile)
                 int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
                     fprintf(f, "read EEPROM[%d] into '%s'", IntCode[i].literal1, IntCode[i].name1.c_str());
-                else if(sov == 2)
-                    fprintf(f, "read EEPROM[%d,%d+1] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
-                else if(sov == 3)
-                    fprintf(f, "read EEPROM[%d,%d+1,%d+2] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
-                else if(sov == 4)
-                    fprintf(f, "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'", IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].name1.c_str());
+                else if(sov <= 4)
+                    fprintf(f, "read EEPROM[%d..%d+%d] into '%s'", IntCode[i].literal1, IntCode[i].literal1, sov-1, IntCode[i].name1.c_str());
                 else
                     oops();
                 break;
             }
+            /*
             case INT_EEPROM_WRITE: {
                 int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
@@ -345,6 +343,24 @@ void IntDumpListing(const char *outFile)
                     fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1);
                 else
                     oops();
+                break;
+            }
+            */
+            case INT_EEPROM_WRITE_BYTE: {
+                fprintf(f, "write '%s' into EEPROM[%s]", IntCode[i].name2.c_str(), IntCode[i].name1.c_str());
+                /*
+                int sov = SizeOfVar(IntCode[i].name1);
+                if(sov == 1)
+                    fprintf(f, "write '%s' into EEPROM[%d]", IntCode[i].name1.c_str(), IntCode[i].literal1);
+                else if(sov == 2)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1);
+                else if(sov == 3)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1);
+                else if(sov == 4)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]", IntCode[i].name1.c_str(), IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1, IntCode[i].literal1);
+                else
+                    oops();
+                */
                 break;
             }
             case INT_SPI_COMPLETE:
@@ -649,7 +665,7 @@ void IntDumpListing(const char *outFile)
 #endif
 
             default:
-                Error("INT_%d", IntCode[i].op);
+                ooops("INT_%d", IntCode[i].op);
         }
         if((int_comment_level == 1)
            || ((IntCode[i].op != INT_SIMULATE_NODE_STATE) // && (IntCode[i].op != INT_AllocKnownAddr)
@@ -2876,11 +2892,8 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                 for(int i = 0; i < leaf->d.stepper.n; i++) {
                     Tdata[i] = r.T[i + 1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
                 }
-            }
-            //
-            if(speed >= 3) {
-                //IJMP inside INT_FLASH_INIT
 
+                //IJMP inside INT_FLASH_INIT
                 if((isVarInited(nameTable) < 0) || (isVarInited(nameTable) == rungNow)) {
                     Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, leaf->d.stepper.n, r.sovElement, Tdata);
                 } else {
@@ -3562,35 +3575,74 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
 
         case ELEM_PERSIST: {
             Comment(3, "ELEM_PERSIST");
+            int sov = SizeOfVar(leaf->d.persist.var);
+            SetSizeOfVar(EEPROM_POSTPONE_BYTES_COUNTER, 1);
+            SetSizeOfVar(EEPROM_POSTPONE_BYTES, 4);
+            char isInit[MAX_NAME_LEN];
+            GenSymOneShot(isInit, "isIniPERSIST", leaf->d.persist.var);
+            char isWrite[MAX_NAME_LEN];
+            GenSymOneShot(isWrite, "isWrPERSIST", leaf->d.persist.var);
             Op(INT_IF_BIT_SET, stateInOut);
-
               // At startup, get the persistent variable from flash.
-              char isInit[MAX_NAME_LEN];
-              GenSymOneShot(isInit, "PERSIST", leaf->d.persist.var);
-              Op(INT_IF_BIT_CLEAR, isInit);
-                Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                Op(INT_IF_BIT_CLEAR, "$scratch");
-                  Op(INT_SET_BIT, isInit);
-                  Op(INT_EEPROM_READ, leaf->d.persist.var, EepromAddrFree);
-                Op(INT_END_IF);
+              //Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
+              Op(INT_IF_NEQ, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if no postpone bytes
               Op(INT_ELSE);
+                Op(INT_EEPROM_BUSY, "$scratch");
+                Op(INT_IF_BIT_CLEAR, "$scratch"); // if EPPROM is ready
+                  Op(INT_IF_BIT_CLEAR, isInit);
+                    Op(INT_SET_BIT, isInit);
+                    Op(INT_EEPROM_READ, leaf->d.persist.var, EepromAddrFree);
+                  Op(INT_ELSE);
                   // While running, continuously compare the EEPROM copy of
                   // the variable against the RAM one; if they are different,
                   // write the RAM one to EEPROM.
-                  Op(INT_CLEAR_BIT, "$scratch");
-                  Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                  Op(INT_IF_BIT_CLEAR, "$scratch");
-                    Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
-                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit", leaf->d.persist.var);
-                    Op(INT_ELSE);
-                      Op(INT_EEPROM_WRITE, leaf->d.persist.var, EepromAddrFree);
+                    char tmpVarName[MAX_NAME_LEN];
+                    sprintf(tmpVarName, "$tmpVar%dbyte", sov);
+                    SetSizeOfVar(tmpVarName, sov);
+                    Op(INT_EEPROM_READ, tmpVarName, EepromAddrFree);
+                    Op(INT_IF_NEQ, tmpVarName, leaf->d.persist.var);
+                      if(sov == 1) {
+                        char s[MAX_NAME_LEN];
+                        sprintf(s, "%d", EepromAddrFree);
+                        Op(INT_EEPROM_WRITE_BYTE, s, leaf->d.persist.var);
+                      } else {
+                        Op(INT_SET_VARIABLE_TO_LITERAL, EEPROM_POSTPONE_BYTES_COUNTER, sov);
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, EEPROM_POSTPONE_BYTES, leaf->d.persist.var);
+                        Op(INT_SET_BIT, isWrite);
+                      }
                     Op(INT_END_IF);
                   Op(INT_END_IF);
+                Op(INT_END_IF);
               Op(INT_END_IF);
-
             Op(INT_END_IF);
-            EepromAddrFree += SizeOfVar(leaf->d.persist.var);
+            if(sov > 1) {
+              Op(INT_IF_BIT_SET, isWrite);
+                //Op(INT_IF_NEQ, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if postponed bytes present
+                Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0"); // if postponed bytes present
+                Op(INT_ELSE);
+                  //Op(INT_CLEAR_BIT, "$scratch");
+                  Op(INT_EEPROM_BUSY, "$scratch");
+                  Op(INT_IF_BIT_CLEAR, "$scratch");
+                    SetSizeOfVar("$tmpVar1byte", 1); // byte index
+                    SetSizeOfVar("$tmpVar2byte", 2); // ROM address
+                    char s[MAX_NAME_LEN];
+                    sprintf(s, "%d", sov);
+                    Op(INT_SET_VARIABLE_SUBTRACT, "$tmpVar2byte", s, EEPROM_POSTPONE_BYTES_COUNTER);
+                    if(EepromAddrFree) {
+                      sprintf(s, "%d", EepromAddrFree);
+                      Op(INT_SET_VARIABLE_ADD, "$tmpVar2byte", "$tmpVar2byte", s);
+                    }
+                    Op(INT_EEPROM_WRITE_BYTE, "$tmpVar2byte", EEPROM_POSTPONE_BYTES);
+                    Op(INT_SET_VARIABLE_SR0, EEPROM_POSTPONE_BYTES, EEPROM_POSTPONE_BYTES, "8");
+                    Op(INT_DECREMENT_VARIABLE, EEPROM_POSTPONE_BYTES_COUNTER);
+                    Op(INT_IF_EQU, EEPROM_POSTPONE_BYTES_COUNTER, "0");
+                      Op(INT_CLEAR_BIT, isWrite);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            }
+            EepromAddrFree += sov;
             break;
         }
         /*
@@ -4096,6 +4148,7 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
               Op(INT_VARIABLE_CLEAR_BIT, leaf->d.math.dest, leaf->d.math.op1);
             Op(INT_END_IF);
             break;
+        //vvv
         {
         int intOp;
         case ELEM_NEG:
@@ -4168,17 +4221,54 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             break;
         }
         }
-        //
+        //^^^
+        case ELEM_ADD:
+            Comment(3, "ELEM_ADD");
+            if(IsNumber(leaf->d.math.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                             leaf->d.math.dest);
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                if((int_comment_level != 1)
+                          && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
+                    Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else if((int_comment_level != 1)
+                          && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "1") == 0)) {
+                    Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else if((int_comment_level != 1)
+                          && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
+                    Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else if((int_comment_level != 1)
+                          && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "-1") == 0)) {
+                    Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else if((strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) ) {
+                    Op(INT_SET_VARIABLE_ADD, leaf->d.math.dest, leaf->d.math.op2, leaf->d.math.op1, stateInOut2, "ROverflowFlagV");
+                } else {
+                    Op(INT_SET_VARIABLE_ADD, leaf->d.math.dest, leaf->d.math.op1, leaf->d.math.op2, stateInOut2, "ROverflowFlagV");
+                }
+            Op(INT_END_IF);
+            break;
+        case ELEM_SUB:
+            Comment(3, "ELEM_SUB");
+            if(IsNumber(leaf->d.math.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."),
+                                             leaf->d.math.dest);
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                if((int_comment_level != 1)
+                   && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
+                    Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else if((int_comment_level != 1)
+                          && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
+                    Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
+                } else {
+                    Op(INT_SET_VARIABLE_SUBTRACT, leaf->d.math.dest, leaf->d.math.op1, leaf->d.math.op2, stateInOut2, "ROverflowFlagV");
+                }
+            Op(INT_END_IF);
+            break;
+        //vvv
         {
         int intOp;
-        case ELEM_ADD:
-            intOp = INT_SET_VARIABLE_ADD;
-            Comment(3, "ELEM_ADD");
-            goto math;
-        case ELEM_SUB:
-            intOp = INT_SET_VARIABLE_SUBTRACT;
-            Comment(3, "ELEM_SUB");
-            goto math;
         case ELEM_MUL:
             intOp = INT_SET_VARIABLE_MULTIPLY;
             Comment(3, "ELEM_MUL");
@@ -4197,34 +4287,14 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                                              leaf->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            const char *op1 = VarFromExpr(leaf->d.math.op1, "$scratch1");
-            if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
-               && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_SUBTRACT) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "1") == 0)) {
-                Op(INT_INCREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op1) == 0) && (strcmp(leaf->d.math.op2, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else if((intOp == INT_SET_VARIABLE_ADD) && (int_comment_level != 1)
-                      && (strcmp(leaf->d.math.dest, leaf->d.math.op2) == 0) && (strcmp(leaf->d.math.op1, "-1") == 0)) {
-                Op(INT_DECREMENT_VARIABLE, leaf->d.math.dest, stateInOut2, "ROverflowFlagV");
-            } else {
+                const char *op1 = VarFromExpr(leaf->d.math.op1, "$scratch1");
                 const char *op2 = VarFromExpr(leaf->d.math.op2, "$scratch2");
                 Op(intOp, leaf->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
-            }
             Op(INT_END_IF);
             break;
         }
         }
+        //^^^
         case ELEM_SLEEP:
             Comment(3, "ELEM_SLEEP");
             Op(INT_IF_BIT_SET, stateInOut);

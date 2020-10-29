@@ -15,7 +15,7 @@
 #define ISA_INTERPRETED     0x05
 #define ISA_NETZER          0x06
 #define ISA_XINTERPRETED    0x0A    // Extended interpeter
-#define ISA_ESP8266         0x0B
+#define ISA_ESP             0x0B
 #define ISA_PIC18           0x0C
 
 #define MAX_IO_PORTS        ('P'-'A'+1)

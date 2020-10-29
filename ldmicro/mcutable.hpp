@@ -58,7 +58,8 @@ typedef enum CoreTag {
     PICcores_, // end of PICcores
 
     ESPcores,
-    ESP8266Core,
+    ESP8266,
+    ESP32,
     ESPcores_, // end of ESPcores
 
     ARMcores,
@@ -70,6 +71,7 @@ typedef enum CoreTag {
 
     PCcores,
     PC_LPT_COM,
+    PCcores_, // end of PCcores
 } Core;
 
 //-----------------------------------------------
@@ -147,7 +149,7 @@ typedef struct McuIoInfoTag {
     const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
     const char *mcuInc;     // ASM*.INC // D:\WinAVR\avr\include\avr
     const char *mcuH;       // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    const char *mcuH2;      // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    const char *mcuH2;      // C*.H     // AVRGCC          // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char        portPrefix;
     uint32_t    inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
     uint32_t    outputRegs[MAX_IO_PORTS];
@@ -181,8 +183,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo *spiInfo;
     uint32_t    spiCount;
 
-    McuI2cInfo       *i2cInfo;              
-    uint32_t          i2cCount;           
+    McuI2cInfo       *i2cInfo;
+    uint32_t          i2cCount;
 
     struct {
         uint32_t start;

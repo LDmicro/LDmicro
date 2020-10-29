@@ -264,7 +264,7 @@ static void MakeControls()
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Revert color scheme"), WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 480, 190, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
-
+/*
 UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
     return 0;
@@ -273,7 +273,7 @@ UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam
     (void)wParam;
     (void)lParam;
 }
-
+*/
 void ShowColorDialog()
 {
     schemeSave = scheme;

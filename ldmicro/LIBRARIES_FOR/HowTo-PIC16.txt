@@ -1,58 +1,52 @@
 
-	LdMicro for PIC16F microcontrollers
-	_________________________________________
+	Test LdMicro for PIC16F microcontrollers :
+	__________________________________________
 
-
-	LdMicro 5 offers new functions like SPI or I2C via C programming
 
 	If everything is well configured, one can generate C files,
 	hex file, and upload it to the target without exiting LdMicro
 
 
 
-How to test LdMicro on PICs (16F) with ADC, PWM, SPI or I2C functions:
-______________________________________________________________________
+1)	Install Hi-Tech C (alias PicC) compiler for PIC16F from microchip site
+	or any other
 
-1)	Install Hi-Tech C alias PicC compiler for PIC16.
-	
-2)	Copy LdMicro executable and flashMCU.bat in a same directory.
-	Also copy LIBRARIES_FOR directory and its content at the same place.
 
-3)	Edit FlashMCU.bat (right click + Modify) and in section HTC,
-	modify PCCPATH to point to your picc path instead of mine
+2)	Copy LdMicro executable, buildPic16.bat and flashMCU.bat in a same directory
+	Also copy LIBRARIES_FOR directory and its content at the same place
+	Verify that libraries' version is the same as LdMicro's one
 
-	If you intend to use a command line tool to flash the target, 
-	fill in the Transfer section with proper commands.
+3)	Edit buildPic16.bat (right click + Modify) and modify PCCPATH to point 
+	to your Hi-Tech C path
 
-	It'll be possible anyway to generate hex file with script and
-	flash the target with it manually next
+	Then, edit if need be FlashMCU.bat (right click + Modify) 
+	According to the programmer you intend to use, you can modify instructions 
+	that will load the hex file into the target
+	It'll be possible anyway to flash the target manually with hex file
 
 4)	Create a ladder with LdMicro in a directory.
 
-5)	Compile the ladder with "Compile HI-TECH C for PIC" and generate 
-	the C file in the same directory as the source (.ld) file, 
-	with the same name (.c)
+5)	Compile the ladder with "Compile HI-TECH C for PIC" 
+	and generate the C file in the same directory as the source (.ld) 
+	file, with the same name (.c)
 	
 	It also generates a (.h) file and a ladder.h header
 	With joined libraries, it makes a ready-made C project
 
-6)	Launch FlashMCU.bat from LdMicro to get the hex file and upload 
-	it to the target automatically or manually from "bin" subdirectory
+6)	Launch "Generate C solution" from LdMicro to get the hex file
+	in "bin" directory
 
 	Look at the command window ; there shouln't be compiling errors
 	Librairies are automaticaly copied (first time only) in "lib" 
 	subdirectory where they can be adapted if need be
 	Intermediate files are generated in "obj" subdirectory
 
-7)	Test generated hex file on target...
-
-
-	Of course it needs to be tested furthermore...
-	Please report problems (and successes) on ldmicro forum
+7)	Upload generated hex file into the target with "Call FlashMcu" or manually
+	Test generated hex file on target...
 
 
 
-NB:	The libraries have been tested on PIC16F876 in simulation, but should
+NB:	The libraries have been tested on PIC16F876 and PIC16F877, but should
 	work for all PIC16F declared in LdMicro.
 	It's possible (and easy) to adapt the code to other targets of the 
 	same family by using compiling directives.
@@ -84,4 +78,3 @@ NB:	All the frequencies used by ADC, PWM, SPI or I2Care obtained from CPU clock
 
 NB:	ADC max available resolution is used
 	PWM max resolution is used and parameter is only % between 0 and 100
-

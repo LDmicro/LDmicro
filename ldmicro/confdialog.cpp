@@ -34,15 +34,15 @@ static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
 static HWND BaudTextbox;
-static HWND RateTextbox;          
-static HWND SpeedTextbox;       
+static HWND RateTextbox;
+static HWND SpeedTextbox;
 
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
-static LONG_PTR PrevRateProc;    
-static LONG_PTR PrevSpeedProc;   
+static LONG_PTR PrevRateProc;
+static LONG_PTR PrevSpeedProc;
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -66,10 +66,10 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
         t = PrevBaudProc;
-    else if(hwnd == RateTextbox)  
-        t = PrevRateProc;       
+    else if(hwnd == RateTextbox)
+        t = PrevRateProc;
     else if(hwnd == SpeedTextbox)
-        t = PrevSpeedProc;       
+        t = PrevSpeedProc;
 
     else
         oops();
@@ -121,7 +121,7 @@ static void MakeControls()
     HWND textLabel2_ = CreateWindowEx(0, WC_STATIC, _("PIC Configuration Bits:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT, 267, 73, 130, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2_);
 
-    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 72, 85, 21, ConfDialog, nullptr, Instance, nullptr);
+    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 400, 72, 100, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(ConfigBitsTextbox);
 
     if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
@@ -304,14 +304,10 @@ void ShowConfDialog()
         if(Prog.mcu())
             Prog.configurationWord = Prog.mcu()->configurationWord;
     }
-    if(Prog.configurationWord) {
-        sprintf(buf, "0x%llX", Prog.configurationWord);
-    }
-    ///// Added by JG
-    else {
-        sprintf(buf, "%i", 0);
-    }
-    /////
+    if(Prog.configurationWord)
+        sprintf(buf, "0x%lX", Prog.configurationWord);
+    else
+        strcpy(buf, "0");
     SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     sprintf(buf, "%d", Prog.baudRate);
@@ -355,16 +351,16 @@ void ShowConfDialog()
     }
 
     if(!DialogCancel) {
-        char buf[26];
-        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        double        dProgCycleTime = 1000.0 * atof(buf);
+        char cancel_buf[26];
+        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        double        dProgCycleTime = 1000.0 * atof(cancel_buf);
         long long int ProgCycleTime;
 
         sprintf(buf, "%.0f", dProgCycleTime);
         ProgCycleTime = hobatoi(buf);
 
-        SendMessage(TimerTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        if(atoi(buf) == 0)
+        SendMessage(TimerTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        if(atoi(cancel_buf) == 0)
             Prog.cycleTimer = 0;
         else
             Prog.cycleTimer = 1;
@@ -378,32 +374,32 @@ void ShowConfDialog()
         } else {
             Prog.cycleDuty = 0;
         }
-        SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+        SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
         ///// Added by JG:  convert '.' to ',' for atof()
-        for(size_t i = 0; i < strlen(buf); i++)
-            if(buf[i] == '.')
-                buf[i] = ',';
+        for(size_t i = 0; i < strlen(cancel_buf); i++)
+            if(cancel_buf[i] == '.')
+                cancel_buf[i] = ',';
         /////
-        Prog.mcuClock = (int)(1e6 * atof(buf) + 0.5);
+        Prog.mcuClock = (int)(1e6 * atof(cancel_buf) + 0.5);
 
-        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
 
         if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18))) {
-            Prog.configurationWord = hobatoi(buf);
+            Prog.configurationWord = hobatoi(cancel_buf);
             if(!Prog.configurationWord) {
                 Error(_("Zero Configuration Word(s) not valid."));
                 Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
 
-        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.baudRate = atoi(buf);
+        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.baudRate = atol(cancel_buf);
 
-        SendMessage(RateTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.spiRate = atol(buf);
+        SendMessage(RateTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.spiRate = atol(cancel_buf);
 
-        SendMessage(SpeedTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.i2cRate = atol(buf);
+        SendMessage(SpeedTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        Prog.i2cRate = atol(cancel_buf);
 
         if(Prog.mcuClock <= 0) {
             Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));

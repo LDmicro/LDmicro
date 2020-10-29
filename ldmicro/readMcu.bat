@@ -1,3 +1,14 @@
+@rem COLOR [background][foreground]
+@rem 0 = Black   8 = Gray
+@rem 1 = Blue    9 = Light Blue
+@rem 2 = Green   A = Light Green
+@rem 3 = Aqua    B = Light Aqua
+@rem 4 = Red     C = Light Red
+@rem 5 = Purple  D = Light Purple
+@rem 6 = Yellow  E = Light Yellow
+@rem 7 = White   F = Bright White
+@COLOR F0
+
 @echo OFF
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
@@ -48,16 +59,16 @@ goto NOT_SUPPOTED
 ::**************************************************************************
 @rem *** Set up avrdude.exe path. ***
 @rem     It may be:
-@rem SET AVRDUDE_PATH=D:\WinAVR\bin\
-@rem SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
-@rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
-@rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
-     SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
+::SET AVRDUDE_PATH=D:\WinAVR\bin\
+::SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
+::SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
+::SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
+  SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
 
 @rem *** Set up your avrdude config file. ***
-@rem SET AVRDUDE_CONF=
-@rem SET AVRDUDE_CONF=-C %AVRDUDE_PATH%avrdude.conf
-     SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
+::SET AVRDUDE_CONF=
+::SET AVRDUDE_CONF=-C %AVRDUDE_PATH%avrdude.conf
+  SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
 
 @rem *** Set up your hardware avrdude programmer. ***
 @rem   See avrdude.conf programmer id.
@@ -68,11 +79,11 @@ goto NOT_SUPPOTED
 @rem Mega(ATMEGA2560)               is stk500v2 at 115200 baud (-b 115200 otion for %AVRDUDE_PATH%avrdude.exe)
 @rem "wiring" is Basically STK500v2 protocol, with some glue to trigger the arduino bootloader.
 
-@rem SET AVRDUDE_PROGRAMMER_ID=dapa
-@rem SET AVRDUDE_PROGRAMMER_ID=stk500
-@rem SET AVRDUDE_PROGRAMMER_ID=stk200s5
-@rem SET AVRDUDE_PROGRAMMER_ID=stk500v2 -P COM9 -b 115200
-     SET AVRDUDE_PROGRAMMER_ID=wiring -P COM9 -b 115200
+::SET AVRDUDE_PROGRAMMER_ID=dapa
+::SET AVRDUDE_PROGRAMMER_ID=stk500
+::SET AVRDUDE_PROGRAMMER_ID=stk200s5
+::SET AVRDUDE_PROGRAMMER_ID=stk500v2 -P COM9 -b 115200
+  SET AVRDUDE_PROGRAMMER_ID=wiring -P COM9 -b 115200
 
 @rem *** Set up your avrdude Atmel Microcontroller. ***
 @rem   See avrdude.conf part id.
@@ -89,14 +100,14 @@ goto NOT_SUPPOTED
 @rem Mega(ATMEGA2560)               is m2560
 @rem Leonardo                       is m32u4
 @rem
-@rem SET AVRDUDE_PART_ID=m8
-@rem SET AVRDUDE_PART_ID=m328p
-@rem SET AVRDUDE_PART_ID=m32u4
-     SET AVRDUDE_PART_ID=m2560
+::SET AVRDUDE_PART_ID=m8
+::SET AVRDUDE_PART_ID=m328p
+::SET AVRDUDE_PART_ID=m32u4
+  SET AVRDUDE_PART_ID=m2560
 
 @rem Set up your avrdude options
-@rem SET AVRDUDE_OPTIONS=-n -D -v -v -l readMcu.log
-     SET AVRDUDE_OPTIONS=-n -D -v
+::SET AVRDUDE_OPTIONS=-n -D -v -v -l readMcu.log
+  SET AVRDUDE_OPTIONS=-n -D -v
 
 @rem *** Read signature. ***
 %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U signature:r:%2_signature.hex:r
@@ -121,17 +132,17 @@ goto exit
 @rem =======================================================================
 :PIC16
 @rem *** Set up PIC reading tool. ***
-@rem SET TOOL="d:\Program Files\Microchip\PICkit 3 v1\PICkit 3.exe"
-     SET TOOL="d:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3\PK3CMD.exe"
+::SET TOOL="d:\Program Files\Microchip\PICkit 3 v1\PICkit 3.exe"
+  SET TOOL="d:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3\PK3CMD.exe"
 
 @rem *** Part Selection. ***
 @rem Part name should be mentioned without Family Information like PIC/dsPIC
 @rem Example: PIC16F628 should be mentioned as 16F628.
-@rem SET PART=-P16F628
-     SET PART=-P16F877A
+::SET PART=-P16F628
+  SET PART=-P16F877A
 
 @rem *** Set up additional options of TOOL program. ***
-     SET OPTIONS=-V5.00
+  SET OPTIONS=-V5.00
 
 @rem *** Read PROGRAM Memory ***
 %TOOL% %PART% %OPTIONS% -GPF%2_program.hex ?E

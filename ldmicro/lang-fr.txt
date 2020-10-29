@@ -601,14 +601,14 @@
 "Compile Interpretable Extended Byte Code"
 "Compiler en Bytecode étendu"
 
-"Call flashMcu.bat\tF6"
-"Lancer flashMCU.bat\tF6"
+"Call flashMcu\tF6"
+"Lancer flashMCU\tF6"
 
-"Call readMcu.bat\tCtrl+F6"
-"Lancer readMCU.bat\tCtrl+F6"
+"Call readMcu\tCtrl+F6"
+"Lancer readMCU\tCtrl+F6"
 
-"Call clear.bat"
-"Lancer clear.bat"
+"Call clear"
+"Lancer clear"
 
 "Config"
 "Configuration"
@@ -2561,10 +2561,29 @@
 "PICs seulement: Voir registres RBPU et GPPU."
 
 "*PIC only: if PORT RB value is not 0, Weak Pull-ups will be enabled for all port B pins via RBPU."
-"PICs seulement: Si la valeur sur le PORT RB est non nulle, les Pull-ups seront activees pour tout le port B."
+"PICs seulement: Si la valeur sur le PORT RB est non nulle, les Pull-ups seront activées pour tout le port B."
 
 "Use menu: 'Compile->Compile HI-TECH C for PIC'"
 "Utiliser le menu 'Compiler en Hi-Tech C pour PIC'"
 
 "Other MCUs"
 "Autres MCUs"
+
+"Pipe creation error"
+"Erreur de création du Pipe"
+
+"Pipe error"
+"Erreur Pipe"
+
+"Exec error from batch file"
+"Erreur d'exécution du fichier batch"
+
+"Build Solution"
+"Généreration"
+
+"Build C Solution"
+"Générer la solution C"
+
+"Save ld before build."
+"Enregistrer le ladder avant de générer la solution."
+

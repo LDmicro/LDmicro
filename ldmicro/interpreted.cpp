@@ -215,9 +215,9 @@ void CompileInterpreted(const char *outFile)
                 // TODO
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
+            //case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
+            //case INT_EEPROM_WRITE:
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_SPI:

@@ -763,8 +763,8 @@
 "TODO: Cu&t Rungs\tCtrl+X or Shift+Del"
 "TODO: Cu&t Rungs\tCtrl+X or Shift+Del"
 
-"TODO: Call flash.bat\tF6"
-"TODO: Call flash.bat\tF6"
+"TODO: Call flash\tF6"
+"TODO: Call flash\tF6"
 
 "TODO: Compile ARDUINO"
 "TODO: Compile ARDUINO"

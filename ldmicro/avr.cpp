@@ -1789,14 +1789,21 @@ static void WriteMemoryStillAddr(ADDR_T addr, BYTE val)
 }
 
 //-----------------------------------------------------------------------------
-static void WriteMemoryCurrAddr(BYTE val)
+static void WriteMemoryCurrAddr(ADDR_T addr, BYTE val)
 //used ZL, r25; Opcodes: 2
 {
-    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
-    // load r25 with the data
-    Instruction(OP_LDI, r25, val);
-    // do the store
-    Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
+    if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
+	    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
+		// load r25 with the data
+		Instruction(OP_LDI, r25, val);
+		// do the store
+		Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
+    } else if(USE_IO_REGISTERS == 1) {
+#if USE_IO_REGISTERS == 1
+        Instruction(OP_OUT, addr - __SFR_OFFSET, val);
+#endif
+    } else
+        oops();
 }
 
 //-----------------------------------------------------------------------------
@@ -2469,7 +2476,7 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         if(WGM01 == -1) {                         // ATmega8
             tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
             if(tcnt0PlcCycle < 0)
-                tcnt0PlcCycle = 0;
+                tcnt0PlcCycle = 0; 
             if(tcnt0PlcCycle > 255)
                 tcnt0PlcCycle = 255;
 
@@ -2584,7 +2591,7 @@ static void InitTableString(IntOp *a)
         SetMemForVariable(a->name1, addrOfTable, 1);
 
         Comment("DATA's size is 1");
-        for(int i = 0; i < strlen(str); i += 2) {
+        for(size_t i = 0; i < strlen(str); i += 2) {
             Instruction(OP_DB2, str[i], str[i + 1]);
         }
         if(strlen(str) % 2 == 0)
@@ -3125,13 +3132,13 @@ static void   WriteRuntime()
     //  WriteMemoryStillAddr(REG_WDTCR, (1<<WDCE) | (1<<WDE));
 #ifdef USE_WDT
     STOREval(REG_WDTCR, (1 << WDCE) | (1 << WDE));
-#endif
     Comment("- Got only four cycles to set the new values from here! -");
     //WriteMemoryCurrAddr((1 << WDE)); // 16 ms
     //WriteMemoryCurrAddr((1 << WDE) | (1 << WDP2) | (1 << WDP1) | (1 << WDP0)); // 2s
-    WriteMemoryCurrAddr((1 << WDE) | (1 << WDP3) | (1 << WDP0)); // 8s
+    WriteMemoryCurrAddr(REG_WDTCR, (1 << WDE) | (1 << WDP3) | (1 << WDP0)); // 8s
     ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more than four cycles
     ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more than four cycles
+#endif
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
@@ -4824,6 +4831,7 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(endInit);
                 break;
             }
+                /*
 #if 0
             case INT_EEPROM_BUSY_CHECK: {
                 MemForSingleBit(a->name1, false, &addr, &bit);
@@ -4875,6 +4883,7 @@ static void CompileFromIntermediate()
             }
 #else
             case INT_EEPROM_BUSY_CHECK: {
+                Comment("INT_EEPROM_BUSY_CHECK");
                 MemForSingleBit(a->name1, false, &addr, &bit);
 
                 uint32_t isBusy = AllocFwdAddr();
@@ -4925,9 +4934,12 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(isBusy);
                 SetBit(addr, bit);
                 FwdAddrIsNow(done);
+                Comment("INT_EEPROM_BUSY_CHECK end");
                 break;
             }
 #endif
+*/
+                /*
 #if 0
             case INT_EEPROM_READ: {
                 MemForVariable(a->name1, &addr1);
@@ -4962,6 +4974,23 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
+*/
+            case INT_EEPROM_READ: {
+                Comment("INT_EEPROM_READ");
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
+                LoadYAddr(REG_EEDR);
+                sov = SizeOfVar(a->name1);
+                for(int i = 0; i < sov; i++) {
+                    WriteMemory(REG_EEARH, BYTE(((a->literal1 + i) >> 8) & 0xff));
+                    WriteMemory(REG_EEARL, BYTE((a->literal1 + i) & 0xff));
+                    WriteMemory(REG_EECR, 0x01);
+                    Instruction(OP_LD_Y, 16);
+                    Instruction(OP_ST_XP, 16);
+                }
+                break;
+            }
+                /*
 #if 0
             case INT_EEPROM_WRITE:
                 MemForVariable(a->name1, &addr1);
@@ -4977,6 +5006,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(REG_EEDR);
                 Instruction(OP_ST_X, 16, 0);
+
                 LoadXAddr(REG_EECR);
                 Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
                 Instruction(OP_ST_X, 16, 0);
@@ -4985,10 +5015,17 @@ static void CompileFromIntermediate()
                 break;
 #else
             case INT_EEPROM_WRITE:
+                Comment("INT_EEPROM_WRITE");
                 sov = SizeOfVar(a->name1);
                 Instruction(OP_LDI, 16, sov - 1);
                 LoadYAddr(EepromHighBytesCounter);
                 Instruction(OP_ST_Y, 16);
+
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_ST_X, 16);
 
                 if(sov >= 2) {
                     MemForVariable(a->name1, &addr1);
@@ -4996,17 +5033,106 @@ static void CompileFromIntermediate()
                     LoadYAddr(EepromHighByte);
                     Instruction(OP_LD_XP, 16);
                     Instruction(OP_ST_YP, 16);
+
+                    LoadXAddr(REG_EECR);
+                    Instruction(OP_LDI, 16, 0x04);
+                    Instruction(OP_ST_X, 16);
+                    Instruction(OP_LDI, 16, 0x06);
+                    Instruction(OP_ST_X, 16);
+
                     if(sov >= 3) {
                         Instruction(OP_LD_XP, 16);
                         Instruction(OP_ST_YP, 16);
+
+                        LoadXAddr(REG_EECR);
+                        Instruction(OP_LDI, 16, 0x04);
+                        Instruction(OP_ST_X, 16);
+                        Instruction(OP_LDI, 16, 0x06);
+                        Instruction(OP_ST_X, 16);
+
                         if(sov >= 4) {
                             Instruction(OP_LD_XP, 16);
                             Instruction(OP_ST_YP, 16);
+
+                            LoadXAddr(REG_EECR);
+                            Instruction(OP_LDI, 16, 0x04);
+                            Instruction(OP_ST_X, 16);
+                            Instruction(OP_LDI, 16, 0x06);
+                            Instruction(OP_ST_X, 16);
                         }
                     }
                 }
+                Comment("INT_EEPROM_WRITE end");
                 break;
 #endif
+*/
+            case INT_EEPROM_BUSY:
+                Comment("INT_EEPROM_BUSY");
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
+                CopyBit(addr1, bit1, REG_EECR, EEWE);
+                break;
+            case INT_EEPROM_WRITE_BYTE:
+                Comment("INT_EEPROM_WRITE_BYTE");
+                LoadYAddr(REG_EEARL);
+                if(IsNumber(a->name1)) {
+                    int addr = hobatoi(a->name1.c_str());
+                    Instruction(OP_LDI, 16, addr & 0xFF);
+                    Instruction(OP_ST_YP, 16);
+                    Instruction(OP_LDI, 16, addr >> 8 & 0xFF);
+                    Instruction(OP_ST_Y, 16);
+                } else {
+                    MemForVariable(a->name1, &addr1);
+                    LoadXAddr(addr1);
+                    Instruction(OP_LD_XP, 16);
+                    Instruction(OP_ST_YP, 16);
+                    Instruction(OP_LD_X, 16);
+                    Instruction(OP_ST_Y, 16);
+                }
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
+                LoadYAddr(REG_EEDR);
+                Instruction(OP_LD_X, 16);
+                Instruction(OP_ST_Y, 16);
+                /*
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
+                Instruction(OP_LDI, 17, (1 << EEMWE) | (1 << EEWE)); // 0x06
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_ST_X, 17);
+                /*
+                Instruction(OP_SBI, REG_EECR, EEMWE);
+                Instruction(OP_SBI, REG_EECR, EEWE);
+                */
+                SETB(REG_EECR, EEMWE);
+                SETB(REG_EECR, EEWE);
+                break;
+                /*
+            case INT_EEPROM_WRITE_BYTE:
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+
+                WriteMemory(REG_EEARH, BYTE((a->literal1 >> 8) & 0xff));
+                WriteMemory(REG_EEARL, BYTE(a->literal1 & 0xff));
+
+                LoadYAddr(addr2);
+                Instruction(OP_LD_Y, r16);
+                LoadXAddr(addr1);
+                Instruction(OP_ADD, XL, r16);
+                Instruction(OP_CLR, r16);
+                Instruction(OP_ADC, XH, r16);
+                Instruction(OP_LD_X, r16);
+
+                LoadXAddr(REG_EEDR);
+                Instruction(OP_ST_X, 16);
+
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_ST_X, 16);
+
+                break;
+*/
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addr1);
 
@@ -6905,18 +7031,19 @@ void CompileAvr(const char *outFile)
     ) {
         REG_OCR0A = 0x49;
         REG_TCCR0A = 0x4A;
-        REG_TCCR0B = 0x53;
         WGM00 = BIT0;
         WGM01 = BIT1;
+        REG_TCCR0B = 0x53;
+        //WGM02 = BIT2
         REG_TCNT0 = 0x52;
 
-        REG_TIFR1 = 0x36;
-        OCF1A = BIT1;
-        TOV1 = BIT0;
-        REG_TIFR0 = 0x35;
-        OCF0A = BIT1;
-        TOV0 = BIT0;
-
+        REG_TIFR0 = 0x58;
+        REG_TIFR1 = REG_TIFR0;
+        OCF1A = BIT6;
+        TOV1 = BIT2;
+        OCF0A = BIT4;
+        TOV0 = BIT1;
+        /*
         REG_OCR2 = 0xB3; // OCR2A
         REG_TCCR2B = 0xB1;
         REG_TCCR2 = 0xB0; // TCCR2A
@@ -6924,36 +7051,39 @@ void CompileAvr(const char *outFile)
         WGM21 = BIT1;
         COM21 = BIT7; // COM2A1
         COM20 = BIT6; // COM2A0
+        */
+        REG_EEARH = 0x3F;
+        REG_EEARL = 0x3E;
+        REG_EEDR = 0x3D;
+        REG_EECR = 0x3C;
 
-        REG_EEARH = 0x42;
-        REG_EEARL = 0x41;
-        REG_EEDR = 0x40;
-        REG_EECR = 0x3F;
+        REG_ADMUX = 0x27;
+        REG_ADCSRA = 0x26;
+        REG_ADCSRB = 0x23;
+        REG_ADCH = 0x25;
+        REG_ADCL = 0x24;
 
-        REG_ADMUX = 0x7C;
-        REG_ADCSRB = 0x7B;
-        REG_ADCSRA = 0x7A;
-        REG_ADCH = 0x79;
-        REG_ADCL = 0x78;
+        REG_WDTCR = 0x41;
 
-        REG_WDTCR = 0x60;
+        //REG_OCR1AH = 0x89;
+        REG_OCR1AL = 0x4E;
+        //REG_TCCR1B = 0x81;
+        REG_TCCR1A = 0x50;
 
-        REG_OCR1AH = 0x89;
-        REG_OCR1AL = 0x88;
-        REG_TCCR1B = 0x81;
-        REG_TCCR1A = 0x80;
-
-        REG_TIMSK = 0x6F; // TIMSK1
-
+        REG_TIMSK = 0x59;
+        /*
         REG_UDR = 0xC6;   // UDR0
         REG_UBRRH = 0xC5; // UBRR0H
         REG_UBRRL = 0xC4; // UBRR0L
-                          //      REG_UCSRC   = 0xC2; // UCSR0C
+        */
+        /*
+        //REG_UCSRC   = 0xC2; // UCSR0C
         REG_UCSRB = 0xC1; // UCSR0B
         REG_UCSRA = 0xC0; // UCSR0A
+        */
 
-        REG_GTCCR = 0x43;
-
+        REG_GTCCR = 0x4C;
+        /*
         REG_sleep = 0x53; // REG_SMCR
         SE = BIT0;
         SM0 = BIT1;
@@ -6970,6 +7100,8 @@ void CompileAvr(const char *outFile)
         REG_int_flag = 0x3C; // REG_EIFR
         INTF1 = BIT1;
         INTF0 = BIT0;
+        */
+
         /*
     } else
     if(McuAs(" ATmega163 ")

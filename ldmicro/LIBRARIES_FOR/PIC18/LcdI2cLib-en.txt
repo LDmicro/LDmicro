@@ -1,0 +1,48 @@
+How to use I2C library for LCD 16x2 Display
+___________________________________________
+
+This library is designed to use a 16x2 LCD Display connected to an I2C IO-Expander 
+module, like Arduino's one
+
+Files: 	LcdI2cLib.c
+	LcdI2cLib.h
+	I2cLib.c
+	I2cLib.h
+
+Edit I2cLib.h with any text editor and replace in line :
+#define LCD_I2C_ADR	0
+the final value 0 by the I2C address of your I2C module (maybe 0x27)
+according to its documentation
+
+In LdMicro, create a ladder using I2C Write function and use this address
+to access LCD display, with 'register' field= 255
+(this value can also be modified in library as above if need be)
+
+In the 'send variable' field, you can put a variable or a value, knowing that
+there are 3 possibilities:
+
+- values between 0 and 0x10 are commands (described in libraries):
+ 	0x00= Erase display
+	0x01= Cursor home
+	0x02= Blinking display
+	0x03= Normal display
+
+	0x0F= Backlight off (if available)
+	0x10= Backlight on (if available)
+
+	Other values / functions can be added in libraries
+
+- values above 0x80 are move commands to move cursor to line y, col x:
+	bit  7= 1
+	bits 6-5= y-1	allows 4 lines 1->4	
+	bits 4-0= x-1	allows 32 columns 1->32
+
+	Example: 0xA5 = 1 01 00101 will move cursor to line 2, column 6
+
+- other values between 0x11 and 0x7F are standard chars to display at cursor position
+
+It normally doesn't prevent to use other I2C devices on the same bus
+It has been tested successfully on PIC18F4520
+
+JG
+

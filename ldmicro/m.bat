@@ -400,8 +400,38 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\LDs\new\new.ld
 @SET PROGECT=D:\LDs\pulser\stepper.ld
+
+@SET PROGECT=D:\lds\PIC12F675\internal_oscillator.ld
+@SET PROGECT=D:\lds\relay_2_motores\relay_2_motores.ld
+
+@SET PROGECT=d:\lds\pic16f1827V2-test\A0016f1827V2-test.ld
+@SET PROGECT=d:\lds\moteur_on_fc\moteur_on_fc_v3.ld
+@SET PROGECT="C:\tmp\SPACE тест\moteur ячфы v3.ld"
+
+@SET PROGECT="d:\lds\ATmega1284 44-Pin\ATmega1284 44-Pin.ld"
+@SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
+
+@SET PROGECT="d:\lds\ATmega1284 40-Pin\pwm.ld"
+@SET PROGECT="d:\lds\ATmega1284 44-Pin\pwm.ld"
+
+@SET PROGECT=D:\lds\servo_pwm_pic16f1827\servo_pwm_PIC16F1827.ld
+@SET PROGECT=d:\lds\PULSER_Amjad\Pulser.ld
+
 @SET PROGECT=D:\LDs\pulser\pulser.ld
 
+@SET PROGECT=d:\lds\Calc_16F628\Calc_16F628a_ADD_test.ld
+
+@SET PROGECT=d:\lds\persistTest\PIC18F4520\persistTest.ld
+@SET PROGECT=d:\lds\persistTest\ATmega8\persistTest.ld
+@SET PROGECT=d:\lds\persistTest\UNO\persistTest.ld
+@SET PROGECT=d:\lds\persistTest\PIC16F628_CCS\persistTest.ld
+
+:@SET PROGECT="D:\lds\ATMEGA8_32PIN\atmega8 32pin.ld"
+
+@SET PROGECT=D:\lds\ATmega32U4\hello.ld
+@SET PROGECT=D:\lds\josua\josua.ld
+
+@SET PROGECT="D:\lds\batteria\monitor bateria atiny85.ld"
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
@@ -432,15 +462,15 @@ if "%1" == "" goto DO_BUILD
 @del temp.pl > nul
 @del ldmicro.temp > nul
 
-@rem @nmake clean
-@rem copy ldmicro.exe ldmicro-en.exe
-@rem @nmake LDLANG=LDLANG_JA %*
-@rem @nmake LDLANG=LDLANG_RU %*
-@rem @nmake LDLANG=LDLANG_TR %*
-@rem @nmake LDLANG=LDLANG_DE %*
-@rem @nmake LDLANG=LDLANG_FR %*
-@rem @nmake LDLANG=LDLANG_ES %*
-@rem @nmake LDLANG=LDLANG_IT %*
+::@nmake clean
+::copy ldmicro.exe ldmicro-en.exe
+::@nmake LDLANG=LDLANG_JA %*
+::@nmake LDLANG=LDLANG_RU %*
+::@nmake LDLANG=LDLANG_TR %*
+::@nmake LDLANG=LDLANG_DE %*
+::@nmake LDLANG=LDLANG_FR %*
+::@nmake LDLANG=LDLANG_ES %*
+::@nmake LDLANG=LDLANG_IT %*
 @nmake LDLANG=LDLANG_EN %*
 
 @echo off
@@ -449,6 +479,14 @@ if "%1" == "" goto DO_BUILD
 @if not exist ldmicro.exe goto EXIT
 :start ldmicro.exe %PROGEC2%
 start ldmicro.exe %PROGECT%
+goto EXIT
+
+start ldmicro.exe "C:\tmp\SPACE тест\moteur AVR v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur ARM1 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur ARM4 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur PIC16 v3.ld"
+start ldmicro.exe "C:\tmp\SPACE тест\moteur PIC18 v3.ld"
+
 goto EXIT
 
 ldmicro.exe /c %PROGECT% %PROGECT%.c

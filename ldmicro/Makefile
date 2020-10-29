@@ -48,6 +48,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\plcprogram.obj\
            $(OBJDIR)\translit.obj \
            $(OBJDIR)\mcutable.obj \
+           $(OBJDIR)\flash.obj \
            $(OBJDIR)\display.obj
 
 LDLANGOBJ=$(OBJDIR)\lang.obj

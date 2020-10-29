@@ -78,7 +78,7 @@ int         IoListHeight;
 int         IoListTop;
 
 // whether the simulation is running in real time
-static bool RealTimeSimulationRunning;
+bool RealTimeSimulationRunning;
 
 extern HWND UartSimulationWindow;
 extern HWND SpiSimulationWindow;
@@ -627,27 +627,37 @@ HMENU MakeMainWindowMenus()
     ProcEspMenu = CreatePopupMenu();
     ProcArmMenu = CreatePopupMenu();
     ProcOthersMenu = CreatePopupMenu();
+    static HMENU ProcMenu = nullptr;
+    static HMENU ProcMenu_ = nullptr;
+    Core core_ = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         Core core = supportedMcus()[i].core;
-        if((core > AVRcores) && (core < PICcores))
-            AppendMenu(ProcAvrMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > PICcores) && (core < ESPcores))
+        if((core > AVRcores) && (core < AVRcores_) && (supportedMcus()[i].whichIsa == ISA_AVR))
+            ProcMenu = ProcAvrMenu;
+        else if((core > PICcores) && (core < PICcores_)) {
             if(core == PIC18HighEndCore16bit)
-                AppendMenu(ProcPic18Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+                ProcMenu = ProcPic18Menu;
             else
-                AppendMenu(ProcPic16Menu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > ESPcores) && (core < ARMcores))
-            AppendMenu(ProcEspMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if((core > ARMcores) && (core < PCcores))
-            AppendMenu(ProcArmMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-        if(core > PCcores)
-            AppendMenu(ProcOthersMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+                ProcMenu = ProcPic16Menu;
+        } else if((core > ESPcores) && (core < ESPcores_))
+            ProcMenu = ProcEspMenu;
+        else if((core > ARMcores) && (core < ARMcores_))
+            ProcMenu = ProcArmMenu;
+        else // if(core > PCcores)
+            ProcMenu = ProcOthersMenu;
+
+        if((core_ != supportedMcus()[i].core) && (ProcMenu_ == ProcMenu)) {
+            core_ = supportedMcus()[i].core;
+            AppendMenu(ProcMenu, MF_SEPARATOR, 0, "");
+        }
+        AppendMenu(ProcMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
+        ProcMenu_ = ProcMenu;
     }
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcAvrMenu, _("Atmel AVR MCUs"));            /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic16Menu, _("Microchip Pic10-16 MCUs")); /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcPic18Menu, _("Microchip Pic18 MCUs"));    /// To translate
-    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcArmMenu, _("ARM MCUs"));                  /// To translate
+    AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcOthersMenu, _("Other MCUs"));             /// To translate
                                                                                                             ///
 
@@ -700,7 +710,7 @@ HMENU MakeMainWindowMenus()
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE, _("Si&mulation Mode\tCtrl+M or F7"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F9"));
+    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE, _("Single &Cycle\tSpace"));
 
     compile = CreatePopupMenu();
@@ -727,10 +737,12 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE_INT, _("Compile Interpretable Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT, _("Compile Interpretable Extended Byte Code"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu.bat\tF6"));
-    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu.bat\tCtrl+F6"));
+    AppendMenu(compile, MF_STRING, MNU_BUILD_ALL, _("Build C Solution\tF6"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT, _("Call clear.bat"));
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT, _("Call flashMcu\tF9"));
+    AppendMenu(compile, MF_STRING, MNU_READ_BAT, _("Call readMcu\tCtrl+F9"));
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT, _("Call clear"));
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
@@ -1162,6 +1174,7 @@ void StartSimulation()
 {
     RealTimeSimulationRunning = true;
 
+    EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
     StartSimulationTimer();
@@ -1184,6 +1197,7 @@ void StopSimulation()
 {
     RealTimeSimulationRunning = false;
 
+    EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
     KillTimer(MainWindow, TIMER_SIMULATE);

@@ -92,10 +92,15 @@ void UndoRedo()
 //-----------------------------------------------------------------------------
 // Empty out our undo history entirely, as when loading a new file.
 //-----------------------------------------------------------------------------
-void UndoFlush()
+void UndoEmpty()
 {
     Undo::emptyRedo();
     Undo::emptyUndo();
+}
+
+void UndoFlush()
+{
+	UndoEmpty();
     SetUndoEnabled(false, false);
 }
 

@@ -12,21 +12,23 @@ void UART_Init(unsigned char divisor, unsigned char brgh)
     SPEN = 1;
 }
 
+// Send a char on UART
 void UART_Transmit(unsigned char data)
 {
     // Wait for empty transmit buffer
     //while(TRMT == 0) // 0 = Transmit Shift Register full
     while(TXIF == 0) // 0 = The USART transmit buffer is full
-        ;            // Put data into buffer, sends the data
-    TXREG = data;
+        ; // Wait till transmitter register empty            
+    TXREG = data; // Put data into buffer, sends the data
 }
 
+// Receive on UART
 unsigned char UART_Receive(void)
 {
     // Wait for data to be received
     while(RCIF == 0)
         ; // Get and return received data from buffer
-    return RCREG;
+    return RCREG; // A char has been received
 }
 
 unsigned char UART_Transmit_Ready(void)
