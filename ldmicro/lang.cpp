@@ -30,12 +30,12 @@ struct LangTable {
     char *from;
     char *to;
 };
-/*
+
 struct Lang {
     LangTable *tab;
     int        n;
 };
-*/
+
 // These are the actual translation tables, so should be included in just
 // one place.
 #include "obj/lang-tables.h"

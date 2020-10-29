@@ -13,6 +13,7 @@ foreach $f (qw(DE ES FR IT PT TR RU JA EN)) {
     SYS("nmake LDLANG=LDLANG_$f");
     $fl = lc($f);
     SYS("copy ldmicro.exe buildXXXX\\ldmicro-$fl.exe");
+    #SYS("pause")
 }
 SYS("copy ldmicro.exe buildXXXX\\ldmicro.exe");
 
@@ -41,4 +42,4 @@ SYS("mkdir buildXXXX\\LIBRARIES_FOR\\PIC16");
 
 SYS("xcopy /s LIBRARIES_FOR\\*.* buildXXXX\\LIBRARIES_FOR");
 
-SYS("7zip.py");
+SYS("python.exe 7zip.py");
