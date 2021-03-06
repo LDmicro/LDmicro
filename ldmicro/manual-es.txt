@@ -103,7 +103,7 @@ Conocimientos básicos de la lógica de escalera y de la estructura del software P
 PLC y seguridad
     https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
 
-Tiempo 0 de ciclo del PLC 
+Tiempo 0 de ciclo del PLC
     https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
 
 OBJETIVOS ADICIONALES
@@ -156,7 +156,7 @@ línea de comando.
 LO ESENCIAL
 ===========
 
-Si ejecuta LDmicro sin argumentos, entonces comienza con el programa vacio. 
+Si ejecuta LDmicro sin argumentos, entonces comienza con el programa vacio.
 Si ejecuta LDmicro con el nombre de un programa de escalera (xxx.ld)
 en la línea de comando, entonces intentará cargar ese programa al inicio.
 LDmicro usa su propio formato interno para el programa; no puede importar
@@ -167,7 +167,7 @@ con un peldaño vacío Podrías agregarle una instrucción; por ejemplo
 puede agregar un conjunto de contactos (Instrucción -> Insertar contactos) llamado
 'Xnuevo'. 'X' significa que los contactos estarán vinculados a un pin de entrada en el
 microcontrolador Puede asignarle un pin más tarde, después de elegir un
-microcontrolador y cambio de nombre de los contactos (Se tienen que cambiar los nombres es obligado). 
+microcontrolador y cambio de nombre de los contactos (Se tienen que cambiar los nombres es obligado).
 La primera letra de un nombre indica qué tipo de objeto es. Por ejemplo:
 
     * Xname -- vinculado a un pin de entrada en el microcontrolador
@@ -357,7 +357,7 @@ COMPILAR CON EL CÓDIGO NATIVO
 En última instancia, el punto es generar un archivo .hex que pueda programar
 en su microcontrolador. Primero debe seleccionar el número de pieza del
 microcontrolador, en el menú Configuración -> Microcontrolador. Entonces usted
-debe asignar un pin de E/S a cada objeto 'Xname' o 'Yname'. Haz esto 
+debe asignar un pin de E/S a cada objeto 'Xname' o 'Yname'. Haz esto
 haciendo doble clic en el nombre del objeto en la lista en la parte inferior de la pantalla.
 Aparecerá un cuadro de diálogo donde podrá elegir un pin no asignado de una lista.
 
@@ -372,7 +372,7 @@ Ahora puede generar código desde su programa. Elija Compilar -> Compilar,
 o Compilar -> Compilar como ... si anteriormente compiló este programa
 y desea especificar un nombre de archivo de salida diferente. Si no hay
 errores, entonces LDmicro generará un archivo Intel IHEX listo para
-programación en tu chip. Avertencia:si lla fue copilado y lo vuelve a copilar tenga en cuenta que 
+programación en tu chip. Avertencia:si lla fue copilado y lo vuelve a copilar tenga en cuenta que
 suscribira el programa antiguo .hex, para que no suceda es guardar como y cambiar el nombre.
 
 Use cualquier software y hardware de programación que tenga para cargar el hexadecimal
@@ -458,7 +458,7 @@ REFERENCIA DE INSTRUCCIONES
 > BOBINA, SIEMPRE ACTIVA         Rname           Yname
                               ----(S)----     ----(S)----
 
-    Si la señal que entra en la instrucción es verdadera, entonces 
+    Si la señal que entra en la instrucción es verdadera, entonces
      El relé interno o el pin de salida se establece como verdadero. De lo contrario, el interno
      el estado del pin de salida o relé no cambia. Esta instrucción solo puede
      cambia el estado de una bobina de falso a verdadero, por lo que normalmente es
@@ -740,8 +740,8 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 > Conversor de TIEMPO a CONTADOR       Tconst
                                    -[T2CNT 10 ms]-
 
-    La instrucción 'Convertidor de TIEMPO a CONTADOR' obtiene el tiempo 
-     constante en ms, lo convierte a los temporizadores (TON, TOF, ...) - 
+    La instrucción 'Convertidor de TIEMPO a CONTADOR' obtiene el tiempo
+     constante en ms, lo convierte a los temporizadores (TON, TOF, ...) -
      valor específico y lo guarda en la variable Const para usarlo en contadores más adelante.
      Ver https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
 
@@ -816,8 +816,10 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                            --[_/ OSR_/ \_]--
                               _       _
                            --[ \_OSF_/ \_]--
+                                _   _   _
+                           --[_/ ODR \_/ ]--
                               _     _   _
-                           --[ \_OSL \_/ ]--
+                           --[ \_ODF \_/ ]--
 
                                     ^   ^
                                     esto es la
@@ -860,9 +862,9 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
        Tiempo de ciclo del PLC  N+ 0 1 2 3 4 5 6
 
 
-
+> ONE DROP if FALLING
 > NIVEL BAJO DE UN DISPARO (Franco)      _     _   _
-                                      --[ \_OSL \_/ ]--
+                                      --[ \_ODF \_/ ]--
 
     Esta instrucción normalmente emite ture. Si la entrada de la instrucción es
      falso durante este escaneo y fue cierto durante el escaneo anterior, entonces el
@@ -876,10 +878,10 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                       Nivel
                      Logico
                           ^  La duración del pulso de entrada es de cinco ciclos.
-                  OSL     | ___           _______
+                  ODF     | ___           _______
                   Entrada |    \_________/
                           |
-                  OSL     | ___   _______________
+                  ODF     | ___   _______________
                   Salida  |    \_/
                         --+---------------------------> Tiempo
                           |
@@ -890,10 +892,10 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
                      Nivel
                      Logico
                           ^     Pulso de entrada de ciclo único
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   Entrada |    \_/
                           |
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   Salida  |    \_/
                         --+------------------> Tiempo
                           |
@@ -2122,7 +2124,7 @@ row+colmn  |               |              | de 0 a 15 - dígitos hexadecimales
      Ver https://en.wikipedia.org/wiki/Incremental_encoder
 
  Nivel
- Logico             move (mover) ->             |            <- move (mover) 
+ Logico             move (mover) ->             |            <- move (mover)
          ^
          | ___         _______         ___________          _______         ___
 Entrada A|    |_______|       |_______|           |________|       |_______|

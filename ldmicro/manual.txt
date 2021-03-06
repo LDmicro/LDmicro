@@ -789,6 +789,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > ONE-SHOT RISING               _     _
                            --[_/ OSR_/ \_]--
 
+    ONE-SHOT at the output if RISING edge in the input.
     This instruction normally outputs false. If the instruction's input
     is true during this scan and it was false during the previous scan
     then the output is true. It therefore generates a pulse one scan
@@ -800,6 +801,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > ONE-SHOT FALLING            _       _
                            --[ \_OSF_/ \_]--
 
+    ONE-SHOT at the output if FALLING edge in the input.
     This instruction normally outputs false. If the instruction's input
     is false during this scan and it was true during the previous scan
     then the output is true. It therefore generates a pulse one scan
@@ -818,7 +820,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                                 _   _   _
                            --[_/ ODR \_/ ]--
                               _     _   _
-                           --[ \_OSL \_/ ]--
+                           --[ \_ODF \_/ ]--
 
                                     ^   ^
                                     this is
@@ -862,9 +864,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 
-> ONE-DROP RISING               _   _   _
+> ONE DROP if RISING            _   _   _
                            --[_/ ODR \_/ ]--
 
+    ONE DROP at the output if RISING edge in the input.
     This instruction normally outputs true. If the instruction's input is
     true during this scan and it was false during the previous scan then the
     output is false during one PLC cycle. It therefore generates a low level pulse one scan wide
@@ -903,9 +906,11 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 
-> ONE-SHOT LOW LEVEL          _     _   _
-                           --[ \_OSL \_/ ]--
+> ONE DROP if FALLING         _     _   _
+                           --[ \_ODF \_/ ]--
 
+    The previous name is ONE-SHOT LOW LEVEL(renamed in v5.4.1.0).
+    ONE DROP at the output if FALLING edge in the input.
     This instruction normally outputs true. If the instruction's input is
     false during this scan and it was true during the previous scan then the
     output is false. It therefore generates a low level pulse one scan wide
@@ -920,10 +925,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                      logic
                      level
                           ^  The duration of the input pulse is five cycles
-                  OSL     | ___           _______
+                  ODF     | ___           _______
                   input   |    \_________/
                           |
-                  OSL     | ___   _______________
+                  ODF     | ___   _______________
                   output  |    \_/
                         --+---------------------------> time
                           |
@@ -934,10 +939,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                      logic
                      level
                           ^      Single-cycle input pulse
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   input   |    \_/
                           |
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   output  |    \_/
                         --+------------------> time
                           |

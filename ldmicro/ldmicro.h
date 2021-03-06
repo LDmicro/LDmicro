@@ -132,7 +132,7 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_TIME2COUNT   0x2601
 #define MNU_INSERT_OSR          0x27
 #define MNU_INSERT_OSF          0x28
-#define MNU_INSERT_OSL          0x2801
+#define MNU_INSERT_ODF          0x2801
 #define MNU_INSERT_ODR          0x2802
 #define MNU_INSERT_CTU          0x29
 #define MNU_INSERT_CTD          0x2a

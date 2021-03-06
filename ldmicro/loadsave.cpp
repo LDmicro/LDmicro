@@ -132,7 +132,9 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(memcmp(line, "OSF", 3) == 0) {
         *which = ELEM_ONE_SHOT_FALLING;
     } else if(memcmp(line, "OSL", 3) == 0) {
-        *which = ELEM_ONE_SHOT_LOW;
+        *which = ELEM_ONE_DROP_FALLING;
+    } else if(memcmp(line, "ODF", 3) == 0) {
+        *which = ELEM_ONE_DROP_FALLING;
     } else if(memcmp(line, "ODR", 3) == 0) {
         *which = ELEM_ONE_DROP_RISING;
     } else if(memcmp(line, "OSC", 3) == 0) {
@@ -1259,8 +1261,8 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             fprintf(f, "ODR\n");
             break;
 
-        case ELEM_ONE_SHOT_LOW:
-            fprintf(f, "OSL\n");
+        case ELEM_ONE_DROP_FALLING:
+            fprintf(f, "ODF\n");
             break;
 
         case ELEM_OSC:

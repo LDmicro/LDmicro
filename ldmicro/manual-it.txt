@@ -842,8 +842,10 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
                            --[_/ OSR_/ \_]--
                               _       _
                            --[ \_OSF_/ \_]--
+                                _   _   _
+                           --[_/ ODR \_/ ]--
                               _     _   _
-                           --[ \_OSL \_/ ]--
+                           --[ \_ODF \_/ ]--
 
                                     ^   ^
                                     questo è
@@ -887,8 +889,9 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
 
 
 
+> ONE DROP if FALLING
 > IMPULSO AL LIVELLO BASSO    _     _   _
-                           --[ \_OSL \_/ ]--
+                           --[ \_ODF \_/ ]--
 
     Questa istruzione normalmente viene emessa. Se l'input dell'istruzione è
     falso durante questa scansione ed era vero durante la scansione precedente,
@@ -902,10 +905,10 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
                      livello
                      logico
                           ^  La durata dell'impulso di ingresso è di cinque cicli
-                  OSL     | ___           _______
+                  ODF     | ___           _______
                   Ingresso|    \_________/
                           |
-                  OSL     | ___   _______________
+                  ODF     | ___   _______________
                   uscita  |    \_/
                         --+---------------------------> tempo
                           |
@@ -916,10 +919,10 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
                      livello
                      logico
                           ^      Impulso di ingresso a ciclo singolo
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   Ingresso|    \_/
                           |
-                  OSL     | ___   _______
+                  ODF     | ___   _______
                   uscita  |    \_/
                         --+------------------> tempo
                           |
@@ -1583,21 +1586,21 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
     LDmicro può generare codice per utilizzare gli UART integrati in
     determinati microcontrollori. Su AVRS con più UART è supportato solo
     UART1 (non UART0). Configurare la velocità di trasmissione usando
-	Impostazioni -> Parametri MCU. Determinate velocità di trasmissione 
-	potrebbero non essere ottenibili con alcune frequenze di cristallo; 
-	LDmicro ti avviserà se questo è il caso.
+    Impostazioni -> Parametri MCU. Determinate velocità di trasmissione
+    potrebbero non essere ottenibili con alcune frequenze di cristallo;
+    LDmicro ti avviserà se questo è il caso.
 
     Se la condizione di input per questa istruzione è falsa, non succede
-	nulla. Se la condizione di input è vera, questa istruzione scrive un 
-	singolo carattere sulla UART. Il valore ASCII del carattere da inviare 
-	deve essere precedentemente memorizzato in `var '. La condizione di 
-	uscita del ramo è vera se UART è occupato (attualmente sta trasmettendo 
-	un carattere), e falso altrimenti.
+    nulla. Se la condizione di input è vera, questa istruzione scrive un
+    singolo carattere sulla UART. Il valore ASCII del carattere da inviare
+    deve essere precedentemente memorizzato in `var '. La condizione di
+    uscita del ramo è vera se UART è occupato (attualmente sta trasmettendo
+    un carattere), e falso altrimenti.
 
     Ricorda che i caratteri impiegano del tempo per essere trasmessi.
-	Esistono diversi modi per organizzare la trasmissione:
-    1) Utilizzare il tempo di ciclo del PLC, che è consapevolmente maggiore 
-	del tempo di trasmissione UART.
+    Esistono diversi modi per organizzare la trasmissione:
+    1) Utilizzare il tempo di ciclo del PLC, che è consapevolmente maggiore
+    del tempo di trasmissione UART.
    ||                                                    ||
    || ; PLC cycle time is 10 ms.                         ||
    || ; UART baud rate is 9600 bps.                      ||
@@ -1614,8 +1617,8 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
    ||---{UART SEND}---                                   ||
    ||                                                    ||
 
-    2) Usa i timer per inserire ritardi tra i caratteri. Il ritardo del 
-	timer deve essere più lungo del tempo di trasmissione UART.
+    2) Usa i timer per inserire ritardi tra i caratteri. Il ritardo del
+    timer deve essere più lungo del tempo di trasmissione UART.
    ||                                                                    ||
    || ; PLC cycle time is 1 ms.                                          ||
    || ; UART baud rate is 9600 bps.                                      ||
@@ -1660,10 +1663,10 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
    ||                                                  +------{RES}------||
    ||                                                                    ||
 
-    3) Controllare le condizioni di uscita di questa istruzione per assicurarsi 
-	che il carattere precedente sia stato trasmesso prima di provare a inviare 
-	un carattere successivo. È solo necessario riportare la condizione di input 
-	vera (provare a inviare un carattere) quando la condizione di output è falsa 
+    3) Controllare le condizioni di uscita di questa istruzione per assicurarsi
+    che il carattere precedente sia stato trasmesso prima di provare a inviare
+    un carattere successivo. È solo necessario riportare la condizione di input
+    vera (provare a inviare un carattere) quando la condizione di output è falsa
     (UART non è occupato).
    ||                                                      ||
    || ; Il tempo di ciclo PLC e la velocità di trasmissione||
@@ -1694,7 +1697,7 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
    ||                                                                       ||
 
     4) Usa l'UART SEND: è pronto? l'istruzione prima di
-	   UART SEND per verificare lo stato della UART.
+       UART SEND per verificare lo stato della UART.
    ||                                                    ||
    || ; 0 1 2 3 4 5 6 7 8 9 10 11 12 ...                 ||
    ||                                                    ||
@@ -1707,22 +1710,22 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
     Vedi: FAQ sulla comunicazione UART
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ
 
-    Aggiornato: le istruzioni UART RECEIVE, UART SEND possono ricevere / inviare 
-	variabili di lunghezza superiore a un byte. "Numero di byte da trasmettere:
-	" il parametro deve essere inferiore o uguale alla dimensione della variabile 
-	utilizzata. Il valore di 1 byte è compatibile con la versione precedente di 
-	LDmicro.
-    Il parametro "Attendi fino alla trasmissione di tutti i byte:" controlla 
-	l'algoritmo della trasmissione: se 1 - tutti i byte vengono trasmessi in un 
-	pacchetto, se 0 - un byte per ciclo del PLC. Quando tutti i byte sono stati 
-	trasmessi, la condizione di uscita è "vera" durante un ciclo del PLC. 
-	Il valore 0 è compatibile con la versione precedente di LDmicro.
+    Aggiornato: le istruzioni UART RECEIVE, UART SEND possono ricevere / inviare
+    variabili di lunghezza superiore a un byte. "Numero di byte da trasmettere:
+    " il parametro deve essere inferiore o uguale alla dimensione della variabile
+    utilizzata. Il valore di 1 byte è compatibile con la versione precedente di
+    LDmicro.
+    Il parametro "Attendi fino alla trasmissione di tutti i byte:" controlla
+    l'algoritmo della trasmissione: se 1 - tutti i byte vengono trasmessi in un
+    pacchetto, se 0 - un byte per ciclo del PLC. Quando tutti i byte sono stati
+    trasmessi, la condizione di uscita è "vera" durante un ciclo del PLC.
+    Il valore 0 è compatibile con la versione precedente di LDmicro.
     Vedi: FAQ sulla comunicazione UART parte 2
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ-part-2
 
-    Indagare l'istruzione di stringa formattata (successiva) prima di utilizzare 
-	questa istruzione. L'istruzione della stringa formattata è molto più facile 
-	da usare ed è quasi certamente in grado di fare ciò che vuoi.
+    Indagare l'istruzione di stringa formattata (successiva) prima di utilizzare
+    questa istruzione. L'istruzione della stringa formattata è molto più facile
+    da usare ed è quasi certamente in grado di fare ciò che vuoi.
 
     See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
 
@@ -1850,59 +1853,59 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
 > SPI INVIA / RECEVI            {SPI       SPI}
                                -{->recv send->}-
 
-    Le funzioni SPI sono disponibili solo in modalità "C", cioè tramite la 
-	compilazione C, solo per ARM a 32 bit e AVR di tipo AtMega. Solo uno SPI può 
-	essere utilizzato in uno stesso ladder, chiamato SPI o SPI1, SPI2, SPI3 
-	quando sono disponibili diversi sul micro. SPI funziona solo in modalità 
-	master, 8 bit di dati, prima con MSB e la sua frequenza viene impostata nel 
-	pannello di configurazione del micro in ldmicro. Il pin SS viene gestito per 
-	AVR ma non per ARM. Si possono usare pin esterni per attivare / disattivare 
-	gli slave sul bus SPI e / o il pin SS.
-    In un SPI, l'invio e la ricezione sono simultanei, ecco perché entrambe le 
-	operazioni sono combinate in una sola funzione.
+    Le funzioni SPI sono disponibili solo in modalità "C", cioè tramite la
+    compilazione C, solo per ARM a 32 bit e AVR di tipo AtMega. Solo uno SPI può
+    essere utilizzato in uno stesso ladder, chiamato SPI o SPI1, SPI2, SPI3
+    quando sono disponibili diversi sul micro. SPI funziona solo in modalità
+    master, 8 bit di dati, prima con MSB e la sua frequenza viene impostata nel
+    pannello di configurazione del micro in ldmicro. Il pin SS viene gestito per
+    AVR ma non per ARM. Si possono usare pin esterni per attivare / disattivare
+    gli slave sul bus SPI e / o il pin SS.
+    In un SPI, l'invio e la ricezione sono simultanei, ecco perché entrambe le
+    operazioni sono combinate in una sola funzione.
 
 
 > SPI SCRIVI                     {SPI_WR     SPI}
                                -{   "Message"->}-
 
-    Scrivi la funzione SPI invia una stringa tramite SPI, senza preoccuparsi dei 
-	dati in arrivo. La stringa può contenere caratteri speciali introdotti da \\. 
-	Non abusare di questa funzione, perché SPI può rallentare il programma e 
-	generare problemi di temporizzazione del ciclo!
+    Scrivi la funzione SPI invia una stringa tramite SPI, senza preoccuparsi dei
+    dati in arrivo. La stringa può contenere caratteri speciali introdotti da \\.
+    Non abusare di questa funzione, perché SPI può rallentare il programma e
+    generare problemi di temporizzazione del ciclo!
 
     NB:
-    Le funzioni SPI utilizzano librerie C esterne (fornite) che devono essere 
-	compilate con il programma C principale generato da ldmicro durante la 
-	compilazione tramite i menu ldmicro <Compile Atmel AVR-GCC> o <Compile 
-	ARM-GCC>, seguito da un comando <FlashMCU> per compilare l'eseguibile .hex 
-	e, se ben configurato, carica questo eseguibile nella destinazione AVR o ARM.
+    Le funzioni SPI utilizzano librerie C esterne (fornite) che devono essere
+    compilate con il programma C principale generato da ldmicro durante la
+    compilazione tramite i menu ldmicro <Compile Atmel AVR-GCC> o <Compile
+    ARM-GCC>, seguito da un comando <FlashMCU> per compilare l'eseguibile .hex
+    e, se ben configurato, carica questo eseguibile nella destinazione AVR o ARM.
 
 
 > I2C LEGGI                      {I2C_RD    I2C}
                                -{->recv 0x20 0}-
 
-    Le funzioni I2C sono disponibili solo in modalità "C", cioè tramite la 
-	compilazione C, solo per ARM a 32 bit e AVR di tipo AtMega. È possibile 
-	utilizzare un solo bus I2C in uno stesso ladder, denominato I2C o I2C1, 
-	I2C2, I2C3 quando sono disponibili diversi micro. I2C funziona solo in 
-	modalità master e può accedere a qualsiasi registro (in base 0) a qualsiasi 
-	indirizzo (1-127) sul bus I2C. La frequenza I2C è impostata nel pannello di 
-	configurazione del micro. La funzione I2C READ legge un byte in un registro 
-	sullo slave a un dato indirizzo.
+    Le funzioni I2C sono disponibili solo in modalità "C", cioè tramite la
+    compilazione C, solo per ARM a 32 bit e AVR di tipo AtMega. È possibile
+    utilizzare un solo bus I2C in uno stesso ladder, denominato I2C o I2C1,
+    I2C2, I2C3 quando sono disponibili diversi micro. I2C funziona solo in
+    modalità master e può accedere a qualsiasi registro (in base 0) a qualsiasi
+    indirizzo (1-127) sul bus I2C. La frequenza I2C è impostata nel pannello di
+    configurazione del micro. La funzione I2C READ legge un byte in un registro
+    sullo slave a un dato indirizzo.
 
 
 > I2C SCRIVI                     {I2C_WR    I2C}
                                -{0x20 0 send->}-
 
-    La funzione WRITE I2C scrive un byte in un registro sullo slave a un dato 
-	indirizzo.
+    La funzione WRITE I2C scrive un byte in un registro sullo slave a un dato
+    indirizzo.
 
     NB:
-    Le funzioni I2C utilizzano librerie C esterne (fornite) che devono essere 
-	compilate con il programma C principale generato da ldmicro durante la 
-	compilazione tramite i menu ldmicro <Compile Atmel AVR-GCC> o <Compile 
-	ARM-GCC>, seguito da un comando <FlashMCU> per compilare l'eseguibile .hex 
-	e, se ben configurato, carica questo eseguibile nella destinazione AVR o ARM.
+    Le funzioni I2C utilizzano librerie C esterne (fornite) che devono essere
+    compilate con il programma C principale generato da ldmicro durante la
+    compilazione tramite i menu ldmicro <Compile Atmel AVR-GCC> o <Compile
+    ARM-GCC>, seguito da un comando <FlashMCU> per compilare l'eseguibile .hex
+    e, se ben configurato, carica questo eseguibile nella destinazione AVR o ARM.
 
 
 > STRINGA FORMATTATA                          dest
@@ -1952,18 +1955,18 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
 > SPEGNI
                            --{SLEEP}--
 
-    Quando la condizione del ramo di questa istruzione è vera, viene impostata 
-	la modalità SLEEP (spegnimento). Utilizzato per il risparmio energetico 
-	sull'alimentazione della batteria.
+    Quando la condizione del ramo di questa istruzione è vera, viene impostata
+    la modalità SLEEP (spegnimento). Utilizzato per il risparmio energetico
+    sull'alimentazione della batteria.
 
-    PIC: riattivazione dal sonno a causa di interrupt esterno sul fronte di salita del 
-	pin RB0 / INT. PIC10xxxx: riattivazione da sospensione su pin cambia GP0, GP1, GP3.
+    PIC: riattivazione dal sonno a causa di interrupt esterno sul fronte di salita del
+    pin RB0 / INT. PIC10xxxx: riattivazione da sospensione su pin cambia GP0, GP1, GP3.
 
-    AVR: Riattivazione dal sonno a causa dell'interruzione esterna sul fronte di salita 
-	dei pin PD2 / INT0, PD3 / INT1.
+    AVR: Riattivazione dal sonno a causa dell'interruzione esterna sul fronte di salita
+    dei pin PD2 / INT0, PD3 / INT1.
 
     L'operazione SLEEP non influisce sui pin IO MCU e su altre operazioni LDmicro.
-																		  
+
     Nota: SLEEP allunga il tempo di ciclo e i timer del PLC TON, TOF, RTO, CTY.
     Questo può frustrare i piani, interrompere il flusso di lavoro.
      Questa istruzione deve essere l'istruzione più a destra nel suo piolo.

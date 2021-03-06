@@ -2,12 +2,22 @@
 
     * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
 
-    * New: Element ODR: ONE-DROP RISING is the inversion
-    of the element OSR: ONE-SHOT RISING,
+    * New:  Element  ODR: ONE DROP if RISING is the inversion
+      of the element OSR: ONE-SHOT RISING,
                                 _   _   _
                            --[_/ ODR \_/ ]--
                                 _     _
                            --[_/ OSR_/ \_]--
+
+    * Rename: Element OSL: ONE-SHOT LOW LEVEL
+      to new name     ODF: ONE DROP if FALLING
+                              _     _   _
+                           --[ \_ODF \_/ ]--     ONE DROP if FALLING
+                              _       _
+                           --[ \_OSF_/ \_]--     ONE-SHOT FALLING
+
+    * Wiki: OSR, OSF, ODR, ODF, OSC
+    https://github.com/LDmicro/LDmicro/wiki/OSR,-OSF,-ODR,-ODF,-OSC
 
 
 == Release 5.4.0.5

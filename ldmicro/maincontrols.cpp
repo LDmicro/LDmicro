@@ -242,7 +242,7 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSC, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_OSL, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_ODF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_ODR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STEPPER, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PULSER, t);
@@ -450,7 +450,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSR, _("Insert _/OSR_/\\_ (One Shot Rising)\t&/"));
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSF, _("Insert \\_OSF_/\\_ (One Shot Falling)\t&\\ "));
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_ODR, _("Insert _/ODR\"\\/\" (One Drop Rising)"));
-    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSL, _("Insert \\_OSL\"\\/\" (One Shot Low)"));
+    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_ODF, _("Insert \\_ODF\"\\/\" (One Shot Low)"));
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSC, _("Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)EdgMenu, _("Edge"));
 

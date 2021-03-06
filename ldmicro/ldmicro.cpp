@@ -1412,8 +1412,8 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
             break;
 
-        case MNU_INSERT_OSL:
-            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_LOW));
+        case MNU_INSERT_ODF:
+            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_DROP_FALLING));
             break;
 
         case MNU_INSERT_ODR:

@@ -2653,8 +2653,8 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             #endif
             break;
         }
-        case ELEM_ONE_SHOT_LOW: {
-            Comment(3, "ELEM_ONE_SHOT_LOW");
+        case ELEM_ONE_DROP_FALLING: {
+            Comment(3, "ELEM_ONE_DROP_FALLING");
             /*
                   __      ___
             INPUT   \____/

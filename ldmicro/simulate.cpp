@@ -1007,7 +1007,7 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_CONTACTS:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
-        case ELEM_ONE_SHOT_LOW:
+        case ELEM_ONE_DROP_FALLING:
         case ELEM_ONE_DROP_RISING:
         case ELEM_OSC:
         case ELEM_EQU:
