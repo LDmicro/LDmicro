@@ -1895,6 +1895,19 @@ McuAdcPinInfo Pic8PinAdcPinInfo[] = {
 };
 
 //-----------------------------------------------------------------------------
+// 8-Pin PDIP, SOIC, DFN, UDFN
+// PIC12F1840
+// PIC12F1822
+McuIoPinInfo Pic8Pin_[] = {
+    { 'A', 0, 7, "RA0 AN0/TX/SDO"             },
+    { 'A', 1, 6, "RA1 AN1/RX/SCL/SCK"         },
+    { 'A', 2, 5, "RA2 AN2/CCP1/SDA/SDI"       },
+    { 'A', 3, 4, "RA3 _MCLR/_SS (Input Only)" },
+    { 'A', 4, 3, "RA4 AN3"                    },
+    { 'A', 5, 2, "RA5 "                       }
+};
+
+//-----------------------------------------------------------------------------
 // PIC18F4520
 //-----------------------------------------------------------------------------
 // PIC18F4520
@@ -3584,6 +3597,50 @@ McuIoInfo SupportedMcus_[] = {
         */
         nullptr,
         0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
+    },
+    {
+        "Microchip PIC12F1840 8-pin packages",
+        "PIC12F1840",
+        "P12F1840",
+        "12F1840",
+        "PIC12F1840",
+        'R',
+//        A
+        { 0x0C}, // PORTx = RAx
+        { 0x0C}, // PORTx
+        { 0x8C}, // TRISx
+        4*1024,
+        { { 0x20, 80 }, { 0x70, 16 } },
+        Pic8Pin_,
+        arraylen(Pic8Pin_),
+        Pic8PinAdcPinInfo,
+        arraylen(Pic8PinAdcPinInfo),
+        1024,
+        { 6, 7 },
+//        0,
+        ISA_PIC16,
+        EnhancedMidrangeCore14bit,
+        8,
+        0x1EFF3F84,
+        /*
+            ($FFFF <<16) |
+            (3 <<  9) |     // 11 = BOR enabled
+            (1 <<  8) |     // _CPD
+            (1 <<  7) |     // _CP
+            (0 <<  6) |     // _MCLR disabled
+            (0 <<  5) |     // PWRT enabled
+            (0 <<  3) |     // WDTE disabled
+            (4 <<  0),      // 100 = INTOSC oscillator: I/O function on CLKIN pin
+        */
+        PicPwmPinInfo8,
+        arraylen(PicPwmPinInfo8),
         nullptr,
         0,
         nullptr,

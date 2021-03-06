@@ -1,3 +1,8 @@
+== Release 5.4.1.0 pre
+
+    * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
+
+
 == Release 5.4.0.5
 
     * Refactor EEPROM RERSIST_ELEM for AVR
