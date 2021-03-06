@@ -63,6 +63,7 @@
 #define ELEM_ONE_SHOT_RISING    0x16
 #define ELEM_ONE_SHOT_FALLING   0x17
 #define ELEM_ONE_SHOT_LOW       0x1701
+#define ELEM_ONE_DROP_RISING    0x1702
 #define ELEM_MOVE               0x18
 #define ELEM_BIN2BCD            0x1801
 #define ELEM_BCD2BIN            0x1802
@@ -203,6 +204,7 @@
     case ELEM_ONE_SHOT_RISING:  \
     case ELEM_ONE_SHOT_FALLING: \
     case ELEM_ONE_SHOT_LOW:     \
+    case ELEM_ONE_DROP_RISING:  \
     case ELEM_OSC:              \
     case ELEM_STEPPER:          \
     case ELEM_PULSER:           \

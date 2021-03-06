@@ -485,7 +485,8 @@ static bool doReplaceElem(int which, int whichWhere, void *where, int index)
         // group 2 of suitable elements, etc.
         case ELEM_ONE_SHOT_RISING: newWhich = ELEM_ONE_SHOT_FALLING; break;
         case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_ONE_SHOT_LOW; break;
-        case ELEM_ONE_SHOT_LOW: newWhich = ELEM_OSC; break;
+        case ELEM_ONE_SHOT_LOW: newWhich = ELEM_ONE_DROP_RISING; break;
+        case ELEM_ONE_DROP_RISING: newWhich = ELEM_OSC; break;
         case ELEM_OSC: newWhich = ELEM_ONE_SHOT_RISING; break;
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;

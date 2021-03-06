@@ -712,6 +712,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_ONE_SHOT_LOW:
+        case ELEM_ONE_DROP_RISING:
         case ELEM_OSC:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:

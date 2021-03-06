@@ -133,6 +133,8 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_ONE_SHOT_FALLING;
     } else if(memcmp(line, "OSL", 3) == 0) {
         *which = ELEM_ONE_SHOT_LOW;
+    } else if(memcmp(line, "ODR", 3) == 0) {
+        *which = ELEM_ONE_DROP_RISING;
     } else if(memcmp(line, "OSC", 3) == 0) {
         *which = ELEM_OSC;
     } else if(memcmp(line, "NPULSE_OFF", 10) == 0) {
@@ -768,7 +770,7 @@ bool LoadPullUpListFromFile(FileTracker &f)
             return true;
         }
         Ok = true;
-		if(Prog.mcu()) {
+        if(Prog.mcu()) {
           // Don't internationalize this! It's the file format, not UI.
           if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
             i = port - 'A';
@@ -778,7 +780,7 @@ bool LoadPullUpListFromFile(FileTracker &f)
                 Ok = false;
             }
           }
-		}
+        }
         if(!Ok) {
             THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
         }
@@ -1251,6 +1253,10 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         case ELEM_ONE_SHOT_FALLING:
             fprintf(f, "OSF\n");
+            break;
+
+        case ELEM_ONE_DROP_RISING:
+            fprintf(f, "ODR\n");
             break;
 
         case ELEM_ONE_SHOT_LOW:

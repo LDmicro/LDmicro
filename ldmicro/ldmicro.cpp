@@ -341,14 +341,14 @@ return;
 char *GetComspec(char *comspec, int size)
 {
     TCHAR sysDir[MAX_PATH] = "";
-	GetEnvironmentVariable("COMSPEC", comspec, size);
+    GetEnvironmentVariable("COMSPEC", comspec, size);
     if((strlen(comspec) == 0) || (!ExistFile(comspec))) {
         GetSystemDirectory(sysDir, MAX_PATH);
         sprintf(comspec, "%s\\cmd.exe", sysDir);
         if(!ExistFile(comspec))
             sprintf(comspec, "%s\\command.com", sysDir);
     }
-	return comspec;
+    return comspec;
 }
 
 //-----------------------------------------------------------------------------
@@ -358,7 +358,7 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     IsErr(err, "Why???");
     SetLastError(ERROR_SUCCESS);
 
-	char cmdLine[1024*3];
+    char cmdLine[1024*3];
 #define VAR 2
 #if VAR == 1
     sprintf(cmdLine, "%s %s", batchfile, batchArgs);
@@ -382,9 +382,8 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
         err = ERROR_NOT_ENOUGH_MEMORY;
     return err;
   #else
-    
     //sprintf(cmdLine, "/k \"\"a a a.bat\" 1 \"2 2\" \" \" \"4 4\" 5 \"", batchfile, batchArgs);
-    sprintf(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs); 
+    sprintf(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs);
 
     TCHAR sysDir[MAX_PATH] = "";
     GetSystemDirectory(sysDir, MAX_PATH);
@@ -1415,6 +1414,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_OSL:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_LOW));
+            break;
+
+        case MNU_INSERT_ODR:
+            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_DROP_RISING));
             break;
 
         case MNU_INSERT_OSC:
@@ -3210,7 +3213,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         FreezeWindowPos(MainWindow);
         FreezeDWORD(IoListHeight);
 
-		UndoEmpty();
+        UndoEmpty();
         Prog.reset();
 
         return 0;

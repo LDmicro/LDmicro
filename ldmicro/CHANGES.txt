@@ -2,6 +2,13 @@
 
     * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
 
+    * New: Element ODR: ONE-DROP RISING is the inversion
+    of the element OSR: ONE-SHOT RISING,
+                                _   _   _
+                           --[_/ ODR \_/ ]--
+                                _     _
+                           --[_/ OSR_/ \_]--
+
 
 == Release 5.4.0.5
 

@@ -125,7 +125,7 @@ goto PROTEUS
 @mkdir  "%P3%\MPLAB"
 copy "%P3%\%P4%.asm"          "%P3%\MPLAB"
 ;
-::goto PROTEUS
+goto PROTEUS
 ;
 del "%P3%\MPLAB\%P4%.hex"
 @if NOT EXIST "%P3%\%P4%.asm" goto error

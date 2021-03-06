@@ -103,8 +103,8 @@ static int CyclesPerTimerTick;
 static uint32_t IntPc;
 
 static FILE *fUART;
-static FILE *fSPI; 
-static FILE *fI2C; 
+static FILE *fSPI;
+static FILE *fI2C;
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
@@ -136,7 +136,7 @@ static DWORD TerminalX3 = 300, TerminalY3 = 350, TerminalW3 = 300, TerminalH3 = 
 static int QueuedSpiCharacter = -1;
 static int QueuedI2cCharacter = -1;
 
-static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl); 
+static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl);
 
 static void        SimulateIntCode();
 static const char *MarkUsedVariable(const char *name, DWORD flag);
@@ -996,9 +996,9 @@ static void CheckVariableNamesCircuit(int which, void *any)
 //      case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
-        case ELEM_SPI_WR: 
-        case ELEM_I2C_RD: 
-        case ELEM_I2C_WR: 
+        case ELEM_SPI_WR:
+        case ELEM_I2C_RD:
+        case ELEM_I2C_WR:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -1008,6 +1008,7 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_ONE_SHOT_LOW:
+        case ELEM_ONE_DROP_RISING:
         case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -1929,7 +1930,7 @@ static void SimulateIntCode()
             // Don't try to simulate the EEPROM stuff: just hold the EEPROM
             // busy all the time, so that the program never does anything
             // with it.
-			case INT_EEPROM_BUSY:
+            case INT_EEPROM_BUSY:
                 SetSingleBit(a->name1, true);
                 break;
 
@@ -2464,7 +2465,7 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, L
 {
     switch(msg) {
         case WM_DESTROY:
-            DestroySimulationWindow(UartSimulationWindow); 
+            DestroySimulationWindow(UartSimulationWindow);
             break;
 
         case WM_CLOSE:
@@ -2611,9 +2612,9 @@ static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, L
 #define MAX_SCROLLBACK 0x10000
 static char buf[MAX_SCROLLBACK] = "";
 
-void ShowSimulationWindow(int sim) 
+void ShowSimulationWindow(int sim)
 {
-    HWND SimHwnd = nullptr; 
+    HWND SimHwnd = nullptr;
     HWND SimCtrl = nullptr;
 
     if((sim == SIM_UART) && (UartSimulationWindow != nullptr))
@@ -2635,9 +2636,9 @@ void ShowSimulationWindow(int sim)
     if(sim == SIM_I2C)
         wc.lpfnWndProc = (WNDPROC)I2cSimulationProc;
 
-	wc.hInstance = Instance;
+    wc.hInstance = Instance;
     wc.hbrBackground = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName = "LDmicroSimulationWindow"; 
+    wc.lpszClassName = "LDmicroSimulationWindow";
     wc.lpszMenuName = nullptr;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
@@ -2723,7 +2724,7 @@ void ShowSimulationWindow(int sim)
     if(sim == SIM_I2C)
         I2cSimulationWindow = SimHwnd;
 
-    SimCtrl = 
+    SimCtrl =
         CreateWindowEx(0,
                        WC_EDIT,
                        "",
@@ -2732,7 +2733,7 @@ void ShowSimulationWindow(int sim)
                        0,
                        TerminalW,
                        TerminalH,
-                       SimHwnd, 
+                       SimHwnd,
                        nullptr,
                        Instance,
                        nullptr);
@@ -2751,7 +2752,7 @@ void ShowSimulationWindow(int sim)
     strcpy(buf, "");
     if(sim == SIM_UART) {
         SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-        PrevUartTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); 
+        PrevUartTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc);
         SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
         SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
         ShowWindow(UartSimulationWindow, true);
@@ -2775,7 +2776,7 @@ void ShowSimulationWindow(int sim)
 //-----------------------------------------------------------------------------
 // Get rid of the simulation terminal-type window.
 //-----------------------------------------------------------------------------
-void DestroySimulationWindow(HWND SimulationWindow) 
+void DestroySimulationWindow(HWND SimulationWindow)
 {
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the
@@ -2783,11 +2784,11 @@ void DestroySimulationWindow(HWND SimulationWindow)
     //if(SimulationWindow == nullptr) return;
     if(SimulationWindow != nullptr) {
 
-        if((SimulationWindow == UartSimulationWindow) && (fUART)) 
+        if((SimulationWindow == UartSimulationWindow) && (fUART))
             fclose(fUART);
-        if((SimulationWindow == SpiSimulationWindow) && (fSPI)) 
+        if((SimulationWindow == SpiSimulationWindow) && (fSPI))
             fclose(fSPI);
-        if((SimulationWindow == I2cSimulationWindow) && (fI2C)) 
+        if((SimulationWindow == I2cSimulationWindow) && (fI2C))
             fclose(fI2C);
 
         DWORD TerminalX, TerminalY, TerminalW, TerminalH;
@@ -2918,16 +2919,16 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
     bPrev = b;
     // ^^^ // This patch only for simulation mode and for WC_EDIT control.
 
-	// Scroll text in buffer
-	int overBy = strlen(buf) + strlen(append) + 1 + 1 - MAX_SCROLLBACK; // int overBy - don't change overBy type!!! It must be signed!!!
+    // Scroll text in buffer
+    int overBy = strlen(buf) + strlen(append) + 1 + 1 - MAX_SCROLLBACK; // int overBy - don't change overBy type!!! It must be signed!!!
     if(overBy > 0 ) {
-		if(((s = strchr(buf, '\r')) != nullptr) && (s[1] == '\n')) 
-			memmove(buf, &s[1], MAX_SCROLLBACK - overBy); // Scroll by line
-		else
-			memmove(buf, buf + overBy, MAX_SCROLLBACK - overBy); // Scroll by snake
+        if(((s = strchr(buf, '\r')) != nullptr) && (s[1] == '\n'))
+            memmove(buf, &s[1], MAX_SCROLLBACK - overBy); // Scroll by line
+        else
+            memmove(buf, buf + overBy, MAX_SCROLLBACK - overBy); // Scroll by snake
     }
 
-	strcat(buf, append);
+    strcat(buf, append);
 
     SendMessage(SimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(SimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);

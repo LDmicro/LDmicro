@@ -815,6 +815,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                            --[_/ OSR_/ \_]--
                               _       _
                            --[ \_OSF_/ \_]--
+                                _   _   _
+                           --[_/ ODR \_/ ]--
                               _     _   _
                            --[ \_OSL \_/ ]--
 
@@ -860,15 +862,58 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 
+> ONE-DROP RISING               _   _   _
+                           --[_/ ODR \_/ ]--
+
+    This instruction normally outputs true. If the instruction's input is
+    true during this scan and it was false during the previous scan then the
+    output is false during one PLC cycle. It therefore generates a low level pulse one scan wide
+    on each falling edge of its input signal, i.e. univibrator. This
+    instruction is useful if you want to trigger events off the falling edge
+    of a signal.
+    The input level of this instruction is the same as OSR and
+    the output level is the inverse of the OSR.
+
+
+                     logic
+                     level
+                          ^  The duration of the input pulse is five cycles
+                  ODR     |     _______
+                  input   | ___/       \_________
+                          |
+                  ODR     | ___   _______________
+                  output  |    \_/
+                        --+---------------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+
+
+
+                     logic
+                     level
+                          ^      Single-cycle input pulse
+                  ODR     |     _
+                  input   | ___/ \_________
+                          |
+                  ODR     | ___   _________
+                  output  |    \_/
+                        --+------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6
+
+
+
 > ONE-SHOT LOW LEVEL          _     _   _
                            --[ \_OSL \_/ ]--
 
-    This instruction normally outputs ture. If the instruction's input is
+    This instruction normally outputs true. If the instruction's input is
     false during this scan and it was true during the previous scan then the
     output is false. It therefore generates a low level pulse one scan wide
     on each falling edge of its input signal, i.e. univibrator. This
     instruction is useful if you want to trigger events off the falling edge
     of a signal.
+    The input level of this instruction is the same as OSF and
+    the output level is the inverse of the OSF.
 
 
 
