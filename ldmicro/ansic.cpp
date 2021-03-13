@@ -3687,7 +3687,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
         fprintf(f,
                 "    setupPlc();\n"
-                "    while(true) {\n");
+                "    while(1) {\n");
         //------------------------------------------------------------------------------------
         fprintf(f, "        // Test PLC cycle Timer %d interval here.\n", Prog.cycleTimer);
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {

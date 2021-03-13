@@ -19,6 +19,9 @@
     * Wiki: OSR, OSF, ODR, ODF, OSC
     https://github.com/LDmicro/LDmicro/wiki/OSR,-OSF,-ODR,-ODF,-OSC
 
+    * Fixed error: 'true' undeclared (first use in this function). Issue BuildAVR.bat # 227
+        while(true) replaced at while(1)
+
 
 == Release 5.4.0.5
 

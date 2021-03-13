@@ -433,6 +433,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT="D:\lds\batteria\monitor bateria atiny85.ld"
 @SET PROGECT=D:\lds\pic12F1840\all.ld
+@SET PROGECT=d:\lds\persistTest\ATmega8\persistTest.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
