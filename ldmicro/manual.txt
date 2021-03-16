@@ -2074,24 +2074,28 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     DP - is dot segment
 
 
-    a  --|>|-----+-- common Cathodes LED connection
-                 |
-    b  --|>|-----+
+    a  --|>|-----+-----+ common Cathodes LED connection
+                 |     |
+    b  --|>|-----+    ---  connect to the ground
     ...          |
+    g  --|>|-----+
                  |
     DP --|>|-----+
-
-    a  --|<|-----+-- common Anodes LED connection
+                      ^  connect to the power Vcc
+                      |
+    a  --|<|-----+----+ common Anodes LED connection
                  |
     b  --|<|-----+
     ...          |
+    g  --|<|-----+
                  |
-    DP --|<|-----+
+    DP --|<|-----+    a,b,...g,DP connect to MCU pins(or buffers)
 
 
     The variable 'src'(char) must be in the range of 0..128 and usually has a 1-byte size.
     128 characters of ASCII table codes are implemented.
-    The first 32 ASCII chars replased to the hex digits.
+    The first 16 ASCII chars replased to the hex digits from 0 to F.
+    The next  16 ASCII chars replased to the hex digits with dot DP segment on.
     The 129th symbol is a symbol of a degree 'o' for use with a temperature value.
 ADDRESS=  0               16(0x10)       31(0x1F)
 row+colmn |               |              |  from 0 to 15 - hex digits
@@ -2162,6 +2166,35 @@ row+colmn |               |              |  from 0 to 15 - hex digits
     BIT               16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
     nibbles  ^          ^           ^           ^           ^           ^
     The size of the variable 'dest' must be at least 3 bytes.
+
+
+> BUS TRACER                  {BUS    dest:=}
+                            --{          src}-
+
+    When routing PCBs, it is often convenient to run the conductors in
+    parallel(with minimal conductors crossings) from the microcircuit
+    to the MCU, and then software swap the MCU port pins.
+    7-SEGMENTS FONT CONVERTER provide bit(PORT) mapping:
+    SEGMENTS  -   PORT BITS
+    DP        -   7
+    g         -   6
+    f         -   5
+    e         -   4
+    d         -   3
+    c         -   2
+    b         -   1
+    a         -   0
+    But usually, you need something like this:
+    SEGMENTS  -   PORT BITS
+    DP        -   6
+    g         -   7
+    f         -   4
+    e         -   5
+    d         -   0
+    c         -   1
+    b         -   2
+    a         -   3
+    BUS TRACER allow replace bits in no particular order.
 
 
 > BINARY TO BCD CONVERTER     {BIN2BCD dest:=}

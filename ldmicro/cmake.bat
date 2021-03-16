@@ -27,6 +27,7 @@
 @SET PROGECT="d:\lds\ATmega1284 40-Pin\ATmega1284 40-Pin.ld"
 
 @SET PROGECT=d:\lds\PresistTest\ATmega8\PresistTest.ld
+@SET PROGECT=D:\lds\spi\228_ATmega2560.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

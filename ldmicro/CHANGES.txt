@@ -1,13 +1,13 @@
-== Release 5.4.1.0 pre
+== Release 5.4.1.0
 
     * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
 
     * New:  Element  ODR: ONE DROP if RISING is the inversion
       of the element OSR: ONE-SHOT RISING,
                                 _   _   _
-                           --[_/ ODR \_/ ]--
+                           --[_/ ODR \_/ ]--     ONE DROP if RISING
                                 _     _
-                           --[_/ OSR_/ \_]--
+                           --[_/ OSR_/ \_]--     ONE-SHOT RISING
 
     * Rename: Element OSL: ONE-SHOT LOW LEVEL
       to new name     ODF: ONE DROP if FALLING
@@ -19,8 +19,13 @@
     * Wiki: OSR, OSF, ODR, ODF, OSC
     https://github.com/LDmicro/LDmicro/wiki/OSR,-OSF,-ODR,-ODF,-OSC
 
-    * Fixed error: 'true' undeclared (first use in this function). Issue BuildAVR.bat # 227
-        while(true) replaced at while(1)
+    * Fixed error: 'true' undeclared (first use in this function). Issue BuildAVR.bat fixed #227
+        while(true)   replaced at   while(1)
+
+    * Fixed: BUS TRACER element.
+
+    * Wiki: HOW TO: 7 segment display (7SEG & BUS)
+    https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-7-segment-display-(7SEG-&-BUS)
 
 
 == Release 5.4.0.5
