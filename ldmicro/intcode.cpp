@@ -2653,8 +2653,8 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             #endif
             break;
         }
-        case ELEM_ONE_SHOT_LOW: {
-            Comment(3, "ELEM_ONE_SHOT_LOW");
+        case ELEM_ONE_DROP_FALLING: {
+            Comment(3, "ELEM_ONE_DROP_FALLING");
             /*
                   __      ___
             INPUT   \____/
@@ -2679,6 +2679,33 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
               Op(INT_SET_BIT, storeNameHi);
+            Op(INT_END_IF);
+            break;
+        }
+        case ELEM_ONE_DROP_RISING: {
+            Comment(3, "ELEM_ONE_DROP_RISING");
+            /*
+                     ____
+            INPUT __/    \__
+                  __   ______
+            OUTPUT  \_/
+
+                    | |
+                     Tcycle
+            */
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "ONE_DROP_RISING", "");
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_SET, storeName);
+                //Op(INT_CLEAR_BIT, stateInOut); // drop
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_SET_BIT, storeName);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, stateInOut);
+              Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
             break;
         }

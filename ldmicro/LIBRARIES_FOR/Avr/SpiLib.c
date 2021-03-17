@@ -69,17 +69,29 @@ void SPI_Init(char division)
 }
 
 // Emission (et reception) d'un octet
+// Transmission (and reception) of a byte
 char SPI_Send(char tx)
 {
+    // The SPIF bit is cleared by first reading
+    // the SPI Status Register with SPIF set,
+    // then accessing the SPI Data Register(SPDR).
+    char tmp = SPSR;
+
     // SS n'est pas gere automatiquement en mode maitre
+    // SS is not managed automatically in master mode
     SPIPORT &= ~(1 << SS);
 
-    SPDR = tx; // Ecriture dans SPDR provoque emission sur MOSI
+    // Ecriture dans SPDR provoque emission sur MOSI
+    // Writing in SPDR causes emission on MOSI
+    SPDR = tx;
 
     while(!(SPSR & (1 << SPIF)))
         ; // Attente fin emission / reception
+          // Wait for the end of transmission / reception
 
     SPIPORT |= (1 << SS);
 
-    return SPDR; // Octet recu parallement sur MISO
+    // Octet recu parallement sur MISO
+    // Byte received in parallel on MISO
+    return SPDR;
 }

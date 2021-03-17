@@ -32,8 +32,10 @@
 ;
 @SET PIC_ASM_TOOL="D:\Program Files\Microchip\MPLABX\v3.26\mpasmx\mpasmx.exe"
 @SET PIC_ASM_TOOL="D:\Program Files\Microchip\MPASM Suite\MPASMWIN.exe"
+@SET PIC_ASM_TOOL="c:\Program Files (x86)\Microchip\MPLABX\v5.20\mpasmx\mpasmx.exe"
 ;
 @SET DIFF_TOOL="D:\Program Files\WinMerge\WinMergeU.exe"
+@SET DIFF_TOOL="c:\Program Files (x86)\WinMerge\WinMergeU.exe"
 ;
 @rem if NOT EXIST "%P3%\ladder.h"    copy "%P3%\ladder.h_"   "%P3%\ladder.h"
 @rem if NOT EXIST "%P3%\%P4%.ino"    copy "%P3%\%P4%.ino_"   "%P3%\%P4%.ino"

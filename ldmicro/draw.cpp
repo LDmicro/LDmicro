@@ -98,7 +98,8 @@ static int CountWidthOfElement(int which, void *any, int soFar)
         case ELEM_CTR:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
-        case ELEM_ONE_SHOT_LOW:
+        case ELEM_ONE_DROP_FALLING:
+        case ELEM_ONE_DROP_RISING:
         case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -1151,7 +1152,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
 
         case ELEM_ONE_SHOT_RISING:
-        case ELEM_ONE_SHOT_LOW:
+        case ELEM_ONE_DROP_FALLING:
+        case ELEM_ONE_DROP_RISING:
         case ELEM_ONE_SHOT_FALLING: {
             const char *ss1, *ss2;
             if(which == ELEM_ONE_SHOT_RISING) {
@@ -1164,11 +1166,16 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                 ss2 =
                     "[ \\_\x01"
                     "OSF\x02_/ \\_]";
-            } else if(which == ELEM_ONE_SHOT_LOW) {
+            } else if(which == ELEM_ONE_DROP_FALLING) {
                 ss1 = "  _     _   _ ";
                 ss2 =
                     "[ \\_\x01"
-                    "OSL\x02 \\_/ ]";
+                    "ODF\x02 \\_/ ]";
+            } else if(which == ELEM_ONE_DROP_RISING) {
+                ss1 = "    _   _   _ ";
+                ss2 =
+                    "[_/ \x01"
+                    "ODR\x02 \\_/ ]";
             } else
                 oops();
 
@@ -1180,10 +1187,10 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         }
         case ELEM_OSC: {
             const char *ss1, *ss2;
-            ss1 = "   _     _   _  ";
+            ss1 = "     _   _   ";
             ss2 =
-                "[_/ \x01"
-                "OSC\x02_/ \\_/ \\]";
+                "[\x01"
+                "OSC\x02/ \\_/ \\_]";
 
             CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
             CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);

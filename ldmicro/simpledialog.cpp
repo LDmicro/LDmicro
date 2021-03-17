@@ -841,14 +841,15 @@ void ShowBusDialog(ElemLeaf *l)
     strcpy(PCBbitStr, "|");
 
     for(int i = 7; i >= 0; i--) {
+        sprintf(PCBbitStr2, "%2d|", i);
+        strcat(busStr, PCBbitStr2);
         sprintf(PCBbitStr2, "%2d|", s->PCBbit[i]);
         strcat(PCBbitStr, PCBbitStr2);
-        strcat(busStr, PCBbitStr2);
     }
 
-    const char *labels[] = {_("Destination:"), _("Source:"), _("Destination bits:"), _("Source bits:")};
-    char *      dests[] = {s->dest, busStr, s->src, PCBbitStr};
-    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, dests)) {
+    const char *labels[] = {_("Destination:"), _("Destination bits:"), _("Source:"), _("Source bits:")};
+    char *      dests[] = {s->dest, PCBbitStr, s->src, busStr};
+    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, 4, dests, 0, nullptr, 0x08)) {
         if(IsNumber(s->dest)) {
             Error(_("Bus instruction: '%s' not a valid destination."), s->dest);
         }

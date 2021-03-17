@@ -548,7 +548,7 @@ int MemForVariable(const NameArray &name, ADDR_T *addr, int sizeOfVar)
         THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
-        VariableCount++;        
+        VariableCount++;
         memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name.c_str());
         if(name[0] == '#') {

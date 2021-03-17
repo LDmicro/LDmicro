@@ -206,7 +206,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
             char devname[MAX_NAME_LEN]; // spi name = "SPI"
             int  devpins[4];
             strcpy(devname, str);
-            if(strcmp(devname, "Ui_SPI") == 0) {
+			if(strstr(devname, "Ui_SPI")) {
                 SPI_Used = PinsForSpiVariable(&devname[3], 3, devpins); // to force pin assignment on SPI and get port + pins
                 if(SPI_Used == 0)
                     THROW_COMPILER_EXCEPTION(_("SPI Internal error"));
@@ -3687,7 +3687,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
         fprintf(f,
                 "    setupPlc();\n"
-                "    while(true) {\n");
+                "    while(1) {\n");
         //------------------------------------------------------------------------------------
         fprintf(f, "        // Test PLC cycle Timer %d interval here.\n", Prog.cycleTimer);
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {

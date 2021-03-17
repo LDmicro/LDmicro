@@ -5267,6 +5267,8 @@ otherwise the result was zero or greater.
                         t2con |= 1;
                     else if(prescale == 16)
                         t2con |= 2;
+                    else if((prescale == 64) && (Prog.mcu()->core == EnhancedMidrangeCore14bit))// available not for all PIC MCU
+                        t2con |= 3;
                     else
                         oops();
 
@@ -5508,7 +5510,9 @@ otherwise the result was zero or greater.
                    McuAs(" PIC12F683 ") ||          //
                    McuAs(" PIC12F752 ") ||          //
                    McuAs(" PIC16F1824 ") ||         //
-                   McuAs(" PIC16F1827 ")            //
+                   McuAs(" PIC16F1827 ") ||         //
+                   McuAs(" PIC12F1840 ") ||         //
+                   McuAs(" PIC12F1822 ")            //
                 ) {
                     goPos = 1;
                     chsPos = 2;
@@ -5576,7 +5580,9 @@ otherwise the result was zero or greater.
                    McuAs(" PIC16F1933 ") || //
                    McuAs(" PIC16F1947 ") || //
                    McuAs(" PIC16F1824 ") || //
-                   McuAs(" PIC16F1827 ")    //
+                   McuAs(" PIC16F1827 ") || //
+                   McuAs(" PIC12F1840 ") || //
+                   McuAs(" PIC12F1822 ")    //
                 ) {
                     adcsPos = 4;                                            // in REG_ADCON1
                     WriteRegister(REG_ADCON0,                               //
@@ -6908,6 +6914,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         REG_PIR1 = 0x0011;
         CCP1IF = BIT2;
@@ -6956,6 +6964,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ")         //
               || McuAs(" PIC16F1824 ")         //
               || McuAs(" PIC16F1827 ")         //
+              || McuAs(" PIC12F1840 ")         //
+              || McuAs(" PIC12F1822 ")         //
               || McuAs(" PIC12F752 ")          //
     ) {
         // has not
@@ -7001,6 +7011,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         REG_TXSTA = 0x019E;
         REG_RCSTA = 0x019D;
@@ -7057,6 +7069,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         REG_ADRESH = 0x009C;
         REG_ADRESL = 0x009B;
@@ -7079,29 +7093,29 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         REG_CCPR2L = 0x1b;
         REG_CCP2CON = 0x1d;
-    } else if(McuAs(" PIC16F1512 ")    //
-              || McuAs(" PIC16F1513 ") //
-              || McuAs(" PIC16F1516 ") //
-              || McuAs(" PIC16F1517 ") //
-              || McuAs(" PIC16F1518 ") //
-              || McuAs(" PIC16F1519 ") //
-              || McuAs(" PIC16F1526 ") //
-              || McuAs(" PIC16F1527 ") //
-              || McuAs(" PIC16F1933 ") //
-              || McuAs(" PIC16F1947 ") //
-              || McuAs(" PIC16F1824 ") //
-              || McuAs(" PIC16F1827 ") //
+    } else if(McuAs(" PIC16F1512 ") //
+           || McuAs(" PIC16F1513 ") //
+           || McuAs(" PIC16F1516 ") //
+           || McuAs(" PIC16F1517 ") //
+           || McuAs(" PIC16F1518 ") //
+           || McuAs(" PIC16F1519 ") //
+           || McuAs(" PIC16F1526 ") //
+           || McuAs(" PIC16F1527 ") //
+           || McuAs(" PIC16F1933 ") //
+           || McuAs(" PIC16F1947 ") //
+           || McuAs(" PIC16F1824 ") //
+           || McuAs(" PIC16F1827 ") //
     ) {
         REG_CCPR2L = 0x0298;
         REG_CCP2CON = 0x029A;
-    } else if(McuAs("Microchip PIC16F628 ")    //
-              || McuAs("Microchip PIC16F819 ") //
-              || McuAs("Microchip PIC16F88 ")  //
-              || McuAs(" PIC16F72 ")           //
+    } else if(McuAs("Microchip PIC16F628 ") //
+           || McuAs("Microchip PIC16F819 ") //
+           || McuAs("Microchip PIC16F88 ")  //
+           || McuAs(" PIC16F72 ")           //
     ) {
         // has not
-    } else if(McuAs(" PIC10F")    //
-              || McuAs(" PIC12F") //
+    } else if(McuAs(" PIC10F") //
+           || McuAs(" PIC12F") //
     ) {
         // has not
     } else
@@ -7129,7 +7143,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC16F1933 ") || //
               McuAs(" PIC16F1947 ") || //
               McuAs(" PIC16F1824 ") || //
-              McuAs(" PIC16F1827 ")    //
+              McuAs(" PIC16F1827 ") || //
+              McuAs(" PIC12F1840 ") || //
+              McuAs(" PIC12F1822 ")    //
     ) {
         REG_T2CON = 0x001C;
         REG_PR2 = 0x001B;
@@ -7180,6 +7196,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         REG_TMR0 = 0x15;
         REG_OPTION = 0x95;
@@ -7226,6 +7244,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         REG_EECON1 = 0x195;
         REG_EECON2 = 0x196;
@@ -7278,6 +7298,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
        || McuAs(" PIC16F1947 ") //
        || McuAs(" PIC16F1824 ") //
        || McuAs(" PIC16F1827 ") //
+       || McuAs(" PIC12F1840 ") //
+       || McuAs(" PIC12F1822 ") //
     ) {
         REG_ANSELA = 0x18C;
     }
@@ -7329,6 +7351,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     //------------------------------------------------------------
     if(McuAs(" PIC16F1824 ")    //
        || McuAs(" PIC16F1827 ") //
+       || McuAs(" PIC12F1840 ") //
+       || McuAs(" PIC12F1822 ") //
     ) {
         REG_OSCON = 0x099;
     }
@@ -7355,6 +7379,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ") //
               || McuAs(" PIC16F1824 ") //
               || McuAs(" PIC16F1827 ") //
+              || McuAs(" PIC12F1840 ") //
+              || McuAs(" PIC12F1822 ") //
     ) {
         CONFIG_ADDR1 = 0x8007;
         CONFIG_ADDR2 = 0x8008;
@@ -7516,9 +7542,58 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     FwdAddrIsNow(progStart);
     Comment("Program Start");
 
-    if(McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
-        Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
-        WriteRegister(REG_OSCON, 0xF << IRCF0);
+    if(McuAs(" PIC16F1824 ") //
+    || McuAs(" PIC16F1827 ") //
+    || McuAs(" PIC12F1840 ") //
+    || McuAs(" PIC12F1822 ") //
+    //|| McuAs(" PIC16F1933 ") //
+    //|| McuAs(" PIC16F1947 ") //
+    ) {
+        //Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
+        //WriteRegister(REG_OSCON, 0xF << IRCF0);
+        Comment("Set the Internal Oscillator");
+        int spllen_ircf;
+        switch(Prog.mcuClock) {
+            case 32000000:
+                spllen_ircf = 0x1E; // 1 = 4x PLL Is enabled
+                break;
+            case 16000000:
+                spllen_ircf = 0xF;
+                break;
+            case 8000000:
+                spllen_ircf = 0xE;
+                break;
+            case 4000000:
+                spllen_ircf = 0xD;
+                break;
+            case 2000000:
+                spllen_ircf = 0xC;
+                break;
+            case 1000000:
+                spllen_ircf = 0xB;
+                break;
+            case 500000:
+                spllen_ircf = 0x7;
+                break;
+            case 250000:
+                spllen_ircf = 0x6;
+                break;
+            case 125000:
+                spllen_ircf = 0x5;
+                break;
+            case 62500:
+                spllen_ircf = 0x4;
+                break;
+            case 31250:
+                spllen_ircf = 0x2;
+                break;
+            case 31000:
+                spllen_ircf = 0x1;
+                break;
+            default:
+                Error(_("Available Internal MCU Crystal Frequency: 32/16/8/4/2/1 MHz, 500/250/125/62.5/31.25/31 kHz!"));
+        }
+        WriteRegister(REG_OSCON, spllen_ircf << IRCF0);
     }
     if(Prog.mcu()->core == BaselineCore12bit) {
         Prog.WDTPSA = 1;
