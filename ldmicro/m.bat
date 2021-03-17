@@ -344,8 +344,6 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\LDs\spi\spi_master_PIC877.ld
 @SET PROGECT=D:\LDs\spi\spi_slave_PIC877.ld
-@SET PROGECT=D:\LDs\spi\spi_master_ATmega2560.ld
-@SET PROGECT=D:\LDs\spi\spi_slave_ATmega2560.ld
 @SET PROGECT=D:\LDs\spi\spi_PIC877.ld
 @SET PROGECT=D:\LDs\spi\spi_ATmega2560.ld
 
@@ -435,7 +433,10 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\lds\pic12F1840\all.ld
 @SET PROGECT=d:\lds\persistTest\ATmega8\persistTest.ld
 @SET PROGECT=d:\lds\TIMER_3DIGIT\TIMER_3DIGIT.ld
-@SET PROGECT=d:\lds\7seg\7seg_1.ld
+@SET PROGECT=d:\lds\7seg\7seg_all.ld
+@SET PROGECT=D:\lds\spi\228_ATmega2560.ld
+@SET PROGECT=D:\LDs\spi\spimaster_ATmega2560.ld
+@SET PROGEC2=D:\LDs\spi\spislave_ATmega2560.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
@@ -481,7 +482,7 @@ if "%1" == "" goto DO_BUILD
 @del ldinterpret.exe
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
-:start ldmicro.exe %PROGEC2%
+start ldmicro.exe %PROGEC2%
 start ldmicro.exe %PROGECT%
 goto EXIT
 
