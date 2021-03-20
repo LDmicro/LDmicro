@@ -930,8 +930,8 @@ Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
 
 
 
-> OSCILLATORE                    _     _   _
-                           --[ _/ OSC_/ \_/ \_]--
+> OSCILLATORE                      _   _
+                           --[OSC_/ \_/ \_]--
 
                              F=1/(2*Tcycle)
 
