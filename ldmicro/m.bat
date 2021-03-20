@@ -438,6 +438,8 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\LDs\spi\spimaster_ATmega2560.ld
 @SET PROGEC2=D:\LDs\spi\spislave_ATmega2560.ld
 
+@SET PROGECT=D:\LDs\ATmega128\pwm.ld
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD
@@ -482,7 +484,7 @@ if "%1" == "" goto DO_BUILD
 @del ldinterpret.exe
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
-start ldmicro.exe %PROGEC2%
+::start ldmicro.exe %PROGEC2%
 start ldmicro.exe %PROGECT%
 goto EXIT
 

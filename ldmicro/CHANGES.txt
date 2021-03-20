@@ -2,6 +2,9 @@
 
     * Fixed: Reset the Pull-up resistors when you start a new program. Fix #222
 
+    * Added PWM on Atmega128. Fix #221
+
+
 == Release 5.4.1.0
 
     * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
