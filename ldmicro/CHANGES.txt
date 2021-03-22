@@ -1,8 +1,13 @@
-== Release 5.4.1.1 pre
+== Release 5.4.1.1
 
     * Fixed: Reset the Pull-up resistors when you start a new program. Fix #222
 
     * Added PWM on Atmega128. Fix #221
+
+    * Fixed: BUS TRASER for PICs MCU.
+
+    * Wiki: BUS TRASER
+    https://github.com/LDmicro/LDmicro/wiki/BUS-TRASER
 
 
 == Release 5.4.1.0

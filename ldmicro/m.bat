@@ -439,6 +439,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGEC2=D:\LDs\spi\spislave_ATmega2560.ld
 
 @SET PROGECT=D:\LDs\ATmega128\pwm.ld
+@SET PROGECT=D:\lds\BUS\MedBusTest.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
