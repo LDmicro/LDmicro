@@ -950,8 +950,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 
-> OSCILLATOR                     _     _   _
-                           --[ _/ OSC_/ \_/ \_]--
+> OSCILLATOR                       _   _
+                           --[OSC_/ \_/ \_]--
 
                              F=1/(2*Tcycle)
 

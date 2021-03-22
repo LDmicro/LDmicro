@@ -975,6 +975,8 @@ McuPwmPinInfo AvrAtmega16_32PwmPinInfo40[] = {
 //// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
     {  4, 0, 8,     5, 0x5C,  0,     0x53,  5,     4,     0x48, 0   ,  0    , ""}, // OC0
 
+    { 21, 2, 8,     7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    , ""}, // OC2  // Fast PWM
+    //
     { 19, 1, 8,     5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 , ""}, // OC1A // Fast PWM  8-bit
     { 19, 1, 9,     5, 0x4A,  0x4B,  0x4F,  7,     6,        2, 0x4E,  0x08 , ""}, // OC1A // Fast PWM  9-bit
     { 19, 1,10,     5, 0x4A,  0x4B,  0x4F,  7,     6,        3, 0x4E,  0x08 , ""}, // OC1A // Fast PWM 10-bit
@@ -982,8 +984,38 @@ McuPwmPinInfo AvrAtmega16_32PwmPinInfo40[] = {
     { 18, 1, 8,     5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 , ""}, // OC1B // Fast PWM  8-bit
     { 18, 1, 9,     5, 0x48,  0x49,  0x4F,  5,     4,        2, 0x4E,  0x08 , ""}, // OC1B // Fast PWM  9-bit
     { 18, 1,10,     5, 0x48,  0x49,  0x4F,  5,     4,        3, 0x4E,  0x08 , ""}, // OC1B // Fast PWM 10-bit
+};
 
-    { 21, 2, 8,     7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    , ""}, // OC2  // Fast PWM
+McuPwmPinInfo AvrPwmPinInfo64_[] = {
+////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    { 14, 0, 8,     7, 0x51,  0,     0x53,  5,     4,     0x48, 0,     0, "" },    // OC0
+
+    { 17, 2, 8,     5, 0x43,  0,     0x45,  5,     4,     0x48, 0,     0, "" },    // OC2  // Fast PWM
+    //
+    { 15, 1, 8,     5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 , ""}, // OC1A // Fast PWM  8-bit
+    { 15, 1, 9,     5, 0x4A,  0x4B,  0x4F,  7,     6,        2, 0x4E,  0x08 , ""}, // OC1A // Fast PWM  9-bit
+    { 15, 1,10,     5, 0x4A,  0x4B,  0x4F,  7,     6,        3, 0x4E,  0x08 , ""}, // OC1A // Fast PWM 10-bit
+
+    { 16, 1, 8,     5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 , ""}, // OC1B // Fast PWM  8-bit
+    { 16, 1, 9,     5, 0x48,  0x49,  0x4F,  5,     4,        2, 0x4E,  0x08 , ""}, // OC1B // Fast PWM  9-bit
+    { 16, 1,10,     5, 0x48,  0x49,  0x4F,  5,     4,        3, 0x4E,  0x08 , ""}, // OC1B // Fast PWM 10-bit
+    // There is problem with OC1C/OC2 in Proteus ?
+    { 17, 1, 8,     5, 0x78,  0x79,  0x4F,  3,     2,        1, 0x4E,  0x08 , ""}, // OC1C // Fast PWM  8-bit
+    { 17, 1, 9,     5, 0x78,  0x79,  0x4F,  3,     2,        2, 0x4E,  0x08 , ""}, // OC1C // Fast PWM  9-bit
+    { 17, 1,10,     5, 0x78,  0x79,  0x4F,  3,     2,        3, 0x4E,  0x08 , ""}, // OC1C // Fast PWM 10-bit
+    //
+    {  5, 3, 8,     5, 0x86,  0x78,  0x8B,  7,     6,        1, 0x8A,  0x08, "" }, // OC3A // Fast PWM  8-bit
+    {  5, 3, 9,     5, 0x86,  0x78,  0x8B,  7,     6,        2, 0x8A,  0x08, "" }, // OC3A // Fast PWM  9-bit
+    {  5, 3,10,     5, 0x86,  0x78,  0x8B,  7,     6,        3, 0x8A,  0x08, "" }, // OC3A // Fast PWM 10-bit
+
+    {  6, 3, 8,     5, 0x84,  0x85,  0x8B,  5,     4,        1, 0x8A,  0x08, "" }, // OC3B // Fast PWM  8-bit
+    {  6, 3, 9,     5, 0x84,  0x85,  0x8B,  5,     4,        2, 0x8A,  0x08, "" }, // OC3B // Fast PWM  9-bit
+    {  6, 3,10,     5, 0x84,  0x85,  0x8B,  5,     4,        3, 0x8A,  0x08, "" }, // OC3B // Fast PWM 10-bit
+
+    {  7, 3, 8,     5, 0x82,  0x83,  0x8B,  3,     2,        1, 0x8A,  0x08, "" }, // OC3C // Fast PWM  8-bit
+    {  7, 3, 9,     5, 0x82,  0x83,  0x8B,  3,     2,        2, 0x8A,  0x08, "" }, // OC3C // Fast PWM  9-bit
+    {  7, 3,10,     5, 0x82,  0x83,  0x8B,  3,     2,        3, 0x8A,  0x08, "" }, // OC3C // Fast PWM 10-bit
 };
 
 McuPwmPinInfo AvrPwmPinInfo40_[] = {
@@ -1042,10 +1074,6 @@ McuPwmPinInfo AvrAtmega162PwmPinInfo40_[] = {
 ////     ti  reso max REG_    REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
     {  2, 2, 8,     7, 0, 0, 0, 0, 0, 0, 0, 0, "" },
-};
-
-McuPwmPinInfo AvrPwmPinInfo64_[] = {
-    { 17, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "" },
 };
 
 McuPwmPinInfo AvrPwmPinInfo100_[] = {

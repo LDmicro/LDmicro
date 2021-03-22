@@ -903,8 +903,8 @@ Nota: Las varias bobinas con el mismo 'YName' o 'RName' pueden ser mentalmente
 
 
 
-> OSCILADOR                      _     _   _
-                           --[ _/ OSC_/ \_/ \_]--
+> OSCILADOR                        _   _
+                           --[OSC_/ \_/ \_]--
 
                              F=1/(2*Tcycle)
 

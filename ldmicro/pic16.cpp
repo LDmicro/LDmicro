@@ -3861,6 +3861,13 @@ static void CompileFromIntermediate(bool topLevel)
                 CopyBit(addr1, bit1, addr2, bit2);
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                CopyBit(addr1 + a->literal1 / 8, a->literal1 % 8, addr2 + a->literal2 / 8, a->literal2 % 8, a->name1.c_str(), a->name2.c_str());
+                break;
+
             case INT_COPY_NOT_BIT_TO_BIT:
                 Comment("INT_COPY_NOT_BIT_TO_BIT %s:=!%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);

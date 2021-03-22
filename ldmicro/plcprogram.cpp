@@ -17,8 +17,16 @@ static ElemSubcktSeries *AllocEmptyRung()
 
 PlcProgram::PlcProgram()
 {
-    memset(rungSelected, ' ', sizeof(rungSelected));
     rungs_.fill(nullptr);
+    reset();
+}
+
+void PlcProgram::reset()
+{
+    for(int i = 0; i < numRungs; i++) {
+        FreeCircuit(ELEM_SERIES_SUBCKT, rungs_[i]);
+    }
+    memset(rungSelected, ' ', sizeof(rungSelected));
     numRungs = 0;
     cycleTime = 10000;
     mcuClock = 16000000;
@@ -30,12 +38,13 @@ PlcProgram::PlcProgram()
     cycleDuty = 0;
     configurationWord = 0;
     setMcu(nullptr);
+    WDTPSA = 0;
+    OPTION = 0;
     LDversion = "0.2";
     for(int i = 0; i < MAX_IO_PORTS; i++) {
         pullUpRegs[i] = ~0u; // All input pins try to set Pull-up registers by default.
     }
-    WDTPSA = 0;
-    OPTION = 0;
+    rungs_.fill(nullptr);
     for(int i = 0; i <= MAX_RUNGS; i++) {
         rungPowered[i] = 0;
         rungSimulated[i] = 0;
@@ -176,25 +185,6 @@ int PlcProgram::mcuUART() const
     if(mcu_->uartNeeds.rxPin && mcu_->uartNeeds.txPin)
         return 1;
     return 0;
-}
-
-void PlcProgram::reset()
-{
-    for(int i = 0; i < numRungs; i++) {
-        FreeCircuit(ELEM_SERIES_SUBCKT, rungs_[i]);
-    }
-    memset(rungSelected, ' ', sizeof(rungSelected));
-    numRungs = 0;
-    cycleTime = 10000;
-    mcuClock = 16000000;
-    baudRate = 9600;
-    spiRate = 1000000;
-    i2cRate = 100000;
-    io.count = 0;
-    cycleTimer = 1;
-    cycleDuty = 0;
-    setMcu(nullptr);
-    LDversion = "0.2";
 }
 
 void PlcProgram::appendEmptyRung()
