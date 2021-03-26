@@ -1583,6 +1583,22 @@ void ShowStringDialog(char *dest, char *var, char *string)
     NoCheckingOnBox[2] = false;
 }
 
+void ShowFrmtStToCharDialog(ElemLeaf *l)
+{
+    ElemFormattedString *e = &(l->d.fmtdStr);
+    const char *         labels[] = {_("Dest Char:"), IsString(e->string) ? _("String:") : _("String variable:"), _("Variable:")};
+    char *dests[] = {e->dest, e->string, e->var};
+    NoCheckingOnBox[0] = true;
+    NoCheckingOnBox[1] = true;
+    NoCheckingOnBox[2] = true;
+    if(ShowSimpleDialog(_("Formatted String To Char"), 3, labels, 0x2, 0x1, 0x3, dests)) {
+        //
+    }
+    NoCheckingOnBox[0] = false;
+    NoCheckingOnBox[1] = false;
+    NoCheckingOnBox[2] = false;
+};
+
 void ShowCprintfDialog(int which, void *e)
 {
     /*

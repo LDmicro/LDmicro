@@ -973,6 +973,7 @@ static void CheckVariableNamesCircuit(int which, void *any)
             break;
         }
 
+        case ELEM_FRMT_STR_TO_CHAR:
         case ELEM_STRING:
             MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
             break;

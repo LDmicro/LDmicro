@@ -225,7 +225,9 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_ISP_CPRINTF  0x4c06
 #define MNU_INSERT_UART_CPRINTF 0x4c07
 */
-#define MNU_INSERT_STRING       0x4d
+#define MNU_INSERT_STRING           0x4d
+#define MNU_INSERT_FRMT_STR_TO_CHAR 0x4d01
+
 #define MNU_INSERT_OSC          0x4f01
 #define MNU_INSERT_STEPPER      0x4f02
 #define MNU_INSERT_PULSER       0x4f03
@@ -587,6 +589,7 @@ void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
 void ShowStringDialog(char * dest, char *var, char *string);
+void ShowFrmtStToCharDialog(ElemLeaf *l);
 void ShowCprintfDialog(int which, void *e);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);

@@ -830,6 +830,10 @@ void EditSelectedElement()
             ShowFormattedStringDialog(Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
+        case ELEM_FRMT_STR_TO_CHAR:
+            ShowFrmtStToCharDialog(Selected.leaf());
+            break;
+
         case ELEM_PIECEWISE_LINEAR:
             ShowPiecewiseLinearDialog(Selected.leaf());
             break;

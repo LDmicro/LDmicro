@@ -1385,11 +1385,9 @@ static void ProcessMenu(int code)
         case MNU_INSERT_FMTD_STRING:
             CHANGING_PROGRAM(AddFormattedString());
             break;
-            /*
-        case MNU_INSERT_UART_WRITE:
-            CHANGING_PROGRAM(AddWrite(ELEM_UART_WR));
+        case MNU_INSERT_FRMT_STR_TO_CHAR:
+            CHANGING_PROGRAM(AddFrmtStrToChar());
             break;
-*/
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
             break;

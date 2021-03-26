@@ -170,6 +170,7 @@ static int CountWidthOfElement(int which, void *any, int soFar)
 */
             //      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
+        case ELEM_FRMT_STR_TO_CHAR:
             return 2;
 
         case ELEM_COMMENT: {
@@ -1468,15 +1469,13 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
+        case ELEM_FRMT_STR_TO_CHAR:
         case ELEM_STRING: {
             // Careful, string could be longer than fits in our space.
             sprintf(s1, "%s", leaf->d.fmtdStr.dest);
             formatWidth(top,
                         2 * POS_WIDTH,
-                        "{"
-                        "\x01"
-                        "FRMT STR"
-                        "\x02",
+                        which == ELEM_STRING ? "{\x01FRMT STR\x02" : "{\x01FRMT STR TO CHAR\x02",
                         "",
                         "",
                         s1,
@@ -1753,6 +1752,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 */
             //      case ELEM_UART_WR:
         case ELEM_FORMATTED_STRING:
+        case ELEM_FRMT_STR_TO_CHAR:
             DM_BOUNDS(gx - 1, gy);
             DisplayMatrix[gx - 1][gy].data.leaf = leaf;
             DisplayMatrix[gx - 1][gy].which = which;

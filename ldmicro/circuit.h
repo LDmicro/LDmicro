@@ -137,6 +137,7 @@
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
+#define ELEM_FRMT_STR_TO_CHAR   0x2f01
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
 
@@ -290,6 +291,7 @@
 /*    case ELEM_UART_CPRINTF:     */\
 /*    case ELEM_UART_WR:          */\
     case ELEM_FORMATTED_STRING: \
+    case ELEM_FRMT_STR_TO_CHAR: \
     case ELEM_PERSIST:          \
     case ELEM_RSFR:             \
     case ELEM_WSFR:             \
@@ -699,6 +701,7 @@ void                AddGoto(int which);
 void                AddLookUpTable();
 void                AddPiecewiseLinear();
 void                AddFormattedString();
+void                AddFrmtStrToChar();
 void                AddWrite(int code);
 void                AddString();
 void                AddPrint(int code);

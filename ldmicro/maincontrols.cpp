@@ -278,6 +278,7 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_FRMT_STR_TO_CHAR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
     /*
@@ -564,6 +565,7 @@ HMENU MakeMainWindowMenus()
 
     FormatStrMenu = CreatePopupMenu();
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_FRMT_STR_TO_CHAR, _("Insert Formatted String to Char"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string"));
 
     UrtMenu = CreatePopupMenu();

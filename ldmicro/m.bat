@@ -440,6 +440,7 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\LDs\ATmega128\pwm.ld
 @SET PROGECT=D:\lds\BUS\MedBusTest.ld
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

@@ -618,6 +618,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_FRMT_STR_TO_CHAR:
+            if(strlen(l->d.fmtdStr.dest) > 0) {
+                AppendIo(l->d.fmtdStr.dest, IO_TYPE_GENERAL);
+            }
+            if(strlen(l->d.fmtdStr.var) > 0) {
+                AppendIo(l->d.fmtdStr.var, IO_TYPE_GENERAL);
+            }
+            break;
+
         case ELEM_FORMATTED_STRING:
             if(strlen(l->d.fmtdStr.var) > 0) {
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);
