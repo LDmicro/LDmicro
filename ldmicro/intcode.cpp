@@ -783,7 +783,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
         intOp.name6 = name6;
     intOp.literal1 = lit;
 #ifdef NEW_CMP
-    if((op == INT_IF_LES) || (op == INT_IF_VARIABLE_LES_LITERAL))
+    if(INT_IF_GROUP(op))
         if(!name2) {
             sprintf(intOp.name2.data(), "%d", lit);
         }
@@ -2825,7 +2825,7 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                 int  sovElement = 0;
                 /**/
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
-                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
+                Op(INT_IF_EQU, Xseg, "$scratch");
                   Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)deg);
                 Op(INT_ELSE);
                   Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (int32_t)0x00);
@@ -4655,9 +4655,12 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             break;
         }
         case ELEM_FRMT_STR_TO_CHAR:
-            Comment(3, "ELEM_FRMT_STR_TO_CHAR");
         case ELEM_FORMATTED_STRING: {
-            Comment(3, "ELEM_FORMATTED_STRING");
+            if(which == ELEM_FORMATTED_STRING) {
+                Comment(3, "ELEM_FORMATTED_STRING");
+            } else {
+                Comment(3, "ELEM_FRMT_STR_TO_CHAR");
+            }
             // Okay, this one is terrible and ineffcient, and it's a huge pain
             // to implement, but people want it a lot. The hard part is that
             // we have to let the PLC keep cycling, of course, and also that
@@ -4737,7 +4740,7 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                         outputChars[steps++] = OUTPUT_DIGIT;
                     }
                 } else if(*p == '\\') {
-                L1:
+                    L1:
                     p++;
                     switch(*p) {
                         case 'a':
@@ -4841,34 +4844,32 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
 
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, oneShot);
-                Op(INT_SET_BIT, oneShot); //v2
+                Op(INT_SET_BIT, oneShot);
                 Op(INT_SET_VARIABLE_TO_LITERAL, seq, (int32_t)0);
                 Op(INT_SET_BIT, doSend);
               Op(INT_END_IF);
-            Op(INT_ELSE);               //v2
-              Op(INT_CLEAR_BIT, oneShot); //v2
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, oneShot);
             Op(INT_END_IF);
-            //Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut); //v1
 
             // Everything that involves seqScratch is a terrible hack to
             // avoid an if statement with a big body, which is the risk
             // factor for blowing up on PIC16 page boundaries.
 
-              const char *seqScratch = "$seqScratch";
+            const char *seqScratch = "$seqScratch";
+          Op(INT_IF_BIT_SET, doSend);
+            Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
 
-              Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
-
-              // No point doing any math unless we'll get to transmit this
-              // cycle, so check that first.
-
-              Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
-            Op(INT_ELSE);
-              Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
-            Op(INT_END_IF);
-
-            Op(INT_IF_BIT_SET, doSend);
-            // Now check UART busy.
-            /*
+            // No point doing any math unless we'll get to transmit this
+            // cycle, so check that first.
+              /*
+              Op(INT_IF_GEQ, seq, steps);
+                Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+              Op(INT_END_IF);
+              */
+            if(which == ELEM_FORMATTED_STRING) {
+                // Now check UART busy.
+                /*
                 // this is original code
                 Op(INT_CLEAR_BIT, "$scratch");
                 Op(INT_UART_SEND, "$scratch", "$scratch");
@@ -4876,14 +4877,12 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
                 */
-              if(which == ELEM_FORMATTED_STRING) {
                 Op(INT_CLEAR_BIT, "$scratch"); // optional, needs only to prevent "Internal relay '%s' never assigned" message
                 Op(INT_UART_SEND_READY, "$scratch");
                 Op(INT_IF_BIT_CLEAR, "$scratch");
                   Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
-              }
-            Op(INT_END_IF);
+            }
 
             // So we transmit this cycle, so check out which character.
             int digit = 0;
@@ -4891,42 +4890,38 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                 if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
-                    Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_CLEAR_BIT, "$scratch");
-                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
+                    Op(INT_IF_EQU, seqScratch, i);
                       Op(INT_SET_BIT, "$scratch");
                     Op(INT_END_IF);
-
                     Op(INT_IF_BIT_SET, "$scratch");
+                      // Start the integer-to-string
 
-                    // Start the integer-to-string
+                      // If there's no minus, then we have to load up
+                      // convertState ourselves the first time.
+                      if(digit == 0 && !mustDoMinus) {
+                          OpSetVar(convertState, var);
+                      }
+                      if(digit == 0) {
+                          Op(INT_SET_BIT, isLeadingZero);
+                      }
+                      Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", TenToThe((digits - digit) - 1));
+                      Op(INT_SET_VARIABLE_DIVIDE, "$charToUart", convertState, "$scratch");
+                      Op(INT_SET_VARIABLE_MULTIPLY, "$scratch", "$scratch", "$charToUart");
+                      Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, "$scratch");
+                      Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", '0');
+                      Op(INT_SET_VARIABLE_ADD, "$charToUart", "$charToUart", "$scratch");
 
-                    // If there's no minus, then we have to load up
-                    // convertState ourselves the first time.
-                    if(digit == 0 && !mustDoMinus) {
-                        OpSetVar(convertState, var);
-                    }
-                    if(digit == 0) {
-                        Op(INT_SET_BIT, isLeadingZero);
-                    }
-
-                    Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", TenToThe((digits - digit) - 1));
-                    Op(INT_SET_VARIABLE_DIVIDE, "$charToUart", convertState, "$scratch");
-                    Op(INT_SET_VARIABLE_MULTIPLY, "$scratch", "$scratch", "$charToUart");
-                    Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, "$scratch");
-                    Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", '0');
-                    Op(INT_SET_VARIABLE_ADD, "$charToUart", "$charToUart", "$scratch");
-
-                    // Suppress all but the last leading zero.
-                    if(digit != (digits - 1)) {
-                        Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", "$charToUart");
-                          Op(INT_IF_BIT_SET, isLeadingZero);
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' '); // '0' %04d
+                      // Suppress all but the last leading zero.
+                      if(digit != (digits - 1)) {
+                          Op(INT_IF_EQU, "$scratch", "$charToUart");
+                            Op(INT_IF_BIT_SET, isLeadingZero);
+                              Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' '); // '0' %04d
+                            Op(INT_END_IF);
+                          Op(INT_ELSE);
+                            Op(INT_CLEAR_BIT, isLeadingZero);
                           Op(INT_END_IF);
-                        Op(INT_ELSE);
-                          Op(INT_CLEAR_BIT, isLeadingZero);
-                        Op(INT_END_IF);
-                    }
+                      }
 
                     Op(INT_END_IF);
 
@@ -4934,46 +4929,51 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
                 } else if(outputWhich[i] == OUTPUT_SIGN) {
                     // do the minus; ugliness to get around the BRNE jump
                     // size limit, though
-                    Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_CLEAR_BIT, "$scratch");
-                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
+                    Op(INT_IF_EQU, seqScratch, i);
                       Op(INT_SET_BIT, "$scratch");
                     Op(INT_END_IF);
-                      Op(INT_IF_BIT_SET, "$scratch");
+                    Op(INT_IF_BIT_SET, "$scratch");
 
-                        // Also do the `absolute value' calculation while
-                        // we're at it.
-                        Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
-                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (int32_t)0);
+                      // Also do the `absolute value' calculation while
+                      // we're at it.
+                      Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
+                      Op(INT_IF_LES, var, (int32_t)0);
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
                         Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (int32_t)0);
                         Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, var);
                       Op(INT_ELSE);
                         Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                       Op(INT_END_IF);
-
                     Op(INT_END_IF);
                 } else if(outputWhich[i] == OUTPUT_UCHAR) {
                     // just another character
-                      Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
-                      Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
+                    Op(INT_IF_EQU, seqScratch, i);
                       Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
                     Op(INT_END_IF);
                 } else
                     Error(_("Internal error."));
             }
+            
+            if(which == ELEM_FRMT_STR_TO_CHAR) {
+                // One extra PLC cycle is needed to send last char ower external UART, I2C, SPI
+                Op(INT_IF_EQU, seqScratch, steps);
+                   Op(INT_INCREMENT_VARIABLE, seq);
+				   steps++;
+                Op(INT_END_IF);
+            }
 
-              Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (int32_t)0);
-            Op(INT_ELSE);
-              Op(INT_IF_BIT_SET, doSend);
-                if(which == ELEM_FRMT_STR_TO_CHAR) {
-                  Op(INT_SET_VARIABLE_TO_VARIABLE, dest, "$charToUart");
-                } else {
+            Op(INT_IF_BIT_SET, doSend);
+              Op(INT_IF_GEQ, seqScratch, 0);
+                if(which == ELEM_FORMATTED_STRING) {
                   Op(INT_UART_SEND1, "$charToUart");
+                } else {
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, dest, "$charToUart");
                 }
                 Op(INT_INCREMENT_VARIABLE, seq);
               Op(INT_END_IF);
             Op(INT_END_IF);
+          Op(INT_END_IF);
 
             // Rung-out state: true if we're still running, else false
             Op(INT_CLEAR_BIT, stateInOut);
@@ -4984,6 +4984,11 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, doSend);
             Op(INT_END_IF);
+            if(which == ELEM_FORMATTED_STRING) {
+                Comment(3, "ELEM_FORMATTED_STRING END");
+            } else {
+                Comment(3, "ELEM_FRMT_STR_TO_CHAR END");
+            }
             break;
         }
         case ELEM_OPEN:

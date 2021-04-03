@@ -401,11 +401,11 @@ INSTRUCTIONS REFERENCE
 
     Terminology:
     "Level sensitive" = output(element) controlled by the level of the input.
-    "Edge triggered" = output changes only at the point in time
-    when the input changes from value to the other. Can be positive
-    edge-triggered (0 to 1), or negative edge-triggered (1 to 0).
+    "Edge triggered" = output changes only at the point in time when the input
+    changes from value to the other. Can be positive edge-triggered (0 to 1)
+    (rising), or negative edge-triggered (1 to 0)(falling).
     Most elements of LDmicro are "Level sensitive", some elements are
-    "positive edge-triggered".
+    "positive edge-triggered" or "negative edge-triggered".
 
 > CONTACT, NORMALLY OPEN        Xname           Rname          Yname
                              ----] [----     ----] [----    ----] [----
@@ -1857,6 +1857,46 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     | 13  0d  ^M  CR   carriage return    \r| 29  1d  ^]  GS   group separator
     | 14  0e  ^N  SO   shift out            | 30  1e  ^^  RS   record separator
     | 15  0f  ^O  SI   shift in             | 31  1f  ^_  US   unit separator
+
+
+> FORMATTED STRING TO CHAR          {FRMT STR TO CHAR         char:=}
+                                   -{"1.value:\-3\r\n",          var}-
+
+    This element based on FORMATTED STRING OVER UART internal code, but it puts
+    one char per cycle into the general variable "char" instead of UART.
+    Then "char" variable may send to UART or I2C or SPI etc.
+
+    Note: The baud rate of UART, I2C, SPI must be able to transmit one character
+    per one PLC cycle fully. There is no method to apply the brake(slow down)
+    inside the FORMATTED STRING TO CHAR element.
+
+    These two rungs are equivalent, they alternately send the "var" variable
+    to the UART repetitively.
+    The variable "var" is incremented after printing two lines. You may try
+    to use SPI SEND/RECEIVE or I2C WRITE instead of UART SEND in rung 1.
+   ||                                                                            ||
+   ||    Rbusy2    {FRMT STR TO CHAR   char:=}       char            Rbusy1      ||
+  1||------]/[-----{"1.value:\-3\r\n",    var}----{UART SEND}----------( )-------||
+   ||                                                                            ||
+   ||                                                                            ||
+   ||    Rbusy1              var                                     Rbusy2      ||
+  2||------]/[-----{"2.value:\-3\r\n\r\n"}----+------------------------( )-------||
+   ||                                         |                                  ||
+   ||                                         |   _       _     {ADD      var:=} ||
+   ||                                         +--[ \_OSF_/ \_]--{var     +    1}-||
+   ||                                                                            ||
+    The UART output is:
+    1.value:   0
+    2.value:   0
+
+    1.value:   1
+    2.value:   1
+
+    1.value:   2
+    2.value:   2
+
+    1.value:   3
+    2.value:   3
 
 
 > SPI SEND / RECEIVE            {SPI       SPI}

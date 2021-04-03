@@ -1591,7 +1591,7 @@ void ShowFrmtStToCharDialog(ElemLeaf *l)
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
-    if(ShowSimpleDialog(_("Formatted String To Char"), 3, labels, 0x2, 0x1, 0x3, dests)) {
+    if(ShowSimpleDialog(_("Formatted String To Char"), 3, labels, 0x0, 0x0, 0x7, dests)) {
         //
     }
     NoCheckingOnBox[0] = false;

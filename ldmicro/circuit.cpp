@@ -1449,9 +1449,7 @@ void InsertRung(bool afterCursor)
 //-----------------------------------------------------------------------------
 void PushRungDown()
 {
-    dbp("1");
     int i = RungContainingSelected();
-//  dbp("2");
     if(i == (Prog.numRungs - 1))
         return;
 
@@ -1459,23 +1457,17 @@ void PushRungDown()
     int j;
     for(j = 0; j < i; j++)
         HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[j]);
-//  dbp("4");
     int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
-  //dbp("5");
     int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i + 1]);
-//  dbp("6");
 
     ElemSubcktSeries *temp = Prog.rungs_[i];
     Prog.rungs_[i] = Prog.rungs_[i + 1];
     Prog.rungs_[i + 1] = temp;
-//  dbp("7");
 
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightNow + HeightDown);
 
-//  dbp("8");
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = true;
-    dbp("9");
 }
 
 //-----------------------------------------------------------------------------

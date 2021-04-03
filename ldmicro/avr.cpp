@@ -4292,7 +4292,7 @@ static void CompileFromIntermediate()
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
-                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
+                Comment("INT_SET_VARIABLE_xxx(%d) %s %s %s", a->op, a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
 
                 sov = SizeOfVar(a->name1);
                 CopyArgToReg(r20, sov, a->name2);

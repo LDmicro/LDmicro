@@ -17,7 +17,18 @@ static ElemSubcktSeries *AllocEmptyRung()
 
 PlcProgram::PlcProgram()
 {
+    setMcu(nullptr);
     rungs_.fill(nullptr);
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        pullUpRegs[i] = ~0u; // All input pins try to set Pull-up registers by default.
+    }
+    for(int i = 0; i <= MAX_RUNGS; i++) {
+        rungPowered[i] = 0;
+        rungSimulated[i] = 0;
+        rungSelected[i] = 0;
+        OpsInRung[i] = 0;
+        HexInRung[i] = 0;
+    }
     reset();
 }
 
@@ -37,22 +48,10 @@ void PlcProgram::reset()
     cycleTimer = 1;
     cycleDuty = 0;
     configurationWord = 0;
-    setMcu(nullptr);
     WDTPSA = 0;
     OPTION = 0;
-    LDversion = "0.2";
-    for(int i = 0; i < MAX_IO_PORTS; i++) {
-        pullUpRegs[i] = ~0u; // All input pins try to set Pull-up registers by default.
-    }
-    rungs_.fill(nullptr);
-    for(int i = 0; i <= MAX_RUNGS; i++) {
-        rungPowered[i] = 0;
-        rungSimulated[i] = 0;
-        rungSelected[i] = 0;
-        OpsInRung[i] = 0;
-        HexInRung[i] = 0;
-    }
     compiler = 0;
+    LDversion = "0.2";
 }
 
 PlcProgram::PlcProgram(const PlcProgram &other)

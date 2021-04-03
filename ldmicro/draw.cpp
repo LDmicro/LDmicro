@@ -1475,7 +1475,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             sprintf(s1, "%s", leaf->d.fmtdStr.dest);
             formatWidth(top,
                         2 * POS_WIDTH,
-                        which == ELEM_STRING ? "{\x01FRMT STR\x02" : "{\x01FRMT STR TO CHAR\x02",
+                        which == ELEM_STRING ? "{\x01""FRMT STR""\x02" : "{\x01""FRMT STR TO CHAR""\x02",
                         "",
                         "",
                         s1,
