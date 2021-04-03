@@ -1955,7 +1955,7 @@ static void SimulateIntCode()
             case INT_UART_WR:
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
-                    SimulateUartTxCountdown = 2;
+                    //SimulateUartTxCountdown = 2;
                     if(GetVariableType(a->name1) == IO_TYPE_STRING) {
                         static char *s = GetSimulationStr(a->name1.c_str());
                         for(size_t i = 0; i < strlen(s); i++) {
@@ -2552,7 +2552,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) //// Modified by JG
 {
-    switch(msg) {
+	    switch(msg) {
         case WM_KEYDOWN:
             // vvv copy-paste from ldmicro.cpp
             if(InSimulationMode) {
@@ -2855,7 +2855,7 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
 {
     char append[50];
 
-    if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) || b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0') {
+    if(isprint(b) || strchr("\r\n\b\f\t\v\a", b)) {
         append[0] = (char)b;
         append[1] = '\0';
     } else {
@@ -2889,7 +2889,7 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
         }
     } else if(b == '\r') {
         if(strlen(buf) > 0) {
-            if(buf[strlen(buf) - 1] == '\n') {
+			if(bPrev == '\n') {
                 // LF CR -> CR LF
                 // "\n\r" -> "\r\n"
                 buf[strlen(buf) - 1] = '\0';
@@ -2929,7 +2929,8 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
             memmove(buf, buf + overBy, MAX_SCROLLBACK - overBy); // Scroll by snake
     }
 
-    strcat(buf, append);
+	if(strlen(append))
+		strcat(buf, append);
 
     SendMessage(SimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(SimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
