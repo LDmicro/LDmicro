@@ -1,5 +1,7 @@
 == Release 5.4.2.0
 
+    * Fixed PORTF pins on "Atmel AVR ATmega2560 100-TQFP"
+
     * New:  Element FRMT_STR_TO_CHAR string to char iterator.
     It puts one char per cycle to the general variable "char".
     Then char sended to UART or I2C or SPI etc.
