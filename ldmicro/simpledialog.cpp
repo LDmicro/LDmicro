@@ -924,25 +924,29 @@ void ShowSpiDialog(ElemLeaf *l)
             }
         }
     }
-    //  NoCheckingOnBox[3] = true;
 
     if(Prog.mcu()) {
-        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
-            if(l->d.spi.which == ELEM_SPI)
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
-            if(l->d.spi.which == ELEM_SPI_WR) {
-                strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00FA);
-            }
-        } else {
-            /////
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
-                //TODO: check the available range
-            }
-            //  NoCheckingOnBox[3] = false;
-            for(int i = 0; i < comboRec[4].n; i++) {
-                CheckFree(const_cast<char *>(comboRec[4].str[i]));
-            }
+/*
+    ///// Added by JG
+    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
+    {
+        if (l->d.spi.which == ELEM_SPI)
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+        if (l->d.spi.which == ELEM_SPI_WR)
+        {
+            strcpy(dests[3], "-");
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+        }
+    }
+    else
+    {
+    /////
+*/
+        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
+            //TODO: check the available range
+        }
+        for(int i = 0; i < comboRec[4].n; i++) {
+            CheckFree(const_cast<char *>(comboRec[4].str[i]));
         }
     }
 }
