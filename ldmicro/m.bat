@@ -370,12 +370,6 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=d:\lds\tmp\TMP.ld
 @SET PROGECT=d:\lds\PIC16F628\uart.ld
 
-@SET PROGEC2=D:\LDs\uart\UART_S_ATmega2560_4.ld
-@SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_4.ld
-
-@SET PROGEC2=D:\LDs\uart\UART_S_PIC16F877_5.ld
-@SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_5.ld
-
 @SET PROGECT=D:\lds\spi\spi_echo.ld
 @SET PROGECT=D:\lds\I2C\i2c_echo.ld
 @SET PROGECT=d:\lds\I2C\i2c_lcd16x2bis.ld
@@ -440,7 +434,28 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\LDs\ATmega128\pwm.ld
 @SET PROGECT=D:\lds\BUS\MedBusTest.ld
+
+@SET PROGEC2=D:\LDs\uart\UART_S_PIC16F877_5.ld
+@SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_5.ld
+
+@SET PROGEC2=D:\LDs\uart\UART_S_ATmega2560_4.ld
+@SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_4.ld
+
+
+@SET PROGECT=D:\lds\VAR_TO_CHAR\send.ld
+@SET PROGECT=d:\lds\UARTs\hello.ld
+
+@SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV_877.ld
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt_877.ld
+
+@SET PROGECT=D:\lds\SINUS_AMPLITUDE\sinus_amplitude.ld
+
+@SET PROGECT=D:\lds\VAR_TO_CHAR\var_to_char_uart_SEND.ld
+@SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV.ld
 @SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt.ld
+
+@SET PROGEC2=D:\lds\VAR_TO_CHAR\r_32f10x.ld
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\f_32f10x.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
@@ -486,7 +501,7 @@ if "%1" == "" goto DO_BUILD
 @del ldinterpret.exe
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
-::start ldmicro.exe %PROGEC2%
+start ldmicro.exe %PROGEC2%
 start ldmicro.exe %PROGECT%
 goto EXIT
 

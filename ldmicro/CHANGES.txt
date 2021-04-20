@@ -4,13 +4,17 @@
 
     * Fixed PORTF output pins on "Atmel AVR ATmega2560 100-TQFP"
 
-    * New:  Element FRMT STR TO CHAR string to char iterator.
+    * New:  Instruction FRMT STR TO CHAR - string to char iterator.
     It puts one char per cycle into the general variable "char".
+    Then "char" variable may send to UART or I2C or SPI etc.
+    (Sponsored by OnosTech, thank you very much.)
+
+    * New:  Instruction VAR TO CHAR - varable to char/byte iterator.
+    It puts one char/byte per cycle into the general variable "char".
     Then "char" variable may send to UART or I2C or SPI etc.
 
     * See YouTube OnosTech channel: LDmicro Tutorial Series
     https://www.youtube.com/channel/UCPzl5JwVpGQCCup5YDP0mPw
-
 
 
 == Release 5.4.1.1
@@ -29,14 +33,14 @@
 
     * Added "Microchip PIC12F1840 8-pin packages" (Sponsored by MGP, thank you very much.)
 
-    * New:  Element  ODR: ONE DROP if RISING is the inversion
-      of the element OSR: ONE-SHOT RISING,
+    * New:  Instruction  ODR: ONE DROP if RISING is the inversion
+      of the instruction OSR: ONE-SHOT RISING,
                                 _   _   _
                            --[_/ ODR \_/ ]--     ONE DROP if RISING
                                 _     _
                            --[_/ OSR_/ \_]--     ONE-SHOT RISING
 
-    * Rename: Element OSL: ONE-SHOT LOW LEVEL
+    * Rename: Instruction OSL: ONE-SHOT LOW LEVEL
       to new name     ODF: ONE DROP if FALLING
                               _     _   _
                            --[ \_ODF \_/ ]--     ONE DROP if FALLING
@@ -49,7 +53,7 @@
     * Fixed error: 'true' undeclared (first use in this function). Issue BuildAVR.bat fixed #227
         while(true)   replaced at   while(1)
 
-    * Fixed: BUS TRACER element.
+    * Fixed: BUS TRACER instruction.
 
     * Wiki: HOW TO: 7 segment display (7SEG & BUS)
     https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-7-segment-display,-7SEG-&-BUS
@@ -304,7 +308,7 @@
     * Fixed: For the PWL instruction display the Index variable in the GUI
     and allow its size to be edited.(#122)
 
-    * Fixed: Bug in FORMATTED STRING OVER UART element, when using
+    * Fixed: Bug in FORMATTED STRING OVER UART instruction, when using
     command \0xFE instead of \xFE ldmicro closes.(#120)
 
 == Release 4.4.1.1
@@ -541,7 +545,7 @@
     * Updated: LDSTUB to LDSTUB0 and LDSTUB1 in ANSIC.
       #define USE_WDT in ANSIC.
 
-    * Updated: The DELAY(us) element, the variable duration is implemented.
+    * Updated: The DELAY(us) instruction, the variable duration is implemented.
 
     * New: TIME2DELAY(us)operation converts the time interval
       to the internal representation of the variable DELAY().
@@ -633,12 +637,12 @@
 
 == Release 4.3.3
 
-    * New: Element OSL: ONE-SHOT LOW LEVEL is inversion of element
+    * New: Instruction OSL: ONE-SHOT LOW LEVEL is inversion of instruction
     OSR: ONE-SHOT RISING,
 
-    * New: Element THI: TIMER HIGH
+    * New: Instruction THI: TIMER HIGH
 
-    * New: Element TLO: TIMER LOW
+    * New: Instruction TLO: TIMER LOW
 
     See https://github.com/LDmicro/LDmicro/wiki/TON,-TOF,-etc.
 
@@ -721,7 +725,7 @@
     ! You can add, edit, save, load, simulate this elements marked 'SIMUL:' in menu.
     ! No compile code at output.
 
-    * DowngradeFix: Restored COMMENT element accoding to Release 2.3
+    * DowngradeFix: Restored COMMENT instruction accoding to Release 2.3
 
 == Release 4.2.3
 
@@ -777,10 +781,10 @@
 
     * Fixed: PIC Configuration Bits hexadecimals.
 
-    * New: Element TIME to COUNTER converter
+    * New: Instruction TIME to COUNTER converter
     https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
 
-    * New: Element DELAY us
+    * New: Instruction DELAY us
     https://github.com/LDmicro/LDmicro/wiki/DELAY-us
 
     * New: PLC Cycle Time 0
@@ -815,7 +819,7 @@
 == Release 4.1.7
 
     * New: The pseudo-random number generator RAND implemented.
-    RAND element based on linear congruential generator (LCG).
+    RAND instruction based on linear congruential generator (LCG).
     See https://en.m.wikipedia.org/wiki/Linear_congruential_generator
     The generator is defined by the recurrence relation:
     X[n+1] = (a * X[n] + c) mod m
@@ -826,11 +830,11 @@
     X = (X * 0x10DCD + 1) % 0x100000000
     RAND return the most significant bytes of X.
 
-    * New: RANDS element set seed of RAND. X[n] := newSeed.
+    * New: RANDS instruction set seed of RAND. X[n] := newSeed.
     Press F1 in LDmicro to see the manul.txt.
 
-    * New: UART SENDn element send full size varible via USART in raw binary format.
-    One byte sends per cycle of PLC, like 'FORMATTED STR OVER UART' element.
+    * New: UART SENDn instruction send full size varible via USART in raw binary format.
+    One byte sends per cycle of PLC, like 'FORMATTED STR OVER UART' instruction.
 
     * Wiki: LDmicro RANDOM
     https://github.com/LDmicro/LDmicro/wiki/LDmicro-RANDOM
@@ -886,9 +890,9 @@
     (with no prescaler) or more. So, if you need PLC cycle period more
     then WDT period you must use CLRWDT command inside PLC cycle.
 
-    * New: CLRWDT element to clear WDT timer implemented.
+    * New: CLRWDT instruction to clear WDT timer implemented.
 
-    * New: LOCK element is implemented. LOCK command is an artificial
+    * New: LOCK instruction is implemented. LOCK command is an artificial
     situation to provocation the WDT reset (if WDT enabled). LOCK command
     designed as infinite loop. It is deadlock, way to freeze, blockade the
     program.
@@ -959,11 +963,11 @@
 
     * Fixed: SET PWM Timer1 at PIC. When two CCP modules are in a PWM mode,
     Timer2 is the time-base for both PWM1 and PWM2 outputs. You must use
-    the same base PWM frequency for both SET PWM DUTY CYCLE elements.
+    the same base PWM frequency for both SET PWM DUTY CYCLE instructions.
 
     * Fixed: SET PWM at AVR.
 
-    * New: RESET PWM element.
+    * New: RESET PWM instruction.
     This instruction disable PWM output and set it to low level.
     Also you can set another PWM base frequency by SET PWM DUTY CYCLE
     after actuation the RESET PWM.
@@ -1050,7 +1054,7 @@
     * HOW TO: RF (315MHz, 418MHz, 433MHz, 915MHz) modules with PIC's and AVR's
       https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-RF-(315MHz,-418MHz,-433MHz,-915MHz)-modules-with-PIC's-and-AVR's
 
-    * New: Added elements
+    * New: Added instructions
       UART SEND: Is ready ? Output is 1 when transmit buffer is empty and ready to loading new data.
       UART RECV: Is avail ? Output is 1 when there are unread data in the receive buffer.
 
@@ -1096,7 +1100,7 @@
       inverted) to the output. R, S, T inputs lock up (latch) the state of output.
       The T input is positive edge triggered. R, S inputs are level sensitive.
       If before R, S insert the "OSR: ONE-SHOT RISING" or
-      "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" element.
+      "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" instruction.
       If used only the R and S inputs you get classic RS-trigger,
       that may be with more than two inputs. If add T input you get "newest" RST-trigger.
       May be several R..R inputs, or several S..S inputs.
@@ -1157,17 +1161,17 @@
       Note: The screen refreshes randomly LD state inside 10 ms frame
       in "Real-Time Simulation" mode.
 
-    * Fixed: RETURN error in MUL,DIV elements in PIC10xxx, PIC12xx microcontroller family.
+    * Fixed: RETURN error in MUL,DIV instructions in PIC10xxx, PIC12xx microcontroller family.
 
-    * Added element COIL, T-TRIGGER.
+    * Added instruction COIL, T-TRIGGER.
       Added in manual.txt:
 
       Terminology:
-      "Level sensitive" = output(element) controlled by the level of the input.
+      "Level sensitive" = output(instruction) controlled by the level of the input.
       "Edge triggered" = output changes only at the point in time
       when the input changes from value to the other. Can be positive
       edge-triggered (0 to 1), or negative edge-triggered (1 to 0).
-      Most elements of LDmicro are "Level sensitive", some elements are
+      Most instructions of LDmicro are "Level sensitive", some instructions are
       "positive edge-triggered".
 
     > COIL, T-TRIGGER             Rname           Yname
@@ -1460,12 +1464,12 @@
       Use an external resistor, if there is no internal pull-up.
 
     * Modified:
-       Frequency of PWM in Element SET PWM was defined as
+       Frequency of PWM in instruction SET PWM was defined as
          int     targetFreq;
        now redefined as
          char    targetFreq[MAX_NAME_LEN];
 
-       Max value in Element COUNTER and CIRCULAR COUNTER was defined as
+       Max value in instructions COUNTER and CIRCULAR COUNTER was defined as
          int     max;
        now redefined as
          char    max[MAX_NAME_LEN];
@@ -1480,7 +1484,7 @@
       binary numbers (0b1010, 0b10011010010, 0b1111111111001000)
       in most places that you could use a decimal number.
 
-    * Added: You can replace LD elements in editor mode by pressing SPACE key.
+    * Added: You can replace LD instructions in editor mode by pressing SPACE key.
       For example OSR->OSF->OSR,
         TON->TOF->RTO->TON ets.
 
@@ -1489,14 +1493,14 @@
       into buffer(file ldmicro.tmp). Then in new place press Shift+Insert
       to insert buffer into LD diagram.
 
-      For copying only one selected element press Insert, and then Alt+Insert
-      to Pasting element in new place.
+      For copying only one selected instruction press Insert, and then Alt+Insert
+      to Pasting instruction in new place.
 
       Selected rungs marks symbol '*' before rungs number.
       Buffered rungs marks symbol 'R'.
-      Buffered element marks symbol 'L' if leaf end 'E' if ends element.
+      Buffered instruction marks symbol 'L' if leaf end 'E' if ends instruction.
 
-      If cursor under the selected element, then buffer will be Pasted
+      If cursor under the selected instruction, then buffer will be Pasted
       below the current rung, otherwise buffer will be Pasted before
       the current rung.
 
@@ -1585,7 +1589,7 @@
     * Fixed: PWM for AVR rechecked and corrected.
 
     * Fixed: Now is able to send the full range(0x00..0xff) of unsigned char symbol
-      as hexadecimal numbers in 'Formatted String Over UART' element.
+      as hexadecimal numbers in 'Formatted String Over UART' instruction.
       Release 3.2.1   raise error with formated strings "\0xFF" and "\0xFE".
       Release 2.3 can raise error with formated strings "\0xFF" and "\0xFE".
       Release 2.2 can raise error with formated strings "\0x00" and "\0x01".
@@ -1658,7 +1662,7 @@
 
 == Release 3.1.0
 
-    * Move an element CTC count from EndOFRung to LeafOfRung.
+    * Move an instruction CTC count from EndOFRung to LeafOfRung.
       After the counter overfill CTC generate OSR at its output.
       Format of LD file will not changed.
       Not need changes for old LD program

@@ -43,12 +43,14 @@
 
 :PROTEUS_DEL
 @mkdir  "%P3%\PROTEUS"
+goto PROTEUS_DEL_END
 del "%P3%\PROTEUS\*.h"  > nul
 del "%P3%\PROTEUS\*.c"  > nul
 del "%P3%\PROTEUS\*.asm"  > nul
 del "%P3%\PROTEUS\*.hex"  > nul
 del "%P3%\PROTEUS\*.elf"  > nul
 del "%P3%\PROTEUS\*.cof"  > nul
+:PROTEUS_DEL_END
 
 :pause
 ;
@@ -192,3 +194,4 @@ goto exit
 :error
 @pause
 :exit
+:@pause
