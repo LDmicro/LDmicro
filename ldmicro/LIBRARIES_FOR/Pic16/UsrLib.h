@@ -1,3 +1,5 @@
+#ifndef __USRLIB_H__
+#define __USRLIB_H__
 
 #include <htc.h>
 
@@ -33,4 +35,27 @@ void setPortDigitalIO();
 
 #ifndef T0IF
     #define T0IF TMR0IF
+#endif
+
+#define PORTB_PULL_UPS_ON()  do { nRBPU = 0; } while(0)
+#define PORTB_PULL_UPS_OFF() do { nRBPU = 1; } while(0)
+
+//#define PORT_BIT_SET(port, pin) PORT##port##bits.R##port##pin = 1
+// or
+#define PORT_BIT_SET(port, pin) R##port##pin = 1
+
+//#define PORT_BIT_CLEAR(port, pin) PORT##port##bits.R##port##pin = 0
+// or
+#define PORT_BIT_CLEAR(port, pin) R##port##pin = 0
+
+//#define PORT_BIT_STATE(port, pin) PORT##port##bits.R##port##pin
+// or
+#define PORT_BIT_STATE(port, pin) R##port##pin
+
+#define PIN_BIT_STATE(port, pin) R##port##pin
+
+
+#define WDT_Init()    WDTCON = 1
+#define WDT_Restart() CLRWDT()
+
 #endif
