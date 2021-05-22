@@ -37,12 +37,16 @@
     */
 
 /* PLLVCO = (HSE_VALUE / PLL_M) * PLL_N */
-#define PLL_M (HSE_VALUE / 1000000) /* Possible value 0 and 63 */
+//#define PLL_M (HSE_VALUE / 1000000) /* Possible value 0 and 63 */
+uint32_t PLL_M = 8; // (HSE_VALUE / 1000000); /* Possible value 0 and 63 */
+
 /// #define PLL_N   336                     /* Possible value 192 and 432 */
-#define PLL_N 200 /* Possible value 192 and 432 */
+//#define PLL_N 200 /* Possible value 192 and 432 */
+uint32_t PLL_N = 64;
 
 /* SYSCLK = PLLVCO / PLL_P !!!! DO NOT EXCEED 120MHz */
-#define PLL_P 2 /* Possible value 2, 4, 6, or 8 */
+//#define PLL_P 2 /* Possible value 2, 4, 6, or 8 */
+uint32_t PLL_P = 2;
 
 /* OTGFS, SDIO and RNG Clock =  PLLVCO / PLL_Q */
 /// #define PLL_Q   7  /* Possible value between 4 and 15 */
@@ -67,7 +71,8 @@
 /*******************************************************************************
 *  Clock Definitions
 *******************************************************************************/
-uint32_t SystemCoreClock = ((HSE_VALUE / PLL_M) * PLL_N) / PLL_P; /*!< System Clock Frequency (Core Clock) */
+//uint32_t SystemCoreClock = ((HSE_VALUE / PLL_M) * PLL_N) / PLL_P; /*!< System Clock Frequency (Core Clock) */
+uint32_t SystemCoreClock = 0; /*!< System Clock Frequency (Core Clock) */
 
 /**
   * @}
@@ -77,7 +82,7 @@ uint32_t SystemCoreClock = ((HSE_VALUE / PLL_M) * PLL_N) / PLL_P; /*!< System Cl
   * @{
   */
 
-static void SetSysClock(void);
+static void SetSysClock(uint32_t sysClockFreq, uint32_t oscClockFreq);
 
 /** @addtogroup stm32f4xx_System_Private_Functions
   * @{
@@ -90,7 +95,7 @@ static void SetSysClock(void);
   * @param  None
   * @retval None
   */
-void SystemInit(void)
+void SystemInit(uint32_t sysClockFreq, uint32_t oscClockFreq)
 {
     /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
     /* Set HSION bit */
@@ -108,7 +113,7 @@ void SystemInit(void)
 
     /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
     /* Configure the Flash Latency cycles and enable prefetch buffer */
-    SetSysClock();
+    SetSysClock(sysClockFreq, oscClockFreq);
 
 #ifdef VECT_TAB_SRAM
     SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
@@ -122,8 +127,37 @@ void SystemInit(void)
   * @param  None
   * @retval None
   */
-static void SetSysClock(void)
+static void SetSysClock(uint32_t sysClockFreq, uint32_t oscClockFreq)
 {
+    // #warning assert(oscClockFreq == HSE_VALUE)
+    uint32_t AHB_Prescaler, APB1_Prescaler, APB2_Prescaler;
+    // recalculate PLL_X constants and SystemCoreClock
+    if((sysClockFreq == 100000000) && (oscClockFreq == 25000000)) {
+        PLL_M = oscClockFreq / 1000000;
+        PLL_N = 200;
+        PLL_P = 2;
+        AHB_Prescaler = RCC_CFGR_HPRE_DIV1;
+        APB1_Prescaler = RCC_CFGR_PPRE1_DIV4;
+        APB2_Prescaler = RCC_CFGR_PPRE2_DIV2;
+    } else if((sysClockFreq == 84000000) && (oscClockFreq == 25000000)) {
+        PLL_M = oscClockFreq / 25;
+        PLL_N = 168;
+        PLL_P = 2;
+        AHB_Prescaler = RCC_CFGR_HPRE_DIV4;
+        APB1_Prescaler = 0;
+        APB2_Prescaler = 0;
+    } else if((sysClockFreq == 16000000) && (oscClockFreq == 16000000)) {
+        PLL_M = 8;
+        PLL_N = 64;
+        PLL_P = 2;
+        AHB_Prescaler = RCC_CFGR_HPRE_DIV4;
+        APB1_Prescaler = RCC_CFGR_PPRE1_DIV1;
+        APB2_Prescaler = RCC_CFGR_PPRE2_DIV1;
+    } else {
+        // #error Unsupported sysClockFreq or oscClockFreq
+    }
+    SystemCoreClock = ((oscClockFreq / PLL_M) * PLL_N) / PLL_P;
+
     __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
 
     /* Enable HSE */
@@ -143,13 +177,13 @@ static void SetSysClock(void)
 
     if(HSEStatus == (uint32_t)0x01) {
         /* HCLK = SYSCLK */
-        RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
+        RCC->CFGR |= AHB_Prescaler;
 
         /* PCLK2 = HCLK / 2  */
-        RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE2_DIV2;
+        RCC->CFGR |= APB2_Prescaler;
 
         /* PCLK1 = HCLK / 4 */
-        RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV4;
+        RCC->CFGR |= APB1_Prescaler;
 
         /* Select HSE as PLL source */
         RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) - 1) << 16) | (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24) | (PLL_R << 28);
