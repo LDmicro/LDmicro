@@ -1,8 +1,10 @@
+#include "ladder.h"
 #include "uartLib.h"
 
 void UART_Init(void) {
   // UART baud rate setup
   // setup_uart(2400);
+  return;
 }
 
 void UART_Transmit(unsigned char data) {
