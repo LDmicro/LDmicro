@@ -75,7 +75,7 @@ char SPI_Send(char tx)
     // The SPIF bit is cleared by first reading
     // the SPI Status Register with SPIF set,
     // then accessing the SPI Data Register(SPDR).
-    char tmp = SPSR;
+    char tmp = SPSR; // Ignore the "warning: unused variable 'tmp'" !!!
 
     // SS n'est pas gere automatiquement en mode maitre
     // SS is not managed automatically in master mode
