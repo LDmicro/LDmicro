@@ -1462,6 +1462,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddI2c(ELEM_I2C_WR));
             break;
 
+        case MNU_INSERT_MODBUS:
+            CHANGING_PROGRAM(AddModbus(ELEM_MODBUS));
+            break;
+
         case MNU_INSERT_7SEG:
             CHANGING_PROGRAM(AddSegments(ELEM_7SEG));
             break;

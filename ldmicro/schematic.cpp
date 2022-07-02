@@ -765,6 +765,10 @@ void EditSelectedElement()
             ShowI2cDialog(Selected.leaf());
             break;
 
+        case ELEM_MODBUS: ///// Added by JG6
+            ShowModbusDialog(Selected.leaf());
+            break;
+
         case ELEM_RES:
             ShowResetDialog(Selected.leaf()->d.reset.name);
             break;

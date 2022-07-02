@@ -757,7 +757,7 @@
     * Added: White color scheme Mark
     http://cq.cx/ladder-forum.pl?action=viewthread&parent=6257&tt=1496129518
 
-    * Wiki: How to count the resets baused by WDT (Atmel AVR)
+    * Wiki: How to count the resets caused by WDT (Atmel AVR)
     https://github.com/LDmicro/LDmicro/wiki/How-to-count-the-resets-caused-by-WDT
 
     * Wiki: MASTER CONTROL RELAY

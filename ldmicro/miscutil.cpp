@@ -967,3 +967,53 @@ double CalcUartPeriod(int baudRate, int start, int data, int parity, int stop) /
 {
     return 1.0 * (start + data + parity + stop) / baudRate;
 }
+
+// ADDED by JG6
+
+// Search for part in a string
+// Return position if found and -1 otherwise
+int str_find(char *chaine, char *maillon)
+{
+    int  i, l, m, res;
+    char chr = 0;
+
+    l = strlen(chaine);
+    m = strlen(maillon);
+
+    for(i = 0; i <= l - m; i++) {
+        res = strncmp(chaine + i, maillon, m);
+        if(res == 0)
+            return (i);
+    }
+
+    return (-1);
+}
+
+// Search for a char in a string beginning at the end
+// Return position if found and -1 otherwise
+int str_back(char *chaine, char chr)
+{
+    int i, l;
+
+    l = strlen(chaine);
+
+    if(l > 0)
+        for(i = l - 1; i >= 0; i--) {
+            if(chaine[i] == chr)
+                return i;
+        }
+
+    return (-1);
+}
+
+// Test beginning of a string
+int str_begin(char *str, char *beg)
+{
+    return !strncmp(str, beg, strlen(beg));
+}
+
+// Test a string
+int str_equal(char *str1, char *str2)
+{
+    return !strcmp(str1, str2);
+}

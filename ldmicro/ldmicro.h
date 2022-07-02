@@ -24,6 +24,8 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
+#pragma warning( disable: 4995 )
+
 #include "stdafx.h"
 
 #include "current_function.hpp"
@@ -240,11 +242,13 @@ typedef uint32_t ADDR_T;
 #define MNU_STOP_SIMULATION     0x62
 #define MNU_SINGLE_CYCLE        0x63
 
-#define MNU_INSERT_SPI          0x6401
+#define MNU_INSERT_SPI        0x6401
 #define MNU_INSERT_SPI_WRITE    0x6402
 
-#define MNU_INSERT_I2C_READ     0x6451              //// Added by JG
-#define MNU_INSERT_I2C_WRITE    0x6452
+#define MNU_INSERT_I2C_READ     0x6411
+#define MNU_INSERT_I2C_WRITE    0x6412
+
+#define MNU_INSERT_MODBUS       0x6421
 
 #define MNU_INSERT_BUS          0x6501
 #define MNU_INSERT_7SEG         0x6507
@@ -556,6 +560,7 @@ void ShowSleepDialog(ElemLeaf *l);
 void ShowDelayDialog(ElemLeaf *l);
 void ShowSpiDialog(ElemLeaf *l);
 void ShowI2cDialog(ElemLeaf *l);
+void ShowModbusDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, ElemLeaf *l);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
@@ -740,6 +745,11 @@ char *strncpyn(char *s1, const char *s2, size_t n);
 char *strncatn(char *s1, const char *s2, size_t n);
 char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
+
+int str_find(char * chaine, char * maillon);
+int str_back(char * chaine, char chr);
+int str_begin(char * str, char * beg);
+int str_equal(char * str1, char * str2);
 
 // simulate.cpp
 int isVarInited(const char *name);

@@ -161,8 +161,10 @@
 #define ELEM_SPI                0x6001
 #define ELEM_SPI_WR             0x6002
 
-#define ELEM_I2C_RD             0x6101      ///// Added by JG
-#define ELEM_I2C_WR             0x6102      /////
+#define ELEM_I2C_RD             0x6101
+#define ELEM_I2C_WR             0x6102
+
+#define ELEM_MODBUS             0x6201
 
 #define ELEM_BUS                0x7001
 #define ELEM_7SEG               0x7007
@@ -206,6 +208,7 @@
     case ELEM_SPI_WR:           \
     case ELEM_I2C_RD:           \
     case ELEM_I2C_WR:           \
+    case ELEM_MODBUS:                        \
     case ELEM_BUS:              \
     case ELEM_7SEG:             \
     case ELEM_9SEG:             \
@@ -365,6 +368,17 @@ typedef struct ElemI2cTag {
     char first[MAX_NAME_LEN];   // MSB first
     int  which;
 } ElemI2c;
+
+typedef struct ElemModbusTag {
+    char name[MAX_NAME_LEN];   // name
+    char uart[MAX_NAME_LEN];   // UART # (1 ...)
+    char speed[MAX_NAME_LEN];  // UART Speed (9600 ...)
+    char timout[MAX_NAME_LEN]; // 0 to use default
+    char mode[MAX_NAME_LEN];   // Send ('S') or Receive ('R')
+    char lut[MAX_NAME_LEN];    // Associated LokkUp Table (existing)
+    char count[MAX_NAME_LEN];  // Number of bytes to send / received
+    int  which;
+} ElemModbus;
 
 typedef struct ElemBusTag {
     char dest[MAX_NAME_LEN];
@@ -547,6 +561,7 @@ struct ElemLeaf {
         ElemSfr             sfr;
         ElemSpi             spi;
         ElemI2c             i2c;
+        ElemModbus          modbus;
         ElemBus             bus;
         ElemSegments        segments;
         ElemStepper         stepper;
@@ -671,7 +686,8 @@ void                AddRandom();
 void                AddSeedRandom();
 void                AddSetPwm();
 void                AddSpi(int which);
-void                AddI2c(int which); ///// Added by JG
+void                AddI2c(int which);
+void                AddModbus(int which);
 void                AddUart(int which);
 void                AddPersist();
 void                AddComment(const char *text);

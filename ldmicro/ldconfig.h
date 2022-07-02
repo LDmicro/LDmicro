@@ -6,6 +6,7 @@
 #define MAX_LOOK_UP_TABLE_LEN 64
 #define MAX_SHIFT_REGISTER_STAGES 256
 #define MAX_STRING_LEN 256
+#define MAX_HELP_LEN 100
 
 #define ISA_PIC16 0x01
 #define ISA_AVR 0x02
@@ -25,6 +26,8 @@
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
+
+#define MAX_HELP 5000
 
 #define MAX_RUNGS 9999
 #define MAX_IO 1024

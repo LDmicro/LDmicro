@@ -145,11 +145,12 @@ typedef struct McuExtIntPinInfoTag {
 } McuExtIntPinInfo;
 
 typedef struct McuIoInfoTag {
-    const char *mcuName;
+    const char *mcuName;    // Device Full Name
     const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
     const char *mcuInc;     // ASM*.INC // D:\WinAVR\avr\include\avr
     const char *mcuH;       // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
     const char *mcuH2;      // C*.H     // AVRGCC          // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    // const char *   packName;   // name + package
     char        portPrefix;
     uint32_t    inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
     uint32_t    outputRegs[MAX_IO_PORTS];
@@ -157,7 +158,7 @@ typedef struct McuIoInfoTag {
     uint32_t    flashWords;
     struct {
         uint32_t start;
-        int      len;
+        long      len;
     } ram[MAX_RAM_SECTIONS];
     McuIoPinInfo * pinInfo;
     uint32_t       pinCount;
@@ -176,6 +177,7 @@ typedef struct McuIoInfoTag {
 
     McuPwmPinInfo *pwmInfo;
     uint32_t       pwmCount;
+    // uint32_t       pwmMax;
 
     McuExtIntPinInfo *ExtIntInfo;
     uint32_t          ExtIntCount;

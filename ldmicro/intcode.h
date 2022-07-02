@@ -129,8 +129,10 @@
 #define INT_SPI_WRITE                           1904 // full string per PLC cycle
 //#define INT_SPI_READ                            1905
 
-#define INT_I2C_READ                            1951  ///// Added by JG
-#define INT_I2C_WRITE                           1952
+#define INT_I2C_READ                            1911
+#define INT_I2C_WRITE                           1912
+
+#define INT_MODBUS							               	1921
 
 #define INT_WRITE_STRING                        21 // netzer
 #define INT_STRING                              22 // sprintf(), strcpy(), or "literal string"

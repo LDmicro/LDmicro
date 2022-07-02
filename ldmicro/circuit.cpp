@@ -997,7 +997,31 @@ void AddI2c(int which)
     t->d.i2c.which = which;
     AddLeaf(which, t);
 }
-/////
+
+///// Added by JG6
+void AddModbus(int which)
+{
+    if(!CanInsertOther)
+        return;
+
+    if(Prog.mcu()) {
+        if(!Prog.mcuI2C()) {
+            Error(_("MODBUS not supported for this MCU."));
+            // return;
+        }
+    }
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.modbus.name, "Modbus1");
+    /////
+    strcpy(t->d.modbus.uart, "1");
+    strcpy(t->d.modbus.speed, "9600");
+    strcpy(t->d.modbus.timout, "0");
+    strcpy(t->d.modbus.mode, "S");
+    strcpy(t->d.modbus.lut, "lookUp");
+    strcpy(t->d.modbus.count, "0");
+    t->d.modbus.which = which;
+    AddLeaf(which, t);
+}
 
 void AddPersist()
 {

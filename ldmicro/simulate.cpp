@@ -270,27 +270,6 @@ long OverflowToVarSize(long val, int sov)
 //-----------------------------------------------------------------------------
 static void Increment(const char *name, const char *overlap, const char *overflow)
 {
-    /*
-    int    sov = SizeOfVar(name);
-    SDWORD signMask = 1 << (sov * 8 - 1);
-    SDWORD signBefore, signAfter;
-    int    i;
-    for(i = 0; i < VariableCount; i++) {
-        if(strcmp(Variables[i].name, name) == 0) {
-            signBefore = Variables[i].val & signMask;
-            (Variables[i].val)++;
-            signAfter = Variables[i].val & signMask;
-            if((signBefore == 0) && (signAfter != 0)) {
-                SetSingleBit(overflow, true);
-                Variables[i].val &= (1 << (8 * sov)) - 1;
-            }
-
-            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 11...11 -> 00...00
-            return;
-        }
-    }
-    ooops(name);
-*/
     int sov = SizeOfVar(name);
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
@@ -321,28 +300,6 @@ static void Increment(const NameArray &name, const NameArray &overlap, const cha
 //-----------------------------------------------------------------------------
 static void Decrement(const char *name, const char *overlap, const char *overflow)
 {
-    /*
-    int    sov = SizeOfVar(name);
-    SDWORD signMask = 1 << (sov * 8 - 1);
-    SDWORD signBefore, signAfter;
-    int    i;
-    for(i = 0; i < VariableCount; i++) {
-        if(strcmp(Variables[i].name, name) == 0) {
-            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 00...00 -> 11...11
-
-            signBefore = Variables[i].val & signMask;
-            (Variables[i].val)--;
-            signAfter = Variables[i].val & signMask;
-
-            if((signBefore != 0) && (signAfter == 0)) {
-                SetSingleBit(overflow, true);
-                Variables[i].val &= (1 << (8 * sov)) - 1;
-            }
-            return;
-        }
-    }
-    ooops(name);
-*/
     int sov = SizeOfVar(name);
     for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
@@ -411,6 +368,39 @@ void SetSimulationVariable(const char *name, int32_t val)
             return;
         }
     }
+
+    /// Added by JG6 to access array tables tab[N] or tab[var] in simulation
+    char    stg[MAX_NAME_LEN];
+    int32_t index = 0;
+
+    int p1 = str_find((char *)name, "[");
+    int p2 = str_find((char *)name, "]");
+    if((p1 != -1) && (p2 != -1) && (p1 + 1 < p2)) {
+        strcpy(stg, name + p1 + 1); // index in stg
+        stg[p2 - p1 - 1] = 0;
+        if(IsNumber(stg))
+            index = CheckMakeNumber(stg);
+        else
+            index = GetSimulationVariable(stg);
+
+        strcpy(stg, name); // table in stg
+        stg[p1] = 0;
+
+        p1 = -1;
+        for(int i = 0; i < VariableCount; i++) {
+            if(strcmp(Variables[i].name, stg) == 0) {
+                p1 = i;
+                break;
+            }
+        }
+
+        if(p1 != -1)
+            Variables[p1].valstr[index] = val;
+
+        return;
+    }
+    ///
+
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationVariable(name, val);
 }
@@ -428,6 +418,39 @@ int32_t GetSimulationVariable(const char *name, bool forIoList)
             return Variables[i].val;
         }
     }
+
+    /// Added by JG6 to access array tables tab[N] or tab[var] in simulation
+    char    stg[MAX_NAME_LEN];
+    int32_t value = 0, index = 0;
+
+    int p1 = str_find((char *)name, "[");
+    int p2 = str_find((char *)name, "]");
+    if((p1 != -1) && (p2 != -1) && (p1 + 1 < p2)) {
+        strcpy(stg, name + p1 + 1); // index in stg
+        stg[p2 - p1 - 1] = 0;
+        if(IsNumber(stg))
+            index = CheckMakeNumber(stg);
+        else
+            index = GetSimulationVariable(stg);
+
+        strcpy(stg, name); // table in stg
+        stg[p1] = 0;
+
+        p1 = -1;
+        for(int i = 0; i < VariableCount; i++) {
+            if(strcmp(Variables[i].name, stg) == 0) {
+                p1 = i;
+                break;
+            }
+        }
+
+        if(p1 != -1)
+            value = Variables[p1].valstr[index];
+
+        return value;
+    }
+    ///
+
     if(forIoList)
         return 0;
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
@@ -621,10 +644,7 @@ static const char *Check(const char *name, DWORD flag, int i)
 
             if(Variables[i].usedFlags & VAR_FLAG_TCY)
                 return _("TCY: variable can only be used for RES elsewhere");
-            /*
-            if(Variables[i].usedFlags & VAR_FLAG_RTO)
-                return _("RTO: variable can only be used for RES elsewhere");
-            */
+
             if(Variables[i].usedFlags & VAR_FLAG_RTL)
                 return _("RTL: variable can only be used for RES elsewhere");
 
@@ -763,6 +783,14 @@ static void CheckVariableNamesCircuit(int which, void *any)
             }
             break;
         }
+
+        case ELEM_MODBUS: ///// Added by JG6
+            if(InSimulationMode) {
+                Error(_("Modbus can't be simulated; halting simulation"));
+                StopSimulation();
+            }
+            // return false;
+            break;
 
         case ELEM_RTL:
         case ELEM_RTO:
@@ -922,6 +950,14 @@ static void CheckVariableNamesCircuit(int which, void *any)
             MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
                 MarkWithCheck(l->d.lookUpTable.index, VAR_FLAG_ANY);
+
+            // Added by JG6 to fill table values
+            for(int i = 0; i < VariableCount; i++) {
+                if(strcmp(Variables[i].name, l->d.lookUpTable.name) == 0) {
+                    for(int k = 0; k < l->d.lookUpTable.count; k++)
+                        Variables[i].valstr[k] = l->d.lookUpTable.vals[k];
+                }
+            }
             break;
 
         case ELEM_PIECEWISE_LINEAR:

@@ -1012,6 +1012,21 @@ void ShowI2cDialog(ElemLeaf *l)
         }
     }
 }
+
+void ShowModbusDialog(ElemLeaf *l)
+{
+    ElemModbus *s = &(l->d.modbus);
+    const char *title = _("MODBUS - Plc Communication");
+    const char *labels[] = {_("Modbus Name:"), _("Modbus UART:"), _("Modbus Speed:"), _("Modbus Timout:"), _("Mode (S/R/E/D):"), _("LookUp table:"), _("Count:")};
+    char *      dests[] = {s->name, s->uart, s->speed, s->timout, s->mode, s->lut, s->count};
+    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {1, {"0"}}, {1, {"0"}}};
+
+    if(Prog.mcu()) {
+        if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
+            ShowSimpleDialog(title, 7, labels, 0x000E, 0x0000, 0xFFFFFFFF, 7, dests, 0, nullptr, 0x0000);
+        }
+    }
+}
 /////
 
 void ShowSegmentsDialog(ElemLeaf *l)

@@ -412,6 +412,10 @@ void IntDumpListing(const char *outFile)
                 fprintf(f, "I2C_WRITE '%s' send '%s', done? into '%s'", leaf->d.i2c.name, leaf->d.i2c.send, IntCode[i].name1.c_str());
                 break;
 
+            case INT_MODBUS:
+                fprintf(f, "MODBUS '%s', done? into '%s'", leaf->d.modbus.name, IntCode[i].name1.c_str()); ///// By JGv6
+                break;
+
             case INT_UART_WR:
                 fprintf(f, "uart send '%s'", IntCode[i].name1.c_str());
                 break;
@@ -4059,6 +4063,15 @@ static void IntCodeFromCircuit(int which, void *any, SeriesNode *node, const cha
             break;
         }
 
+        case ELEM_MODBUS: {
+            Comment(3, "ELEM_MODBUS");
+            Op(INT_IF_BIT_SET, stateInOut);                                                                     // if(Read_Ib_rung_top()) {
+            Op(INT_MODBUS, leaf->d.modbus.name, leaf->d.modbus.mode, leaf->d.modbus.lut, leaf->d.modbus.count); // Modbus[name1=name, name2=mode, name3=lut, name4= count]);
+            Op(INT_SET_BIT, stateInOut);                                                                        // activate output line
+            Op(INT_END_IF);                                                                                     // }
+            break;
+        }
+
         case ELEM_SET_BIT:
             Comment(3, "ELEM_SET_BIT");
             Op(INT_IF_BIT_SET, stateInOut);
@@ -5316,6 +5329,21 @@ bool I2cFunctionUsed()
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))
+            return true;
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------		 ///// Added by JG6
+bool ModbusFunctionUsed()
+{
+    for(int i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_MODBUS))
+            return true;
+    }
+
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
+        if(IntCode[i].op == INT_MODBUS)
             return true;
     }
     return false;

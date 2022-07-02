@@ -696,6 +696,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL);
             break;
 
+        case ELEM_MODBUS: // No I/O because uses external library
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:

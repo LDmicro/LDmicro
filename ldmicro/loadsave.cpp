@@ -284,6 +284,9 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
 
+    } else if(sscanf(line, "MODBUS %s %s %s %s %s %s %s", l->d.modbus.name, l->d.modbus.uart, l->d.modbus.speed, l->d.modbus.timout, l->d.modbus.mode, l->d.modbus.lut, l->d.modbus.count) == 7) {
+        l->d.modbus.which = ELEM_MODBUS;
+        *which = ELEM_MODBUS;
     } else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
@@ -777,7 +780,7 @@ bool LoadPullUpListFromFile(FileTracker &f)
         Ok = true;
         if(Prog.mcu()) {
             // Don't internationalize this! It's the file format, not UI.
-            if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+            if(sscanf(line, "    %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
                 i = port - 'A';
                 if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
                     Prog.pullUpRegs[i] = pullUpRegs;
@@ -1178,6 +1181,9 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             fprintf(f, "I2C_WR %s %s %s %s %s %s %s %s\n", leaf->d.i2c.name, leaf->d.i2c.send, leaf->d.i2c.recv, leaf->d.i2c.mode, leaf->d.i2c.address, leaf->d.i2c.registr, leaf->d.i2c.first, leaf->d.i2c.bitrate);
             break;
 
+        case ELEM_MODBUS:
+            fprintf(f, "MODBUS %s %s %s %s %s %s %s\n", leaf->d.modbus.name, leaf->d.modbus.uart, leaf->d.modbus.speed, leaf->d.modbus.timout, leaf->d.modbus.mode, leaf->d.modbus.lut, leaf->d.modbus.count);
+            break;
             /////
 
         case ELEM_BUS: {

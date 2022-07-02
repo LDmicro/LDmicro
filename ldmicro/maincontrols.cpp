@@ -63,6 +63,7 @@ static HMENU EdgMenu;
 static HMENU UrtMenu;
 static HMENU SpiMenu;
 static HMENU I2cMenu;
+static HMENU ModbusMenu;
 static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
@@ -315,6 +316,8 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);
 
+    EnableMenuItem(InstructionMenu, MNU_INSERT_MODBUS, t);
+
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_9SEG, t);
@@ -491,20 +494,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CntMenu, _("Counter"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    /*
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
-        _("Insert EQU (Compare for Equals)\t="));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)\t!"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
-        _("Insert GRT (Compare for Greater Than)\t>"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
-        _("Insert GEQ (Compare for Greater Than or Equal)\t."));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LES,
-        _("Insert LES (Compare for Less Than)\t<"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LEQ,
-        _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-*/
     CmpMenu = CreatePopupMenu();
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_EQU, _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_NEQ, _("Insert NEQ (Compare for Not Equals)\t!"));
@@ -516,23 +505,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR, _("Insert Test If Bit Clear"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu, _("Compare variable"));
 
-    /*
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
-        _("Insert MOV (Move)\tM"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ADD,
-        _("Insert ADD (16-bit Integer Add)\t+"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SUB,
-        _("Insert SUB (16-bit Integer Subtract)\t-"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MUL,
-        _("Insert MUL (16-bit Integer Multiply)\t*"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DIV,
-        _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("TODO: Insert BIN2BCD"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("TODO: Insert BCD2BIN"));
-*/
     SignedMenu = CreatePopupMenu();
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOV, _("Insert MOV (Move)\tM"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_ADD, _("Insert ADD (16-bit Integer Add)\t+"));
@@ -595,6 +567,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_READ, _("Insert I2C Read"));
     AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_WRITE, _("Insert I2C Write"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)I2cMenu, _("I2C functions"));
+
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MODBUS, _("Insert MODBUS operation"));
 
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM, _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
@@ -671,17 +645,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcEspMenu, _("ESP MCUs"));                  /// To translate
     AppendMenu(ProcessorMenu, MF_STRING | MF_POPUP, (UINT_PTR)ProcOthersMenu, _("Other MCUs"));             /// To translate
                                                                                                             ///
-
-    /*
-    Core core = supportedMcus()[0].core;
-    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
-        if(core != supportedMcus()[i].core) {
-            core = supportedMcus()[i].core;
-            AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, ""); //separate AVR MCU core
-        }
-        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
-    }
-*/
 
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
@@ -1091,15 +1054,6 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
-    /*
-    ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
-    if (!Prog.mcu())
-    {
-        Error(_("Must choose a target microcontroller before simulating."));
-        return;
-    }
-    /////
-*/
     InSimulationMode = !InSimulationMode;
 
     if(InSimulationMode) {

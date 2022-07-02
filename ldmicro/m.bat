@@ -462,6 +462,8 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 
 @SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\f_32f40x.ld
 
+@SET PROGECT=D:\LDmicroGitHub\ldmicro\1.ld
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD
@@ -498,9 +500,9 @@ if "%1" == "" goto DO_BUILD
 ::@nmake LDLANG=LDLANG_TR %*
 ::@nmake LDLANG=LDLANG_DE %*
 ::@nmake LDLANG=LDLANG_FR %*
-@nmake LDLANG=LDLANG_ES %*
+::@nmake LDLANG=LDLANG_ES %*
 ::@nmake LDLANG=LDLANG_IT %*
-::@nmake LDLANG=LDLANG_EN %*
+@nmake LDLANG=LDLANG_EN %*
 
 @echo off
 @del ldinterpret.exe
