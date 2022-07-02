@@ -294,23 +294,11 @@ void GetErrorMessage(DWORD err, LPTSTR lpszFunction)
         LPVOID lpMsgBuf;
         LPVOID lpDisplayBuf;
 
-        FormatMessage(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER |
-            FORMAT_MESSAGE_FROM_SYSTEM |
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            err,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPTSTR) &lpMsgBuf,
-            0, NULL );
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
 
-        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-            (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 256) * sizeof(TCHAR));
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 256) * sizeof(TCHAR));
 
-        StringCchPrintf((LPTSTR)lpDisplayBuf,
-            LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-            "%s\n%s %d:\n%s",
-            lpszFunction, _("System error code"), err, lpMsgBuf);
+        StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), "%s\n%s %d:\n%s", lpszFunction, _("System error code"), err, lpMsgBuf);
 
         Error((char *)lpDisplayBuf);
 
@@ -324,7 +312,7 @@ void IsErr(DWORD err, char *msg)
 {
     GetErrorMessage(err, msg);
     return;
-/*
+    /*
     const char *s;
     switch(err) {
         // clang-format off
@@ -360,30 +348,30 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     IsErr(err, "Why???");
     SetLastError(ERROR_SUCCESS);
 
-    char cmdLine[1024*3];
+    char cmdLine[1024 * 3];
 #define VAR 2
 #if VAR == 1
     sprintf_s(cmdLine, "%s %s", batchfile, batchArgs);
     err = WinExec(cmdLine, nShowCmd); // If the function succeeds, the return value is greater than 31.
     if(err > 31)
         err = ERROR_SUCCESS;
-    else if (err == 0)
+    else if(err == 0)
         err = ERROR_NOT_ENOUGH_MEMORY;
     return err;
 #else
-    char comspec[MAX_PATH*2];
+    char comspec[MAX_PATH * 2];
     GetComspec(comspec, sizeof(comspec));
 
-  #if VAR == 2
+#if VAR == 2
     sprintf_s(cmdLine, "/C \"%s %s\"", batchfile, batchArgs);
 
-    err = (DWORD) ShellExecute(NULL, NULL, comspec, cmdLine, NULL, nShowCmd);
+    err = (DWORD)ShellExecute(NULL, NULL, comspec, cmdLine, NULL, nShowCmd);
     if(err > 32)
         err = ERROR_SUCCESS;
-    else if (err == 0)
+    else if(err == 0)
         err = ERROR_NOT_ENOUGH_MEMORY;
     return err;
-  #else
+#else
     //sprintf_s(cmdLine, "/k \"\"a a a.bat\" 1 \"2 2\" \" \" \"4 4\" 5 \"", batchfile, batchArgs);
     sprintf_s(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs);
 
@@ -394,27 +382,25 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi = {0};
 
-    if( !CreateProcess(comspec, // quotes are not needed
-        cmdLine,
-        NULL,
-        NULL,
-        FALSE,
-        0,
-        NULL,
-        NULL,
-        &si,
-        &pi )
-        )
-    {
+    if(!CreateProcess(comspec, // quotes are not needed
+                      cmdLine,
+                      NULL,
+                      NULL,
+                      FALSE,
+                      0,
+                      NULL,
+                      NULL,
+                      &si,
+                      &pi)) {
         IsErr(GetLastError(), cmdLine);
         return 0;
     }
 
-    WaitForSingleObject( pi.hProcess, INFINITE );
-    CloseHandle( pi.hProcess );
-    CloseHandle( pi.hThread );
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
     return 0;
-  #endif
+#endif
 #endif
 }
 
@@ -495,24 +481,23 @@ static void BuildAll(char *name, int ISA)
         Warning(_("Save ld before build."));
         return;
     }
-    if (!Prog.mcu())
+    if(!Prog.mcu())
         return;
     strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
-        strcpy_s(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+    if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
+        strcpy_s(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
     }
 
-    if (ISA == ISA_AVR) {
+    if(ISA == ISA_AVR) {
         sprintf_s(r, "%sbuildAvr.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
         Capture(_("Build Solution AVR"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
-    }
-    else if (ISA == ISA_PIC16) {
-       if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
+    } else if(ISA == ISA_PIC16) {
+        if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
             sprintf_s(r, "%sbuildPic16.bat", ExePath);
             GetFileName(s, CurrentSaveFile);
             // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
@@ -523,14 +508,12 @@ static void BuildAll(char *name, int ISA)
             // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
             Capture(_("Build Solution PIC16 CCS C"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
         }
-    }
-    else if (ISA == ISA_PIC18) {
+    } else if(ISA == ISA_PIC18) {
         sprintf_s(r, "%sbuildPic18.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
         Capture(_("Build Solution PIC18"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
-    }
-    else if (ISA == ISA_ARM) {
+    } else if(ISA == ISA_ARM) {
         sprintf_s(r, "%sbuildArm.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
@@ -575,14 +558,14 @@ static void readBat(const char *name, int ISA)
     if(strlen(name) == 0) {
         name = "read";
     }
-    if (!Prog.mcu())
+    if(!Prog.mcu())
         return;
     strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
-        strcpy_s(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+    if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
+        strcpy_s(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
     }
 
     sprintf_s(r, "%sreadMcu.bat", ExePath);
@@ -595,7 +578,8 @@ static void clearBat(int ISA)
     char r[MAX_PATH];
     char deviceName[64];
 
-    if (!Prog.mcu()) return;
+    if(!Prog.mcu())
+        return;
     strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     sprintf_s(r, "%sclearMcu.bat", ExePath);
@@ -650,7 +634,7 @@ static void clearBat()
         return;
 
     sprintf_s(r, "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath, CurrentLdPath, LdName, CurrentCompilePath, CompileName);
-    IsErr(Execute(r, "", SW_SHOWMINIMIZED/*SW_SHOWMINNOACTIVE*/), r);
+    IsErr(Execute(r, "", SW_SHOWMINIMIZED /*SW_SHOWMINNOACTIVE*/), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -2059,10 +2043,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             char buf[1024];
             sprintf_s(buf,
-                    _("File '%s' modified by another application.\r\n"
-                      "Its disk timestamp is newer than the editor one.\n"
-                      "Reload from disk?"),
-                    CurrentSaveFile);
+                      _("File '%s' modified by another application.\r\n"
+                        "Its disk timestamp is newer than the editor one.\n"
+                        "Reload from disk?"),
+                      CurrentSaveFile);
             int r = MessageBox(MainWindow, buf, "LDmicro", MB_YESNO | MB_ICONWARNING);
             switch(r) {
                 case IDYES:

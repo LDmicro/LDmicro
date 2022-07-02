@@ -2847,7 +2847,7 @@ static void CopyLitToReg(int reg, int sov, int32_t literal)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyVarToReg(int reg, int sovReg, const char *var, const char *offset=nullptr, int _literal=0)
+static void CopyVarToReg(int reg, int sovReg, const char *var, const char *offset = nullptr, int _literal = 0)
 {
     ADDR_T addr, addr2;
     int    sov = SizeOfVar(var);
@@ -2880,7 +2880,7 @@ static void CopyVarToReg(int reg, int sovReg, const char *var, const char *offse
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
 
-static void CopyVarToReg(int reg, int sovReg, const NameArray &var, const NameArray &offset=nullptr, int _literal=0)
+static void CopyVarToReg(int reg, int sovReg, const NameArray &var, const NameArray &offset = nullptr, int _literal = 0)
 {
     CopyVarToReg(reg, sovReg, var.c_str(), offset.c_str(), _literal);
 }
@@ -3369,8 +3369,8 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    ADDR_T addr = 0, addr1 = 0, addr2 = 0, addr3 = 0,  addr4 = 0;
-    int    bit = -1, bit1 = -1, bit2 = -1, bit3 = -1,  bit4 = -1;
+    ADDR_T addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
+    int    bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int    sov = -1, sov1 = -1, sov2 = -1; //, sov12 = -1, sov23 = -1;
 
     for(; IntPc < IntCode.size(); IntPc++) {
@@ -5326,7 +5326,7 @@ static void CompileFromIntermediate()
                 McuIoPinInfo *miso = PinInfo(spiInfo->MISO);
 
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1); // stateInOut
-/*
+                                                                /*
                 if(a->op == INT_SPI_COMPLETE) {
                     Comment("INT_SPI_COMPLETE");
                     CopyBit(addr1, bit1, spiInfo->REG_STAT, SPIF); // When a transfer is complete, the SPIF Flag is set.
@@ -5407,8 +5407,7 @@ static void CompileFromIntermediate()
                             SetBit(Prog.mcu()->dirRegs[miso->port - 'A'], miso->bit);
                     }
 
-                    WriteMemory(spiInfo->REG_CTRL,
-                                (1 << SPE) | (first << DORD) | (mstr << MSTR) | (modes << CPHA) | ((spr & 3) << SPR0));
+                    WriteMemory(spiInfo->REG_CTRL, (1 << SPE) | (first << DORD) | (mstr << MSTR) | (modes << CPHA) | ((spr & 3) << SPR0));
                     if(spr & 0x04)
                         WriteMemory(spiInfo->REG_STAT, (1 << SPI2X));
 

@@ -251,24 +251,24 @@
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
 struct SeriesNode;
 struct IntOp {
-    int           op;
-    NameArray     name1;
-    NameArray     name2;
-    NameArray     name3;
-    NameArray     name4;
-    NameArray     name5;
-    NameArray     name6;
-    int32_t       literal1;
-    int32_t       literal2;
-    int32_t       literal3; // side effect: internaly used in simulation of INT_FLASH_READ
-    const int32_t * data;   // for INT_FLASH_INIT
-    bool *        poweredAfter;
-    bool *        workingNow;
-    int           rung;     //= rungNow  //this IntOp located in rung,
-    SeriesNode *  node;     //= nodeNow  //
-    FileNameArray fileName; //in .c source file name
-    int           fileLine; //and line in file
-    bool          simulated;
+    int            op;
+    NameArray      name1;
+    NameArray      name2;
+    NameArray      name3;
+    NameArray      name4;
+    NameArray      name5;
+    NameArray      name6;
+    int32_t        literal1;
+    int32_t        literal2;
+    int32_t        literal3; // side effect: internaly used in simulation of INT_FLASH_READ
+    const int32_t *data;     // for INT_FLASH_INIT
+    bool *         poweredAfter;
+    bool *         workingNow;
+    int            rung;     //= rungNow  //this IntOp located in rung,
+    SeriesNode *   node;     //= nodeNow  //
+    FileNameArray  fileName; //in .c source file name
+    int            fileLine; //and line in file
+    bool           simulated;
 
     IntOp();
 };

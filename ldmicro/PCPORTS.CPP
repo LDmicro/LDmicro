@@ -346,8 +346,17 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
         LptDb25PinToRegMask(pinInfo->dbPin, &Reg, &Mask);
         Bit = MaskToBit(Mask);
         pinInfo->bit = Bit;
-        sprintf(
-            pinInfo->pinName, "%c%s%d%s%dPin%d", pinInfo->port, "pt", pinInfo->portN, Reg == LPT_DATA_REG ? "Data" : Reg == LPT_STATUS_REG ? "Status" : Reg == LPT_CONTROL_REG ? "Control" : "Reg", Bit, pinInfo->dbPin);
+        sprintf(pinInfo->pinName,
+                "%c%s%d%s%dPin%d",
+                pinInfo->port,
+                "pt",
+                pinInfo->portN,
+                Reg == LPT_DATA_REG      ? "Data"
+                : Reg == LPT_STATUS_REG  ? "Status"
+                : Reg == LPT_CONTROL_REG ? "Control"
+                                         : "Reg",
+                Bit,
+                pinInfo->dbPin);
     } else if((pinInfo->port == 'c') || (pinInfo->port == 'C')) {
         if(pinInfo->port == 'c')
             ComDb9PinToRegMask(pinInfo->dbPin, &Reg, &Mask);

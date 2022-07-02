@@ -712,7 +712,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 int         chan = 0;
                 const char *pos = strstr(s, "ADC");
                 if(pos) {
-                    adc = atoi(pos + 3); // ADC # from pin description
+                    adc = atoi(pos + 3);               // ADC # from pin description
                     chan = MuxForAdcVariable(&str[3]); // channel # from McuAdcPinInfo (could also be retrieved from s)
                     ADC_Used[16 * adc + chan] = 1;     // 16*ADC# + Channel#
                     ADC_Chan[16 * adc + chan] = chan;
@@ -911,7 +911,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_SPI:
-                intVar1 = IntCode[i].name1.c_str();     // create var name1= spi name
+                intVar1 = IntCode[i].name1.c_str(); // create var name1= spi name
                 if(IntCode[i].name2.length())
                     if(!IsNumber(IntCode[i].name2))
                         intVar2 = IntCode[i].name2.c_str(); // create var name2= spi send var if not a number
@@ -1001,7 +1001,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_EEPROM_BUSY:
-            //case INT_EEPROM_BUSY_CHECK:
+                //case INT_EEPROM_BUSY_CHECK:
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
@@ -1108,9 +1108,9 @@ static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
     if((IntCode[i].op != INT_SIMULATE_NODE_STATE) //
-    && (IntCode[i].op != INT_FwdAddrIsNow)     //
-//  && (IntCode[i].op != INT_AllocKnownAddr)   //
-//  && (IntCode[i].op != INT_AllocFwdAddr)     //
+       && (IntCode[i].op != INT_FwdAddrIsNow)     //
+                                                  //  && (IntCode[i].op != INT_AllocKnownAddr)   //
+                                                  //  && (IntCode[i].op != INT_AllocFwdAddr)     //
     ) {
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
@@ -1483,7 +1483,6 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-
             case INT_SPI_WRITE:
                 if(mcu_ISA == ISA_ARM) {
                     int u = atoi(MapSym(IntCode[i].name1, ASINT) + 6); // name1= "Ui_SPIn"
@@ -1586,7 +1585,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_EEPROM_BUSY:
-            //case INT_EEPROM_BUSY_CHECK:
+                //case INT_EEPROM_BUSY_CHECK:
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
@@ -2083,7 +2082,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
 
     char Current_Ld_Name[MAX_PATH];
     strcpy(Current_Ld_Name, CurrentLdName);
-    for(size_t i = 0; i<strlen(Current_Ld_Name); i++)
+    for(size_t i = 0; i < strlen(Current_Ld_Name); i++)
         if(Current_Ld_Name[i] == ' ')
             Current_Ld_Name[i] = '_';
 
@@ -2351,22 +2350,22 @@ bool CompileAnsiC(const char *outFile, int MNU)
     } else if((mcu_ISA == ISA_PIC16) || (mcu_ISA == ISA_PIC18)) {
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
             fprintf(flh,
-                "#define uint8_t  unsigned int8\n"
-                "#define uint16_t unsigned int16\n"
-                "#define uint32_t unsigned int32\n"
-                "\n"
-                "typedef int1         BOOLEAN_t;\n"
-                "typedef signed  int8     SBYTE;\n"
-                "typedef signed int16     SWORD;\n"
-                "typedef signed int32    SDWORD;\n"
-                "\n");
+                    "#define uint8_t  unsigned int8\n"
+                    "#define uint16_t unsigned int16\n"
+                    "#define uint32_t unsigned int32\n"
+                    "\n"
+                    "typedef int1         BOOLEAN_t;\n"
+                    "typedef signed  int8     SBYTE;\n"
+                    "typedef signed int16     SWORD;\n"
+                    "typedef signed int32    SDWORD;\n"
+                    "\n");
         } else {
             fprintf(flh,
-                "typedef unsigned char BOOLEAN_t;\n"
-                "typedef signed char       SBYTE;\n"
-                "typedef signed short int  SWORD;\n"
-                "typedef signed long int  SDWORD;\n"
-                "\n");
+                    "typedef unsigned char BOOLEAN_t;\n"
+                    "typedef signed char       SBYTE;\n"
+                    "typedef signed short int  SWORD;\n"
+                    "typedef signed long int  SDWORD;\n"
+                    "\n");
         }
     } else if(mcu_ISA == ISA_ARM) {
         fprintf(flh,
@@ -2396,7 +2395,7 @@ bool CompileAnsiC(const char *outFile, int MNU)
     fprintf(flh, "#define BYTE_AT(var, index) (((SBYTE *)(&var))[index])\n");
     fprintf(flh, "#define WORD_AT(var, index) (((SWORD *)(&var))[index])\n\n");
 
-    fprintf(flh,"#include \"UsrLib.h\"\n");
+    fprintf(flh, "#include \"UsrLib.h\"\n");
     if(AdcFunctionUsed())
         fprintf(flh, "#include \"AdcLib.h\"\n");
     if(PwmFunctionUsed())
@@ -3050,19 +3049,19 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
 
         if((compiler_variant == MNU_COMPILE_CCS_PIC_C) //
-        || (compiler_variant == MNU_COMPILE_HI_TECH_C)) {
+           || (compiler_variant == MNU_COMPILE_HI_TECH_C)) {
             if(Prog.pullUpRegs[1] & 0xFF) { /// if value is not 0 all pull-ups are enabled on Port B
                 fprintf(f,
-                    "\n"
-                    "    // Turn on the pull-ups on Port B.\n"
-                    "    PORTB_PULL_UPS_ON();\n"
-                    "\n");
+                        "\n"
+                        "    // Turn on the pull-ups on Port B.\n"
+                        "    PORTB_PULL_UPS_ON();\n"
+                        "\n");
             } else { /// else no pull-up at all on Port B (Modified by JG3)
                 fprintf(f,
-                    "\n"
-                    "    // Turn off the pull-ups on Port B.\n"
-                    "    PORTB_PULL_UPS_OFF();\n"
-                    "\n");
+                        "\n"
+                        "    // Turn off the pull-ups on Port B.\n"
+                        "    PORTB_PULL_UPS_OFF();\n"
+                        "\n");
             }
         }
         /*
@@ -3093,17 +3092,18 @@ bool CompileAnsiC(const char *outFile, int MNU)
         }
         */
         fprintf(f,
-            "    #ifdef USE_WDT\n"
-            "      // Watchdog on\n"
-            "      WDT_Restart();\n"
-            "      WDT_Init();\n"
-            "    #endif\n"
-            "\n");
+                "    #ifdef USE_WDT\n"
+                "      // Watchdog on\n"
+                "      WDT_Restart();\n"
+                "      WDT_Init();\n"
+                "    #endif\n"
+                "\n");
         //---------------------------------------------------------------------
         if(Prog.cycleTime > 0) {
-            fprintf(f, "    // Initialize PLC cycle timer here.\n"
-                       "    // Configure Timer %d\n",
-                       Prog.cycleTimer);
+            fprintf(f,
+                    "    // Initialize PLC cycle timer here.\n"
+                    "    // Configure Timer %d\n",
+                    Prog.cycleTimer);
 
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                 fprintf(f,
@@ -3192,16 +3192,16 @@ bool CompileAnsiC(const char *outFile, int MNU)
                             plcTmr.tmr & 0xFF,
                             0x80 | plcTmr.PS);
 
-                    if(McuAs(" PIC16F1512 ") //
-                    || McuAs(" PIC16F1513 ") //
-                    || McuAs(" PIC16F1516 ") //
-                    || McuAs(" PIC16F1517 ") //
-                    || McuAs(" PIC16F1518 ") //
-                    || McuAs(" PIC16F1519 ") //
-                    || McuAs(" PIC16F1526 ") //
-                    || McuAs(" PIC16F1527 ") //
-                    || McuAs(" PIC16F1933 ") //
-                    || McuAs(" PIC16F1947 ")) {
+                    if(McuAs(" PIC16F1512 ")    //
+                       || McuAs(" PIC16F1513 ") //
+                       || McuAs(" PIC16F1516 ") //
+                       || McuAs(" PIC16F1517 ") //
+                       || McuAs(" PIC16F1518 ") //
+                       || McuAs(" PIC16F1519 ") //
+                       || McuAs(" PIC16F1526 ") //
+                       || McuAs(" PIC16F1527 ") //
+                       || McuAs(" PIC16F1933 ") //
+                       || McuAs(" PIC16F1947 ")) {
                         fprintf(f, "    TMR1GE = 1;\n");
                     }
                 }
@@ -3518,23 +3518,22 @@ bool CompileAnsiC(const char *outFile, int MNU)
                 "}\n"
                 "\n");
 
-
         if(compiler_variant == MNU_COMPILE_CODEVISIONAVR)
             fprintf(f,
-                "// You can use main() as is.\n"
-                "void main(void) {\n"
-                "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
-                "    mainPlc();\n"
-                "    return;\n"
-                "}\n");
+                    "// You can use main() as is.\n"
+                    "void main(void) {\n"
+                    "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
+                    "    mainPlc();\n"
+                    "    return;\n"
+                    "}\n");
         else
             fprintf(f,
-                "// You can use main() as is.\n"
-                "int main(void) {\n"
-                "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
-                "    mainPlc();\n"
-                "    return 0;\n"
-                "}\n");
+                    "// You can use main() as is.\n"
+                    "int main(void) {\n"
+                    "    // Put your setup code here, to run once, only if you no longer generate C code from LDmicro again.\n"
+                    "    mainPlc();\n"
+                    "    return 0;\n"
+                    "}\n");
     }
 
     fprintf(fh, "#endif\n");

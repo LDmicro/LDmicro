@@ -156,8 +156,7 @@ static void MakeControls()
     }
 
     EnableWindow(CrystalTextbox, false);
-    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_ARM))
-    {
+    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_ARM)) {
         EnableWindow(CrystalTextbox, true);
     }
 
@@ -198,10 +197,10 @@ static void MakeControls()
         double _cycleTimeMax = SIprefix(1.0 * plcTmr.cycleTimeMax / 1e6, s2);
         sprintf(txt, _("Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"), _cycleTimeMin, s1, plcTmr.cycleTimeMax / 1000, _cycleTimeMax, s2);
         strcat(explanation, txt);
-        if(McuAs(" PIC16F1824 ") //
-        || McuAs(" PIC16F1827 ") //
-        || McuAs(" PIC12F1840 ") //
-        || McuAs(" PIC12F1822 ") //
+        if(McuAs(" PIC16F1824 ")    //
+           || McuAs(" PIC16F1827 ") //
+           || McuAs(" PIC12F1840 ") //
+           || McuAs(" PIC12F1822 ") //
         ) {
             sprintf(txt, _("Available Internal MCU Crystal Frequency: 32/16/8/4/2/1 MHz, 500/250/125/62.5/31.25/31 kHz!"));
             strcat(explanation, txt);

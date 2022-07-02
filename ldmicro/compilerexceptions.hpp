@@ -3,8 +3,7 @@
 #include <exception>
 #include <cstdio>
 
-#define RM_SLASH(str) \
-    (strstr(str, "/") != nullptr ? strrchr(str, '/') + 1 : strstr(str, "\\") != nullptr ? strrchr(str, '\\') + 1 : str)
+#define RM_SLASH(str) (strstr(str, "/") != nullptr ? strrchr(str, '/') + 1 : strstr(str, "\\") != nullptr ? strrchr(str, '\\') + 1 : str)
 
 #define __LLFILE__ RM_SLASH(__FILE__)
 

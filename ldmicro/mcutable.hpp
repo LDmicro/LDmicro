@@ -51,7 +51,7 @@ typedef enum CoreTag {
     PICcores,
     BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
     ELANclones13bit,
-    MidrangeCore14bit, // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
+    MidrangeCore14bit,         // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
     EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
@@ -168,7 +168,7 @@ typedef struct McuIoInfoTag {
         int rxPin;
         int txPin;
     } uartNeeds;
-//    int      pwmNeedsPin; // obsolete
+    //    int      pwmNeedsPin; // obsolete
     int      whichIsa;
     Core     core;
     int      pins;
@@ -183,8 +183,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo *spiInfo;
     uint32_t    spiCount;
 
-    McuI2cInfo       *i2cInfo;
-    uint32_t          i2cCount;
+    McuI2cInfo *i2cInfo;
+    uint32_t    i2cCount;
 
     struct {
         uint32_t start;

@@ -458,7 +458,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_SIMULATE_NODE_STATE:
             //case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
-            //case INT_EEPROM_WRITE:
+                //case INT_EEPROM_WRITE:
 
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:

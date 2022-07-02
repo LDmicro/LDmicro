@@ -345,12 +345,12 @@ typedef struct ElemSpiTag {
     char recv[MAX_NAME_LEN];
     char mode[MAX_NAME_LEN]; // Master/Slave
     char bitrate[MAX_NAME_LEN];
-    char modes[MAX_NAME_LEN];// 00/01/10/11
-    char size[MAX_NAME_LEN]; //   _                         _
-    char _ss[MAX_NAME_LEN];  // 0- \_data1 data2 ... dataN_/  - _SS falls before and rises ones after full 'send'/'recv' variables transfer
-                             //   _         _         _       _        _
-                             // 1- \_data1_/ \_data2_/ \_..._/ \dataN_/ - _SS falls and rises after each portion of data(8 or 16 bits) transfer
-    char first[MAX_NAME_LEN];// MSB/LSB first
+    char modes[MAX_NAME_LEN]; // 00/01/10/11
+    char size[MAX_NAME_LEN];  //   _                         _
+    char _ss[MAX_NAME_LEN];   // 0- \_data1 data2 ... dataN_/  - _SS falls before and rises ones after full 'send'/'recv' variables transfer
+                              //   _         _         _       _        _
+                              // 1- \_data1_/ \_data2_/ \_..._/ \dataN_/ - _SS falls and rises after each portion of data(8 or 16 bits) transfer
+    char first[MAX_NAME_LEN]; // MSB/LSB first
     int  which;
 } ElemSpi;
 
@@ -431,9 +431,9 @@ typedef struct ResStepsTag {
 typedef struct ElemStepperTag {
     char name[MAX_NAME_LEN]; // step counter down from counter limit to 0
     char max[MAX_NAME_LEN];  // step counter limit
-    char P[MAX_NAME_LEN]; //
-    int  nSize; // Table size:
-    int  n;     // real accelaration/decelaratin table size
+    char P[MAX_NAME_LEN];    //
+    int  nSize;              // Table size:
+    int  n;                  // real accelaration/decelaratin table size
     int  graph;
     char coil[MAX_NAME_LEN]; // short pulse on this pin
 } ElemStepper;
@@ -508,16 +508,16 @@ typedef struct ElemPiecewiseLinearTag {
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
-    char var[MAX_NAME_LEN]; // also a varsList
+    char var[MAX_NAME_LEN];      // also a varsList
     char string[MAX_STRING_LEN]; //  also a var
-    char dest[MAX_NAME_LEN];   // also a CHAR
-    char enable[MAX_NAME_LEN]; // bitVar
-    char error[MAX_NAME_LEN];  // bitVar
-    bool wait;  // Wait until all bytes are transmitted (UART, I2C, SPI)
-                //  in the same cycle of the PLC in which it started.
-                //  or transmit a one byte per a one PLC cycle,
-                // Default is false.
-                // The 'wait' parameter is not used when receiving the one byte.
+    char dest[MAX_NAME_LEN];     // also a CHAR
+    char enable[MAX_NAME_LEN];   // bitVar
+    char error[MAX_NAME_LEN];    // bitVar
+    bool wait;                   // Wait until all bytes are transmitted (UART, I2C, SPI)
+                                 //  in the same cycle of the PLC in which it started.
+                                 //  or transmit a one byte per a one PLC cycle,
+                                 // Default is false.
+                                 // The 'wait' parameter is not used when receiving the one byte.
 } ElemFormattedString;
 
 typedef struct ElemPerisistTag {
@@ -588,10 +588,10 @@ struct SeriesNode {
     }
     int which;
     union {
-        void               *any;
+        void *              any;
         ElemSubcktParallel *parallel;
-        ElemSubcktSeries   *series; // used in the Copy-Paste command
-        ElemLeaf           *leaf;
+        ElemSubcktSeries *  series; // used in the Copy-Paste command
+        ElemLeaf *          leaf;
     } data;
     SeriesNode *parent_;
 

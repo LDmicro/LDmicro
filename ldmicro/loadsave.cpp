@@ -776,15 +776,15 @@ bool LoadPullUpListFromFile(FileTracker &f)
         }
         Ok = true;
         if(Prog.mcu()) {
-          // Don't internationalize this! It's the file format, not UI.
-          if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
-            i = port - 'A';
-            if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
-                Prog.pullUpRegs[i] = pullUpRegs;
-            } else {
-                Ok = false;
+            // Don't internationalize this! It's the file format, not UI.
+            if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+                i = port - 'A';
+                if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
+                    Prog.pullUpRegs[i] = pullUpRegs;
+                } else {
+                    Ok = false;
+                }
             }
-          }
         }
         if(!Ok) {
             THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
@@ -1140,12 +1140,32 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         ///// Added by JG
         case ELEM_SPI_WR:
-            fprintf(f, "SPI_WR %s %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate, StrToFrmStr(str1, leaf->d.spi._ss));
+            fprintf(f,
+                    "SPI_WR %s %s %s %s %s %s %s %s %s\n",
+                    leaf->d.spi.name,
+                    leaf->d.spi.send,
+                    leaf->d.spi.recv,
+                    leaf->d.spi.mode,
+                    leaf->d.spi.modes,
+                    leaf->d.spi.size,
+                    leaf->d.spi.first,
+                    leaf->d.spi.bitrate,
+                    StrToFrmStr(str1, leaf->d.spi._ss));
             break;
             /////
 
         case ELEM_SPI: {
-            fprintf(f, "SPI %s %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate, StrToFrmStr(str1, leaf->d.spi._ss));
+            fprintf(f,
+                    "SPI %s %s %s %s %s %s %s %s %s\n",
+                    leaf->d.spi.name,
+                    leaf->d.spi.send,
+                    leaf->d.spi.recv,
+                    leaf->d.spi.mode,
+                    leaf->d.spi.modes,
+                    leaf->d.spi.size,
+                    leaf->d.spi.first,
+                    leaf->d.spi.bitrate,
+                    StrToFrmStr(str1, leaf->d.spi._ss));
             break;
         }
 

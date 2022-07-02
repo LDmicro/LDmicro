@@ -170,7 +170,8 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 }
 
 ///// prototype modified by JG with extra default parameter rdonly
-static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo = 0, comboRecord *combos = nullptr, long rdOnly = 0)
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo = 0, comboRecord *combos = nullptr,
+                             long rdOnly = 0)
 {
     bool didCancel = false;
 
@@ -644,7 +645,9 @@ void ShowCounterDialog(int which, ElemLeaf *l)
     const char *labels[] = {_("Name:"),
                             //     ((which == ELEM_CTC)||(which == ELEM_CTU) ? _("Start value:") : _("Max value:")),
                             _("Start value:"),
-                            (((which == ELEM_CTC) ? _("Max value:") : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
+                            (((which == ELEM_CTC)   ? _("Max value:")
+                              : (which == ELEM_CTR) ? _("Min value:")
+                                                    : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
                             _("Input kind:")};
     char *      dests[] = {name + 1, minV, maxV, inputKind};
     if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x7, 0x7, arraylen(dests), dests)) {
@@ -887,7 +890,15 @@ void ShowSpiDialog(ElemLeaf *l)
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first, s->_ss};
 
-    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0b00", "0b01", "0b10", "0b11"}}, {0, {nullptr}}, {2, {"MSB_FIRST", "LSB_FIRST"}}, {2, {"many: each SPI transfer", "ones: before and after full variable"}}};
+    comboRecord comboRec[] = {{0, {nullptr}},
+                              {2, {"Master", "Slave"}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {4, {"0b00", "0b01", "0b10", "0b11"}},
+                              {0, {nullptr}},
+                              {2, {"MSB_FIRST", "LSB_FIRST"}},
+                              {2, {"many: each SPI transfer", "ones: before and after full variable"}}};
 
     if(Prog.mcu()) {
         if(Prog.mcu()->spiCount) {
@@ -926,7 +937,7 @@ void ShowSpiDialog(ElemLeaf *l)
     }
 
     if(Prog.mcu()) {
-/*
+        /*
     ///// Added by JG
     if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
     {
@@ -947,7 +958,7 @@ void ShowSpiDialog(ElemLeaf *l)
             if(IsNumber(s->recv)) {
                 Error(_("'%s' not a valid destination. There must be a general variable."), s->recv);
             }
-            if((Prog.mcu()->whichIsa==ISA_AVR) || (Prog.mcu()->whichIsa==ISA_PIC16)) {
+            if((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
                 if(hobatoi(s->size) != 8) {
                     Error(_("The valid value for the 'Data Size' is 8."));
                     strcpy(s->size, "8");
@@ -1141,7 +1152,7 @@ void ShowUartDialog(int which, ElemLeaf *l)
     const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
                             (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
                             (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sent:")};
-    char *      dests[] = {e->name, bytes, wait};
+    char *dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
     if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), arraylen(labels), labels, 0x0, 0x1, 0x1, arraylen(dests), dests)) {
@@ -1317,16 +1328,16 @@ void ShowStepperDialog(void *e)
 void ShowPulserDialog(ElemLeaf *l)
 {
     ElemPulser *e = &(l->d.pulser);
-    char *P1 = e->P1;
-    char *P0 = e->P0;
-    char *accel = e->accel;
-    char *counter = e->counter;
-    char *coil = e->coil;
+    char *      P1 = e->P1;
+    char *      P0 = e->P0;
+    char *      accel = e->accel;
+    char *      counter = e->counter;
+    char *      coil = e->coil;
 
     const char *title;
     title = _("Pulser");
 
-    const char *labels[] = {_("Pulse counter:"), "Duration of 1:", "Duration of 0:", _("Acc/Decel Factor:"), _("Pulse to:"),_("Duration is in Tcycles, Acceleration/Deceleration Factor is a multiplier of Durations")};
+    const char *labels[] = {_("Pulse counter:"), "Duration of 1:", "Duration of 0:", _("Acc/Decel Factor:"), _("Pulse to:"), _("Duration is in Tcycles, Acceleration/Deceleration Factor is a multiplier of Durations")};
     char *      dests[] = {counter, P1, P0, accel, coil};
     if(ShowSimpleDialog(title, 6, labels, 0, 0xff, 0xff, 5, dests)) {
         if(IsNumber(P1))
@@ -1600,7 +1611,7 @@ void ShowFrmtStToCharDialog(ElemLeaf *l)
 {
     ElemFormattedString *e = &(l->d.fmtdStr);
     const char *         labels[] = {_("Dest Char:"), IsString(e->string) ? _("String:") : _("String variable:"), _("Variable:")};
-    char *dests[] = {e->dest, e->string, e->var};
+    char *               dests[] = {e->dest, e->string, e->var};
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
@@ -1616,7 +1627,7 @@ void ShowVarToCharDialog(ElemLeaf *l)
 {
     ElemFormattedString *e = &(l->d.fmtdStr);
     const char *         labels[] = {_("Dest Char:"), _("Variable:")};
-    char *dests[] = {e->dest, e->var};
+    char *               dests[] = {e->dest, e->var};
     //NoCheckingOnBox[0] = true;
     //NoCheckingOnBox[1] = true;
     if(ShowSimpleDialog(_("Variable To Char"), arraylen(labels), labels, 0x0, 0x3, 0x3, arraylen(dests), dests)) {

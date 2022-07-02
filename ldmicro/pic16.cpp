@@ -2918,9 +2918,9 @@ static void WriteBin32BcdRoutine()
     FwdAddrIsNow(Bin32BcdRoutineAddress);
 #endif
 
-#define ACb0 Scratch0   // Binary value is copied to ACb0 = Scratch0..Scratch3
+#define ACb0 Scratch0 // Binary value is copied to ACb0 = Scratch0..Scratch3
 #define sovBin Scratch4 // Size of Binary in bytes is in Scratch4
-#define BCD0 Scratch5   // Address of Bcd is in Scratch5
+#define BCD0 Scratch5 // Address of Bcd is in Scratch5
 #define digBcd Scratch6 // Number of digits Bcd is in Scratch6
 
 #define bitcnt Scratch7 // bitcnt = sovBin * 8
@@ -4715,7 +4715,6 @@ otherwise the result was zero or greater.
                     Warning("Size of result '%s' less than an argument(s) '%s' or '%s'", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
                 }
 
-
                 ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1) || (a->name1 != a->name2), addr1, Scratch0, sov1, a->name2, true);
                 ADDR_T addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
                 sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
@@ -5197,7 +5196,7 @@ otherwise the result was zero or greater.
                         t2con |= 1;
                     else if(prescale == 16)
                         t2con |= 2;
-                    else if((prescale == 64) && (Prog.mcu()->core == EnhancedMidrangeCore14bit))// available not for all PIC MCU
+                    else if((prescale == 64) && (Prog.mcu()->core == EnhancedMidrangeCore14bit)) // available not for all PIC MCU
                         t2con |= 3;
                     else
                         oops();
@@ -5339,10 +5338,10 @@ otherwise the result was zero or greater.
 
                 //Instruction(OP_BCF, REG_INTCON, GIE);
                 Instruction(OP_MOVF, Scratch1, DEST_W);
-                Instruction(OP_MOVWF, REG_INTCON);    // Restore
+                Instruction(OP_MOVWF, REG_INTCON); // Restore
                 break;
             }
-            case INT_EEPROM_READ : {
+            case INT_EEPROM_READ: {
                 Comment("INT_EEPROM_READ");
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -7023,29 +7022,29 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         REG_CCPR2L = 0x1b;
         REG_CCP2CON = 0x1d;
-    } else if(McuAs(" PIC16F1512 ") //
-           || McuAs(" PIC16F1513 ") //
-           || McuAs(" PIC16F1516 ") //
-           || McuAs(" PIC16F1517 ") //
-           || McuAs(" PIC16F1518 ") //
-           || McuAs(" PIC16F1519 ") //
-           || McuAs(" PIC16F1526 ") //
-           || McuAs(" PIC16F1527 ") //
-           || McuAs(" PIC16F1933 ") //
-           || McuAs(" PIC16F1947 ") //
-           || McuAs(" PIC16F1824 ") //
-           || McuAs(" PIC16F1827 ") //
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
     ) {
         REG_CCPR2L = 0x0298;
         REG_CCP2CON = 0x029A;
-    } else if(McuAs("Microchip PIC16F628 ") //
-           || McuAs("Microchip PIC16F819 ") //
-           || McuAs("Microchip PIC16F88 ")  //
-           || McuAs(" PIC16F72 ")           //
+    } else if(McuAs("Microchip PIC16F628 ")    //
+              || McuAs("Microchip PIC16F819 ") //
+              || McuAs("Microchip PIC16F88 ")  //
+              || McuAs(" PIC16F72 ")           //
     ) {
         // has not
-    } else if(McuAs(" PIC10F") //
-           || McuAs(" PIC12F") //
+    } else if(McuAs(" PIC10F")    //
+              || McuAs(" PIC12F") //
     ) {
         // has not
     } else
@@ -7472,12 +7471,12 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     FwdAddrIsNow(progStart);
     Comment("Program Start");
 
-    if(McuAs(" PIC16F1824 ") //
-    || McuAs(" PIC16F1827 ") //
-    || McuAs(" PIC12F1840 ") //
-    || McuAs(" PIC12F1822 ") //
-    //|| McuAs(" PIC16F1933 ") //
-    //|| McuAs(" PIC16F1947 ") //
+    if(McuAs(" PIC16F1824 ")    //
+       || McuAs(" PIC16F1827 ") //
+       || McuAs(" PIC12F1840 ") //
+       || McuAs(" PIC12F1822 ") //
+       //|| McuAs(" PIC16F1933 ") //
+       //|| McuAs(" PIC16F1947 ") //
     ) {
         //Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
         //WriteRegister(REG_OSCON, 0xF << IRCF0);

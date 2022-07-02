@@ -73,7 +73,7 @@
 #define PAR_CONTROL_DIR 0x20     //direction: 1   read, 0   write
 #define LPT_DATA_DIRECTION PAR_CONTROL_DIR
 #define PAR_CONTROL_WR_CONTROL 0xC0 //the 2 highest bits of the control register must be 1
-                                    //PIN 18..25   GROUND
+         //PIN 18..25   GROUND
 //                      PIN# DB25
 #define PIN_CONTROL_STROBE 1
 #define PIN_CONTROL_AUTOFD 14

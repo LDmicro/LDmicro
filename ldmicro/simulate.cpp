@@ -1706,9 +1706,9 @@ static void SimulateIntCode()
                     if(strlen(a->name3.c_str()))
                         offset += GetSimulationVariable(a->name3);
                     if(offset) {
-                        int sov = SizeOfVar(a->name1);
+                        int          sov = SizeOfVar(a->name1);
                         unsigned int var = GetSimulationVariable(a->name2);
-                        int value = (var >> (offset * sov * 8)) & (sov == 1 ? 0xFF : 0xFFFF);
+                        int          value = (var >> (offset * sov * 8)) & (sov == 1 ? 0xFF : 0xFFFF);
                         SetSimulationVariable(a->name1, value);
                     } else {
                         SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
@@ -1947,7 +1947,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_EEPROM_READ:
-            //case INT_EEPROM_WRITE:
+                //case INT_EEPROM_WRITE:
                 oops();
                 break;
 
@@ -2182,7 +2182,7 @@ static void SimulateIntCode()
 // Called by the Windows timer that triggers cycles when we are running
 // in real time.
 //-----------------------------------------------------------------------------
-static int updateWindow = -1;
+static int    updateWindow = -1;
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
     for(int i = 0; i < CyclesPerTimerTick; i++) {
@@ -2549,7 +2549,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) //// Modified by JG
 {
-        switch(msg) {
+    switch(msg) {
         case WM_KEYDOWN:
             // vvv copy-paste from ldmicro.cpp
             if(InSimulationMode) {
@@ -2722,19 +2722,7 @@ void ShowSimulationWindow(int sim)
     if(sim == SIM_I2C)
         I2cSimulationWindow = SimHwnd;
 
-    SimCtrl =
-        CreateWindowEx(0,
-                       WC_EDIT,
-                       "",
-                       WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE | WS_VSCROLL,
-                       0,
-                       0,
-                       TerminalW,
-                       TerminalH,
-                       SimHwnd,
-                       nullptr,
-                       Instance,
-                       nullptr);
+    SimCtrl = CreateWindowEx(0, WC_EDIT, "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE | WS_VSCROLL, 0, 0, TerminalW, TerminalH, SimHwnd, nullptr, Instance, nullptr);
 
     if(sim == SIM_UART)
         UartSimulationTextControl = SimCtrl;
@@ -2848,7 +2836,7 @@ void DestroySimulationWindow(HWND SimulationWindow)
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
 static BYTE bPrev = 0;
-static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
+static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
 
@@ -2919,7 +2907,7 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
 
     // Scroll text in buffer
     int overBy = strlen(buf) + strlen(append) + 1 + 1 - MAX_SCROLLBACK; // int overBy - don't change overBy type!!! It must be signed!!!
-    if(overBy > 0 ) {
+    if(overBy > 0) {
         if(((s = strchr(buf, '\r')) != nullptr) && (s[1] == '\n'))
             memmove(buf, &s[1], MAX_SCROLLBACK - overBy); // Scroll by line
         else

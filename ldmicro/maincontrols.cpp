@@ -640,7 +640,7 @@ HMENU MakeMainWindowMenus()
     ProcOthersMenu = CreatePopupMenu();
     static HMENU ProcMenu = nullptr;
     static HMENU ProcMenu_ = nullptr;
-    Core core_ = supportedMcus()[0].core;
+    Core         core_ = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         Core core = supportedMcus()[i].core;
         if((core > AVRcores) && (core < AVRcores_) && (supportedMcus()[i].whichIsa == ISA_AVR))

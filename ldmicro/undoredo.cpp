@@ -100,7 +100,7 @@ void UndoEmpty()
 
 void UndoFlush()
 {
-	UndoEmpty();
+    UndoEmpty();
     SetUndoEnabled(false, false);
 }
 

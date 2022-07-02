@@ -562,7 +562,6 @@ void DrawWire(int *cx, int *cy, char c)
     *cx += POS_WIDTH;
 }
 
-
 static char *paintVar(char *str)
 {
     if(!str)
@@ -583,7 +582,6 @@ static char *paintVar(char *str)
     sprintf(ret, "\x04%s\x02", str);
     return ret;
 }
-
 
 //-----------------------------------------------------------------------------
 // Draw an end of line element (coil, RES, MOV, etc.). Special things about
@@ -1477,13 +1475,22 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             sprintf(s2, "%s", leaf->d.fmtdStr.var);
             formatWidth(top,
                         POS_WIDTH,
-                        "{\x01""VAR TO CHAR""\x02",
+                        "{\x01"
+                        "VAR TO CHAR"
+                        "\x02",
                         "",
                         "",
                         "",
                         "}");
 
-            formatWidth(bot, POS_WIDTH, "{\x04", s1, "\x02""\x04", s2, "\x02}");
+            formatWidth(bot,
+                        POS_WIDTH,
+                        "{\x04",
+                        s1,
+                        "\x02"
+                        "\x04",
+                        s2,
+                        "\x02}");
 
             CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, true, POS_WIDTH);
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, POS_WIDTH);
@@ -1496,7 +1503,12 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             sprintf(s1, "%s", leaf->d.fmtdStr.dest);
             formatWidth(top,
                         2 * POS_WIDTH,
-                        which == ELEM_STRING ? "{\x01""C FRMT STR""\x02" : "{\x01""FRMT STR TO CHAR""\x02",
+                        which == ELEM_STRING ? "{\x01"
+                                               "C FRMT STR"
+                                               "\x02"
+                                             : "{\x01"
+                                               "FRMT STR TO CHAR"
+                                               "\x02",
                         "",
                         "",
                         s1,
@@ -1535,7 +1547,9 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             // Careful, string could be longer than fits in our space.
             formatWidth(top,
                         2 * POS_WIDTH,
-                        "{\x01""FRMT STR OVER UART""\x02",
+                        "{\x01"
+                        "FRMT STR OVER UART"
+                        "\x02",
                         "",
                         "",
                         "",

@@ -19,8 +19,6 @@ OVERLAPPED over;
 
 BOOL running = FALSE;
 
-
-
 UINT codepage = 866; // 850
 
 struct BuildRunData {
@@ -37,50 +35,50 @@ typedef std::shared_ptr<BuildRunData> BuildRunDataPtr;
 int CreateChildThread(BuildRunDataPtr runData);
 
 // Capture function
-void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5, char *Prog_oscClock, char *Prog_mcuClock)
+void Capture(const char *title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5, char *Prog_oscClock, char *Prog_mcuClock)
 {
 #if 1
     char batchArgs[MAX_PATH] = "";
-//  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
-//  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
-    if(strlen(fpath1)||strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+    //  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
+    //  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
+    if(strlen(fpath1) || strlen(fname2) || strlen(target3) || strlen(compiler4) || strlen(progtool5) || strlen(Prog_oscClock) || strlen(Prog_mcuClock)) {
         strcat(batchArgs, "\"");
         if(strlen(fpath1))
-           strcat(batchArgs, fpath1);
+            strcat(batchArgs, fpath1);
         else
-           strcat(batchArgs, " ");
+            strcat(batchArgs, " ");
         strcat(batchArgs, "\"");
     }
-    if(strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+    if(strlen(fname2) || strlen(target3) || strlen(compiler4) || strlen(progtool5) || strlen(Prog_oscClock) || strlen(Prog_mcuClock)) {
         strcat(batchArgs, " \"");
         if(strlen(fname2))
             strcat(batchArgs, fname2);
         else
-           strcat(batchArgs, " ");
+            strcat(batchArgs, " ");
         strcat(batchArgs, "\"");
     }
-    if(strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+    if(strlen(target3) || strlen(compiler4) || strlen(progtool5) || strlen(Prog_oscClock) || strlen(Prog_mcuClock)) {
         strcat(batchArgs, " \"");
         if(strlen(target3))
             strcat(batchArgs, target3);
         else
-           strcat(batchArgs, " ");
+            strcat(batchArgs, " ");
         strcat(batchArgs, "\"");
     }
-    if(strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+    if(strlen(compiler4) || strlen(progtool5) || strlen(Prog_oscClock) || strlen(Prog_mcuClock)) {
         strcat(batchArgs, " \"");
         if(strlen(compiler4))
             strcat(batchArgs, compiler4);
         else
-           strcat(batchArgs, " ");
+            strcat(batchArgs, " ");
         strcat(batchArgs, "\"");
     }
-    if(strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+    if(strlen(progtool5) || strlen(Prog_oscClock) || strlen(Prog_mcuClock)) {
         strcat(batchArgs, " \"");
         if(strlen(progtool5))
             strcat(batchArgs, progtool5);
         else
-           strcat(batchArgs, " ");
+            strcat(batchArgs, " ");
         strcat(batchArgs, "\"");
     }
 
@@ -106,7 +104,6 @@ void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, co
     runData->target3 = target3;
     runData->compiler4 = compiler4;
     runData->progtool5 = progtool5;
-
 
     if(!running) {
         running = TRUE;
@@ -165,7 +162,7 @@ int CreateChildThread(BuildRunDataPtr runData)
     DWORD  dwThreadId;
 
     struct ThData {
-        HANDLE child;
+        HANDLE          child;
         BuildRunDataPtr arg;
         ThData()
         {
@@ -174,26 +171,26 @@ int CreateChildThread(BuildRunDataPtr runData)
         }
     };
 
-    static std::vector<std::shared_ptr<ThData> > thData;
+    static std::vector<std::shared_ptr<ThData>> thData;
 
     thData.erase(std::remove_if(std::begin(thData),
                                 std::end(thData),
                                 [](std::shared_ptr<ThData> &x) -> bool {
-        DWORD exitCode;
-        auto  res = GetExitCodeThread(x->child, &exitCode);
-        if((res > 0) && (exitCode != STILL_ACTIVE)) {
-            return true;
-        }
-        return false;
-        }), std::end(thData));
+                                    DWORD exitCode;
+                                    auto  res = GetExitCodeThread(x->child, &exitCode);
+                                    if((res > 0) && (exitCode != STILL_ACTIVE)) {
+                                        return true;
+                                    }
+                                    return false;
+                                }),
+                 std::end(thData));
 
-
-    ChildThread = CreateThread(NULL,           // default security attributes
-                               0,              // use default stack size
-                               ThreadFunction, // thread function
-                               (LPVOID) runData.get(),  // argument passed to thread function
-                               0,              // use default creation flags
-                               &dwThreadId);   // returns the thread identifier
+    ChildThread = CreateThread(NULL,                  // default security attributes
+                               0,                     // use default stack size
+                               ThreadFunction,        // thread function
+                               (LPVOID)runData.get(), // argument passed to thread function
+                               0,                     // use default creation flags
+                               &dwThreadId);          // returns the thread identifier
 
     if(ChildThread != NULL) {
         auto data = std::make_shared<ThData>();
@@ -207,14 +204,13 @@ int CreateChildThread(BuildRunDataPtr runData)
 // Thread function (with specific prototype)
 DWORD WINAPI ThreadFunction(LPVOID lpParam)
 {
-    char  command[CMDSIZE];
-    char comspec[MAX_PATH*2];
+    char command[CMDSIZE];
+    char comspec[MAX_PATH * 2];
 
     GetComspec(comspec, sizeof(comspec));
 
     const BuildRunData *rd = reinterpret_cast<const BuildRunData *>(lpParam);
-    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\"", comspec, rd->batchfile.c_str(),
-        rd->fpath1.c_str(), rd->fname2.c_str(), rd->target3.c_str(), rd->compiler4.c_str(), rd->progtool5.c_str());
+    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\"", comspec, rd->batchfile.c_str(), rd->fpath1.c_str(), rd->fname2.c_str(), rd->target3.c_str(), rd->compiler4.c_str(), rd->progtool5.c_str());
 
     CreateChildPiped(command);
     return 0;
@@ -225,7 +221,7 @@ int CreateChildPiped(char *cmdline)
 {
     SECURITY_ATTRIBUTES saAttr;
     //BOOL                conv = FALSE;
-    DWORD               dwWritten;
+    DWORD dwWritten;
 
     // Set the bInheritHandle flag so that pipe handles are inherited
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -317,8 +313,8 @@ void CreateChildProcess(char *cmdline)
 // Else ReadFile() is blocking
 void ReadFromPipe(BOOL convert)
 {
-    DWORD    dwRead;
-    BOOL     bSuccess = FALSE;
+    DWORD dwRead;
+    BOOL  bSuccess = FALSE;
     //HANDLE   hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CHAR     chBuf[BUFSIZE + 1];
     buflist *bufptr;
@@ -366,7 +362,7 @@ void CodePage(LPSTR lpString)
     int     n = 0;
     wchar_t wString[BUFSIZE + 1];
     n = MultiByteToWideChar(/*codepage*/ 1 ? CP_OEMCP : GetOEMCP(), 0, lpString, -1, wString, sizeof(wString) / sizeof(wchar_t));
-    WideCharToMultiByte(1?CP_ACP:GetACP(), 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
+    WideCharToMultiByte(1 ? CP_ACP : GetACP(), 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
     //WideCharToMultiByte(CP_THREAD_ACP, 0, wString, n, lpString, strlen(lpString), NULL, NULL); // ok
 }
 

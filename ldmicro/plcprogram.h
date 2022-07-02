@@ -122,7 +122,7 @@ class PlcProgram {
     uint32_t OpsInRung[MAX_RUNGS + 1];
     uint32_t HexInRung[MAX_RUNGS + 1];
 
-    int      compiler; // TODO: instead of compiler_variant
+    int compiler; // TODO: instead of compiler_variant
   private:
     McuIoInfo *mcu_;
 };
