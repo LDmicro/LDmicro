@@ -54,7 +54,7 @@
 //#define INT_VARIABLE_CLEAR_BITS                  3007
 #endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
-//#define INT_SET_VARIABLE_INDIRECT                4001
+//#define INT_SET_VARIABLE_INDIRECT                4xxx
 #define INT_SET_VARIABLE_TO_VARIABLE             5
 #define INT_STRING_INIT                          5013 // store literal string in flash
 #define INT_SET_VARIABLE_INDEXED                 5014 // read literal string[index] from flash
@@ -64,13 +64,21 @@
 #define INT_SET_OPPOSITE                         5003
 #endif
 #define INT_SET_SWAP                             5004
-#define INT_DECREMENT_VARIABLE                   6001
-#define INT_INCREMENT_VARIABLE                   6
-#define INT_SET_VARIABLE_ADD                     7
-#define INT_SET_VARIABLE_SUBTRACT                8
-#define INT_SET_VARIABLE_MULTIPLY                9
-#define INT_SET_VARIABLE_DIVIDE                 10
-#define INT_SET_VARIABLE_MOD                    1001
+
+#define INT_INC_GROUP_BEGIN                      6000
+#define INT_INCREMENT_VARIABLE                   6001
+#define INT_DECREMENT_VARIABLE                   6002
+#define INT_INC_GROUP_END                        6010
+#define INT_INC_GROUP(x) (((x) >= INT_INC_GROUP_BEGIN) && ((x) <= INT_INC_GROUP_END))
+
+#define INT_ADD_GROUP_BEGIN                      4000
+#define INT_SET_VARIABLE_ADD                     4001
+#define INT_SET_VARIABLE_SUBTRACT                4002
+#define INT_SET_VARIABLE_MULTIPLY                4003
+#define INT_SET_VARIABLE_DIVIDE                  4004
+#define INT_SET_VARIABLE_MOD                     4005
+#define INT_ADD_GROUP_END                        4010
+#define INT_ADD_GROUP(x) (((x) >= INT_ADD_GROUP_BEGIN) && ((x) <= INT_ADD_GROUP_END))
 
 #if NEW_INT > 0
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1021
@@ -86,16 +94,11 @@
 #define INT_SLEEP                               1099
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
-//#define INT_UART_SEND                           13   // obsolete
 #define INT_UART_SEND1                          1301
-//#define INT_UART_SENDn                          1302 // impasse
 #define INT_UART_SEND_READY                     1303
 #define INT_UART_SEND_BUSY                      1304
 #define INT_UART_WR                             1310
-//#define INT_UART_RECV                           14   // obsolete
 #define INT_UART_RECV1                          1400
-//#define INT_UART_RECVn                          1401 // impasse
-//#define INT_UART_RECVnn                         1402 // impasse
 #define INT_UART_RECV_AVAIL                     1403
 
 /* EEPROM Write Cycle Time is 4ms(typical time) up to 5-8-10ms(max time) for PIC Microchip MCU.
@@ -120,33 +123,36 @@
 #define INT_EEPROM_WRITE_BYTE                   18
 
 #define INT_SPI                                 19
-#define INT_SPI_INIT                            1901
-#define INT_SPI_COMPLETE                        1902
-#define INT_SPI_BUSY                            1903
-#define INT_SPI_WRITE                           1904
-#define INT_SPI_READ                            1905
+#define INT_SPI_INIT                            1901 // one BYTE(8-bit) or WORD(16-bit) per PLC cycle
+//#define INT_SPI_COMPLETE                        1902
+//#define INT_SPI_BUSY                            1903
+#define INT_SPI_WRITE                           1904 // full string per PLC cycle
+//#define INT_SPI_READ                            1905
 
-#define INT_I2C_READ                            1951        ///// Added by JG
+#define INT_I2C_READ                            1951  ///// Added by JG
 #define INT_I2C_WRITE                           1952
 
 #define INT_WRITE_STRING                        21 // netzer
 #define INT_STRING                              22 // sprintf(), strcpy(), or "literal string"
-//#define INT_CPRINTF                             2201
-//#define INT_PRINTF_STRING                       23 // printf() out to console
 
+#define INT_AND_GROUP_BEGIN                     30
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31
 #define INT_SET_VARIABLE_XOR                    32
-#define INT_SET_VARIABLE_NOT                    33
-#define INT_SET_VARIABLE_NEG                    34 // a = -a
+#define INT_SET_VARIABLE_SHL                    33
+#define INT_SET_VARIABLE_SHR                    34
+#define INT_SET_VARIABLE_SR0                    35
+#define INT_SET_VARIABLE_ROL                    36
+#define INT_SET_VARIABLE_ROR                    37
+#define INT_AND_GROUP_END                       39
+#define INT_AND_GROUP(x) (((x) >= INT_AND_GROUP_BEGIN) && ((x) <= INT_AND_GROUP_END))
+
+#define INT_SET_VARIABLE_NOT                    380
+#define INT_SET_VARIABLE_NEG                    381 // a = -a
+
 #define INT_SET_VARIABLE_RANDOM                 341
 #define INT_SET_SEED_RANDOM                     342
 #define INT_SET_VARIABLE_ENTROPY                343
-#define INT_SET_VARIABLE_SHL                    35
-#define INT_SET_VARIABLE_SHR                    36
-#define INT_SET_VARIABLE_SR0                    361
-#define INT_SET_VARIABLE_ROL                    37
-#define INT_SET_VARIABLE_ROR                    38
 
 #define INT_IF_GROUP_BEGIN                      40
 #define INT_IF_BIT_SET_IN_VAR                   46
@@ -255,7 +261,7 @@ struct IntOp {
     int32_t       literal1;
     int32_t       literal2;
     int32_t       literal3; // side effect: internaly used in simulation of INT_FLASH_READ
-    const int32_t * data;     // for INT_FLASH_INIT
+    const int32_t * data;   // for INT_FLASH_INIT
     bool *        poweredAfter;
     bool *        workingNow;
     int           rung;     //= rungNow  //this IntOp located in rung,

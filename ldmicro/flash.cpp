@@ -37,50 +37,64 @@ typedef std::shared_ptr<BuildRunData> BuildRunDataPtr;
 int CreateChildThread(BuildRunDataPtr runData);
 
 // Capture function
-void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5)
+void Capture(const char * title, char *batchFile, char *fpath1, char *fname2, const char *target3, char *compiler4, char *progtool5, char *Prog_oscClock, char *Prog_mcuClock)
 {
 #if 1
     char batchArgs[MAX_PATH] = "";
 //  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", batchfile, fpath1, fname2, target3, compiler4, progtool5);
-//	sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
-	if(strlen(fpath1)||strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
-		strcat(batchArgs, "\"");
-		if(strlen(fpath1))
-		   strcat(batchArgs, fpath1);
-		else
-		   strcat(batchArgs, " ");
-		strcat(batchArgs, "\"");
-	}
-	if(strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
-		strcat(batchArgs, " \"");
-		if(strlen(fname2))
-			strcat(batchArgs, fname2);
-		else
-		   strcat(batchArgs, " ");
-		strcat(batchArgs, "\"");
-	}
-	if(strlen(target3)||strlen(compiler4)||strlen(progtool5)) {
-		strcat(batchArgs, " \"");
-		if(strlen(target3))
-			strcat(batchArgs, target3);
-		else
-		   strcat(batchArgs, " ");
-		strcat(batchArgs, "\"");
-	}
-	if(strlen(compiler4)||strlen(progtool5)) {
-		strcat(batchArgs, " \"");
-		if(strlen(compiler4))
-			strcat(batchArgs, compiler4);
-		else
-		   strcat(batchArgs, " ");
-		strcat(batchArgs, "\"");
-	}
-	if(strlen(progtool5)) {
-		strcat(batchArgs, " \"");
-		strcat(batchArgs, progtool5);
-		strcat(batchArgs, "\"");
-	}
-	IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
+//  sprintf(batchArgs, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", fpath1, fname2, target3, compiler4, progtool5);
+    if(strlen(fpath1)||strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+        strcat(batchArgs, "\"");
+        if(strlen(fpath1))
+           strcat(batchArgs, fpath1);
+        else
+           strcat(batchArgs, " ");
+        strcat(batchArgs, "\"");
+    }
+    if(strlen(fname2)||strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+        strcat(batchArgs, " \"");
+        if(strlen(fname2))
+            strcat(batchArgs, fname2);
+        else
+           strcat(batchArgs, " ");
+        strcat(batchArgs, "\"");
+    }
+    if(strlen(target3)||strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+        strcat(batchArgs, " \"");
+        if(strlen(target3))
+            strcat(batchArgs, target3);
+        else
+           strcat(batchArgs, " ");
+        strcat(batchArgs, "\"");
+    }
+    if(strlen(compiler4)||strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+        strcat(batchArgs, " \"");
+        if(strlen(compiler4))
+            strcat(batchArgs, compiler4);
+        else
+           strcat(batchArgs, " ");
+        strcat(batchArgs, "\"");
+    }
+    if(strlen(progtool5)||strlen(Prog_oscClock)||strlen(Prog_mcuClock)) {
+        strcat(batchArgs, " \"");
+        if(strlen(progtool5))
+            strcat(batchArgs, progtool5);
+        else
+           strcat(batchArgs, " ");
+        strcat(batchArgs, "\"");
+    }
+
+    if(strlen(Prog_oscClock)) {
+        strcat(batchArgs, " \"");
+        strcat(batchArgs, Prog_oscClock);
+        strcat(batchArgs, "\"");
+    }
+    if(strlen(Prog_mcuClock)) {
+        strcat(batchArgs, " \"");
+        strcat(batchArgs, Prog_mcuClock);
+        strcat(batchArgs, "\"");
+    }
+    IsErr(Execute(batchFile, batchArgs, SW_SHOWNORMAL), batchFile);
 #else
     WNDCLASSEX wc;
     RECT       rect;
@@ -194,12 +208,12 @@ int CreateChildThread(BuildRunDataPtr runData)
 DWORD WINAPI ThreadFunction(LPVOID lpParam)
 {
     char  command[CMDSIZE];
-	char comspec[MAX_PATH*2];
+    char comspec[MAX_PATH*2];
 
-	GetComspec(comspec, sizeof(comspec));
+    GetComspec(comspec, sizeof(comspec));
 
     const BuildRunData *rd = reinterpret_cast<const BuildRunData *>(lpParam);
-    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\"", comspec, rd->batchfile.c_str(), 
+    sprintf(command, "%s /c \"\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"\"", comspec, rd->batchfile.c_str(),
         rd->fpath1.c_str(), rd->fname2.c_str(), rd->target3.c_str(), rd->compiler4.c_str(), rd->progtool5.c_str());
 
     CreateChildPiped(command);

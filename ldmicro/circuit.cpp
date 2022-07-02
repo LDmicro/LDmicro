@@ -564,8 +564,8 @@ void AddFormattedString()
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, "var");
     strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
+    strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
 
@@ -576,9 +576,20 @@ void AddFrmtStrToChar()
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "char");
-    strcpy(t->d.fmtdStr.string, "frmtString");
+    strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_FRMT_STR_TO_CHAR, t);
+}
+
+void AddVarToChar()
+{
+    if(!CanInsertOther)
+        return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.dest, "char");
+    strcpy(t->d.fmtdStr.var, "var");
+    AddLeaf(ELEM_VAR_TO_CHAR, t);
 }
 
 void AddWrite(int code)
@@ -599,7 +610,7 @@ void AddString()
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "dest");
-    strcpy(t->d.fmtdStr.string, "frmtString");
+    strcpy(t->d.fmtdStr.string, "C frmt string");
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_STRING, t);
 }
@@ -611,7 +622,7 @@ void AddPrint(int code)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "dest");
-    strcpy(t->d.fmtdStr.string, "fmtString");
+    strcpy(t->d.fmtdStr.string, "C frmt string");
     strcpy(t->d.fmtdStr.var, "varsList");
     strcpy(t->d.fmtdStr.enable, "RenableIn");
     strcpy(t->d.fmtdStr.error, "RerrorOut");
@@ -956,7 +967,8 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
-    t->d.spi.which = which; ///// Added by JG
+    strcpy(t->d.spi._ss, "many: each SPI transfer");
+    t->d.spi.which = which;
     AddLeaf(which, t);
 }
 
@@ -1783,7 +1795,6 @@ bool TablesUsed()
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           //         || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_UART_WR))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }

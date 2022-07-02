@@ -71,7 +71,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(ishobdigit(wParam) || wParam == '.' || wParam == '\b' || wParam == '\'' || wParam == '\\' || wParam == '-')) {
+        if(!(ishobdigit(wParam) || wParam == '.' || wParam == '\b' || wParam == ' ' || wParam == '\'' || wParam == '\\' || wParam == '-')) {
             return 0;
         }
     }
@@ -170,7 +170,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 }
 
 ///// prototype modified by JG with extra default parameter rdonly
-static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdOnly = 0)
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo = 0, comboRecord *combos = nullptr, long rdOnly = 0)
 {
     bool didCancel = false;
 
@@ -284,7 +284,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 
     return !didCancel;
 }
-
+/*
 //as default : labels = boxes
 static bool ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
@@ -296,7 +296,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 {
     return ShowSimpleDialog(title, labs, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
-
+*/
 void ShowTimerDialog(int which, ElemLeaf *l)
 {
     ElemTimer *e = &(l->d.timer);
@@ -438,7 +438,7 @@ void ShowSleepDialog(ElemLeaf *l)
     strcpy(nameBuf, name + 1);
     char *dests[] = {/*nameBuf,*/ delBuf};
 
-    if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+    if(ShowSimpleDialog(s, arraylen(labels), labels, (1 << 1), (1 << 0), (1 << 0), arraylen(dests), dests)) {
         name[0] = 'T';
         strcpy(name + 1, nameBuf);
         double  del = atof(delBuf);
@@ -518,7 +518,7 @@ void ShowDelayDialog(ElemLeaf *l)
     sprintf(delBuf, "%s", name);
     char *dests[] = {delBuf};
 
-    if(ShowSimpleDialog(_("Delay, us"), 2, labels, (0 << 0), (1 << 0), (1 << 0), 1, dests)) {
+    if(ShowSimpleDialog(_("Delay, us"), arraylen(labels), labels, (0 << 0), (1 << 0), (1 << 0), arraylen(dests), dests)) {
         if(IsNumber(delBuf)) {
             int32_t del = hobatoi(delBuf);
             if(del <= 0) {
@@ -647,7 +647,7 @@ void ShowCounterDialog(int which, ElemLeaf *l)
                             (((which == ELEM_CTC) ? _("Max value:") : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
                             _("Input kind:")};
     char *      dests[] = {name + 1, minV, maxV, inputKind};
-    if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x7, 0x7, arraylen(dests), dests)) {
         if(IsNumber(minV)) {
             int32_t _minV = hobatoi(minV);
             CheckVarInRange(name, minV, _minV);
@@ -706,7 +706,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
     }
     const char *labels[] = {_("SFR position:"), l2};
     char *      dests[] = {op1, op2};
-    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x3, 0x3, arraylen(dests), dests)) {
         if(which == ELEM_RSFR) {
             if(IsNumber(op2)) {
                 Error(_("Read SFR instruction: '%s' not a valid destination."), op2);
@@ -758,7 +758,7 @@ void ShowCmpDialog(int which, char *op1, char *op2)
     }
     const char *labels[] = {_("'Closed' if:"), l2};
     char *      dests[] = {op1, op2};
-    if(ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x7, 0x7, arraylen(dests), dests)) {
         if(IsNumber(op1))
             CheckConstantInRange(op2, op1, hobatoi(op1));
         if(IsNumber(op2))
@@ -789,7 +789,7 @@ void ShowVarBitDialog(int which, char *dest, char *src)
     sprintf(s, _("Bit # [0..%d]:"), SizeOfVar(dest) * 8 - 1);
     const char *labels[] = {_("Variable:"), s};
     char *      dests[] = {dest, src};
-    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x3, 0x3, arraylen(dests), dests)) {
     }
 }
 
@@ -820,7 +820,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
     }
     const char *labels[] = {_("Destination:"), _("Source:")};
     char *      dests[] = {dest, src};
-    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x3, 0x3, arraylen(dests), dests)) {
         if(IsNumber(dest)) {
             Error(_("Move instruction: '%s' not a valid destination."), dest);
         }
@@ -849,7 +849,7 @@ void ShowBusDialog(ElemLeaf *l)
 
     const char *labels[] = {_("Destination:"), _("Destination bits:"), _("Source:"), _("Source bits:")};
     char *      dests[] = {s->dest, PCBbitStr, s->src, busStr};
-    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, 4, dests, 0, nullptr, 0x08)) {
+    if(ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x3, 0xff, arraylen(dests), dests, 0, nullptr, 0x08)) {
         if(IsNumber(s->dest)) {
             Error(_("Bus instruction: '%s' not a valid destination."), s->dest);
         }
@@ -878,16 +878,16 @@ void ShowSpiDialog(ElemLeaf *l)
     ElemSpi *   s = &(l->d.spi);
     const char *title = _("SPI - Serial Peripheral Interface");
 
-    const char *labels[] = {_("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA):"), _("Data Size:"), _("Data Order:")};
+    const char *labels[] = {_("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Receive to variable:"), _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA):"), _("Data Size:"), _("Data Order:"), _("Drive _SS:")};
 
     if(l->d.spi.which == ELEM_SPI_WR) {
         labels[2] = _("Send string:");
         NoCheckingOnBox[2] = true;
     }
 
-    char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
+    char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first, s->_ss};
 
-    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0b00", "0b01", "0b10", "0b11"}}, {0, {nullptr}}, {2, {"MSB_FIRST", "LSB_FIRST"}}};
+    comboRecord comboRec[] = {{0, {nullptr}}, {2, {"Master", "Slave"}}, {0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0b00", "0b01", "0b10", "0b11"}}, {0, {nullptr}}, {2, {"MSB_FIRST", "LSB_FIRST"}}, {2, {"many: each SPI transfer", "ones: before and after full variable"}}};
 
     if(Prog.mcu()) {
         if(Prog.mcu()->spiCount) {
@@ -931,19 +931,28 @@ void ShowSpiDialog(ElemLeaf *l)
     if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
     {
         if (l->d.spi.which == ELEM_SPI)
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+            ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x000F, -1, arraylen(dests), dests, 0, nullptr, 0x00F2);
         if (l->d.spi.which == ELEM_SPI_WR)
         {
             strcpy(dests[3], "-");
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+            ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x000F, -1, arraylen(dests), dests, 0, nullptr, 0x00FA);
         }
     }
     else
     {
     /////
 */
-        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
+        if(ShowSimpleDialog(title, arraylen(labels), labels, bit(6), 0x0000, 0xFFFFFFFF, arraylen(dests), dests, arraylen(comboRec), comboRec)) {
             //TODO: check the available range
+            if(IsNumber(s->recv)) {
+                Error(_("'%s' not a valid destination. There must be a general variable."), s->recv);
+            }
+            if((Prog.mcu()->whichIsa==ISA_AVR) || (Prog.mcu()->whichIsa==ISA_PIC16)) {
+                if(hobatoi(s->size) != 8) {
+                    Error(_("The valid value for the 'Data Size' is 8."));
+                    strcpy(s->size, "8");
+                }
+            }
         }
         for(int i = 0; i < comboRec[4].n; i++) {
             CheckFree(const_cast<char *>(comboRec[4].str[i]));
@@ -979,14 +988,14 @@ void ShowI2cDialog(ElemLeaf *l)
         if((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->whichIsa == ISA_PIC18)) {
             if(l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);
+                ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x000F, 0xFFFFFFFF, arraylen(dests), dests, 0, nullptr, 0x0096);
             }
             if(l->d.i2c.which == ELEM_I2C_WR) { // no recv
                 strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x009A);
+                ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x000F, 0xFFFFFFFF, arraylen(dests), dests, 0, nullptr, 0x009A);
             }
         } else {
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
+            if(ShowSimpleDialog(title, arraylen(labels), labels, 0x0004, 0x0003, 0xFFFFFFFF, arraylen(dests), dests, arraylen(comboRec), comboRec)) {
                 //TODO: check the available range
             }
         }
@@ -1020,7 +1029,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
     char *      dests[] = {s->dest, s->src, common};
     char        s2[50];
     sprintf(s2, _("Convert char to %s Segments"), s1);
-    if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0xff, dests)) {
+    if(ShowSimpleDialog(s2, arraylen(labels), labels, 0, 0x3, 0xff, arraylen(dests), dests)) {
         if(IsNumber(s->dest)) {
             Error(_("Segments instruction: '%s' not a valid destination."), s->dest);
         }
@@ -1039,7 +1048,7 @@ void ShowReadAdcDialog(char *name, int *refs)
     char        srefs[100];
     sprintf(srefs, "%d", *refs);
     char *dests[] = {name, srefs};
-    if(ShowSimpleDialog(_("Read A/D Converter"), 2, labels, 0, 0x1, 0x1, dests)) {
+    if(ShowSimpleDialog(_("Read A/D Converter"), arraylen(labels), labels, 0, 0x1, 0x1, arraylen(dests), dests)) {
         // TODO check the ranges
         *refs = hobatoi(srefs);
     }
@@ -1075,14 +1084,14 @@ void ShowGotoDialog(int which, char *name)
         default:
             oops();
     }
-    ShowSimpleDialog(s, 1, labels, 0, 0x1, 0x1, dests);
+    ShowSimpleDialog(s, arraylen(labels), labels, 0, 0x1, 0x1, arraylen(dests), dests);
 }
 
 void ShowRandomDialog(char *name)
 {
     const char *labels[] = {_("Destination:")};
     char *      dests[] = {name};
-    ShowSimpleDialog(_("Random value"), 1, labels, 0, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Random value"), arraylen(labels), labels, 0, 0x1, 0x1, arraylen(dests), dests);
 }
 
 void ShowSetPwmDialog(void *e)
@@ -1098,7 +1107,7 @@ void ShowSetPwmDialog(void *e)
     comboRecord comboRec[] = {{0, {nullptr}}, {0, {nullptr}}, {0, {nullptr}}, {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
 
     NoCheckingOnBox[3] = true;
-    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, comboRec)) {
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), arraylen(labels), labels, 0x4, 0x3, 0x7, arraylen(dests), dests, arraylen(comboRec), comboRec)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -1135,7 +1144,7 @@ void ShowUartDialog(int which, ElemLeaf *l)
     char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
-    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
+    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), arraylen(labels), labels, 0x0, 0x1, 0x1, arraylen(dests), dests)) {
         e->bytes = std::max(1, std::min(SizeOfVar(e->name), static_cast<int>(hobatoi(bytes))));
         e->wait = hobatoi(wait) ? 1 : 0;
     };
@@ -1198,11 +1207,11 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     if((which == ELEM_NOT) || (which == ELEM_NEG)) {
         const char *labels[] = {_("Destination:="), l2};
         char *      dests[] = {dest, op1};
-        b = ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests);
+        b = ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x7, 0x7, arraylen(dests), dests);
     } else {
         const char *labels[] = {_("Destination:="), _("Operand1:"), l2};
         char *      dests[] = {dest, op1, op2};
-        b = ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
+        b = ShowSimpleDialog(title, arraylen(labels), labels, 0, 0x7, 0x7, arraylen(dests), dests);
     }
     NoCheckingOnBox[2] = false;
     if(b) {
@@ -1238,7 +1247,7 @@ void ShowStepperDialog(void *e)
     char snSize[128];
     sprintf(snSize, "%d", s->nSize);
     char *dests[] = {name, max, P, snSize, sgraph, coil + 1};
-    if(ShowSimpleDialog(title, 6, labels, 0, 0xff, 0xff, dests)) {
+    if(ShowSimpleDialog(title, 6, labels, 0, 0xff, 0xff, arraylen(dests), dests)) {
         s->graph = hobatoi(sgraph);
         s->nSize = hobatoi(snSize);
 
@@ -1402,7 +1411,7 @@ void ShowNPulseDialog(char *counter, char *targetFreq, char *coil)
 {
     const char *labels[] = {_("Counter var:"), _("Frequency (Hz):"), _("Pulse to:")};
     char *      dests[] = {counter, targetFreq, coil};
-    if(ShowSimpleDialog(_("Set N Pulse Cycle"), 3, labels, 0x2, 0x1, 0x7, dests)) {
+    if(ShowSimpleDialog(_("Set N Pulse Cycle"), arraylen(labels), labels, 0x2, 0x1, 0x7, arraylen(dests), dests)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -1448,7 +1457,7 @@ void ShowQuadEncodDialog(ElemLeaf *l)
         inputZ[1] = '\0';
     if(strlen(dir) <= 1)
         dir[1] = '\0';
-    if(ShowSimpleDialog(title, 7, labels, 0x20, 0xef, 0xff, dests)) {
+    if(ShowSimpleDialog(title, 7, labels, 0x20, 0xef, 0xff, arraylen(dests), dests)) {
         inputA[0] = 'X';
         inputB[0] = 'X';
         if(strlen(&inputZ[1]))
@@ -1515,7 +1524,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
         dests[0] = sovStr;
         dests[1] = valStr;
     }
-    if(ShowSimpleDialog(s, 2, labels, 0x3, 0x0, 0x3, dests)) {
+    if(ShowSimpleDialog(s, arraylen(labels), labels, 0x3, 0x0, 0x3, arraylen(dests), dests)) {
         sov = hobatoi(sovStr);
         if((sov <= 0) || ((io->type != IO_TYPE_STRING) && (sov > 4) && (io->type != IO_TYPE_BCD)) || ((io->type == IO_TYPE_BCD) && (sov > 10))) {
             Error(_("Not a reasonable size for a variable."));
@@ -1539,7 +1548,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 
     const char *labels[] = {_("Name:"), _("Stages:")};
     char *      dests[] = {name, stagesStr};
-    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x3, dests);
+    ShowSimpleDialog(_("Shift Register"), arraylen(labels), labels, 0x2, 0x1, 0x3, arraylen(dests), dests);
 
     *stages = hobatoi(stagesStr);
 
@@ -1557,7 +1566,7 @@ void ShowWrDialog(int which, ElemLeaf *l)
     sprintf(wait, "%d", e->wait);
     char *dests[] = {e->string, wait};
     //NoCheckingOnBox[0] = true;
-    if(ShowSimpleDialog(_("String Variable Over UART"), 2, labels, 0x2, 0x1, 0x3, dests)) {
+    if(ShowSimpleDialog(_("String Variable Over UART"), arraylen(labels), labels, 0x2, 0x1, 0x3, arraylen(dests), dests)) {
         e->wait = hobatoi(wait) ? 1 : 0;
     }
     //NoCheckingOnBox[0] = false;
@@ -1569,7 +1578,7 @@ void ShowFormattedStringDialog(char *var, char *string)
     char *      dests[] = {var, string};
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
-    ShowSimpleDialog(_("Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, dests);
+    ShowSimpleDialog(_("Formatted String Over UART"), arraylen(labels), labels, 0x0, 0x1, 0x3, arraylen(dests), dests);
     NoCheckingOnBox[0] = false;
     NoCheckingOnBox[1] = false;
 }
@@ -1581,7 +1590,7 @@ void ShowStringDialog(char *dest, char *var, char *string)
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
-    ShowSimpleDialog(_("Formatted String: sprintf(dest, frmtStr, var)"), 3, labels, 0x0, 0x0, 0x7, dests);
+    ShowSimpleDialog(_("Formatted String: sprintf(dest, frmtStr, var)"), arraylen(labels), labels, 0x0, 0x0, 0x7, arraylen(dests), dests);
     NoCheckingOnBox[0] = false;
     NoCheckingOnBox[1] = false;
     NoCheckingOnBox[2] = false;
@@ -1595,7 +1604,7 @@ void ShowFrmtStToCharDialog(ElemLeaf *l)
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;
-    if(ShowSimpleDialog(_("Formatted String To Char"), 3, labels, 0x0, 0x0, 0x7, dests)) {
+    if(ShowSimpleDialog(_("Formatted String To Char"), arraylen(labels), labels, 0x0, 0x0, 0x7, arraylen(dests), dests)) {
         //
     }
     NoCheckingOnBox[0] = false;
@@ -1603,55 +1612,25 @@ void ShowFrmtStToCharDialog(ElemLeaf *l)
     NoCheckingOnBox[2] = false;
 };
 
-void ShowCprintfDialog(int which, void *e)
+void ShowVarToCharDialog(ElemLeaf *l)
 {
-    /*
-    ElemFormattedString *f = (ElemFormattedString *)e;
-    char *               var = f->var;
-    char *               string = f->string;
-    char *               dest = f->dest;
-    char *               enable = f->enable;
-    char *               error = f->error;
-
-    const char *labels[] = {_("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:")};
-    char *      dests[] = {var, string, dest, enable, error};
-    const char *s;
-    // clang-format off
-    switch(which) {
-        case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
-        case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
-        case ELEM_FPRINTF:      s = "FPRINTF"; goto cprintf;
-        case ELEM_PRINTF:       s = "PRINTF"; goto cprintf;
-        case ELEM_I2C_CPRINTF:  s = "I2C_PRINTF"; goto cprintf;
-        case ELEM_ISP_CPRINTF:  s = "ISP_PRINTF"; goto cprintf;
-        case ELEM_UART_CPRINTF: s = "UART_PRINTF"; goto cprintf; {
-        cprintf:
-            break;
-        }
-        default: ooops("ELEM_0x%X", which);
+    ElemFormattedString *e = &(l->d.fmtdStr);
+    const char *         labels[] = {_("Dest Char:"), _("Variable:")};
+    char *dests[] = {e->dest, e->var};
+    //NoCheckingOnBox[0] = true;
+    //NoCheckingOnBox[1] = true;
+    if(ShowSimpleDialog(_("Variable To Char"), arraylen(labels), labels, 0x0, 0x3, 0x3, arraylen(dests), dests)) {
+        //
     }
-    // clang-format on
-    char str[MAX_NAME_LEN];
-    sprintf(str, _("Formatted String over %s"), s);
-    NoCheckingOnBox[0] = true;
-    NoCheckingOnBox[1] = true;
-    NoCheckingOnBox[2] = true;
-    NoCheckingOnBox[3] = true;
-    NoCheckingOnBox[4] = true;
-    ShowSimpleDialog(str, 5, labels, 0x0, 0x1c, 0xff, dests);
-    NoCheckingOnBox[0] = false;
-    NoCheckingOnBox[1] = false;
-    NoCheckingOnBox[2] = false;
-    NoCheckingOnBox[3] = false;
-    NoCheckingOnBox[4] = false;
-*/
-}
+    //NoCheckingOnBox[0] = false;
+    //NoCheckingOnBox[1] = false;
+};
 
 void ShowPersistDialog(char *var)
 {
     const char *labels[] = {_("Variable:")};
     char *      dests[] = {var};
-    ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
+    ShowSimpleDialog(_("Make Persistent"), arraylen(labels), labels, 0, 1, 1, arraylen(dests), dests);
 }
 
 void ShowPullUpDialog()

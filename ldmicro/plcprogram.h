@@ -46,7 +46,6 @@ struct PlcProgramSingleIo {
 #define IO_TYPE_MCU_REG         26 // 8bit register in/out data as McuIoInfo.dirRegs
 #define IO_TYPE_BCD             27 // unpacked, max 10 byte
 #define IO_TYPE_STRING          28
-//#define IO_TYPE_STRING_LITERAL  29
 #define IO_TYPE_TABLE_IN_FLASH  30 // max limited (size of flsh - progSize)
 #define IO_TYPE_VAL_IN_FLASH    31 //
 #define IO_TYPE_SPI_MOSI        32
@@ -107,7 +106,8 @@ class PlcProgram {
     uint8_t OPTION;                    // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
     int32_t   cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
-    int32_t   mcuClock;  // Hz
+    int32_t   mcuClock;  // Hz mcu frequency // SYSCLK for ARM cores.
+    int32_t   oscClock;  // Hz HSE_VALUE oscillator(external or internal) frequency for ARM cores.
     int32_t   baudRate;  // Hz
     int32_t   spiRate;   // Hz          Added by JG
     int32_t   i2cRate;   // Hz          Added by JG

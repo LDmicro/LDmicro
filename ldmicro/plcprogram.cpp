@@ -41,6 +41,7 @@ void PlcProgram::reset()
     numRungs = 0;
     cycleTime = 10000;
     mcuClock = 16000000;
+    oscClock = mcuClock;
     baudRate = 9600;
     spiRate = 1000000;
     i2cRate = 100000;
@@ -65,6 +66,7 @@ PlcProgram &PlcProgram::operator=(const PlcProgram &other)
 
     cycleTime = other.cycleTime;
     mcuClock = other.mcuClock;
+    oscClock = other.oscClock;
     baudRate = other.baudRate;
     cycleTimer = other.cycleTimer;
     cycleDuty = other.cycleDuty;

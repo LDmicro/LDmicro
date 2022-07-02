@@ -148,6 +148,8 @@ goto exit
 ;
 @rem =======================================================================
 :ARDUINO
+@SET LIB_PATH=%EXE_PATH%\LIBRARIES_FOR\ARDUINO
+
 :del /S D:\lds\ARDUINO_BUILD\*.*
 rm -r D:\lds\ARDUINO_BUILD
 mkdir D:\lds\ARDUINO_BUILD
@@ -167,6 +169,8 @@ copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
 copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
 @if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
+
+@if NOT EXIST %P3%\ARDUINO\%P4%\UsrLib.c copy %LIB_PATH%\*.* %P3%\ARDUINO\%P4%\ && copy %LIB_PATH%\PwmFrequency\*.* %P3%\ARDUINO\%P4%\
 :pause
 goto exit
 ;

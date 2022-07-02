@@ -104,7 +104,7 @@ static bool SaveAsDialog()
     } else {
         ProgramChangedNotSaved = false;
         RefreshControlsToSettings();
-        strcpy(CurrentCompileFile, "");
+        strcpy_s(CurrentCompileFile, "");
         return true;
     }
 }
@@ -323,7 +323,8 @@ void GetErrorMessage(DWORD err, LPTSTR lpszFunction)
 void IsErr(DWORD err, char *msg)
 {
     GetErrorMessage(err, msg);
-return;
+    return;
+/*
     const char *s;
     switch(err) {
         // clang-format off
@@ -336,6 +337,7 @@ return;
     }
     if(strlen(s))
         Error("Error: %d - %s in command line:\n\n%s", err, s, msg);
+*/
 }
 
 char *GetComspec(char *comspec, int size)
@@ -361,7 +363,7 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     char cmdLine[1024*3];
 #define VAR 2
 #if VAR == 1
-    sprintf(cmdLine, "%s %s", batchfile, batchArgs);
+    sprintf_s(cmdLine, "%s %s", batchfile, batchArgs);
     err = WinExec(cmdLine, nShowCmd); // If the function succeeds, the return value is greater than 31.
     if(err > 31)
         err = ERROR_SUCCESS;
@@ -373,7 +375,7 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
     GetComspec(comspec, sizeof(comspec));
 
   #if VAR == 2
-    sprintf(cmdLine, "/C \"%s %s\"", batchfile, batchArgs);
+    sprintf_s(cmdLine, "/C \"%s %s\"", batchfile, batchArgs);
 
     err = (DWORD) ShellExecute(NULL, NULL, comspec, cmdLine, NULL, nShowCmd);
     if(err > 32)
@@ -382,8 +384,8 @@ int Execute(char *batchfile, char *batchArgs, int nShowCmd)
         err = ERROR_NOT_ENOUGH_MEMORY;
     return err;
   #else
-    //sprintf(cmdLine, "/k \"\"a a a.bat\" 1 \"2 2\" \" \" \"4 4\" 5 \"", batchfile, batchArgs);
-    sprintf(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs);
+    //sprintf_s(cmdLine, "/k \"\"a a a.bat\" 1 \"2 2\" \" \" \"4 4\" 5 \"", batchfile, batchArgs);
+    sprintf_s(cmdLine, "/C \"\"%s\" %s\"", batchfile, batchArgs);
 
     TCHAR sysDir[MAX_PATH] = "";
     GetSystemDirectory(sysDir, MAX_PATH);
@@ -486,43 +488,55 @@ static void BuildAll(char *name, int ISA)
     char s[MAX_PATH];
     char r[MAX_PATH];
     char deviceName[64];
+    char tmp[MAX_PATH];
+    char tmp2[MAX_PATH];
 
     if(strlen(name) == 0) {
         Warning(_("Save ld before build."));
         return;
     }
-    if (!Prog.mcu()) return;
-    strcpy(deviceName, Prog.mcu()->deviceName);
+    if (!Prog.mcu())
+        return;
+    strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
     if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
-        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+        strcpy_s(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
     }
 
     if (ISA == ISA_AVR) {
-        sprintf(r, "%sbuildAvr.bat", ExePath);
+        sprintf_s(r, "%sbuildAvr.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution AVR"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
     }
     else if (ISA == ISA_PIC16) {
-        sprintf(r, "%sbuildPic16.bat", ExePath);
-        GetFileName(s, CurrentSaveFile);
-        // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+       if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
+            sprintf_s(r, "%sbuildPic16.bat", ExePath);
+            GetFileName(s, CurrentSaveFile);
+            // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+            Capture(_("Build Solution PIC16 HI TECH C"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
+        } else {
+            sprintf_s(r, "%sbuildCCS.bat", ExePath);
+            GetFileName(s, CurrentSaveFile);
+            // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
+            Capture(_("Build Solution PIC16 CCS C"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
+        }
     }
     else if (ISA == ISA_PIC18) {
-        sprintf(r, "%sbuildPic18.bat", ExePath);
+        sprintf_s(r, "%sbuildPic18.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        Capture(_("Build Solution PIC18"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", "", "");
     }
     else if (ISA == ISA_ARM) {
-        sprintf(r, "%sbuildArm.bat", ExePath);
+        sprintf_s(r, "%sbuildArm.bat", ExePath);
         GetFileName(s, CurrentSaveFile);
         // %0= batch_file, %1= project_path, %2= file_name, %3= target_name, %4= compiler_path, %5= prog_tool
-        Capture(_("Build Solution"), r, CurrentLdPath, s, _strlwr(deviceName), "",  "");
+        sprintf(tmp, "%d", Prog.oscClock);
+        sprintf(tmp2, "%d", Prog.mcuClock);
+        Capture(_("Build Solution ARM"), r, CurrentLdPath, s, _strlwr(deviceName), "", "", tmp, tmp2);
     }
 }
 
@@ -539,16 +553,16 @@ static void flashBat(char *name, int ISA)
     }
     if(!Prog.mcu())
         return;
-    strcpy(deviceName, Prog.mcu()->deviceName);
+    strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
     if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
-        strcpy(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
+        strcpy_s(deviceName, deviceName + 3); // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "%sflashMcu.bat", ExePath);
-    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "");
+    sprintf_s(r, "%sflashMcu.bat", ExePath);
+    Capture(_("Flash MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "", "", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -563,16 +577,16 @@ static void readBat(const char *name, int ISA)
     }
     if (!Prog.mcu())
         return;
-    strcpy(deviceName, Prog.mcu()->deviceName);
+    strcpy_s(deviceName, Prog.mcu()->deviceName);
 
     s[0] = '\0';
     SetExt(s, name, "");
     if (compile_MNU == MNU_COMPILE_HI_TECH_C) {
-        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
+        strcpy_s(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "%sreadMcu.bat", ExePath);
-    Capture(_("Read MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "");
+    sprintf_s(r, "%sreadMcu.bat", ExePath);
+    Capture(_("Read MCU"), r, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName), "", "", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -582,10 +596,10 @@ static void clearBat(int ISA)
     char deviceName[64];
 
     if (!Prog.mcu()) return;
-    strcpy(deviceName, Prog.mcu()->deviceName);
+    strcpy_s(deviceName, Prog.mcu()->deviceName);
 
-    sprintf(r, "%sclearMcu.bat", ExePath);
-    Capture(_("Clear MCU"), r, GetIsaName(ISA), _strlwr(deviceName), "", "", "");
+    sprintf_s(r, "%sclearMcu.bat", ExePath);
+    Capture(_("Clear MCU"), r, GetIsaName(ISA), _strlwr(deviceName), "", "", "", "", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -596,11 +610,11 @@ static void notepad(const char *path, const char *name, const char *ext)
 
     r[0] = '\0';
     if(path && strlen(path)) {
-        strcpy(r, path);
+        strcpy_s(r, path);
         if(path[strlen(path) - 1] != '\\')
-            strcat(r, "\\");
+            strcat_s(r, "\\");
     }
-    strcat(r, name);
+    strcat_s(r, name);
 
     s[0] = '\0';
     SetExt(s, r, ext);
@@ -609,7 +623,7 @@ static void notepad(const char *path, const char *name, const char *ext)
         Error(_("File does not exist: '%s'"), s);
         return;
     }
-    sprintf(r, "\"%snotepad.bat\" \"%s\"", ExePath, s);
+    sprintf_s(r, "\"%snotepad.bat\" \"%s\"", ExePath, s);
     IsErr(Execute(r, "", SW_SHOWMINIMIZED), r);
 }
 
@@ -622,20 +636,20 @@ static void notepad(const char *name, const char *ext)
 static void clearBat()
 {
     char LdName[MAX_PATH];
-    strcpy(LdName, ExtractFileName(CurrentSaveFile));
+    strcpy_s(LdName, ExtractFileName(CurrentSaveFile));
     SetExt(LdName, LdName, "");
 
     char CompileName[MAX_PATH];
-    strcpy(CompileName, ExtractFileName(CurrentCompileFile));
+    strcpy_s(CompileName, ExtractFileName(CurrentCompileFile));
     SetExt(CompileName, CompileName, "");
 
     char r[MAX_PATH];
 
-    sprintf(r, "%sclear.bat", ExePath);
+    sprintf_s(r, "%sclear.bat", ExePath);
     if(!ExistFile(r))
         return;
 
-    sprintf(r, "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath, CurrentLdPath, LdName, CurrentCompilePath, CompileName);
+    sprintf_s(r, "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath, CurrentLdPath, LdName, CurrentCompilePath, CompileName);
     IsErr(Execute(r, "", SW_SHOWMINIMIZED/*SW_SHOWMINNOACTIVE*/), r);
 }
 
@@ -646,7 +660,7 @@ static void postCompile(const char *MNU)
         return;
 
     char LdName[MAX_PATH];
-    strcpy(LdName, ExtractFileName(CurrentCompileFile));
+    strcpy_s(LdName, ExtractFileName(CurrentCompileFile));
     SetExt(LdName, LdName, "");
 
     if(!fsize(CurrentCompileFile)) {
@@ -654,21 +668,21 @@ static void postCompile(const char *MNU)
 
         remove(CurrentCompileFile);
         if(strstr(CurrentCompileFile, ".hex")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
+            sprintf_s(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
             remove(outFile);
         }
         if(strstr(CurrentCompileFile, ".c")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
+            sprintf_s(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
-            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
+            sprintf_s(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
             remove(outFile);
         }
         if(strstr(CurrentCompileFile, ".cpp")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
+            sprintf_s(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino");
+            sprintf_s(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino");
             remove(outFile);
-            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h");
+            sprintf_s(outFile, "%s%s", CurrentCompilePath, "ladder.h");
             remove(outFile);
         }
         return;
@@ -676,7 +690,7 @@ static void postCompile(const char *MNU)
 
     char r[MAX_PATH];
 
-    sprintf(r, "%spostCompile.bat", ExePath);
+    sprintf_s(r, "%spostCompile.bat", ExePath);
     if(!ExistFile(r))
         return;
 
@@ -684,7 +698,7 @@ static void postCompile(const char *MNU)
     if(Prog.mcu())
         ISA = GetIsaName(Prog.mcu()->whichIsa);
 
-    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
+    sprintf_s(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
     IsErr(Execute(r, "", SW_SHOWMINNOACTIVE), r);
 }
 
@@ -754,40 +768,40 @@ static void CompileProgram(bool compileAs, int MNU)
         }
 
         char onlyName[MAX_PATH];
-        strcpy(onlyName, ExtractFileName(CurrentSaveFile));
+        strcpy_s(onlyName, ExtractFileName(CurrentSaveFile));
         SetExt(onlyName, onlyName, "");
 
         if(strchr(onlyName, ' ')) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
             Error(_("ARDUINO: Space ' ' not allowed in '%s'\nRename file!"), CurrentSaveFile);
             return;
         }
         if(strchr(onlyName, '.')) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
             Error(_("ARDUINO: Dot '.' not allowed in '%s'\nRename file!"), CurrentSaveFile);
             return;
         }
         if(IsNumber(onlyName)) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
             Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"), onlyName[0], onlyName);
             return;
         }
 
-        strcpy(onlyName, ExtractFileName(CurrentCompileFile));
+        strcpy_s(onlyName, ExtractFileName(CurrentCompileFile));
         SetExt(onlyName, onlyName, "");
         if(strchr(onlyName, ' ')) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
         }
         if(strchr(onlyName, '.')) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
         }
         if(IsNumber(onlyName)) {
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentCompileFile, "");
             ProgramChangedNotSaved = true;
         }
     }
@@ -861,7 +875,7 @@ IsOpenAnable:
         if(!GetSaveFileName(&ofn))
             return;
 
-        strcpy(CurrentCompilePath, CurrentCompileFile);
+        strcpy_s(CurrentCompilePath, CurrentCompileFile);
         ExtractFileDir(CurrentCompilePath);
 
         // hex output filename is stored in the .ld file
@@ -884,6 +898,11 @@ IsOpenAnable:
     }
 
     if(SpiFunctionUsed()) {
+        if(Prog.mcu()->spiCount <= 0) {
+            Error(_("SPI functions are used but not supported for this MCU chip."));
+            return;
+        }
+        /*
         if((MNU != MNU_COMPILE_ARMGCC) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C)) {
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
@@ -891,12 +910,13 @@ IsOpenAnable:
 
         char deviceName[MAX_PATH] = "";
         if(Prog.mcu())
-            strcpy(deviceName, Prog.mcu()->deviceName);
+            strcpy_s(deviceName, Prog.mcu()->deviceName);
 
         if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
         }
+        */
     }
 
     if(I2cFunctionUsed()) {
@@ -907,7 +927,7 @@ IsOpenAnable:
 
         char deviceName[MAX_PATH] = "";
         if(Prog.mcu())
-            strcpy(deviceName, Prog.mcu()->deviceName);
+            strcpy_s(deviceName, Prog.mcu()->deviceName);
 
         if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC
             Error(_("I2C functions used but not supported for this micro or compile mode."));
@@ -1042,9 +1062,9 @@ static void OpenDialog()
     } else {
         ProgramChangedNotSaved = false;
         RefreshControlsToSettings();
-        strcpy(CurrentSaveFile, tempSaveFile);
+        strcpy_s(CurrentSaveFile, tempSaveFile);
         UndoFlush();
-        strcpy(CurrentCompileFile, "");
+        strcpy_s(CurrentCompileFile, "");
     }
 
     GenerateIoListDontLoseSelection();
@@ -1111,7 +1131,7 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 static void ProcessMenu(int code)
 {
     if(code >= MNU_PROCESSOR_0 && code < static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
-        strcpy(CurrentCompileFile, "");
+        strcpy_s(CurrentCompileFile, "");
         Prog.setMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
         LoadWritePcPorts();
         RefreshControlsToSettings();
@@ -1121,7 +1141,7 @@ static void ProcessMenu(int code)
     }
     if(code == static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         Prog.setMcu(nullptr);
-        strcpy(CurrentCompileFile, "");
+        strcpy_s(CurrentCompileFile, "");
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
         WhatCanWeDoFromCursorAndTopology();
@@ -1140,8 +1160,8 @@ static void ProcessMenu(int code)
             if(CheckSaveUserCancels())
                 break;
             NewProgram();
-            strcpy(CurrentSaveFile, "");
-            strcpy(CurrentCompileFile, "");
+            strcpy_s(CurrentSaveFile, "");
+            strcpy_s(CurrentCompileFile, "");
             GenerateIoListDontLoseSelection();
             RefreshScrollbars();
             UpdateMainWindowTitleBar();
@@ -1211,7 +1231,7 @@ static void ProcessMenu(int code)
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "c");
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "h");
             char ladderhName[MAX_PATH];
-            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            sprintf_s(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
             notepad(ladderhName, "h");
             break;
         }
@@ -1220,7 +1240,7 @@ static void ProcessMenu(int code)
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".cpp");
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".h");
             char ladderhName[MAX_PATH];
-            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            sprintf_s(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
             notepad(ladderhName, ".h");
             break;
         }
@@ -1385,23 +1405,19 @@ static void ProcessMenu(int code)
         case MNU_INSERT_FMTD_STRING:
             CHANGING_PROGRAM(AddFormattedString());
             break;
+
         case MNU_INSERT_FRMT_STR_TO_CHAR:
             CHANGING_PROGRAM(AddFrmtStrToChar());
             break;
+
+        case MNU_INSERT_VAR_TO_CHAR:
+            CHANGING_PROGRAM(AddVarToChar());
+            break;
+
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
             break;
-            /*
-        case ELEM_CPRINTF:
-        case ELEM_SPRINTF:
-        case ELEM_FPRINTF:
-        case ELEM_PRINTF:
-        case ELEM_I2C_CPRINTF:
-        case ELEM_ISP_CPRINTF:
-        case ELEM_UART_CPRINTF:
-            CHANGING_PROGRAM(AddPrint(code));
-            break;
-*/
+
         case MNU_INSERT_OSR:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
             break;
@@ -1505,15 +1521,7 @@ static void ProcessMenu(int code)
         case MNU_INSERT_UART_RECV:
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
             break;
-            /*
-        case MNU_INSERT_UART_SENDn:
-            CHANGING_PROGRAM(AddUart(ELEM_UART_SENDn));
-            break;
 
-        case MNU_INSERT_UART_RECVn:
-            CHANGING_PROGRAM(AddUart(ELEM_UART_RECVn));
-            break;
-*/
         case MNU_INSERT_UART_SEND_READY:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_READY));
             break;
@@ -2050,7 +2058,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             PrevWriteTime = LastWriteTime;
 
             char buf[1024];
-            sprintf(buf,
+            sprintf_s(buf,
                     _("File '%s' modified by another application.\r\n"
                       "Its disk timestamp is newer than the editor one.\n"
                       "Reload from disk?"),
@@ -2514,8 +2522,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                                 break;
                         }
                         NewProgram();
-                        strcpy(CurrentSaveFile, "");
-                        strcpy(CurrentCompileFile, "");
+                        strcpy_s(CurrentSaveFile, "");
+                        strcpy_s(CurrentCompileFile, "");
                         GenerateIoListDontLoseSelection();
                         RefreshScrollbars();
                         UpdateMainWindowTitleBar();
@@ -3054,7 +3062,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MainWindowResized();
 
         NewProgram();
-        strcpy(CurrentSaveFile, "");
+        strcpy_s(CurrentSaveFile, "");
 
         // Check if we're running in non-interactive mode; in that case we should
         // load the file, compile, and exit.
@@ -3104,7 +3112,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
-            strcpy(CurrentCompileFile, dest);
+            strcpy_s(CurrentCompileFile, dest);
             GenerateIoList(-1);
             CompileProgram(false, compile_MNU);
             doexit(EXIT_SUCCESS);
@@ -3133,7 +3141,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
-            strcpy(CurrentSaveFile, source);
+            strcpy_s(CurrentSaveFile, source);
             char *s;
             GetFullPathName(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
 
@@ -3142,7 +3150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 dest++;
             }
             if(*dest != '\0') {
-                strcpy(exportFile, dest);
+                strcpy_s(exportFile, dest);
             } else {
                 exportFile[0] = '\0';
                 SetExt(exportFile, source, "txt");
@@ -3160,15 +3168,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if(strlen(lpCmdLine) > 0) {
             char line[MAX_PATH];
             if(*lpCmdLine == '"') {
-                strcpy(line, lpCmdLine + 1);
+                strcpy_s(line, lpCmdLine + 1);
             } else {
-                strcpy(line, lpCmdLine);
+                strcpy_s(line, lpCmdLine);
             }
             if(strchr(line, '"'))
                 *strchr(line, '"') = '\0';
 
             if(!strchr(line, '.'))
-                strcat(line, ".ld");
+                strcat_s(line, ".ld");
 
             char *s;
             GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
@@ -3220,7 +3228,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Prog.setMcu(nullptr);
         srand((unsigned int)time(nullptr));
         char fname[20];
-        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        sprintf_s(fname, "tmpfile_%4.4d.ld", rand() % 10000);
         SaveProjectToFile(fname, MNU_SAVE_02);
         return EXIT_FAILURE;
     } catch(...) {
@@ -3230,7 +3238,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Prog.setMcu(nullptr);
         srand((unsigned int)time(nullptr));
         char fname[20];
-        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        sprintf_s(fname, "tmpfile_%4.4d.ld", rand() % 10000);
         SaveProjectToFile(fname, MNU_SAVE_02);
         /////
 

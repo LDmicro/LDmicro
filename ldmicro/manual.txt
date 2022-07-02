@@ -306,6 +306,22 @@ LDmicro used the C prefixes:
 0b__ or 0B__ for binary numbers with 01 digits.
 Hexadecimals, binary notation is more comfortable for bitwise oparetions.
 
+All LDmicro variables are stored in memory in "little-endian" order.
+See https://en.wikipedia.org/wiki/Endianness
+For example, hexadecimal 0x04030201 = decimal 67305985 value stored
+in RAM or ROM as sequence of bytes 01 02 03 04.
+RAM[addr+0] = 01
+RAM[addr+1] = 02
+RAM[addr+2] = 03
+RAM[addr+3] = 04
+Strings are stored in direct order.
+For example, string "Hello" is stored:
+RAM[addr+0] = 'H'
+RAM[addr+1] = 'e'
+RAM[addr+2] = 'l'
+RAM[addr+3] = 'l'
+RAM[addr+4] = 'o'
+
 At the bottom of the screen you will see a list of all the objects in
 the program. This list is automatically generated from the program;
 there is no need to keep it up to date by hand. Most objects do not
@@ -400,12 +416,16 @@ INSTRUCTIONS REFERENCE
 ======================
 
     Terminology:
-    "Level sensitive" = output(element) controlled by the level of the input.
+    "Level sensitive" = output(instruction) is controlled by the level of the input.
     "Edge triggered" = output changes only at the point in time when the input
     changes from value to the other. Can be positive edge-triggered (0 to 1)
     (rising), or negative edge-triggered (1 to 0)(falling).
-    Most elements of LDmicro are "Level sensitive", some elements are
-    "positive edge-triggered" or "negative edge-triggered".
+    Most LDmicro instructions are "Level sensitive", they are completed
+    at one current PLC cycle (all arithmetic and bitwise instructions,
+    all comparison instructions, etc).
+    Some instruction are "positive edge-triggered" (OSR, ODR,
+    FORMATTED STRING OVER UART, FORMATTED STRING TO CHAR, VARIABLE TO CHAR, etc)
+    or "negative edge-triggered" (OSF, ODF).
 
 > CONTACT, NORMALLY OPEN        Xname           Rname          Yname
                              ----] [----     ----] [----    ----] [----
@@ -497,7 +517,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     R, S, T inputs lock up (latch) the state of output.
     The T input is positive edge triggered. R, S inputs are level sensitive.
     If before R, S insert the "OSR: ONE-SHOT RISING" or
-    "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" element.
+    "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" instruction.
     If used only the R and S inputs you get classic RS-trigger.
     If add T input you get "newest" RST-trigger. May be several R..R inputs,
     or several S..S inputs. You can use any combination of inputs for one 'YName'
@@ -992,7 +1012,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                                                                    ||
    ||                                                          Y1        ||
    ||----+      +----------------------------------------------( )-------||
-   || ; COIL element always set output according to it input.            ||
+   || ; COIL instruction always set output according to it input.        ||
    || ; Y1 is 0 now.                                                     ||
    ||                                                                    ||
    ||                                                          Y1        ||
@@ -1349,7 +1369,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                                                               ||
 
     Updated in release 4.4.1.0
-    Kind of inputs of ladder elements
+    Kind of inputs of ladder instructions
     https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
 
    ||                               ||
@@ -1575,6 +1595,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     good for a limited (~100 000) number of writes. When the rung-in
     condition is false, nothing happens. This instruction must be the
     rightmost instruction in its rung.
+    The MAKE PERSISTENT instruction is available with
+    variables of 1,2,3,4 bytes size.
+
 
     See https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
 
@@ -1600,7 +1623,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                            --{UART SEND}--
 
     LDmicro can generate code to use the UARTs built in to certain
-    microcontrollers. On AVRS with multiple UARTs only UART1 (not
+    microcontrollers. On AVR's with multiple UARTs only UART1 (not
     UART0) is supported. Configure the baud rate using Settings -> MCU
     Parameters. Certain baud rates may not be achievable with certain
     crystal frequencies; LDmicro will warn you if this is the case.
@@ -1736,9 +1759,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     See: UART communication FAQ part 2
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ-part-2
 
-    Investigate the formatted string instruction (next) before using this
-    instruction. The formatted string instruction is much easier to use,
-    and it is almost certainly capable of doing what you want.
+    Investigate the FORMATTED STRING OVER UART instruction (see below) before
+    using this instruction. The FORMATTED STRING OVER UART instruction
+    is much easier to use, and it is almost certainly capable of doing what you want.
 
     See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
 
@@ -1749,7 +1772,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     If the input condition to this instruction is false, then nothing
     happens. If the input condition is true then this instruction writes
     a variable to the UART in raw binary format. One byte sends per cycle
-    of PLC, like 'FORMATTED STR OVER UART' element. The output condition
+    of PLC, like 'FORMATTED STRING OVER UART' instruction. The output condition
     of the rung is true if the UART is busy (currently transmitting a
     variable), and false otherwise.
 
@@ -1761,6 +1784,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     happens. If the input condition is true, then  output is true
     when transmit buffer is empty and ready to loading new data,
     and false otherwise.
+    Use this instruction before the UART SEND instruction.
 
 
 > UART RECV: Is avail ?       Is avail?
@@ -1769,10 +1793,16 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     If the input condition to this instruction is false, then nothing
     happens. If the input condition is true, then  output is true when
     there are unread data in the receive buffer, and false otherwise.
+    Use this instruction before the UART RECV instruction.
 
 
-> FORMATTED STRING OVER UART                var
-                                   -{"Pressure: \3\r\n"}-
+> FORMATTED STRING OVER UART             var
+                               -{"Pressure: \3\r\n"}-
+
+    The graphical view of the instruction has been changed in release 5.4.2.0 to
+
+                         {FRMT STR OVER UART             }
+                        -{"value: \3\r\n",            var}-
 
     LDmicro can generate code to use the UARTs built in to certain
     microcontrollers. On AVRS with multiple UARTs only UART1 (not
@@ -1859,21 +1889,38 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     | 15  0f  ^O  SI   shift in             | 31  1f  ^_  US   unit separator
 
 
-> FORMATTED STRING TO CHAR          {FRMT STR TO CHAR         char:=}
-                                   -{"1.value:\-3\r\n",          var}-
+> FORMATTED STRING TO CHAR          {FRMT STR TO CHAR   char:=}
+                                   -{"value:\-3\r\n",      var}-
 
-    This element based on FORMATTED STRING OVER UART internal code, but it puts
-    one char per cycle into the general variable "char" instead of UART.
-    Then "char" variable may send to UART or I2C or SPI etc.
+    This instruction is an iterator for each char of the resulted formatted string.
+    This instruction is based on FORMATTED STRING OVER UART internal code, but it puts
+    one char per PLC cycle into the general variable "char" instead of UART.
+    Then the "char" variable may be sent to UART or I2C or SPI etc.
+    Char is the destination, var is the parameter for string, both are general variables.
+    Char size must be 1 byte.
 
-    Note: The baud rate of UART, I2C, SPI must be able to transmit one character
-    per one PLC cycle fully. There is no method to apply the brake(slow down)
-    inside the FORMATTED STRING TO CHAR element.
+    This instruction is rising edge-triggered.
+    When the rung-in condition for this instruction goes from false to true,
+    it starts to push the string to the char variable.
+    The rung-out condition of this instruction is true while it
+    pushes data, else false(as busy flag).
 
-    These two rungs are equivalent, they alternately send the "var" variable
-    to the UART repetitively.
-    The variable "var" is incremented after printing two lines. You may try
-    to use SPI SEND/RECEIVE or I2C WRITE instead of UART SEND in rung 1.
+                        _ _ _ _    _ _ _
+    Input condition:  _/ \_____\__/_____\______________________________
+
+    Value of Var:      -12(for example)
+    String:            "value:\-3\r\n",  N is length of formatted string
+
+    Char variable:      str[0] str[1] str[2] str[3] .......... str[N]
+    Char variable:     'v'     'a'    'l'    'u'    "e:- 12\r" '\n'
+                        _____________________________________________
+    Output condition: _/                   busy state                \_
+    PLC cycles:         X      X+1    X+2    X+3               X+N
+
+    Example:
+    These two rungs are equivalent, they alternately send the formatted string
+    with "var" variable as parameter to the UART repetitively.
+    The variable "var" is incremented after printing two lines.
    ||                                                                            ||
    ||    Rbusy2    {FRMT STR TO CHAR   char:=}       char            Rbusy1      ||
   1||------]/[-----{"1.value:\-3\r\n",    var}----{UART SEND}----------( )-------||
@@ -1896,10 +1943,72 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     2.value:   2
 
     1.value:   3
-    2.value:   3
+    2.value:   3 etc
+    You may try to use SPI SEND/RECEIVE or I2C WRITE instead of UART SEND in rung 1.
+
+    Note: The baud rate of UART, I2C, SPI must be able to fully transmit one character
+    per one PLC cycle. There is no method to slow down or apply brake on data dispatch
+    inside the FORMATTED STRING TO CHAR instruction.
 
 
-> SPI SEND / RECEIVE            {SPI       SPI}
+> VARIABLE TO CHAR              {VAR TO CHAR   }
+                               -{char:=     var}-
+
+    Var is the source, char is the destination.
+    This instruction is an iterator for each byte/word of the var variable.
+    This instruction processes variable piece by piece(byte after byte).
+    It is needed if the size of the var variable is bigger then the size of the work data
+    of a hardware function of MCU, like UART, SPI, I2C, PORT etc.
+    So this instruction is only meaningful if the size of var variable is bigger
+    than the size of char variable.
+    Size of char can be byte or word(2 bytes), because
+    some SPI may transmite 2 bytes(16 bits) per times.
+    VARIABLE TO CHAR takes bytes from var and puts them into char one byte per PLC cycle.
+
+    This instruction is rising edge-triggered.
+    When the rung-in condition for this instruction goes from false to true,
+    it starts to put bytes of var into the char variable.
+    The rung-out condition of this instruction is true while it
+    pushes data, else false(as busy flag).
+
+    LDmicro variables are stored in memory in "little-endian" order.
+    See https://en.wikipedia.org/wiki/Endianness
+
+    For example, var variable stores hexadecimal 0x04030201 = decimal 67305985 value.
+
+    PLC cycles:         X      X+1    X+2    X+3
+    Value of Var:       0x04030201 = 67305985
+                        _ _ _ _    _ _ _
+    Input condition:  _/ \_____\__/_____\__________
+
+    Char variable:      var[0] var[1] var[2] var[3]
+    Char variable:      0x01   0x02   0x03   0x04
+                        __________________________
+    Output condition: _/         busy state       \_
+
+   ||                                                   ||
+   ||     Rbusy1      {VAR TO CHAR   }      Rbusy1      ||
+  1||-------]/[-------{char:=     var}--------( )-------||
+   ||                                                   ||
+   ||                                                   ||
+   ||     Rbusy1            char                        ||
+  2||-------] [----------{UART SEND}--                  ||
+   ||                                                   ||
+    The UART output is:
+     0x01
+     0x02
+     0x03
+     0x04
+     0x01 ;start to work again
+     0x02 ;etc
+    You may try to use SPI SEND/RECEIVE or I2C WRITE instead of UART SEND in rung 2.
+
+    Note: The baud rate of UART, I2C, SPI must be able to fully transmit one character
+    per one PLC cycle. There is no method to slow down or apply brake on data dispatch
+    inside the VARIABLE TO CHAR instruction.
+
+
+> SPI SEND/RECEIVE              {SPI       SPI}
                                -{->recv send->}-
 
     SPI functions are only available in 'C' mode, that is via C compiling,
@@ -1907,10 +2016,11 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     in a same ladder, called SPI, or SPI1, SPI2, SPI3 when there are several
     available on the micro. SPI works only in master mode, 8 bits of data, with
     MSB first, and its frequency is set in the configuration panel of the micro
-    in ldmicro. SS pin is handled for AVR but not for ARM. One can use external
+    in LDmicro. SS pin is handled for AVR but not for ARM. One can use external
     pins to activate / deactivate the slaves on SPI bus, and / or SS pin.
     In a SPI, sending and receiving are simultaneous, that's why both operations
     are combined in only one function.
+    The rung-out condition of this instruction is always equal to the rung-in.
 
 
 > SPI WRITE                     {SPI_WR     SPI}
@@ -1923,7 +2033,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     NB:
     SPI functions use external C libraries (furnished) which must be compiled
-    with the main C program generated by ldmicro when compiling via ldmicro menus
+    with the main C program generated by LDmicro when compiling via LDmicro menus
     < Compile Atmel AVR-GCC > or < Compile ARM-GCC >, followed by a < FlashMCU >
     command to build the .hex executable, and, if well configured, load this
     executable into the AVR or ARM target.
@@ -1948,32 +2058,37 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     NB:
     I2C functions use external C libraries (furnished) which must be compiled
-    with the main C program generated by ldmicro when compiling via ldmicro menus
+    with the main C program generated by LDmicro when compiling via LDmicro menus
     < Compile Atmel AVR-GCC > or < Compile ARM-GCC >, followed by a < FlashMCU >
     command to build the .hex executable, and, if well configured, load this
     executable into the AVR or ARM target.
 
 
-> FORMATTED STRING                          dest
-                                       -{"string", var}-
+> FORMATTED STRING                       dest
+                                    -{"string", var}-
 
-    For targets like Netzer with already present printf implementations
-    this instruction can be used.
+    The graphical view of the instruction has been changed in release 5.4.2.0 to
+
+                             {C FRMT STR               dest:=}
+                            -{"C frmt string",            var}-
+
+    For C compilers or targets like Netzer with already present
+    printf()/sprintf() implementations this instruction can be used.
 
     When the rung-in condition for this instruction goes from false to
     true, it starts to process the string with printf and writes the result
-    to the given dest register.
+    to the given dest string(register).
 
-    It completly embeds the given string into the resulting image.
+    It completly embeds the given string into the resulting string(image).
 
     The given variable can be any register from the program. It is
-    used as placeholder for printf. The printf function accesses
-    the register if any printf style placeholder (i.e. %d) is found.
+    used as placeholder for C printf(). The printf() function accesses
+    the register if any printf() style placeholder (i.e. %d) is found.
 
-    Dest is a register where the result is written to. This should
+    Dest is a string(register) where the result is written to. This should
     be the top entry of a fifo or circular buffer.
 
-    The rung-out condition of this instruction is always true.
+    The rung-out condition of this instruction is always equal to the rung-in.
 
 
 > CLRWDT
@@ -2567,3 +2682,4 @@ LDmicro support:
     Latest release: https://github.com/LDmicro/LDmicro/releases
     Repository:     https://github.com/LDmicro/LDmicro
     Email:          LDmicro.GitHub@gmail.com
+

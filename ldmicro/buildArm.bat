@@ -22,12 +22,17 @@
 :: %3 = target_name
 :: %4 = compiler_path
 :: %5 = prog_tool
+:: %6 = Prog.oscClock
+:: %7 = Prog.mcuClock
 
 @echo Running script = %0
 @echo Working dir = %1
 @echo File name = %2
 @echo Target name = %3
+@echo Prog.oscClock = %~6 Hz
+@echo Prog.mcuClock = %~7 Hz
 @echo ...
+::@pause
 
 @rem %~d0 = Drive in full name
 @rem %~p0 = Path in full name
@@ -68,14 +73,14 @@ goto NOT_SUPPORTED
 :STM32F4
 
 @rem Compile libraries
-arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM4.S -o ARMGCC\obj\cortexM4.o
+arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM4.S -o ARMGCC\obj\cortexM4.o -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 
 CD ARMGCC\lib
-FOR %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+FOR %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 CD ..\..
 
 @rem Compile main file
-arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c "%~nx2.c" -o "ARMGCC\obj\%~n2.o"
+arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c "%~nx2.c" -o "ARMGCC\obj\%~n2.o" -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 
 @rem Link object files
 arm-none-eabi-gcc.exe -o "ARMGCC\bin\%~nx2.elf" ARMGCC\obj\*.o -Wl,-Map -Wl,"ARMGCC\bin\%~nx2.elf.map" -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m4 -mthumb -TARMGCC\lib\CortexM4.ln
@@ -89,20 +94,20 @@ arm-none-eabi-objcopy -O ihex "ARMGCC\bin\%~nx2.elf" "ARMGCC\bin\%~nx2.hex"
 @echo go >> ARMGCC\bin\cmdfile.jlink
 @echo exit >> ARMGCC\bin\cmdfile.jlink
 
-@GOTO END
+@GOTO PROTEUS
 
 
 :STM32F1
 
 @rem Compile libraries
-arm-none-eabi-g++.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o
+arm-none-eabi-g++.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 
 CD ARMGCC\lib
-FOR %%F in (*.c) do arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+FOR %%F in (*.c) do arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 CD ..\..
 
 @echo Compile main file
-arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c "%~n2.c" -o "ARMGCC\obj\%~n2.o"
+arm-none-eabi-gcc.exe -O0 -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c "%~n2.c" -o "ARMGCC\obj\%~n2.o" -D HSE_VALUE=%~6 -D SYSCLK_VALUE=%~7
 
 @echo Link object files
 arm-none-eabi-gcc.exe -o "ARMGCC\bin\%~nx2.elf" ARMGCC\obj\*.o -Wl,-Map -Wl,"ARMGCC\bin\%~nx2.elf.map" -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
@@ -110,6 +115,7 @@ arm-none-eabi-gcc.exe -o "ARMGCC\bin\%~nx2.elf" ARMGCC\obj\*.o -Wl,-Map -Wl,"ARM
 @echo Convert Elf to Hex
 arm-none-eabi-objcopy -O ihex "ARMGCC\bin\%~nx2.elf" "ARMGCC\bin\%~nx2.hex"
 
+:PROTEUS
 @echo off
 :mkdir PROTEUS
 if not exist PROTEUS goto skipPROTEUS
@@ -117,8 +123,9 @@ del PROTEUS\*.hex  > nul
 del PROTEUS\*.elf  > nul
 del PROTEUS\*.cof  > nul
 REM Copy source code for debugging in Proteus
-copy ARMGCC\lib\*.h PROTEUS > nul
-copy ARMGCC\lib\*.c PROTEUS > nul
+::copy ARMGCC\lib\*.h PROTEUS > nul
+::copy ARMGCC\lib\*.c PROTEUS > nul
+copy ARMGCC\lib\*.* PROTEUS > nul
 copy *.h PROTEUS > nul
 copy *.c PROTEUS > nul
 copy ARMGCC\BIN\*.hex PROTEUS > nul

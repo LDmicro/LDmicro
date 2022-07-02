@@ -29,6 +29,7 @@
 static HWND ConfDialog;
 
 static HWND CrystalTextbox;
+static HWND OscTextbox;
 static HWND ConfigBitsTextbox;
 static HWND CycleTextbox;
 static HWND TimerTextbox;
@@ -38,6 +39,7 @@ static HWND RateTextbox;
 static HWND SpeedTextbox;
 
 static LONG_PTR PrevCrystalProc;
+static LONG_PTR PrevOscProc;
 static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
@@ -60,6 +62,8 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     LONG_PTR t;
     if(hwnd == CrystalTextbox)
         t = PrevCrystalProc;
+    else if(hwnd == OscTextbox)
+        t = PrevOscProc;
     else if(hwnd == ConfigBitsTextbox)
         t = PrevConfigBitsProc;
     else if(hwnd == CycleTextbox)
@@ -90,6 +94,12 @@ static void MakeControls()
 
     CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 185, 42, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CrystalTextbox);
+
+    HWND OscLabel = CreateWindowEx(0, WC_STATIC, _("OSC Freq.(MHz):"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 255, 42, 120, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(OscLabel);
+
+    OscTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "", WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE, 370, 42, 75, 21, ConfDialog, nullptr, Instance, nullptr);
+    NiceFont(OscTextbox);
 
     HWND TimerLabel = CreateWindowEx(0, WC_STATIC, _("Timer0|1:"), WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT, 255, 13, 70, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(TimerLabel);
@@ -145,12 +155,19 @@ static void MakeControls()
         EnableWindow(textLabel6, false);
     }
 
+    EnableWindow(CrystalTextbox, false);
+    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_ARM))
+    {
+        EnableWindow(CrystalTextbox, true);
+    }
+
     // clang-format off
     if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_INTERPRETED ||
                       Prog.mcu()->whichIsa == ISA_XINTERPRETED ||
                       Prog.mcu()->whichIsa == ISA_NETZER))
     {
         EnableWindow(CrystalTextbox, false);
+        EnableWindow(OscTextbox, false);
         EnableWindow(textLabel2, false);
     }
     // clang-format on
@@ -230,7 +247,12 @@ static void MakeControls()
         if(Prog.mcu() && Prog.mcu()->uartNeeds.rxPin != 0) {
             sprintf(txt, _("Serial (UART) will use pins %d(RX) and %d(TX).\r\n"), Prog.mcu()->uartNeeds.rxPin, Prog.mcu()->uartNeeds.txPin);
             strcat(explanation, txt);
-            strcat(explanation, _("Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n\r\n"));
+            strcat(explanation, _("Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n"));
+            double t = CalcUartPeriod(Prog.baudRate, 1, 8, 0, 1);
+            char   SI[10];
+            t = SIprefix(t, SI);
+            sprintf(txt, _("UART frame transmission time: %.3f %ss.\r\n\r\n"), t, SI);
+            strcat(explanation, txt);
         } else {
             strcat(explanation, _("Please select a micro with a UART.\r\n\r\n"));
         }
@@ -282,6 +304,7 @@ static void MakeControls()
 
     PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
+    PrevOscProc = SetWindowLongPtr(OscTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevConfigBitsProc = SetWindowLongPtr(ConfigBitsTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
     PrevRateProc = SetWindowLongPtr(RateTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
@@ -308,6 +331,9 @@ void ShowConfDialog()
 
     sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
+    sprintf(buf, "%.6f", Prog.oscClock / 1e6); //Hz show as MHz
+    SendMessage(OscTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     if(!Prog.configurationWord) {
         if(Prog.mcu())
@@ -384,12 +410,15 @@ void ShowConfDialog()
             Prog.cycleDuty = 0;
         }
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
-        ///// Added by JG:  convert '.' to ',' for atof()
         for(size_t i = 0; i < strlen(cancel_buf); i++)
             if(cancel_buf[i] == '.')
                 cancel_buf[i] = ',';
-        /////
         Prog.mcuClock = (int)(1e6 * atof(cancel_buf) + 0.5);
+        SendMessage(OscTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
+        for(size_t i = 0; i < strlen(cancel_buf); i++)
+            if(cancel_buf[i] == '.')
+                cancel_buf[i] = ',';
+        Prog.oscClock = (int)(1e6 * atof(cancel_buf) + 0.5);
 
         SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(cancel_buf), (LPARAM)(cancel_buf));
 
@@ -413,6 +442,11 @@ void ShowConfDialog()
         if(Prog.mcuClock <= 0) {
             Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));
             Prog.mcuClock = 16000000; //16 MHz
+        }
+
+        if(Prog.oscClock <= 0) {
+            Error(_("Zero oscillator frequency not valid; resetting to 16 MHz."));
+            Prog.oscClock = 16000000; //16 MHz
         }
 
         if(Prog.mcu() && (ProgCycleTime > 0)) {

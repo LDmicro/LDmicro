@@ -423,7 +423,7 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
     };
 
     char fname[MAX_PATH];
-    sprintf(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
+    sprintf_s(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
     FileTracker f = FileTracker(fname, "w");
 
     double k;

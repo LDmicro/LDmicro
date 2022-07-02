@@ -345,8 +345,8 @@ const char *IoTypeToString(int ioType)
         case IO_TYPE_SPI_MISO:          return _("SPI MISO");
         case IO_TYPE_SPI_SCK:           return _("SPI SCK");
         case IO_TYPE_SPI__SS:           return _("SPI _SS");
-        case IO_TYPE_I2C_SCL:           return _("I2C SCL");             
-        case IO_TYPE_I2C_SDA:           return _("I2C SDA");             
+        case IO_TYPE_I2C_SCL:           return _("I2C SCL");
+        case IO_TYPE_I2C_SDA:           return _("I2C SDA");
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
         case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
@@ -403,8 +403,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
        || type == IO_TYPE_SPI_MISO   //
        || type == IO_TYPE_SPI_SCK    //
        || type == IO_TYPE_SPI__SS    //
-       || type == IO_TYPE_I2C_SCL    //       
-       || type == IO_TYPE_I2C_SDA    //     
+       || type == IO_TYPE_I2C_SCL    //
+       || type == IO_TYPE_I2C_SDA    //
        || type == IO_TYPE_READ_ADC)  //
     {
         if(pin == NO_PIN_ASSIGNED) {
@@ -419,7 +419,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-				if(PwmFunctionUsed() && Prog.mcu()) {
+                if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(portName, _("<PWM needs!>"));
                         return;
@@ -450,7 +450,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-				if(PwmFunctionUsed() && Prog.mcu()) {
+                if(PwmFunctionUsed() && Prog.mcu()) {
                     if(Prog.mcu()->pwmNeedsPin == pin) {
                         strcpy(pinName, _("<PWM needs!>"));
                         return;
@@ -530,7 +530,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             strcpy(dest, _("<no PWM!>"));
         } else {
             /*
-			if(pin == 0) {
+            if(pin == 0) {
                 pin = Prog.mcu()->pwmNeedsPin;
                 io->pin = pin;
             }
@@ -961,4 +961,9 @@ void getResolution(const char *s, int *resol, int *TOP)
             *TOP = 0xFF;
         }
     }
+}
+
+double CalcUartPeriod(int baudRate, int start, int data, int parity, int stop) // Bd, bits
+{
+    return 1.0 * (start + data + parity + stop) / baudRate;
 }

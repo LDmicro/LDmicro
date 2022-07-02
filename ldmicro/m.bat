@@ -445,17 +445,22 @@ rem @SET PROGECT=D:\LDs\errors\01\01.ld
 @SET PROGECT=D:\lds\VAR_TO_CHAR\send.ld
 @SET PROGECT=d:\lds\UARTs\hello.ld
 
-@SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV_877.ld
-@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt_877.ld
-
 @SET PROGECT=D:\lds\SINUS_AMPLITUDE\sinus_amplitude.ld
 
 @SET PROGECT=D:\lds\VAR_TO_CHAR\var_to_char_uart_SEND.ld
 @SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV.ld
 @SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt.ld
 
+@SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV_877.ld
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt_877.ld
+
+@SET PROGEC2=D:\lds\VAR_TO_CHAR\var_to_char_uart_RECV_4520.ld
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\frmt_4520.ld
+
 @SET PROGEC2=D:\lds\VAR_TO_CHAR\r_32f10x.ld
 @SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\f_32f10x.ld
+
+@SET PROGECT=D:\lds\FRMT_STR_TO_CHAR\f_32f40x.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
@@ -493,15 +498,15 @@ if "%1" == "" goto DO_BUILD
 ::@nmake LDLANG=LDLANG_TR %*
 ::@nmake LDLANG=LDLANG_DE %*
 ::@nmake LDLANG=LDLANG_FR %*
-::@nmake LDLANG=LDLANG_ES %*
+@nmake LDLANG=LDLANG_ES %*
 ::@nmake LDLANG=LDLANG_IT %*
-@nmake LDLANG=LDLANG_EN %*
+::@nmake LDLANG=LDLANG_EN %*
 
 @echo off
 @del ldinterpret.exe
 @del ldxinterpret.exe
 @if not exist ldmicro.exe goto EXIT
-start ldmicro.exe %PROGEC2%
+::start ldmicro.exe %PROGEC2%
 start ldmicro.exe %PROGECT%
 goto EXIT
 

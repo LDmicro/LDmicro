@@ -70,11 +70,10 @@ PATH %GCC_PATH%\BIN;%PATH%
 
 @rem Compile libraries
 :: %4\avr-gcc.exe -I%1 -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\UsrLib.d -MT AVRGCC\obj\UsrLib.d -MT AVRGCC\obj\UsrLib.o %1\AVRGCC\lib\UsrLib.c -o AVRGCC\obj\UsrLib.o
-FOR %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%1 -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %1\AVRGCC\lib\%%~nF.c -o AVRGCC\obj\%%~nF.o
+FOR %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -save-temps -I%1 -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %1\AVRGCC\lib\%%~nF.c -o AVRGCC\obj\%%~nF.o
 
 @echo Compile main file
-:: %4\avr-gcc.exe -I%1\AVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%3 -MF AVRGCC\obj\%2.d -MT AVRGCC\obj\%2.d -MT AVRGCC\obj\%2.o %1\%2.c -o AVRGCC\obj\%2.o
-avr-gcc.exe -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%3 -MF "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.o" "%~nx2.c" -o "AVRGCC\obj\%~2.o"
+avr-gcc.exe -save-temps -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%3 -MF "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.d" -MT "AVRGCC\obj\%~2.o" "%~nx2.c" -o "AVRGCC\obj\%~2.o"
 
 @echo Link object files
 :: %4\avr-gcc.exe -o AVRGCC\bin\%2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%3

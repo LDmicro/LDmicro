@@ -541,8 +541,8 @@ McuIoPinInfo AvrAtmega8IoPinInfo[] = {
     { 'C',  2, 25, "PC2 ADC2"        },
     { 'C',  3, 26, "PC3 ADC3"        },
     { 'C',  4, 27, "PC4 ADC4/SDA"    },
-    { 'C',  5, 28, "PC5 ADC5/SCL"    }
-//  { 'C',  6,  1, "PC6 _RESET"      }
+    { 'C',  5, 28, "PC5 ADC5/SCL"    },
+    { 'C',  6,  1, "PC6 _RESET"      }
 };
 
 //-----------------------------------------------------------------------------
@@ -1937,9 +1937,6 @@ McuIoPinInfo Pic8Pin_[] = {
 
 //-----------------------------------------------------------------------------
 // PIC18F4520
-//-----------------------------------------------------------------------------
-// PIC18F4520
-
 McuIoPinInfo Pic18F4520IoPinInfo[] = {
     { 'A',  0,  2, "RA0 AN0"         },
     { 'A',  1,  3, "RA1 AN1"         },
@@ -2303,7 +2300,8 @@ McuIoPinInfo ArmSTM32F10X_48LQFPIoPinInfo[] = {                 // Used by Bluep
     { 'B',  12, 25, "PB12 _SS2"             },
     { 'B',  13, 26, "PB13 SCK2"             },
     { 'B',  14, 27, "PB14 MISO2"            },
-    { 'B',  15, 28, "PB15 MOSI2"            }
+    { 'B',  15, 28, "PB15 MOSI2"            },
+    { 'C',  13,  2, "PC13 RTC/LED"          }
     // PC13-15 not supported
 };
 
@@ -3364,7 +3362,7 @@ McuIoInfo SupportedMcus_[] = {
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
-        0x3f72,
+        0xFFFF & 0xCF1F, // clear unused bits
         PicPwmPinInfo28_2,
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
@@ -4019,7 +4017,7 @@ McuIoInfo SupportedMcus_[] = {
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
-        0xFFFF,                         /// A VOIR
+        0x411A,
         PicPwmPinInfo40,
         arraylen(PicPwmPinInfo40),
         PicExtIntPinInfo40,

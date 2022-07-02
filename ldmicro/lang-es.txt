@@ -815,7 +815,7 @@
 "Error en RUNG %d. Ver error debajo de %s"
 
 "Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."
-"Error al leer la sección 'LISTA PULL-UP' del archivo .ld!\NError en línea:\n'%s'."
+"Error al leer la sección 'LISTA PULL-UP' del archivo .ld!\nError en línea:\n'%s'."
 
 "Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."
 "Error al leer la seccion 'LISTA VAR' del archivo.ld!\nError en la linea:\n'%s'."
@@ -863,7 +863,7 @@
 "Archivo-> Guardar formato de archivo LDmicro0.2"
 
 "Flash program memory size %d exceeds limit by %d words\nfor %s."
-"El tamaño de la memoria del programa flas %d excede el limite en %d palabras\para %s."
+"El tamaño de la memoria del programa flas %d excede el limite en %d palabras\npara %s."
 
 "Flash program memory size %d is exceed limit %d words\nfor %s."
 "El tamaño de la memoria del programa Flash% d excede el límite% d palabras\npara %s."
@@ -887,7 +887,7 @@
 "Cadena formateado"
 
 "Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n\r\n"
-"Formato del cuadro: 8 datos, paridad - ninguno, 1 bit de parada, protocolo de enlace - ninguno.\r\ n\r\n"
+"Formato del cuadro: 8 datos, paridad - ninguno, 1 bit de parada, protocolo de enlace - ninguno.\r\n\r\n"
 
 "Frequency (Hz):"
 "Frecuencia (Hz):"
@@ -1475,7 +1475,7 @@
 "Cambios Ultima Version..."
 
 "Line\n'%s'\nis skipped in IO LIST section from '%s'"
-"La línea \n'%s'\nis omite en la sección IO LIST de '%s'"
+"La línea\n'%s'\nis omite en la sección IO LIST de '%s'"
 
 "Literal number"
 "Numero literal"
@@ -1964,7 +1964,7 @@
 "Registro:"
 
 "Registers less zero not allowed!\nLOAD(%d, %d) skiped."
-"No se permiten registros menos de cero!\ nLOAD(%d, %d) omitido."
+"No se permiten registros menos de cero!\nLOAD(%d, %d) omitido."
 
 "Registers less zero not allowed!\nReadIoToReg skiped."
 "Los registros menos cero no estan permitidos!\nReadIoToReg omitido."
@@ -2423,7 +2423,7 @@
 "El tiempo de ciclo de ejecucion para el 'PLC' es configurable. Un tiempo de ciclo muy corto puede no funcionar debido a la baja velocidad del micro, y un tiempo de ciclo muy largo puede no funcionar por limitaciones del temporizador del micro. Ciclos de tiempo entre 10 y 100 ms suele ser lo normal.\r\n\r\nEl compilador debe conocer la velocidad del cristal que estas usando para poder convertir entre tiempo en ciclos de reloj y tiempo en segundos. Un cristal entre 4 Mhz y 20 Mhz es lo tipico; Comprueba la velocidad a la que puede funcionar tu micro y calcula la velocidad maxima del reloj antes de elegir el cristal."
 
 "The delay is too long!\nThe maximum possible delay is %lld us."
-"El retraso es demasiado largo!\El maximo retraso posible es %lld us."
+"El retraso es demasiado largo!\nEl maximo retraso posible es %lld us."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
 "El programa ha cambiado desde la ultima vez que los guardo.\r\n\r\n Quieres guardar los cambios?"
@@ -2447,7 +2447,7 @@
 "Periodo del temporizador demasiado largo (max. 32767 veces el tiempo de ciclo); use un tiempo de ciclo mayor."
 
 "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
-"El periodo del temporizador es demasiado largo. \n\ rEl valor maximo posible es: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+"El periodo del temporizador es demasiado largo.\n\rEl valor maximo posible es: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
 
 "Timer period too long; (use a slower cycle time)."
 "Periodo del temporizador demasiado largo; (use un tiempo de ciclo mas lento)."
@@ -2693,10 +2693,10 @@
 "No se permite la direccion de memoria cero!\nReadIoToReg omitido."
 
 "Zero memory address not allowed!\nSTORE(%d, %d) skiped!"
-"No se permite la direccion de memoria cero!\NSTORE(%d,%d) omitido!"
+"No se permite la direccion de memoria cero!\nSTORE(%d,%d) omitido!"
 
 "Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"
-"No se permite la direccion de memoria cero! \ nWriteMemory(0, %d) omitido!%s %s"
+"No se permite la direccion de memoria cero!\nWriteMemory(0, %d) omitido!%s %s"
 
 "Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
 "Direccion de memoria cero no permitida!\nWriteMemoryStillAddr(0,%d) omitida!"
@@ -2708,7 +2708,7 @@
 "\nE/S ASIGNACION:\n"
 
 "\n\nAcceleration time=%.3f %s"
-"\ n\nTiempo de aceleración=%.3f %s"
+"\n\nTiempo de aceleración=%.3f %s"
 
 "\n\nI/O ASSIGNMENT:\n\n"
 "\n\nE/S ASIGNACION:\n\n"

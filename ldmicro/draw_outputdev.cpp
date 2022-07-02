@@ -154,7 +154,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
                 inBrace--;
         } else if(((isdigit(*str) && (firstTime || isspace(str[-1]) || str[-1] == ':' || str[-1] == '{' || str[-1] == '[')) || (*str == '-' && isdigit(str[1]))) && hiOk && !inComment) {
             prev = GetTextColor(Hdc);
-            SetTextColor(Hdc, HighlightColours.lit);
+            SetTextColor(Hdc, HighlightColours.lit);  
             TextOut(Hdc, x, y, str, 1);
             SetTextColor(Hdc, prev);
             inNumber = true;
@@ -164,6 +164,13 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
                 prev = GetTextColor(Hdc);
                 is_prev = true;
                 SetTextColor(Hdc, HighlightColours.op);
+            }
+        } else if(*str == '\x04') {
+            cx--;
+            if(hiOk) {
+                prev = GetTextColor(Hdc);
+                is_prev = true;
+                SetTextColor(Hdc, HighlightColours.name);
             }
         } else if(*str == '\x02') {
             cx--;

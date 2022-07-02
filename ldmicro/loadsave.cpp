@@ -41,7 +41,6 @@ ElemSubcktSeries *LoadSeriesFromFile(FileTracker &f);
 static bool LoadLeafFromFile(char *line, void **any, int *which)
 {
     ElemLeaf *l = AllocLeaf();
-    int       x;
 
     auto scan_contact_3 = [&]() -> int {
         int negated, set1;
@@ -260,26 +259,32 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
               == (2 + 8)) {
         *which = ELEM_BUS;
 
+    } else if(sscanf(line, "SPI_WR %s %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate, l->d.spi._ss) == 9) {
+        FrmStrToStr(l->d.spi._ss, l->d.spi._ss);
+        l->d.spi.which = ELEM_SPI_WR;
+        *which = ELEM_SPI_WR;
+
     } else if(sscanf(line, "SPI_WR %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate) == 8) {
         l->d.spi.which = ELEM_SPI_WR;
         *which = ELEM_SPI_WR;
+
+    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate, l->d.spi._ss) == 9) {
+        FrmStrToStr(l->d.spi._ss, l->d.spi._ss);
+        l->d.spi.which = ELEM_SPI;
+        *which = ELEM_SPI;
 
     } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate) == 8) {
         l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
-    }
-    ///// Added by JG
-    else if(sscanf(line, "I2C_RD %s %s %s %s %s %s %s %s", l->d.i2c.name, l->d.i2c.send, l->d.i2c.recv, l->d.i2c.mode, l->d.i2c.address, l->d.i2c.registr, l->d.i2c.first, l->d.i2c.bitrate) == 8) {
+    } else if(sscanf(line, "I2C_RD %s %s %s %s %s %s %s %s", l->d.i2c.name, l->d.i2c.send, l->d.i2c.recv, l->d.i2c.mode, l->d.i2c.address, l->d.i2c.registr, l->d.i2c.first, l->d.i2c.bitrate) == 8) {
         l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
     } else if(sscanf(line, "I2C_WR %s %s %s %s %s %s %s %s", l->d.i2c.name, l->d.i2c.send, l->d.i2c.recv, l->d.i2c.mode, l->d.i2c.address, l->d.i2c.registr, l->d.i2c.first, l->d.i2c.bitrate) == 8) {
         l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
-    }
-    /////
 
-    else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
+    } else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
@@ -406,11 +411,6 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
-        /*
-    } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
-        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
-        *which = ELEM_UART_RECVn;
-*/
     } else if([&]() -> int {
                   int  tmp_bool;
                   auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
@@ -422,11 +422,6 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.uart.bytes = 1;
         l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
-        /*
-    } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
-        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
-        *which = ELEM_UART_SENDn;
-*/
     } else if([&]() -> int {
                   int  tmp_bool;
                   auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);
@@ -440,7 +435,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var) == 1) {
         *which = ELEM_PERSIST;
-		/*
+        /*
     } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x) == 2) {
         if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
@@ -467,7 +462,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-		*/
+        */
     } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
         size_t i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
@@ -539,6 +534,14 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.var, "");
         }
         *which = ELEM_FRMT_STR_TO_CHAR;
+    } else if(sscanf(line, "VAR_TO_CHAR %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var) == 2) {
+        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.dest, "");
+        }
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
+            strcpy(l->d.fmtdStr.var, "");
+        }
+        *which = ELEM_VAR_TO_CHAR;
     } else if([&]() -> int {
                   int editAsString;
                   int res = sscanf(line, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest, l->d.lookUpTable.index, &(l->d.lookUpTable.count), &editAsString);
@@ -836,6 +839,8 @@ bool LoadProjectFromFile(const char *filename)
                 Prog.LDversion = "0.2";
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
+        } else if(sscanf(line, "OSC=%d", &crystal)) {
+            Prog.oscClock = crystal;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx", &cycle, &cycleTimer, &cycleDuty, &configWord) == 4) {
             Prog.cycleTime = cycle;
             if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
@@ -1135,12 +1140,12 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
 
         ///// Added by JG
         case ELEM_SPI_WR:
-            fprintf(f, "SPI_WR %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate);
+            fprintf(f, "SPI_WR %s %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate, StrToFrmStr(str1, leaf->d.spi._ss));
             break;
             /////
 
         case ELEM_SPI: {
-            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate);
+            fprintf(f, "SPI %s %s %s %s %s %s %s %s %s\n", leaf->d.spi.name, leaf->d.spi.send, leaf->d.spi.recv, leaf->d.spi.mode, leaf->d.spi.modes, leaf->d.spi.size, leaf->d.spi.first, leaf->d.spi.bitrate, StrToFrmStr(str1, leaf->d.spi._ss));
             break;
         }
 
@@ -1292,15 +1297,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_UART_SEND:
             fprintf(f, "UART_SEND %s %d %d\n", leaf->d.uart.name, leaf->d.uart.bytes, leaf->d.uart.wait);
             break;
-            /*
-        case ELEM_UART_RECVn:
-            fprintf(f, "UART_RECVn %s\n", l->d.uart.name);
-            break;
 
-        case ELEM_UART_SENDn:
-            fprintf(f, "UART_SENDn %s\n", l->d.uart.name);
-            break;
-*/
         case ELEM_UART_SEND_READY:
             fprintf(f, "UART_SEND_READY\n");
             break;
@@ -1312,41 +1309,7 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
         case ELEM_PERSIST:
             fprintf(f, "PERSIST %s\n", leaf->d.persist.var);
             break;
-            /*
-        case ELEM_CPRINTF:
-            s = "CPRINTF";
-            goto cprintf;
-        case ELEM_SPRINTF:
-            s = "SPRINTF";
-            goto cprintf;
-        case ELEM_FPRINTF:
-            s = "FPRINTF";
-            goto cprintf;
-        case ELEM_PRINTF:
-            s = "PRINTF";
-            goto cprintf;
-        case ELEM_I2C_CPRINTF:
-            s = "I2C_PRINTF";
-            goto cprintf;
-        case ELEM_ISP_CPRINTF:
-            s = "ISP_PRINTF";
-            goto cprintf;
-        case ELEM_UART_CPRINTF:
-            s = "UART_PRINTF";
-            goto cprintf;
-            {
-            cprintf:
-                fprintf(f,
-                        "%s %s %s %s %s %s\n",
-                        s,
-                        StrToFrmStr(str1, l->d.fmtdStr.var),
-                        StrToFrmStr(str2, l->d.fmtdStr.string),
-                        l->d.fmtdStr.dest,
-                        StrToFrmStr(str3, l->d.fmtdStr.enable), //may be (none)
-                        StrToFrmStr(str4, l->d.fmtdStr.error)); //may be (none)
-                break;
-            }
-*/
+
         case ELEM_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "STRING ");
@@ -1386,19 +1349,6 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             break;
         }
-            /*
-        case ELEM_UART_WR: {
-            fprintf(f, "UART_WR %d ", leaf->d.fmtdStr.wait);
-            if(*(leaf->d.fmtdStr.string)) {
-                //fprintf(f, "\"%s\"", StrToFrmStr(str1, l->d.fmtdStr.string));
-                fprintf(f, "%s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
-            } else {
-                fprintf(f, " (none)");
-            }
-            fprintf(f, "\n");
-            break;
-        }
-*/
         case ELEM_FORMATTED_STRING: {
             if(Prog.LDversion == "0.1") {
                 fprintf(f, "FORMATTED_STRING ");
@@ -1442,6 +1392,21 @@ void SaveElemToFile(FileTracker &f, int which, void *any, int depth, int rung)
             }
             if(*(leaf->d.fmtdStr.string)) {
                 fprintf(f, " %s", StrToFrmStr(str1, leaf->d.fmtdStr.string));
+            } else {
+                fprintf(f, " (none)");
+            }
+            fprintf(f, "\n");
+            break;
+        }
+        case ELEM_VAR_TO_CHAR: {
+            fprintf(f, "VAR_TO_CHAR");
+            if(*(leaf->d.fmtdStr.dest)) {
+                fprintf(f, " %s", leaf->d.fmtdStr.dest);
+            } else {
+                fprintf(f, " (none)");
+            }
+            if(*(leaf->d.fmtdStr.var)) {
+                fprintf(f, " %s", leaf->d.fmtdStr.var);
             } else {
                 fprintf(f, " (none)");
             }
@@ -1526,6 +1491,9 @@ bool SaveProjectToFile(char *filename, int code)
     }
     fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
+    if(Prog.LDversion != "0.1") {
+        fprintf(f, "OSC=%d Hz\n", Prog.oscClock);
+    }
     fprintf(f, "BAUD=%d Hz, RATE=%d Hz, SPEED=%d Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);

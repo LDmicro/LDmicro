@@ -10,7 +10,7 @@
 @COLOR F0
 
 @rem MODE CON[:] [COLS=c] [LINES=n]
-@MODE CON: COLS=160 LINES=65
+::@MODE CON: COLS=160 LINES=65
 
 @echo off
 @rem This file is part of LDmicro project and must be in the same directory where LDmicro.exe is located.
@@ -138,7 +138,7 @@ SET PATH=%PATH%;%STL_PATH%
 @echo on
 
 @rem *** Flash the STM32 with ST-Link ***
-ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+ST-LINK_CLI.exe -c SWD -P %~p2\ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
 @GOTO exit
 

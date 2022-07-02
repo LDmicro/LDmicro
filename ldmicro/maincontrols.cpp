@@ -42,6 +42,7 @@ static HMENU EditMenu;
 static HMENU InstructionMenu;
 static HMENU CourseMenu;
 static HMENU FormatStrMenu;
+static HMENU IteratorMenu;
 static HMENU ProcessorMenu;
 static HMENU ProcAvrMenu; /// JG3
 static HMENU ProcPic16Menu;
@@ -67,6 +68,7 @@ static HMENU BitwiseMenu;
 static HMENU PulseMenu;
 static HMENU SchemeMenu;
 static HMENU settings;
+static HMENU compile;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -114,7 +116,7 @@ void MakeMainWindowControls()
 
     LV_ADD_COLUMN(IoList, LV_IO_NAME, 150, _("Name"));
     LV_ADD_COLUMN(IoList, LV_IO_TYPE, typeWidth, _("Type"));
-    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100 + 50, _("State"));
+    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100 + 120, _("State(var: hex = unsign = sign = char)"));
     LV_ADD_COLUMN(IoList, LV_IO_PIN, pinWidth, _("Pin on MCU"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT, portWidth, _("MCU Port"));
     LV_ADD_COLUMN(IoList, LV_IO_PINNAME, pinNameWidth, _("Pin Name"));
@@ -183,6 +185,27 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_COMMENT, canInsertComment ? MF_ENABLED : MF_GRAYED);
 
     EnableMenuItem(EditMenu, MNU_DELETE_ELEMENT, canDelete ? MF_ENABLED : MF_GRAYED);
+
+    bool tAVR, tPIC, tARM, tESP, tPC;
+    tAVR = Prog.mcu() && (Prog.mcu()->core > AVRcores) && (Prog.mcu()->core < AVRcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(compile, MNU_COMPILE_GNUC, tAVR);
+    EnableMenuItem(compile, MNU_COMPILE_AVRGCC, tAVR);
+    EnableMenuItem(compile, MNU_COMPILE_CODEVISIONAVR, tAVR);
+
+    tPIC = Prog.mcu() && (Prog.mcu()->core > PICcores) && (Prog.mcu()->core < PICcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(compile, MNU_COMPILE_HI_TECH_C, tPIC);
+    EnableMenuItem(compile, MNU_COMPILE_CCS_PIC_C, tPIC);
+
+    tARM = Prog.mcu() && (Prog.mcu()->core > ARMcores) && (Prog.mcu()->core < ARMcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(compile, MNU_COMPILE_ARMGCC, tARM);
+
+    tESP = Prog.mcu() && (Prog.mcu()->core > ESPcores) && (Prog.mcu()->core < ESPcores_) ? MF_ENABLED : MF_GRAYED;
+
+    tPC = Prog.mcu() && (Prog.mcu()->core > PCcores) && (Prog.mcu()->core < PCcores_) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(compile, MNU_COMPILE_PASCAL, tPC);
+
+    EnableMenuItem(compile, MNU_COMPILE_IHEX, tAVR && tPIC);
+    EnableMenuItem(compile, MNU_COMPILE_ARDUINO, tAVR && tESP && tARM);
 
     int t;
     t = canInsertEnd ? MF_ENABLED : MF_GRAYED;
@@ -271,26 +294,13 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_ENDSUB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
-    /*
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECVn, t);
-*/
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FRMT_STR_TO_CHAR, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_VAR_TO_CHAR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_WRITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
-    /*
-    EnableMenuItem(InstructionMenu, ELEM_CPRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_SPRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_FPRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_PRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_I2C_CPRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF, t);
-    EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF, t);
-*/
-
 #ifdef USE_SFR
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
@@ -299,7 +309,6 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
 #endif
-
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);
 
@@ -314,10 +323,6 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 
     t = Prog.mcu() ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(settings, MNU_PULL_UP_RESISTORS, t);
-    /*
-    t = Prog.mcu() && (Prog.mcu()->core > ARMcores) && (Prog.mcu()->core < ARMcores_) ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(settings, MNU_COMPILE_ARMGCC, t);
-*/
 }
 
 //-----------------------------------------------------------------------------
@@ -335,7 +340,7 @@ void SetUndoEnabled(bool undoEnabled, bool redoEnabled)
 //-----------------------------------------------------------------------------
 HMENU MakeMainWindowMenus()
 {
-    HMENU compile, help;
+    HMENU help;
     HMENU ConfigMenu;
     // file popup menu
     FileMenu = CreatePopupMenu();
@@ -564,17 +569,19 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
 
     FormatStrMenu = CreatePopupMenu();
-    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
-    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_FRMT_STR_TO_CHAR, _("Insert Formatted String to Char"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string"));
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String(C compilers)"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu, _("Formatted string(C compilers)"));
+
+    IteratorMenu = CreatePopupMenu();
+    AppendMenu(IteratorMenu, MF_STRING, MNU_INSERT_FRMT_STR_TO_CHAR, _("Insert Formatted String to Char"));
+    AppendMenu(IteratorMenu, MF_STRING, MNU_INSERT_VAR_TO_CHAR, _("Insert Var to Char"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)IteratorMenu, _("Iterator (For each char/byte)"));
 
     UrtMenu = CreatePopupMenu();
     // AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_WRITE, _("Insert String Over UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
-    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
-    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
@@ -1123,9 +1130,9 @@ void ToggleSimulationMode(bool doSimulateOneRung)
                 ShowSimulationWindow(SIM_SPI);
             if(I2cFunctionUsed() && InSimulationMode)
                 ShowSimulationWindow(SIM_I2C);
-            /////
-            /////   SimulateOneCycle(true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
-            /////   Commented by JG
+
+            // Comment it out for debugging only
+            SimulateOneCycle(true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
         }
     } else {
         RealTimeSimulationRunning = false;

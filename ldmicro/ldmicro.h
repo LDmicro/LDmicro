@@ -166,10 +166,8 @@ typedef uint32_t ADDR_T;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-//#define MNU_INSERT_UART_SENDn        0x3301 // impasse
 #define MNU_INSERT_UART_SEND_READY   0x3302
 #define MNU_INSERT_UART_RECV         0x34
-//#define MNU_INSERT_UART_RECVn        0x3401 // impasse
 #define MNU_INSERT_UART_RECV_AVAIL   0x3402
 #define MNU_INSERT_FMTD_STRING       0x3410 // "Insert Formatted String Over &UART"
 #define MNU_INSERT_UART_WRITE        0x3420 // "Insert String Over UART"
@@ -209,24 +207,17 @@ typedef uint32_t ADDR_T;
 #define USE_SFR
 #ifdef USE_SFR
 #define MNU_OPEN_SFR            0x4700
-#define MNU_INSERT_SFR          0x47    // special function register read
-#define MNU_INSERT_SFW          0x48    // special function register write
-#define MNU_INSERT_SSFB         0x49    // set bit in special function register
-#define MNU_INSERT_csFB         0x4a    // clear bit in special function register
-#define MNU_INSERT_TSFB         0x4b    // test if bit is set in special function register
-#define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
+#define MNU_INSERT_SFR          0x4701  // special function register read
+#define MNU_INSERT_SFW          0x4702  // special function register write
+#define MNU_INSERT_SSFB         0x4703  // set bit in special function register
+#define MNU_INSERT_csFB         0x4704  // clear bit in special function register
+#define MNU_INSERT_TSFB         0x4705  // test if bit is set in special function register
+#define MNU_INSERT_T_C_SFB      0x4706  // test if bit is clear in special function register
 #endif
-/*
-#define MNU_INSERT_CPRINTF      0x4c01 == ELEM_CPRINTF
-#define MNU_INSERT_SPRINTF      0x4c02
-#define MNU_INSERT_FPRINTF      0x4c03
-#define MNU_INSERT_PRINTF       0x4c04
-#define MNU_INSERT_I2C_CPRINTF  0x4c05
-#define MNU_INSERT_ISP_CPRINTF  0x4c06
-#define MNU_INSERT_UART_CPRINTF 0x4c07
-*/
-#define MNU_INSERT_STRING           0x4d
-#define MNU_INSERT_FRMT_STR_TO_CHAR 0x4d01
+
+#define MNU_INSERT_STRING           0x4a01
+#define MNU_INSERT_FRMT_STR_TO_CHAR 0x4a02
+#define MNU_INSERT_VAR_TO_CHAR      0x4a03
 
 #define MNU_INSERT_OSC          0x4f01
 #define MNU_INSERT_STEPPER      0x4f02
@@ -590,7 +581,7 @@ void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
 void ShowStringDialog(char * dest, char *var, char *string);
 void ShowFrmtStToCharDialog(ElemLeaf *l);
-void ShowCprintfDialog(int which, void *e);
+void ShowVarToCharDialog(ElemLeaf *l);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
@@ -614,6 +605,7 @@ void ShowHelpDialog(bool about);
 extern const char *AboutText[];
 
 // miscutil.cpp
+double CalcUartPeriod(int baudRate, int start, int data, int parity, int stop);
 #ifndef round
 #define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
     (r):\

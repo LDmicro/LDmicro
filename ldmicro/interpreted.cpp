@@ -224,10 +224,7 @@ void CompileInterpreted(const char *outFile)
             case INT_SPI_WRITE: ///// Added by JG
             case INT_I2C_READ:  /////
             case INT_I2C_WRITE: /////
-                                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-                //            case INT_UART_SENDn:
-                //            case INT_UART_RECV:
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:

@@ -5,19 +5,19 @@
   * @version V3.5.0
   * @date    11-March-2011
   * @brief   CMSIS Cortex-M3 Device Peripheral Access Layer System Source File.
-  * 
-  * 1.  This file provides two functions and one global variable to be called from 
+  *
+  * 1.  This file provides two functions and one global variable to be called from
   *     user application:
   *      - SystemInit(): Setups the system clock (System clock source, PLL Multiplier
-  *                      factors, AHB/APBx prescalers and Flash settings). 
-  *                      This function is called at startup just after reset and 
+  *                      factors, AHB/APBx prescalers and Flash settings).
+  *                      This function is called at startup just after reset and
   *                      before branch to main program. This call is made inside
   *                      the "startup_stm32f10x_xx.s" file.
   *
   *      - SystemCoreClock variable: Contains the core clock (HCLK), it can be used
-  *                                  by the user application to setup the SysTick 
+  *                                  by the user application to setup the SysTick
   *                                  timer or configure other parameters.
-  *                                     
+  *
   *      - SystemCoreClockUpdate(): Updates the variable SystemCoreClock and must
   *                                 be called whenever the core clock is changed
   *                                 during program execution.
@@ -27,15 +27,15 @@
   *    configure the system clock before to branch to main program.
   *
   * 3. If the system clock source selected by user fails to startup, the SystemInit()
-  *    function will do nothing and HSI still used as system clock source. User can 
+  *    function will do nothing and HSI still used as system clock source. User can
   *    add some code to deal with this issue inside the SetSysClock() function.
   *
   * 4. The default value of HSE crystal is set to 8 MHz (or 25 MHz, depedning on
-  *    the product used), refer to "HSE_VALUE" define in "stm32f10x.h" file. 
+  *    the product used), refer to "HSE_VALUE" define in "stm32f10x.h" file.
   *    When HSE is used as system clock source, directly or through PLL, and you
   *    are using different crystal you have to adapt the HSE value to your own
   *    configuration.
-  *        
+  *
   ******************************************************************************
   * @attention
   *
@@ -82,19 +82,19 @@
 
 /*!< Uncomment the line corresponding to the desired System clock (SYSCLK)
    frequency (after reset the HSI is used as SYSCLK source)
-   
+
    IMPORTANT NOTE:
-   ============== 
+   ==============
    1. After each device reset the HSI is used as System clock source.
 
    2. Please make sure that the selected System clock doesn't exceed your device's
       maximum frequency.
-      
+
    3. If none of the define below is enabled, the HSI is used as System clock
     source.
 
    4. The System clock configuration functions provided within this file assume that:
-        - For Low, Medium and High density Value line devices an external 8MHz 
+        - For Low, Medium and High density Value line devices an external 8MHz
           crystal is used to drive the System clock.
         - For Low, Medium and High density devices an external 8MHz crystal is
           used to drive the System clock.
@@ -104,19 +104,47 @@
     */
 
 #if defined(STM32F10X_LD_VL) || (defined STM32F10X_MD_VL) || (defined STM32F10X_HD_VL)
-/* #define SYSCLK_FREQ_HSE    HSE_VALUE */
-#define SYSCLK_FREQ_24MHz 24000000
+  #if defined(SYSCLK_VALUE)
+    #if SYSCLK_VALUE == HSE_VALUE
+      #define SYSCLK_FREQ_HSE    HSE_VALUE
+    #elif SYSCLK_VALUE ==  24000000
+      #define SYSCLK_FREQ_24MHz 24000000
+    #else
+      #define SYSCLK_FREQ_24MHz 24000000
+    #endif
+  #else
+    /* #define SYSCLK_FREQ_HSE    HSE_VALUE */
+    #define SYSCLK_FREQ_24MHz 24000000
+  #endif
 #else
-/* #define SYSCLK_FREQ_HSE    HSE_VALUE */
-/* #define SYSCLK_FREQ_24MHz  24000000 */
-/* #define SYSCLK_FREQ_36MHz  36000000 */
-/* #define SYSCLK_FREQ_48MHz  48000000 */
-/* #define SYSCLK_FREQ_56MHz  56000000 */
-#define SYSCLK_FREQ_72MHz 72000000
+  #if defined(SYSCLK_VALUE)
+    #if SYSCLK_VALUE == HSE_VALUE
+      #define SYSCLK_FREQ_HSE    HSE_VALUE
+    #elif SYSCLK_VALUE ==  24000000
+      #define SYSCLK_FREQ_24MHz  24000000
+    #elif SYSCLK_VALUE ==  36000000
+      #define SYSCLK_FREQ_36MHz  36000000
+    #elif SYSCLK_VALUE ==  48000000
+      #define SYSCLK_FREQ_48MHz  48000000
+    #elif SYSCLK_VALUE ==  56000000
+      #define SYSCLK_FREQ_56MHz  56000000
+    #elif SYSCLK_VALUE ==  72000000
+      #define SYSCLK_FREQ_72MHz 72000000
+    #else
+      #define SYSCLK_FREQ_72MHz 72000000
+    #endif
+  #else
+    /* #define SYSCLK_FREQ_HSE    HSE_VALUE */
+    /* #define SYSCLK_FREQ_24MHz  24000000 */
+    /* #define SYSCLK_FREQ_36MHz  36000000 */
+    /* #define SYSCLK_FREQ_48MHz  48000000 */
+    /* #define SYSCLK_FREQ_56MHz  56000000 */
+    #define SYSCLK_FREQ_72MHz 72000000
+  #endif
 #endif
 
 /*!< Uncomment the following line if you need to use external SRAM mounted
-     on STM3210E-EVAL board (STM32 High density and XL-density devices) or on 
+     on STM3210E-EVAL board (STM32 High density and XL-density devices) or on
      STM32100E-EVAL board (STM32 High-density value line devices) as data memory */
 #if defined(STM32F10X_HD) || (defined STM32F10X_XL) || (defined STM32F10X_HD_VL)
 /* #define DATA_IN_ExtSRAM */
@@ -126,7 +154,7 @@
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
 #define VECT_TAB_OFFSET \
-    0x0 /*!< Vector Table base offset field. 
+    0x0 /*!< Vector Table base offset field.
                                   This value must be a multiple of 0x200. */
 
 /**
@@ -203,7 +231,7 @@ static void SystemInit_ExtMemCtl(void);
 
 /**
   * @brief  Setup the microcontroller system
-  *         Initialize the Embedded Flash Interface, the PLL and update the 
+  *         Initialize the Embedded Flash Interface, the PLL and update the
   *         SystemCoreClock variable.
   * @note   This function should be used only after reset.
   * @param  None
@@ -273,31 +301,31 @@ void SystemInit(void)
   *         The SystemCoreClock variable contains the core clock (HCLK), it can
   *         be used by the user application to setup the SysTick timer or configure
   *         other parameters.
-  *           
+  *
   * @note   Each time the core clock (HCLK) changes, this function must be called
   *         to update SystemCoreClock variable value. Otherwise, any configuration
-  *         based on this variable will be incorrect.         
-  *     
-  * @note   - The system frequency computed by this function is not the real 
-  *           frequency in the chip. It is calculated based on the predefined 
+  *         based on this variable will be incorrect.
+  *
+  * @note   - The system frequency computed by this function is not the real
+  *           frequency in the chip. It is calculated based on the predefined
   *           constant and the selected clock source:
-  *             
+  *
   *           - If SYSCLK source is HSI, SystemCoreClock will contain the HSI_VALUE(*)
-  *                                              
+  *
   *           - If SYSCLK source is HSE, SystemCoreClock will contain the HSE_VALUE(**)
-  *                          
-  *           - If SYSCLK source is PLL, SystemCoreClock will contain the HSE_VALUE(**) 
+  *
+  *           - If SYSCLK source is PLL, SystemCoreClock will contain the HSE_VALUE(**)
   *             or HSI_VALUE(*) multiplied by the PLL factors.
-  *         
+  *
   *         (*) HSI_VALUE is a constant defined in stm32f1xx.h file (default value
   *             8 MHz) but the real value may vary depending on the variations
-  *             in voltage and temperature.   
-  *    
+  *             in voltage and temperature.
+  *
   *         (**) HSE_VALUE is a constant defined in stm32f1xx.h file (default value
   *              8 MHz or 25 MHz, depedning on the product used), user has to ensure
   *              that HSE_VALUE is same as the real frequency of the crystal used.
   *              Otherwise, this function may have wrong result.
-  *                
+  *
   *         - The result of this function could be not correct when using fractional
   *           value for HSE crystal.
   * @param  None
@@ -421,16 +449,16 @@ static void SetSysClock(void)
 }
 
 /**
-  * @brief  Setup the external memory controller. Called in startup_stm32f10x.s 
+  * @brief  Setup the external memory controller. Called in startup_stm32f10x.s
   *          before jump to __main
   * @param  None
   * @retval None
   */
 #ifdef DATA_IN_ExtSRAM
 /**
-  * @brief  Setup the external memory controller. 
+  * @brief  Setup the external memory controller.
   *         Called in startup_stm32f10x_xx.s/.c before jump to main.
-  * 	      This function configures the external SRAM mounted on STM3210E-EVAL
+  *           This function configures the external SRAM mounted on STM3210E-EVAL
   *         board (STM32 High density devices). This SRAM will be used as program
   *         data memory (including heap and stack).
   * @param  None
@@ -438,7 +466,7 @@ static void SetSysClock(void)
   */
 void SystemInit_ExtMemCtl(void)
 {
-    /*!< FSMC Bank1 NOR/SRAM3 is used for the STM3210E-EVAL, if another Bank is 
+    /*!< FSMC Bank1 NOR/SRAM3 is used for the STM3210E-EVAL, if another Bank is
   required, then adjust the Register Addresses */
 
     /* Enable FSMC clock */
@@ -537,13 +565,13 @@ static void SetSysClockToHSE(void)
         /* Wait till HSE is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x04) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }
 #elif defined SYSCLK_FREQ_24MHz
 /**
-  * @brief  Sets System clock frequency to 24MHz and configure HCLK, PCLK2 
+  * @brief  Sets System clock frequency to 24MHz and configure HCLK, PCLK2
   *         and PCLK1 prescalers.
   * @note   This function should be used only after reset.
   * @param  None
@@ -628,14 +656,14 @@ static void SetSysClockTo24(void)
         /* Wait till PLL is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }
 #elif defined SYSCLK_FREQ_36MHz
 /**
-  * @brief  Sets System clock frequency to 36MHz and configure HCLK, PCLK2 
-  *         and PCLK1 prescalers. 
+  * @brief  Sets System clock frequency to 36MHz and configure HCLK, PCLK2
+  *         and PCLK1 prescalers.
   * @note   This function should be used only after reset.
   * @param  None
   * @retval None
@@ -716,14 +744,14 @@ static void SetSysClockTo36(void)
         /* Wait till PLL is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }
 #elif defined SYSCLK_FREQ_48MHz
 /**
-  * @brief  Sets System clock frequency to 48MHz and configure HCLK, PCLK2 
-  *         and PCLK1 prescalers. 
+  * @brief  Sets System clock frequency to 48MHz and configure HCLK, PCLK2
+  *         and PCLK1 prescalers.
   * @note   This function should be used only after reset.
   * @param  None
   * @retval None
@@ -802,15 +830,15 @@ static void SetSysClockTo48(void)
         /* Wait till PLL is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }
 
 #elif defined SYSCLK_FREQ_56MHz
 /**
-  * @brief  Sets System clock frequency to 56MHz and configure HCLK, PCLK2 
-  *         and PCLK1 prescalers. 
+  * @brief  Sets System clock frequency to 56MHz and configure HCLK, PCLK2
+  *         and PCLK1 prescalers.
   * @note   This function should be used only after reset.
   * @param  None
   * @retval None
@@ -890,15 +918,15 @@ static void SetSysClockTo56(void)
         /* Wait till PLL is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }
 
 #elif defined SYSCLK_FREQ_72MHz
 /**
-  * @brief  Sets System clock frequency to 72MHz and configure HCLK, PCLK2 
-  *         and PCLK1 prescalers. 
+  * @brief  Sets System clock frequency to 72MHz and configure HCLK, PCLK2
+  *         and PCLK1 prescalers.
   * @note   This function should be used only after reset.
   * @param  None
   * @retval None
@@ -977,7 +1005,7 @@ static void SetSysClockTo72(void)
         /* Wait till PLL is used as system clock source */
         while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)0x08) {
         }
-    } else { /* If HSE fails to start-up, the application will have wrong clock 
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
     }
 }

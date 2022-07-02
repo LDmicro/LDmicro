@@ -1793,11 +1793,11 @@ static void WriteMemoryCurrAddr(ADDR_T addr, BYTE val)
 //used ZL, r25; Opcodes: 2
 {
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
-	    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
-		// load r25 with the data
-		Instruction(OP_LDI, r25, val);
-		// do the store
-		Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
+        // Z was setted in WriteMemory() or WriteMemoryStillAddr()
+        // load r25 with the data
+        Instruction(OP_LDI, r25, val);
+        // do the store
+        Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
     } else if(USE_IO_REGISTERS == 1) {
 #if USE_IO_REGISTERS == 1
         Instruction(OP_OUT, addr - __SFR_OFFSET, val);
@@ -2089,7 +2089,7 @@ static void GetUartSendReady(ADDR_T addr, int bit)
     SetBit(addr, bit); // Set UART busy
     FwdAddrIsNow(dontSet);
     */
-    //  CopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    ////CopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
@@ -2476,7 +2476,7 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         if(WGM01 == -1) {                         // ATmega8
             tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
             if(tcnt0PlcCycle < 0)
-                tcnt0PlcCycle = 0; 
+                tcnt0PlcCycle = 0;
             if(tcnt0PlcCycle > 255)
                 tcnt0PlcCycle = 255;
 
@@ -2847,15 +2847,30 @@ static void CopyLitToReg(int reg, int sov, int32_t literal)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyVarToReg(int reg, int sovReg, const char *var)
+static void CopyVarToReg(int reg, int sovReg, const char *var, const char *offset=nullptr, int _literal=0)
 {
-    ADDR_T addr;
+    ADDR_T addr, addr2;
     int    sov = SizeOfVar(var);
     if(sov != sovReg)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
 
     MemForVariable(var, &addr);
     LoadXAddr(addr, var); // load direct address
+
+    if((offset) && strlen(offset)) {
+        MemForVariable(offset, &addr2);
+        LoadYAddr(addr2);
+        Instruction(OP_LD_Y, r18);
+        Instruction(OP_LDI, r19, 0);
+        Instruction(OP_ADD, XL, r18); // addr1 +=[offset]
+        Instruction(OP_ADC, XH, r19);
+    }
+    if(_literal) {
+        Instruction(OP_LDI, _literal);
+        Instruction(OP_LDI, r19, 0);
+        Instruction(OP_ADD, XL, r18); // addr1 +=_literal
+        Instruction(OP_ADC, XH, r19);
+    }
 
     if(IsAddrInVar(var)) {
         int sovA = SizeOfVar(&var[1]);
@@ -2865,9 +2880,9 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
 
-static void CopyVarToReg(int reg, int sovReg, const NameArray &var)
+static void CopyVarToReg(int reg, int sovReg, const NameArray &var, const NameArray &offset=nullptr, int _literal=0)
 {
-    CopyVarToReg(reg, sovReg, var.c_str());
+    CopyVarToReg(reg, sovReg, var.c_str(), offset.c_str(), _literal);
 }
 
 //-----------------------------------------------------------------------------
@@ -3196,6 +3211,8 @@ static void   WriteRuntime()
 
         // UCSRC initial Value frame format: 8 data, parity - none, 1 stop bit.
         // Not need to set.
+
+        SetBit(REG_UCSRA, TXC); // TXC can be cleared by writing a one to its bit location.
     }
     // All PWM outputs setted in BuildDirectionRegisters
 
@@ -3352,8 +3369,8 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    ADDR_T addr = 0, addr1 = 0, addr2 = 0, /*addr3 = 0, */ addr4 = 0;
-    int    bit = -1, bit1 = -1, bit2 = -1, /*bit3 = -1, */ bit4 = -1;
+    ADDR_T addr = 0, addr1 = 0, addr2 = 0, addr3 = 0,  addr4 = 0;
+    int    bit = -1, bit1 = -1, bit2 = -1, bit3 = -1,  bit4 = -1;
     int    sov = -1, sov1 = -1, sov2 = -1; //, sov12 = -1, sov23 = -1;
 
     for(; IntPc < IntCode.size(); IntPc++) {
@@ -4230,7 +4247,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 Comment("INT_SET_VARIABLE_TO_VARIABLE %s = %s", a->name1.c_str(), a->name2.c_str());
-                CopyVarToReg(r16, SizeOfVar(a->name2), a->name2);
+                CopyVarToReg(r16, SizeOfVar(a->name2), a->name2, a->name3, a->literal1);
                 CopyRegToVar(a->name1, r16, SizeOfVar(a->name2));
                 break;
 
@@ -5205,29 +5222,6 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
-                /*
-            case INT_UART_SEND: {
-                // Attention! Busy flag is not checked!!!
-                // Caller should check the busy flag!!!
-                Comment("INT_UART_SEND");
-                MemForVariable(a->name1, &addr1);
-                MemForSingleBit(a->name2, true, &addr2, &bit2);
-
-                uint32_t noSend = AllocFwdAddr();
-                IfBitClear(addr2, bit2);
-                Instruction(OP_RJMP, noSend);
-
-                LoadXAddr(addr1);
-                Instruction(OP_LD_X, r16);
-                LoadXAddr(REG_UDR);
-                Instruction(OP_ST_X, r16);
-
-                FwdAddrIsNow(noSend);
-
-                CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                break;
-            }
-*/
             case INT_UART_SEND1: {
                 // Attention! Busy flag is not checked!!!
                 // Caller should check the busy flag!!!
@@ -5235,10 +5229,15 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal1;
 
-                uint32_t isBusy = AvrProg.size();
+                uint32_t isBusy;
+                isBusy = AvrProg.size();
                 IfBitClear(REG_UCSRA, UDRE);  // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 Instruction(OP_RJMP, isBusy); // reinsurance
-
+                /*
+                ////isBusy = AvrProg.size();
+                ////IfBitSet(REG_UCSRA, TXC);
+                ////Instruction(OP_RJMP, isBusy); // reinsurance
+                */
                 LoadXAddr(addr1);
                 if(strlen(a->name2.c_str())) {
                     MemForVariable(a->name2, &addr2);
@@ -5248,39 +5247,12 @@ static void CompileFromIntermediate()
                     Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
                     Instruction(OP_ADC, XH, r19);
                 }
+                ////SetBit(REG_UCSRA, TXC); // TXC can be cleared by writing a one to its bit location.
                 Instruction(OP_LD_X, r16);
-
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
                 break;
             }
-                /*
-            case INT_UART_RECV: {
-                //Receive one char/byte in a single PLC cycle.
-                MemForVariable(a->name1, &addr1);
-                sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, true, &addr2, &bit2);
-
-                ClearBit(addr2, bit2);
-
-                uint32_t noChar = AllocFwdAddr();
-                IfBitClear(REG_UCSRA, RXC);
-                Instruction(OP_RJMP, noChar);
-
-                SetBit(addr2, bit2);
-                LoadXAddr(REG_UDR);
-                Instruction(OP_LD_X, r16);
-                LoadXAddr(addr1);
-                Instruction(OP_ST_XP, r16);
-
-                Instruction(OP_LDI, r16, 0);
-                for(int i = 1; i < sov1; i++)
-                    Instruction(OP_ST_XP, r16);
-
-                FwdAddrIsNow(noChar);
-                break;
-            }
-*/
             case INT_UART_RECV1: {
                 //Receive one char/byte in a single PLC cycle.
                 //Skip if no char.
@@ -5307,6 +5279,214 @@ static void CompileFromIntermediate()
                 Instruction(OP_ST_X, r16);
 
                 FwdAddrIsNow(noChar);
+                break;
+            }
+//REG_CTRL
+#define SPIE 7 // -
+#define SPE 6
+#define DORD 5
+#define MSTR 4
+#define CPOL 3
+#define CPHA 2
+#define SPR1 1
+#define SPR0 0
+//REG_STAT
+#define SPIF 7
+#define WCOL 6 // -
+#define SPI2X 0
+                //REG_DATA
+                //MISO  MOSI SCK  _SS
+            //case INT_SPI_COMPLETE:
+            //case INT_SPI_BUSY:
+            case INT_SPI_INIT:
+            case INT_SPI: {
+                Comment("INT_SPI");
+                ElemLeaf *  l = a->node->leaf();
+                ElemSpi *   spi = &(l->d.spi);
+                McuSpiInfo *spiInfo = GetMcuSpiInfo(l->d.spi.name);
+                if(!spiInfo) {
+                    Error(_(" SPI '%s' not defined!"), l->d.spi.name);
+                    break;
+                }
+                int mstr = 1; // "Master"
+                if(strcmp(spi->mode, "Slave") == 0)
+                    mstr = 0;
+                int modes = hobatoi(spi->modes) & 3;
+                int first = 0; // "MSB_FIRST"
+                if(strcmp(spi->mode, "LSB_FIRST") == 0)
+                    first = 1;
+                int bitrate = hobatoi(spi->bitrate);
+                int spr = 0;
+
+                int sov = std::max(1, std::max(SizeOfVar(spi->send), SizeOfVar(spi->recv)));
+
+                McuIoPinInfo *_ss = PinInfo(spiInfo->_SS);
+                McuIoPinInfo *sck = PinInfo(spiInfo->SCK);
+                McuIoPinInfo *mosi = PinInfo(spiInfo->MOSI);
+                McuIoPinInfo *miso = PinInfo(spiInfo->MISO);
+
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1); // stateInOut
+/*
+                if(a->op == INT_SPI_COMPLETE) {
+                    Comment("INT_SPI_COMPLETE");
+                    CopyBit(addr1, bit1, spiInfo->REG_STAT, SPIF); // When a transfer is complete, the SPIF Flag is set.
+                } else if(a->op == INT_SPI_BUSY) {
+                    Comment("INT_SPI_BUSY");
+                    CopyNotBit(addr1, bit1, spiInfo->REG_STAT, SPIF); // When a transfer is complete, the SPIF Flag is set.
+                } else
+*/
+                if(a->op == INT_SPI_INIT) {
+                    if(mstr) {
+                        int dev = 0, devider = 2, SCK_frequency, err = INT_MAX;
+                        int i;
+                        for(i = 1; i <= 7; i++) {
+                            devider = xPowerY(2, i);
+                            SCK_frequency = Prog.mcuClock / devider;
+                            if(err > abs(bitrate - SCK_frequency)) {
+                                err = abs(bitrate - SCK_frequency);
+                                dev = devider;
+                            }
+                            if(err == 0)
+                                break;
+                        }
+                        switch(dev) {
+                            case 2:
+                                spr = 4;
+                                break;
+                            case 4:
+                                spr = 0;
+                                break;
+                            case 8:
+                                spr = 5;
+                                break;
+                            case 16:
+                                spr = 1;
+                                break;
+                            case 32:
+                                spr = 6;
+                                break;
+                            case 64:
+                                spr = 2;
+                                break;
+                            case 128:
+                                spr = 3;
+                                break;
+                            default:
+                                oops();
+                        }
+                    }
+
+                    // Setup only happens once
+                    char initName[MAX_NAME_LEN];
+                    sprintf(initName, "$SPI_INIT_%s", spi->name);
+                    MemForSingleBit(initName, FALSE, &addr, &bit);
+                    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                    DWORD endInit = AllocFwdAddr();
+                    IfBitSet(addr, bit);
+                    Instruction(OP_RJMP, endInit, 0);
+                    SetBit(addr, bit, initName);
+
+                    if(!_ss)
+                        oops();
+                    if(!sck)
+                        oops();
+                    if(mstr) {
+                        SetBit(Prog.mcu()->outputRegs[_ss->port - 'A'], _ss->bit);
+                        SetBit(Prog.mcu()->dirRegs[_ss->port - 'A'], _ss->bit);
+                        SetBit(Prog.mcu()->dirRegs[sck->port - 'A'], sck->bit);
+                        if(mosi)
+                            SetBit(Prog.mcu()->dirRegs[mosi->port - 'A'], mosi->bit);
+                        if(miso)
+                            ClearBit(Prog.mcu()->dirRegs[miso->port - 'A'], miso->bit);
+                    } else {
+                        ClearBit(Prog.mcu()->dirRegs[_ss->port - 'A'], _ss->bit);
+                        ClearBit(Prog.mcu()->dirRegs[sck->port - 'A'], sck->bit);
+                        if(mosi)
+                            ClearBit(Prog.mcu()->dirRegs[mosi->port - 'A'], mosi->bit);
+                        if(miso)
+                            SetBit(Prog.mcu()->dirRegs[miso->port - 'A'], miso->bit);
+                    }
+
+                    WriteMemory(spiInfo->REG_CTRL,
+                                (1 << SPE) | (first << DORD) | (mstr << MSTR) | (modes << CPHA) | ((spr & 3) << SPR0));
+                    if(spr & 0x04)
+                        WriteMemory(spiInfo->REG_STAT, (1 << SPI2X));
+
+                    FwdAddrIsNow(endInit);
+                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                } else if(a->op == INT_SPI) {
+                    DWORD ret = AllocFwdAddr();
+                    IfBitClear(addr1, bit1, a->name1); // stateInOut
+                    Instruction(OP_RJMP, ret);
+
+                    ClearBit(addr1, bit1);
+                    int i;
+                    if(mstr) {
+                        Comment("Master");
+                        SetBit(addr1, bit1, a->name1);
+                        ClearBit(Prog.mcu()->outputRegs[_ss->port - 'A'], _ss->bit, "_ss");
+                        if(strlen(spi->send)) {
+                            MemForVariable(spi->send, &addr2);
+                            LoadXAddr(addr2);
+                        }
+                        if(strlen(spi->recv)) {
+                            MemForVariable(spi->recv, &addr3);
+                            LoadYAddr(addr3);
+                        }
+                        LoadZAddr(spiInfo->REG_DATA);
+                        for(i = 0; i < sov; i++) {
+                            if(strlen(spi->send)) {
+                                Instruction(OP_LD_XP, r16);
+                                Instruction(OP_ST_Z, r16);
+                            }
+                            DWORD wait = AvrProg.size();
+                            ;
+                            IfBitClear(spiInfo->REG_STAT, SPIF, "STAT, SPIF");
+                            Instruction(OP_RJMP, wait);
+
+                            if(strlen(spi->recv)) {
+                                Instruction(OP_LD_Z, r16);
+                                Instruction(OP_ST_YP, r16);
+                            }
+                        }
+                        SetBit(Prog.mcu()->outputRegs[_ss->port - 'A'], _ss->bit, "_ss");
+                    } else {
+                        Comment("Slave");
+                        IfBitClear(spiInfo->REG_STAT, SPIF);
+                        Instruction(OP_RJMP, ret);
+                        SetBit(addr1, bit1);
+                        if(strlen(spi->send)) {
+                            MemForVariable(spi->send, &addr2);
+                            LoadXAddr(addr2);
+                        }
+                        if(strlen(spi->recv)) {
+                            MemForVariable(spi->recv, &addr3);
+                            LoadYAddr(addr3);
+                        }
+                        LoadZAddr(spiInfo->REG_DATA);
+                        for(i = 0; i < sov; i++) {
+                            if(i > 0) {
+                                DWORD wait = AvrProg.size();
+                                ;
+                                IfBitClear(spiInfo->REG_STAT, SPIF);
+                                Instruction(OP_RJMP, wait);
+                            }
+                            if(strlen(spi->recv)) {
+                                Instruction(OP_LD_Z, r16);
+                                Instruction(OP_ST_YP, r16);
+                            }
+                            if(strlen(spi->send)) {
+                                Instruction(OP_LD_XP, r16);
+                                Instruction(OP_ST_Z, r16);
+                            }
+                        }
+                    }
+                    FwdAddrIsNow(ret);
+
+                } else {
+                    oops();
+                }
+
                 break;
             }
             case INT_END_IF:

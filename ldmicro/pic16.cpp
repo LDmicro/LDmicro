@@ -3091,20 +3091,11 @@ static void AllocBitsVars()
             case INT_IF_BIT_CLEAR:
                 MemForSingleBit(a->name1, true, &addr, &bit);
                 break;
-                /*
-            case INT_UART_SENDn:
-            case INT_UART_SEND:
-                MemForSingleBit(a->name2, true, &addr, &bit);
-                break;
-*/
+
             case INT_UART_SEND1:
             case INT_UART_RECV1:
                 break;
-                /*
-            case INT_UART_RECV:
-                MemForSingleBit(a->name2, true, &addr, &bit);
-                break;
-*/
+
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
                 MemForSingleBit(a->name1, true, &addr, &bit);
@@ -4856,80 +4847,12 @@ otherwise the result was zero or greater.
                 Instruction(OP_MOVWF, REG_TXREG);
                 break;
             }
-                /*
-            case INT_UART_SEND: {
-                Comment("INT_UART_SEND");
-                MemForVariable(a->name1, &addr1);
-                MemForSingleBit(a->name2, true, &addr2, &bit2); // stateInOut returns BUSY flag
 
-                uint32_t noSend = AllocFwdAddr();
-                IfBitClear(addr2, bit2);
-                Instruction(OP_GOTO, noSend);
-
-                uint32_t isBusy = AllocFwdAddr();
-
-                IfBitClear(REG_TXSTA, TRMT);  // TRMT=0 if TSR full
-                Instruction(OP_GOTO, isBusy); // output stay HI level
-
-                Instruction(OP_MOVF, addr1, DEST_W);
-                Instruction(OP_MOVWF, REG_TXREG);
-
-                FwdAddrIsNow(noSend);
-                CopyNotBit(
-                    addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
-                FwdAddrIsNow(isBusy);
-                break;
-            }
-*/
             case INT_UART_RECV_AVAIL: {
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 CopyBit(addr1, bit1, REG_PIR1, RCIF);
                 break;
             }
-                /*
-            case INT_UART_RECV: {
-                MemForVariable(a->name1, &addr1);
-                sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, true, &addr2, &bit2);
-
-                ClearBit(addr2, bit2);
-
-                // If RCIF is still clear, then there's nothing to do; in that
-                // case jump to the end, and leave the rung-out clear.
-                uint32_t done = AllocFwdAddr();
-                IfBitClear(REG_PIR1, RCIF);
-                Instruction(OP_GOTO, done);
-
-                // RCIF is set, so we have a character. Read it now.
-                Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                Instruction(OP_MOVWF, addr1);
-                for(int i = 1; i < sov1; i++)
-                    Instruction(OP_CLRF, addr1 + i);
-                // and set rung-out true
-                SetBit(addr2, bit2);
-
-                // And check for errors; need to reset the UART if yes.
-                uint32_t yesError = AllocFwdAddr();
-                IfBitSet(REG_RCSTA, OERR); // overrun error
-                Instruction(OP_GOTO, yesError);
-                IfBitSet(REG_RCSTA, FERR); // framing error
-                Instruction(OP_GOTO, yesError);
-
-                // Neither FERR nor OERR is set, so we're good.
-                Instruction(OP_GOTO, done);
-
-                FwdAddrIsNow(yesError);
-                // An error did occur, so flush the FIFO.
-                Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                // And clear and then set CREN, to clear the error flags.
-                ClearBit(REG_RCSTA, CREN);
-                SetBit(REG_RCSTA, CREN);
-
-                FwdAddrIsNow(done);
-                break;
-            }
-*/
             case INT_UART_RECV1: {
                 //Receive one char/byte in a single PLC cycle.
                 //Skip if no char.
@@ -6081,7 +6004,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     /*
     int err = PicTimer0Prescaler(cycleTimeMicroseconds);
     if(err < 0) {
-        fCompileError(f, fAsm);
+        CompileError(f, fAsm);
     }
     */
     if(Prog.mcu()->core == BaselineCore12bit) {

@@ -114,14 +114,11 @@
 #define ELEM_SET_PWM            0x29
 #define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
-//#define ELEM_UART_RECVn         0x2a01 // impasse
 #define ELEM_UART_RECV_AVAIL    0x2a02
 #define RUartRecvErrorFlag     "RUartRecvErrorFlag"
 #define ELEM_UART_SEND          0x2b
-//#define ELEM_UART_SENDn         0x2b01 // impasse
 #define ELEM_UART_SEND_READY    0x2b02
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
-//#define ELEM_UART_WR            0x2b03
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SLEEP              0x2c01
 #define ELEM_CLRWDT             0x2c02
@@ -138,6 +135,7 @@
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
 #define ELEM_FRMT_STR_TO_CHAR   0x2f01
+#define ELEM_VAR_TO_CHAR        0x2f02
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
 
@@ -149,15 +147,7 @@
 #define ELEM_TSFR               0x36    // Element test if set bit in SFR
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 #endif
-/*
-#define ELEM_CPRINTF            0x4c01 // impasse
-#define ELEM_SPRINTF            0x4c02 // impasse
-#define ELEM_FPRINTF            0x4c03 // impasse
-#define ELEM_PRINTF             0x4c04 // impasse
-#define ELEM_I2C_CPRINTF        0x4c05 // impasse
-#define ELEM_ISP_CPRINTF        0x4c06 // impasse
-#define ELEM_UART_CPRINTF       0x4c07 // impasse
-*/
+
 #define ELEM_STRING             0x3f
 #define ELEM_OSC                0x4001
 #define ELEM_STEPPER            0x4002   //
@@ -262,10 +252,8 @@
     case ELEM_SET_PWM_SOFT:     \
     case ELEM_QUAD_ENCOD:       \
     case ELEM_UART_SEND:        \
-/*    case ELEM_UART_SENDn:       */\
     case ELEM_UART_SEND_READY:  \
     case ELEM_UART_RECV:        \
-/*    case ELEM_UART_RECVn:       */\
     case ELEM_UART_RECV_AVAIL:  \
     case ELEM_MASTER_RELAY:     \
     case ELEM_SLEEP:            \
@@ -282,16 +270,9 @@
     case ELEM_LOOK_UP_TABLE:    \
     case ELEM_PIECEWISE_LINEAR: \
     case ELEM_STRING:           \
-/*    case ELEM_CPRINTF:          */\
-/*    case ELEM_SPRINTF:          */\
-/*    case ELEM_FPRINTF:          */\
-/*    case ELEM_PRINTF:           */\
-/*    case ELEM_I2C_CPRINTF:      */\
-/*    case ELEM_ISP_CPRINTF:      */\
-/*    case ELEM_UART_CPRINTF:     */\
-/*    case ELEM_UART_WR:          */\
     case ELEM_FORMATTED_STRING: \
     case ELEM_FRMT_STR_TO_CHAR: \
+    case ELEM_VAR_TO_CHAR:      \
     case ELEM_PERSIST:          \
     case ELEM_RSFR:             \
     case ELEM_WSFR:             \
@@ -359,19 +340,22 @@ typedef struct ElemSegmentsTag {
 } ElemSegments;
 
 typedef struct ElemSpiTag {
-    char name[MAX_NAME_LEN];
+    char name[MAX_NAME_LEN]; // number SPIn
     char send[MAX_NAME_LEN];
     char recv[MAX_NAME_LEN];
-    char mode[MAX_NAME_LEN];
+    char mode[MAX_NAME_LEN]; // Master/Slave
     char bitrate[MAX_NAME_LEN];
-    char modes[MAX_NAME_LEN];
-    char size[MAX_NAME_LEN];
-    char first[MAX_NAME_LEN];
+    char modes[MAX_NAME_LEN];// 00/01/10/11
+    char size[MAX_NAME_LEN]; //   _                         _
+    char _ss[MAX_NAME_LEN];  // 0- \_data1 data2 ... dataN_/  - _SS falls before and rises ones after full 'send'/'recv' variables transfer
+                             //   _         _         _       _        _
+                             // 1- \_data1_/ \_data2_/ \_..._/ \dataN_/ - _SS falls and rises after each portion of data(8 or 16 bits) transfer
+    char first[MAX_NAME_LEN];// MSB/LSB first
     int  which;
 } ElemSpi;
 
 typedef struct ElemI2cTag {
-    char name[MAX_NAME_LEN];    // nom I2Cn
+    char name[MAX_NAME_LEN];    // number I2Cn
     char send[MAX_NAME_LEN];    // to send
     char recv[MAX_NAME_LEN];    // to receive
     char mode[MAX_NAME_LEN];    // Master
@@ -702,6 +686,7 @@ void                AddLookUpTable();
 void                AddPiecewiseLinear();
 void                AddFormattedString();
 void                AddFrmtStrToChar();
+void                AddVarToChar();
 void                AddWrite(int code);
 void                AddString();
 void                AddPrint(int code);

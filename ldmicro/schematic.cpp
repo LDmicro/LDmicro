@@ -512,13 +512,8 @@ static bool doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_CTC: newWhich = ELEM_CTR; break;
         case ELEM_CTR: newWhich = ELEM_CTU; break;
         //
-/*
-        case ELEM_UART_RECV:  newWhich = ELEM_UART_RECVn; break;
-        case ELEM_UART_RECVn: newWhich = ELEM_UART_RECV;  break;
-        //
-        case ELEM_UART_SEND:  newWhich = ELEM_UART_SENDn; break;
-        case ELEM_UART_SENDn: newWhich = ELEM_UART_SEND;  break;
-*/
+        case ELEM_UART_RECV:  newWhich = ELEM_UART_SEND; break;
+        case ELEM_UART_SEND:  newWhich = ELEM_UART_RECV; break;
         //
         #ifdef USE_SFR
         case ELEM_RSFR: newWhich = ELEM_WSFR; break;
@@ -805,15 +800,9 @@ void EditSelectedElement()
 
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
-            //      case ELEM_UART_RECVn:
-            //      case ELEM_UART_SENDn:
             ShowUartDialog(Selected.which, Selected.leaf());
             break;
-            /*
-        case ELEM_UART_WR:
-            ShowWrDialog(Selected.which, Selected.leaf());
-            break;
-*/
+
         case ELEM_PERSIST:
             ShowPersistDialog(Selected.leaf()->d.persist.var);
             break;
@@ -832,6 +821,10 @@ void EditSelectedElement()
 
         case ELEM_FRMT_STR_TO_CHAR:
             ShowFrmtStToCharDialog(Selected.leaf());
+            break;
+
+        case ELEM_VAR_TO_CHAR:
+            ShowVarToCharDialog(Selected.leaf());
             break;
 
         case ELEM_PIECEWISE_LINEAR:
@@ -1104,7 +1097,7 @@ void MakeSetOnlySelected()
         return;
 
     ElemCoil *c = &Selected.leaf()->d.coil;
-    c->setOnly = true;
+    c->setOnly = !c->setOnly; // true;
     c->resetOnly = false;
     c->negated = false;
     c->ttrigger = false;
@@ -1119,7 +1112,7 @@ void MakeResetOnlySelected()
         return;
 
     ElemCoil *c = &Selected.leaf()->d.coil;
-    c->resetOnly = true;
+    c->resetOnly = !c->resetOnly; // true;
     c->setOnly = false;
     c->negated = false;
     c->ttrigger = false;

@@ -409,10 +409,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 intVar1 = IntCode[i].name1.c_str();
                 break;
 
-                //            case INT_UART_RECV:
-                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-                //            case INT_UART_SENDn:
                 intVar1 = IntCode[i].name1.c_str();
                 bitVar1 = IntCode[i].name2.c_str();
                 break;
@@ -821,7 +818,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_EEPROM_BUSY_CHECK:
                 fprintf(f, "{INT_EEPROM_BUSY_CHECK %s }\n", IntCode[i].name1.c_str());
                 break;
-				*/
+                */
             case INT_EEPROM_READ:
                 fprintf(f, "{INT_EEPROM_READ %s }\n", IntCode[i].name1.c_str());
                 break;
@@ -829,7 +826,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_EEPROM_WRITE:
                 fprintf(f, "{INT_EEPROM_WRITE %s }\n", IntCode[i].name1.c_str());
                 break;
-				*/
+                */
             case INT_AllocKnownAddr:
                 fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
@@ -850,10 +847,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:
-                //            case INT_UART_RECV:
-                //            case INT_UART_SEND:
             case INT_UART_SEND1:
-                //            case INT_UART_SENDn:
                 Error(_(" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 

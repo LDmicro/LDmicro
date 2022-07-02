@@ -960,7 +960,6 @@ static void CheckVariableNamesCircuit(int which, void *any)
             break;
 
         case ELEM_UART_RECV:
-            //        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -973,16 +972,12 @@ static void CheckVariableNamesCircuit(int which, void *any)
             break;
         }
 
+        case ELEM_VAR_TO_CHAR:
         case ELEM_FRMT_STR_TO_CHAR:
         case ELEM_STRING:
             MarkWithCheck(l->d.fmtdStr.dest, VAR_FLAG_ANY);
             break;
-            /*
-        case ELEM_UART_SEND:
-            MarkWithCheck("$scratch", VAR_FLAG_ANY);
-            break;
-*/
-            //      case ELEM_UART_WR:
+
         case ELEM_FORMATTED_STRING: {
             break;
         }
@@ -994,7 +989,6 @@ static void CheckVariableNamesCircuit(int which, void *any)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
-//      case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_SPI_WR:
@@ -1141,12 +1135,19 @@ static void CheckSingleBitNegateCircuit(int which, void *any)
         }
         case ELEM_CONTACTS: {
             ElemLeaf *l = (ElemLeaf *)any;
-            if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
+            if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1)) {
                 SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
+                l->poweredAfter = true;
+            } else {
+                l->poweredAfter = false;
+            }
             break;
         }
 
-        default:;
+        default: {
+            ElemLeaf *l = (ElemLeaf *)any;
+            l->poweredAfter = false;
+        };
     }
 }
 
@@ -1699,9 +1700,19 @@ static void SimulateIntCode()
             }
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
+                if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2) || strlen(a->name3.c_str()) || a->literal1) {
                     NeedRedraw = a->op;
-                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
+                    int offset = a->literal1;
+                    if(strlen(a->name3.c_str()))
+                        offset += GetSimulationVariable(a->name3);
+                    if(offset) {
+                        int sov = SizeOfVar(a->name1);
+                        unsigned int var = GetSimulationVariable(a->name2);
+                        int value = (var >> (offset * sov * 8)) & (sov == 1 ? 0xFF : 0xFFFF);
+                        SetSimulationVariable(a->name1, value);
+                    } else {
+                        SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
+                    }
                 }
                 break;
 
@@ -1965,20 +1976,7 @@ static void SimulateIntCode()
                         AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
-                /*
-            case INT_UART_SEND:
-                if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
-                    SimulateUartTxCountdown = 2;
-                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1));       ///// Modified by JG
-                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
-                }
-                if(SimulateUartTxCountdown > 0) {
-                    SetSingleBit(a->name2, true); // busy
-                } else {
-                    SetSingleBit(a->name2, false); // not busy
-                }
-                break;
-*/
+
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, true); // ready
@@ -1996,7 +1994,6 @@ static void SimulateIntCode()
                 break;
 
             case INT_UART_RECV1:
-                //            case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
@@ -2412,15 +2409,15 @@ void DescribeForIoList(const char *name, int type, char *out)
             int     sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
             if(sov == 1)
-                sprintf(out, "0x%02X = %d = '%c'", v & 0xff, v, v);
+                sprintf(out, "0x%02X = %u = %d = '%c'", v & 0xff, v & 0xff, v & 0xff, v);
             else if(sov == 2)
-                sprintf(out, "0x%04X = %d", v & 0xffff, v);
+                sprintf(out, "0x%04X = %u = %d", v & 0xffff, v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
+                sprintf(out, "0x%06X = %u = %d", v & 0xFFffff, v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
+                sprintf(out, "0x%08X = %u = %d", v & 0xFFFFffff, v & 0xFFFFffff, v);
             else {
-                sprintf(out, "0x%X = %d", v, v);
+                sprintf(out, "0x%X = %u = %d", v, v, v);
             }
             break;
         }
@@ -2552,7 +2549,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) //// Modified by JG
 {
-	    switch(msg) {
+        switch(msg) {
         case WM_KEYDOWN:
             // vvv copy-paste from ldmicro.cpp
             if(InSimulationMode) {
@@ -2889,7 +2886,7 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
         }
     } else if(b == '\r') {
         if(strlen(buf) > 0) {
-			if(bPrev == '\n') {
+            if(bPrev == '\n') {
                 // LF CR -> CR LF
                 // "\n\r" -> "\r\n"
                 buf[strlen(buf) - 1] = '\0';
@@ -2929,8 +2926,8 @@ static void    AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)
             memmove(buf, buf + overBy, MAX_SCROLLBACK - overBy); // Scroll by snake
     }
 
-	if(strlen(append))
-		strcat(buf, append);
+    if(strlen(append))
+        strcat(buf, append);
 
     SendMessage(SimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(SimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
